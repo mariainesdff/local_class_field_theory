@@ -48,13 +48,21 @@ open function
 open_locale classical big_operators
 
 /-- `ℤ_[p]` with its usual ring structure is not a field. -/
-lemma padic_int.not_is_field (p : ℕ) [fact(nat.prime p)] : ¬ is_field ℤ_[p] :=
-sorry--λ h, int.not_even_one $ (h.mul_inv_cancel two_ne_zero).imp $ λ a, (by rw ← two_mul; exact eq.symm)
+lemma padic_int.not_is_field (p : ℕ) [hp : fact(nat.prime p)] : ¬ is_field ℤ_[p] :=
+begin
+  rw ring.not_is_field_iff_exists_ideal_bot_lt_and_lt_top,
+  use ideal.span {(p : ℤ_[p])},
+  split,
+  { rw [bot_lt_iff_ne_bot, ne.def, ideal.span_singleton_eq_bot, nat.cast_eq_zero],
+    exact hp.1.ne_zero },
+  { rw [lt_top_iff_ne_top, ne.def, ideal.eq_top_iff_one, ideal.mem_span_singleton,
+      ← padic_int.norm_lt_one_iff_dvd, norm_one, not_lt], }
+end
 
 namespace mixed_char_local_field
 
 variables (p : ℕ) [fact(nat.prime p)] (K L : Type*) [field K] [algebra ℚ_[p] K]/-[module ℚ_[p] K]-/
-  [field L] [algebra ℚ_[p] L] [mixed_char_local_field p K][mixed_char_local_field p L]
+  [field L] [algebra ℚ_[p] L] [mixed_char_local_field p K] [mixed_char_local_field p L]
 
 -- See note [lower instance priority]
 attribute [priority 100, instance] mixed_char_local_field.to_char_zero
@@ -62,13 +70,26 @@ attribute [priority 100, instance] mixed_char_local_field.to_char_zero
 
 --instance : algebra ℚ_[p] K := sorry
 
-instance : algebra ℤ_[p] ℚ_[p] := sorry --It seems this is missing?
-instance : is_fraction_ring ℤ_[p] ℚ_[p] := sorry -- And this
+instance padic.algebra : algebra ℤ_[p] ℚ_[p] := ring_hom.to_algebra (padic_int.coe.ring_hom) --It seems this is missing?
+instance padic.is_scalar_tower : is_scalar_tower ℤ_[p] ℤ_[p] ℚ_[p] := infer_instance
+instance padic.is_fraction_ring : is_fraction_ring ℤ_[p] ℚ_[p] := sorry -- And this
+instance padic_is_integral_closure : is_integral_closure ℤ_[p] ℤ_[p] ℚ_[p] := begin
+  sorry
+end
+
 instance : algebra ℤ_[p] K := sorry
 instance : is_scalar_tower ℤ_[p] ℚ_[p] K := sorry
 
 -- Does not work if mixed_char_local_field only assumes `module ℚ_[p] K`. Diamond?
 protected lemma is_algebraic : algebra.is_algebraic ℚ_[p] K := algebra.is_algebraic_of_finite _ _
+
+lemma algebra_map_injective [algebra ℤ_[p] K] [algebra ℚ_[p] K]
+  [is_scalar_tower ℤ_[p] ℚ_[p] K] : function.injective ⇑(algebra_map ℤ_[p] K) :=
+begin
+  rw is_scalar_tower.algebra_map_eq ℤ_[p] ℚ_[p] K,
+  exact function.injective.comp ((algebra_map ℚ_[p] K).injective)
+    (is_fraction_ring.injective ℤ_[p] ℚ_[p])
+end
 
 /-- The ring of integers of a mixed characteristic local field is the integral closure of ℤ_[p]
   in the local field. -/
@@ -92,12 +113,13 @@ end
 of integers. For now, this is not an instance by default as it creates an equal-but-not-defeq
 diamond with `algebra.id` when `K = L`. This is caused by `x = ⟨x, x.prop⟩` not being defeq on
 subtypes. This will likely change in Lean 4. -/
-def ring_of_integers_algebra [algebra K L] : algebra (𝓞 p K) (𝓞 p L) := sorry/- ring_hom.to_algebra
+def ring_of_integers_algebra [algebra K L] [is_scalar_tower ℤ_[p] K L] : algebra (𝓞 p K) (𝓞 p L) := 
+ring_hom.to_algebra
 { to_fun := λ k, ⟨algebra_map K L k, is_integral.algebra_map k.2⟩,
   map_zero' := subtype.ext $ by simp only [subtype.coe_mk, subalgebra.coe_zero, map_zero],
   map_one'  := subtype.ext $ by simp only [subtype.coe_mk, subalgebra.coe_one, map_one],
-  map_add' := λ x y, subtype.ext $ by simp only [map_add, subalgebra.coe_add, subtype.coe_mk],
-  map_mul' := λ x y, subtype.ext $ by simp only [subalgebra.coe_mul, map_mul, subtype.coe_mk] } -/
+  map_add'  := λ x y, subtype.ext $ by simp only [map_add, subalgebra.coe_add, subtype.coe_mk],
+  map_mul'  := λ x y, subtype.ext $ by simp only [subalgebra.coe_mul, map_mul, subtype.coe_mk] }
 
 namespace ring_of_integers
 
@@ -125,17 +147,26 @@ variables (K)
 
 instance : char_zero (𝓞 p K) := char_zero.of_module _ K
 
-instance : is_noetherian ℤ (𝓞 p K) := sorry --is_integral_closure.is_noetherian _ ℚ K _
+instance : is_noetherian ℤ (𝓞 p K) := sorry -- is_integral_closure.is_noetherian _ ℚ K _
 
-/-- The ring of integers of a number field is not a field. -/
-lemma not_is_field : ¬ is_field (𝓞 p K) :=
+lemma algebra_map_injective :
+  function.injective ⇑(algebra_map ℤ_[p] (ring_of_integers p K)) := 
 begin
-  have h_inj : function.injective ⇑(algebra_map ℤ_[p] (𝓞 p K)),
-  { sorry/- exact ring_hom.injective_int (algebra_map ℤ_[p] (𝓞 p K)) -/ },
-  intro hf,
-  exact padic_int.not_is_field p
-    (((is_integral_closure.is_integral_algebra ℤ_[p] K).is_field_iff_is_field h_inj).mpr hf),
+  have hinj : function.injective ⇑(algebra_map ℤ_[p] K),
+  { rw is_scalar_tower.algebra_map_eq ℤ_[p] ℚ_[p] K,
+    exact function.injective.comp ((algebra_map ℚ_[p] K).injective)
+      (is_fraction_ring.injective ℤ_[p] ℚ_[p]), },
+  rw injective_iff_map_eq_zero (algebra_map ℤ_[p] ↥(𝓞 p K)),
+  intros x hx,
+  rw [← subtype.coe_inj, subalgebra.coe_zero] at hx,
+  rw injective_iff_map_eq_zero (algebra_map ℤ_[p] K) at hinj,
+  exact hinj x hx,
 end
+
+/-- The ring of integers of a mixed characteristic local field is not a field. -/
+lemma not_is_field : ¬ is_field (𝓞 p K) :=
+by simpa [← (is_integral_closure.is_integral_algebra ℤ_[p] K).is_field_iff_is_field
+  (algebra_map_injective p K)] using (padic_int.not_is_field p)
 
 instance : is_dedekind_domain (𝓞 p K) :=
 is_integral_closure.is_dedekind_domain ℤ_[p] ℚ_[p] K _
@@ -160,8 +191,16 @@ instance mixed_char_local_field (p : ℕ) [fact(nat.prime p)] : mixed_char_local
 /-- The ring of integers of `ℚ_[p]` as a mixed characteristic local field is just `ℤ_[p]`. -/
 noncomputable def ring_of_integers_equiv (p : ℕ) [fact(nat.prime p)] :
   ring_of_integers p ℚ_[p] ≃+* ℤ_[p] :=
-ring_of_integers.equiv p ℤ_[p]
+begin
+convert ring_of_integers.equiv p ℤ_[p],
+exact padic.algebra p,
+sorry, sorry
+--exact padic.is_scalar_tower p,
+end
 
+/- protected noncomputable def equiv (R : Type*) [comm_ring R] [algebra ℤ_[p] R] [algebra R K]
+  [is_scalar_tower ℤ_[p] R K] [is_integral_closure R ℤ_[p] K] : 𝓞 p K ≃+* R :=
+(is_integral_closure.equiv ℤ_[p] R K _).symm.to_ring_equiv -/
 end padic
 
 namespace adjoin_root
