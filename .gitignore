@@ -1,3 +1,4 @@
 *.olean
+*.json
 /_target
 /leanpkg.path
