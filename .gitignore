@@ -1,5 +1,6 @@
 *.olean
 *.json
+*.bbl
 /_target
 /leanpkg.path
 print/
