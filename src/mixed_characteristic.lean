@@ -14,6 +14,11 @@ begin
   tauto,
 end
 
+lemma second_test (h : false) : true :=
+begin
+  tauto,
+end
+
 /-!
 # Mixed characteristic local fields fields
 This file defines a number field, the ring of integers corresponding to it and includes some
