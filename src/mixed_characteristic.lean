@@ -75,8 +75,6 @@ namespace mixed_char_local_field
 variables (p : ℕ) [fact(nat.prime p)] (K L : Type*) [field K] [hK : algebra ℚ_[p] K]/-[module ℚ_[p] K]-/
   [field L] [algebra ℚ_[p] L] [mixed_char_local_field p K] [mixed_char_local_field p L]
 
---include hK
-
 -- See note [lower instance priority]
 attribute [priority 100, instance] mixed_char_local_field.to_char_zero
   mixed_char_local_field.to_finite_dimensional
@@ -84,19 +82,29 @@ attribute [priority 100, instance] mixed_char_local_field.to_char_zero
 --instance : algebra ℚ_[p] K := sorry
 
 instance padic.algebra : algebra ℤ_[p] ℚ_[p] := ring_hom.to_algebra (padic_int.coe.ring_hom) --It seems this is missing?
-instance padic.is_scalar_tower : is_scalar_tower ℤ_[p] ℤ_[p] ℚ_[p] := 
-is_scalar_tower.left ℤ_[p]
+
+@[simp] lemma padic.algebra_map_def : algebra_map ℤ_[p] ℚ_[p] =  padic_int.coe.ring_hom := rfl
+--instance padic.is_scalar_tower : is_scalar_tower ℤ_[p] ℤ_[p] ℚ_[p] := 
 instance padic.is_fraction_ring : is_fraction_ring ℤ_[p] ℚ_[p] := sorry -- And this
 instance padic_is_integral_closure : is_integral_closure ℤ_[p] ℤ_[p] ℚ_[p] := begin
   sorry
 end
 
+include hK
+
 instance : algebra ℤ_[p] K :=
 (ring_hom.comp hK.to_ring_hom (@padic_int.coe.ring_hom p _)).to_algebra
 
-include hK
+@[simp] lemma algebra_map_def : algebra_map ℤ_[p] K = 
+  ring_hom.comp hK.to_ring_hom (@padic_int.coe.ring_hom p _) := rfl
 
-instance : is_scalar_tower ℤ_[p] ℚ_[p] K := sorry
+instance : is_scalar_tower ℤ_[p] ℚ_[p] K :=
+⟨λ _ _ _, begin
+  simp only [algebra.smul_def, algebra_map_def, padic.algebra_map_def, map_mul,
+    ring_hom.comp_apply, ← mul_assoc],
+  refl,
+end⟩
+
 
 -- Does not work if mixed_char_local_field only assumes `module ℚ_[p] K`. Diamond?
 protected lemma is_algebraic : algebra.is_algebraic ℚ_[p] K := algebra.is_algebraic_of_finite _ _
@@ -109,9 +117,12 @@ begin
     (is_fraction_ring.injective ℤ_[p] ℚ_[p])
 end
 
+
 /-- The ring of integers of a mixed characteristic local field is the integral closure of ℤ_[p]
   in the local field. -/
 def ring_of_integers := integral_closure ℤ_[p] K
+
+
 
 localized "notation (name := ring_of_integers)
   `𝓞` := mixed_char_local_field.ring_of_integers" in mixed_char_local_field
@@ -192,6 +203,8 @@ by simpa [← (is_integral_closure.is_integral_algebra ℤ_[p] K).is_field_iff_i
 instance : is_dedekind_domain (𝓞 p K) :=
 is_integral_closure.is_dedekind_domain ℤ_[p] ℚ_[p] K _
 
+-- TODO : ring of integers is local
+
 end ring_of_integers
 
 end mixed_char_local_field
@@ -214,29 +227,23 @@ noncomputable def ring_of_integers_equiv (p : ℕ) [fact(nat.prime p)] :
   ring_of_integers p ℚ_[p] ≃+* ℤ_[p] :=
 ring_of_integers.equiv p ℤ_[p]
 
-example {p : ℕ} [fact(nat.prime p)] : has_smul ℤ_[p] ℤ_[p] :=
-begin
-
-let h1 := has_mul.to_has_smul ℤ_[p],
-let h2 := @smul_with_zero.to_has_smul ℤ_[p] ℤ_[p] _ _ _,
-
-have : h1 = h2 := rfl,
-
-sorry
-end
-
-example {R : Type*} [comm_ring R] : is_scalar_tower R R R :=
-begin
-let hR := @is_scalar_tower.right R R _ _ _,
-let hL := @is_scalar_tower.left R R _ _,
-have : hR = hL := rfl,
-sorry
-end
-
-/- protected noncomputable def equiv (R : Type*) [comm_ring R] [algebra ℤ_[p] R] [algebra R K]
-  [is_scalar_tower ℤ_[p] R K] [is_integral_closure R ℤ_[p] K] : 𝓞 p K ≃+* R :=
-(is_integral_closure.equiv ℤ_[p] R K _).symm.to_ring_equiv -/
 end padic
+
+
+section valuation
+/- 
+* Topology on K + this is locally compact.
+* Define normalized discrete valuation on K, using topological nilpotent elements.
+* Unit ball = ring of integers
+* Top. nilp. elements are a maximal ideal P in O_K
+* Define ramification index e
+* P^e = (p)
+* Relate to norm (future)
+-/
+end valuation
+
+
+#exit
 
 namespace adjoin_root
 
@@ -255,7 +262,7 @@ noncomputable! instance  (p : ℕ) [fact(nat.prime p)] {f : ℚ_[p][X]} [hf : fa
   --by convert (adjoin_root.power_basis hf.out.ne_zero).finite_dimensional }
 end
 
-#exit
+
 
 end adjoin_root
 
