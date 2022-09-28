@@ -72,8 +72,10 @@ end
 
 namespace mixed_char_local_field
 
-variables (p : ℕ) [fact(nat.prime p)] (K L : Type*) [field K] [algebra ℚ_[p] K]/-[module ℚ_[p] K]-/
+variables (p : ℕ) [fact(nat.prime p)] (K L : Type*) [field K] [hK : algebra ℚ_[p] K]/-[module ℚ_[p] K]-/
   [field L] [algebra ℚ_[p] L] [mixed_char_local_field p K] [mixed_char_local_field p L]
+
+--include hK
 
 -- See note [lower instance priority]
 attribute [priority 100, instance] mixed_char_local_field.to_char_zero
@@ -82,13 +84,18 @@ attribute [priority 100, instance] mixed_char_local_field.to_char_zero
 --instance : algebra ℚ_[p] K := sorry
 
 instance padic.algebra : algebra ℤ_[p] ℚ_[p] := ring_hom.to_algebra (padic_int.coe.ring_hom) --It seems this is missing?
-instance padic.is_scalar_tower : is_scalar_tower ℤ_[p] ℤ_[p] ℚ_[p] := infer_instance
+instance padic.is_scalar_tower : is_scalar_tower ℤ_[p] ℤ_[p] ℚ_[p] := 
+is_scalar_tower.left ℤ_[p]
 instance padic.is_fraction_ring : is_fraction_ring ℤ_[p] ℚ_[p] := sorry -- And this
 instance padic_is_integral_closure : is_integral_closure ℤ_[p] ℤ_[p] ℚ_[p] := begin
   sorry
 end
 
-instance : algebra ℤ_[p] K := sorry
+instance : algebra ℤ_[p] K :=
+(ring_hom.comp hK.to_ring_hom (@padic_int.coe.ring_hom p _)).to_algebra
+
+include hK
+
 instance : is_scalar_tower ℤ_[p] ℚ_[p] K := sorry
 
 -- Does not work if mixed_char_local_field only assumes `module ℚ_[p] K`. Diamond?
@@ -120,11 +127,14 @@ begin
     polynomial.aeval_def,  subtype.coe_mk, hP],
 end
 
+instance asdf [algebra K L] [is_scalar_tower ℚ_[p] K L] : is_scalar_tower ℤ_[p] K L :=
+sorry
+
 /-- Given an algebra between two local fields over ℚ_[p], create an algebra between their two rings
 of integers. For now, this is not an instance by default as it creates an equal-but-not-defeq
 diamond with `algebra.id` when `K = L`. This is caused by `x = ⟨x, x.prop⟩` not being defeq on
 subtypes. This will likely change in Lean 4. -/
-def ring_of_integers_algebra [algebra K L] [is_scalar_tower ℤ_[p] K L] : algebra (𝓞 p K) (𝓞 p L) := 
+def ring_of_integers_algebra [algebra K L] [is_scalar_tower ℚ_[p] K L] : algebra (𝓞 p K) (𝓞 p L) := 
 ring_hom.to_algebra
 { to_fun := λ k, ⟨algebra_map K L k, is_integral.algebra_map k.2⟩,
   map_zero' := subtype.ext $ by simp only [subtype.coe_mk, subalgebra.coe_zero, map_zero],
@@ -202,11 +212,25 @@ instance mixed_char_local_field (p : ℕ) [fact(nat.prime p)] : mixed_char_local
 /-- The ring of integers of `ℚ_[p]` as a mixed characteristic local field is just `ℤ_[p]`. -/
 noncomputable def ring_of_integers_equiv (p : ℕ) [fact(nat.prime p)] :
   ring_of_integers p ℚ_[p] ≃+* ℤ_[p] :=
+ring_of_integers.equiv p ℤ_[p]
+
+example {p : ℕ} [fact(nat.prime p)] : has_smul ℤ_[p] ℤ_[p] :=
 begin
-convert ring_of_integers.equiv p ℤ_[p],
-exact padic.algebra p,
-sorry, sorry
---exact padic.is_scalar_tower p,
+
+let h1 := has_mul.to_has_smul ℤ_[p],
+let h2 := @smul_with_zero.to_has_smul ℤ_[p] ℤ_[p] _ _ _,
+
+have : h1 = h2 := rfl,
+
+sorry
+end
+
+example {R : Type*} [comm_ring R] : is_scalar_tower R R R :=
+begin
+let hR := @is_scalar_tower.right R R _ _ _,
+let hL := @is_scalar_tower.left R R _ _,
+have : hR = hL := rfl,
+sorry
 end
 
 /- protected noncomputable def equiv (R : Type*) [comm_ring R] [algebra ℤ_[p] R] [algebra R K]
