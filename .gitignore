@@ -1,6 +1,8 @@
 *.olean
 *.json
 *.bbl
+decls.pickle
+decls.yaml
 /_target
 /leanpkg.path
 print/
