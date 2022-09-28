@@ -8,16 +8,6 @@ import ring_theory.dedekind_domain.integral_closure
 import algebra.char_p.algebra
 import number_theory.padics.padic_integers
 
---`[FAE]` Of course, this will be removed!
-lemma blueprint_test (h : false) : true :=
-begin
-  tauto,
-end
-
-lemma second_test (h : false) : true :=
-begin
-  tauto,
-end
 
 /-!
 # Mixed characteristic local fields fields
