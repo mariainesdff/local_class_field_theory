@@ -41,6 +41,11 @@ class mixed_char_local_field (p : ℕ) [fact(nat.prime p)] (K : Type*) [field K]
 [to_char_zero : char_zero K]
 [to_finite_dimensional : finite_dimensional ℚ_[p] K]
 
+class mixed_char_local_field' (p : ℕ) [fact(nat.prime p)] (K : Type*) [field K]
+extends algebra ℚ_[p] K :=
+[to_char_zero : char_zero K]
+[to_finite_dimensional : finite_dimensional ℚ_[p] K]
+
 /- class mixed_char_local_field (p : ℕ) [fact(nat.prime p)] (K : Type*) [field K] [module ℚ_[p] K] :=
 [to_char_zero : char_zero K]
 [to_finite_dimensional : finite_dimensional ℚ_[p] K] -/
@@ -65,6 +70,8 @@ namespace mixed_char_local_field
 variables (p : ℕ) [fact(nat.prime p)] (K L : Type*) [field K] [hK : algebra ℚ_[p] K]/-[module ℚ_[p] K]-/
   [field L] [algebra ℚ_[p] L] [mixed_char_local_field p K] [mixed_char_local_field p L]
 
+variables (E : Type*) [field E] [mixed_char_local_field' p E]
+
 -- See note [lower instance priority]
 attribute [priority 100, instance] mixed_char_local_field.to_char_zero
   mixed_char_local_field.to_finite_dimensional
@@ -80,9 +87,13 @@ instance padic_is_integral_closure : is_integral_closure ℤ_[p] ℤ_[p] ℚ_[p]
   sorry
 end
 
+instance : algebra ℤ_[p] E := (ring_hom.comp
+  (@mixed_char_local_field'.to_algebra p _ E _ _).to_ring_hom
+  (@padic_int.coe.ring_hom p _)).to_algebra
+
 include hK
 
-instance : algebra ℤ_[p] K :=
+instance mixed_char_local_field.to_algebra : algebra ℤ_[p] K :=
 (ring_hom.comp hK.to_ring_hom (@padic_int.coe.ring_hom p _)).to_algebra
 
 @[simp] lemma algebra_map_def : algebra_map ℤ_[p] K = 
@@ -95,6 +106,12 @@ instance : is_scalar_tower ℤ_[p] ℚ_[p] K :=
   refl,
 end⟩
 
+instance mixed_char_local_field'.scalar_tower : is_scalar_tower ℤ_[p] ℚ_[p] E :=
+⟨λ _ _ _, begin
+  simp only [algebra.smul_def, algebra_map_def, padic.algebra_map_def, map_mul,
+    ring_hom.comp_apply, ← mul_assoc],
+  refl,
+end⟩
 
 -- Does not work if mixed_char_local_field only assumes `module ℚ_[p] K`. Diamond?
 protected lemma is_algebraic : algebra.is_algebraic ℚ_[p] K := algebra.is_algebraic_of_finite _ _
