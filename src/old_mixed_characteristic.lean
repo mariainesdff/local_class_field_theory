@@ -8,8 +8,8 @@ import ring_theory.dedekind_domain.integral_closure
 import algebra.char_p.algebra
 import number_theory.padics.padic_integers
 
+
 /-!
---TODO: Fix comments
 # Mixed characteristic local fields fields
 This file defines a number field, the ring of integers corresponding to it and includes some
 basic facts about the embeddings into an algebraic closed field.
@@ -35,12 +35,18 @@ number field, ring of integers
 
 noncomputable theory
 
+/-- A mixed characteristic local field is a field which has characteristic zero and is finite
+dimensional over `ℚ_[p]`, for some prime `p`. -/
+class mixed_char_local_field (p : ℕ) [fact(nat.prime p)] (K : Type*) [field K] [algebra ℚ_[p] K] :=
+[to_char_zero : char_zero K]
+[to_finite_dimensional : finite_dimensional ℚ_[p] K]
+
+/- class mixed_char_local_field (p : ℕ) [fact(nat.prime p)] (K : Type*) [field K] [module ℚ_[p] K] :=
+[to_char_zero : char_zero K]
+[to_finite_dimensional : finite_dimensional ℚ_[p] K] -/
 
 open function
 open_locale classical big_operators
-
--- For instances/lemmas about ℚₚ and ℤₚ
-section padic
 
 /-- `ℤ_[p]` with its usual ring structure is not a field. -/
 lemma padic_int.not_is_field (p : ℕ) [hp : fact(nat.prime p)] : ¬ is_field ℤ_[p] :=
@@ -54,103 +60,57 @@ begin
       ← padic_int.norm_lt_one_iff_dvd, norm_one, not_lt], }
 end
 
-variables (p : ℕ) [fact(nat.prime p)]
+namespace mixed_char_local_field
 
-instance padic.algebra : algebra ℤ_[p] ℚ_[p] := ring_hom.to_algebra (padic_int.coe.ring_hom) --It seems this is missing?
-
--- I had to remove the @[simp] attribute (the simp_nf linter complained)
-lemma padic.algebra_map_def : algebra_map ℤ_[p] ℚ_[p] =  padic_int.coe.ring_hom := rfl
-instance padic.is_scalar_tower : is_scalar_tower ℤ_[p] ℤ_[p] ℚ_[p] := infer_instance
-instance padic.is_fraction_ring : is_fraction_ring ℤ_[p] ℚ_[p] := sorry -- And this
-instance padic_is_integral_closure : is_integral_closure ℤ_[p] ℤ_[p] ℚ_[p] := begin
-  sorry
-end
-
-end padic
-
--- For instances and lemmas that only need `K` to be a `ℚₚ`-algebra
-section padic_algebra
-
-namespace padic_algebra
-
-variables (p : ℕ) [fact(nat.prime p)] (K L : Type*) [field K] [hK : algebra ℚ_[p] K] [field L]
-  [algebra ℚ_[p] L]
-
-include hK
-
-instance to_int_algebra : algebra ℤ_[p] K := 
-(ring_hom.comp hK.to_ring_hom (@padic_int.coe.ring_hom p _)).to_algebra
-
-@[simp] lemma int_algebra_map_def : algebra_map ℤ_[p] K = 
-  (padic_algebra.to_int_algebra p K).to_ring_hom := rfl 
-
-@[priority 1000] instance : is_scalar_tower ℤ_[p] ℚ_[p] K :=
-⟨λ _ _ _, begin
-  simp only [algebra.smul_def, int_algebra_map_def, padic.algebra_map_def, map_mul,
-    ring_hom.comp_apply, ← mul_assoc],
-  refl,
-end⟩
-
-instance int_is_scalar_tower [algebra K L] [is_scalar_tower ℚ_[p] K L] :
-  is_scalar_tower ℤ_[p] K L :=
-sorry
-
-omit hK
-
-lemma algebra_map_injective {E : Type*} [field E] [algebra ℤ_[p] E] [algebra ℚ_[p] E]
-  [is_scalar_tower ℤ_[p] ℚ_[p] E] : function.injective ⇑(algebra_map ℤ_[p] E) :=
-begin
-  rw is_scalar_tower.algebra_map_eq ℤ_[p] ℚ_[p] E,
-  exact function.injective.comp ((algebra_map ℚ_[p] E).injective)
-    (is_fraction_ring.injective ℤ_[p] ℚ_[p])
-end
-
-end padic_algebra
-end padic_algebra
-
-/-- A mixed characteristic local field is a field which has characteristic zero and is finite
-dimensional over `ℚ_[p]`, for some prime `p`. -/
-class mixed_char_local_field (p : out_param(ℕ)) [fact(nat.prime p)] (K : Type*) [field K]
-  extends algebra ℚ_[p] K :=
-[to_char_zero : char_zero K]
-[to_finite_dimensional : finite_dimensional ℚ_[p] K] 
-
-attribute [nolint dangerous_instance] mixed_char_local_field.to_char_zero
+variables (p : ℕ) [fact(nat.prime p)] (K L : Type*) [field K] [hK : algebra ℚ_[p] K]/-[module ℚ_[p] K]-/
+  [field L] [algebra ℚ_[p] L] [mixed_char_local_field p K] [mixed_char_local_field p L]
 
 -- See note [lower instance priority]
 attribute [priority 100, instance] mixed_char_local_field.to_char_zero
   mixed_char_local_field.to_finite_dimensional
 
-namespace mixed_char_local_field
+--instance : algebra ℚ_[p] K := sorry
 
-variables (p : ℕ) [fact(nat.prime p)] (K L : Type*) [field K] [mixed_char_local_field p K] [field L]
-  [mixed_char_local_field p L]
+instance padic.algebra : algebra ℤ_[p] ℚ_[p] := ring_hom.to_algebra (padic_int.coe.ring_hom) --It seems this is missing?
 
--- I think we don't need these anymore
-/- instance to_int_algebra : algebra ℤ_[p] K := (ring_hom.comp
-(@mixed_char_local_field.to_algebra p _ K _ _).to_ring_hom
-  (@padic_int.coe.ring_hom p _)).to_algebra
+@[simp] lemma padic.algebra_map_def : algebra_map ℤ_[p] ℚ_[p] =  padic_int.coe.ring_hom := rfl
+--instance padic.is_scalar_tower : is_scalar_tower ℤ_[p] ℤ_[p] ℚ_[p] := 
+instance padic.is_fraction_ring : is_fraction_ring ℤ_[p] ℚ_[p] := sorry -- And this
+instance padic_is_integral_closure : is_integral_closure ℤ_[p] ℤ_[p] ℚ_[p] := begin
+  sorry
+end
 
--- Checking that there is no diamond
-example (p : ℕ) [fact(nat.prime p)] (K L : Type*) [field K] [mixed_char_local_field p K] :
-  padic_algebra.to_int_algebra p K = mixed_char_local_field.to_int_algebra p K := rfl
+include hK
 
-@[simp] lemma int_algebra_map_def : algebra_map ℤ_[p] K = 
-  (@mixed_char_local_field.to_int_algebra p _ K _ _).to_ring_hom := rfl  -/
+instance mixed_char_local_field.to_algebra : algebra ℤ_[p] K :=
+(ring_hom.comp hK.to_ring_hom (@padic_int.coe.ring_hom p _)).to_algebra
 
--- We need to mark this one with high priority to avoid timeouts.
-@[priority 1000] instance : is_scalar_tower ℤ_[p] ℚ_[p] K := infer_instance
-/- ⟨λ _ _ _, begin
-  simp only [algebra.smul_def, int_algebra_map_def, padic.algebra_map_def, map_mul,
+@[simp] lemma algebra_map_def : algebra_map ℤ_[p] K = 
+  ring_hom.comp hK.to_ring_hom (@padic_int.coe.ring_hom p _) := rfl
+
+instance : is_scalar_tower ℤ_[p] ℚ_[p] K :=
+⟨λ _ _ _, begin
+  simp only [algebra.smul_def, algebra_map_def, padic.algebra_map_def, map_mul,
     ring_hom.comp_apply, ← mul_assoc],
   refl,
-end⟩ -/
+end⟩
 
+-- Does not work if mixed_char_local_field only assumes `module ℚ_[p] K`. Diamond?
 protected lemma is_algebraic : algebra.is_algebraic ℚ_[p] K := algebra.is_algebraic_of_finite _ _
+
+lemma algebra_map_injective [algebra ℤ_[p] K] [algebra ℚ_[p] K]
+  [is_scalar_tower ℤ_[p] ℚ_[p] K] : function.injective ⇑(algebra_map ℤ_[p] K) :=
+begin
+  rw is_scalar_tower.algebra_map_eq ℤ_[p] ℚ_[p] K,
+  exact function.injective.comp ((algebra_map ℚ_[p] K).injective)
+    (is_fraction_ring.injective ℤ_[p] ℚ_[p])
+end
 
 /-- The ring of integers of a mixed characteristic local field is the integral closure of ℤ_[p]
   in the local field. -/
 def ring_of_integers := integral_closure ℤ_[p] K
+
+
 
 localized "notation (name := ring_of_integers)
   `𝓞` := mixed_char_local_field.ring_of_integers" in mixed_char_local_field
@@ -166,6 +126,9 @@ begin
     polynomial.aeval_def,  subtype.coe_mk, hP],
 end
 
+instance asdf [algebra K L] [is_scalar_tower ℚ_[p] K L] : is_scalar_tower ℤ_[p] K L :=
+sorry
+
 /-- Given an algebra between two local fields over ℚ_[p], create an algebra between their two rings
 of integers. For now, this is not an instance by default as it creates an equal-but-not-defeq
 diamond with `algebra.id` when `K = L`. This is caused by `x = ⟨x, x.prop⟩` not being defeq on
@@ -180,28 +143,21 @@ ring_hom.to_algebra
 
 namespace ring_of_integers
 
+#exit
 variables {K}
 
---set_option trace.class_instances true
--- I had to increase the priority of `mixed_char_local_field.is_scalar_tower` for this to work.
--- Otherwise it times out if the is_scalar_tower argument is implicit
-instance : is_fraction_ring (𝓞 p K) K := 
---@integral_closure.is_fraction_ring_of_finite_extension ℤ_[p] ℚ_[p] _ _ K _ _ _ _ _ _ 
- -- (mixed_char_local_field.is_scalar_tower p K) _
+instance : is_fraction_ring (𝓞 p K) K :=
 integral_closure.is_fraction_ring_of_finite_extension ℚ_[p] _
-
 
 instance : is_integral_closure (𝓞 p K) ℤ_[p] K :=
 integral_closure.is_integral_closure _ _
 
--- Times out if the is_scalar_tower argument is implicit (without the priority fix)
 instance : is_integrally_closed (𝓞 p K) :=
 integral_closure.is_integrally_closed_of_finite_extension ℚ_[p]
-/-  @integral_closure.is_integrally_closed_of_finite_extension ℤ_[p] _ _ ℚ_[p] _ _ _ K _ _ _ 
-  (mixed_char_local_field.is_scalar_tower p K) _
--/
 
-lemma is_integral_coe (x : 𝓞 p K) : is_integral ℤ_[p] (x : K) := x.2
+lemma is_integral_coe (x : 𝓞 p K) : is_integral ℤ_[p] (x : K) :=
+x.2
+
 
 /-- The ring of integers of `K` is equivalent to any integral closure of `ℤ_[p]` in `K` -/
 protected noncomputable def equiv (R : Type*) [comm_ring R] [algebra ℤ_[p] R] [algebra R K]
@@ -274,6 +230,7 @@ section valuation
 * Relate to norm (future)
 -/
 end valuation
+
 
 #exit
 
