@@ -152,7 +152,11 @@ end⟩
 
 instance int_is_scalar_tower [algebra K L] [is_scalar_tower ℚ_[p] K L] :
   is_scalar_tower ℤ_[p] K L :=
-sorry
+{ smul_assoc := λ x y z,
+  begin
+    nth_rewrite 0 [← one_smul ℚ_[p] y],
+    rw [← one_smul ℚ_[p] (y • z), ← smul_assoc, ← smul_assoc, ← smul_assoc],
+  end }
 
 omit hK
 
