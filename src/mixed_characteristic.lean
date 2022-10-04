@@ -142,7 +142,7 @@ instance to_int_algebra : algebra ℤ_[p] K :=
 @[simp] lemma int_algebra_map_def : algebra_map ℤ_[p] K = 
   (padic_algebra.to_int_algebra p K).to_ring_hom := rfl 
 
-@[priority 1000] instance : is_scalar_tower ℤ_[p] ℚ_[p] K :=
+@[priority 10000] instance : is_scalar_tower ℤ_[p] ℚ_[p] K :=
 ⟨λ _ _ _, begin
   simp only [algebra.smul_def, int_algebra_map_def, padic.algebra_map_def, map_mul,
     ring_hom.comp_apply, ← mul_assoc],
@@ -201,7 +201,7 @@ example (p : ℕ) [fact(nat.prime p)] (K L : Type*) [field K] [mixed_char_local_
   (@mixed_char_local_field.to_int_algebra p _ K _ _).to_ring_hom := rfl -/
 
 -- We need to mark this one with high priority to avoid timeouts.
-@[priority 1000] instance : is_scalar_tower ℤ_[p] ℚ_[p] K := infer_instance
+@[priority 10000] instance : is_scalar_tower ℤ_[p] ℚ_[p] K := infer_instance
 /- ⟨λ _ _ _, begin
   simp only [algebra.smul_def, int_algebra_map_def, padic.algebra_map_def, map_mul,
     ring_hom.comp_apply, ← mul_assoc],
@@ -362,12 +362,23 @@ lemma mixed_char_local_field.t2_space :
   @t2_space K (mixed_char_local_field.topological_space p K) := 
 sorry
 
+open_locale mixed_char_local_field
 
 lemma mixed_char_local_field.int_t2_space : 
-  @t2_space (𝓞 p K)
-    (topological_space.induced (coe : (𝓞 p K) → K) mixed_char_local_field.topological_space p K) := 
-sorry
+  @t2_space (𝓞 p K) (topological_space.induced (coe : (𝓞 p K) → K)
+    (mixed_char_local_field.topological_space p K)) := 
+begin
+  letI := (topological_space.induced (coe : (𝓞 p K) → K)
+    (mixed_char_local_field.topological_space p K)),
+  have h : embedding (coe : (𝓞 p K) → K),
+  { rw embedding_iff,
+    split,
+    exact inducing_coe,
+    exact subtype.coe_injective,
+    },
+  refine @embedding.t2_space _ _ _ _ (mixed_char_local_field.t2_space p K) _ h,
 
+end
 
 open_locale mixed_char_local_field
 
@@ -397,11 +408,14 @@ begin
   rw set.nmem_set_of_iff,
   rw is_topologically_nilpotent,
   simp_rw one_pow,
-  have h1 : filter.tendsto (λ (n : ℕ), 1) filter.at_top (nhds 1) :=
+  have h1 : filter.tendsto (λ (n : ℕ), (1 : 𝓞 p K)) filter.at_top (nhds 1) :=
   tendsto_const_nhds,
   intro h0,
-  have := tendsto_nhds_unique' _ h0 h1,
-  sorry
+  haveI ht2 := (mixed_char_local_field.int_t2_space p K),
+  have : (0 : 𝓞 p K) = 1,
+  { refine tendsto_nhds_unique' _ h0 h1,
+    exact filter.at_top_ne_bot, },
+  exact zero_ne_one this,
 end
 
 def mixed_char_local_field.valuation : 
