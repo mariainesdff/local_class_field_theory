@@ -253,7 +253,6 @@ instance : is_fraction_ring (𝓞 p K) K :=
  -- (mixed_char_local_field.is_scalar_tower p K) _
 integral_closure.is_fraction_ring_of_finite_extension ℚ_[p] _
 
-
 instance : is_integral_closure (𝓞 p K) ℤ_[p] K :=
 integral_closure.is_integral_closure _ _
 
@@ -275,7 +274,7 @@ variables (K)
 
 instance : char_zero (𝓞 p K) := char_zero.of_module _ K
 
-instance : is_noetherian ℤ (𝓞 p K) := sorry -- is_integral_closure.is_noetherian _ ℚ K _
+instance : is_noetherian ℤ_[p] (𝓞 p K) := is_integral_closure.is_noetherian _ ℚ_[p] K _
 
 lemma algebra_map_injective :
   function.injective ⇑(algebra_map ℤ_[p] (ring_of_integers p K)) := 
@@ -300,6 +299,14 @@ instance : is_dedekind_domain (𝓞 p K) :=
 is_integral_closure.is_dedekind_domain ℤ_[p] ℚ_[p] K _
 
 -- TODO : ring of integers is local
+instance : local_ring (𝓞 p K) :=
+{ exists_pair_ne := ⟨0, 1, zero_ne_one⟩,
+  is_unit_or_is_unit_of_add_one := λ a b hab,
+  begin
+    by_cases ha : is_unit a,
+    { exact or.inl ha, },
+    { right, sorry }
+  end }
 
 end ring_of_integers
 
@@ -327,6 +334,19 @@ end padic
 
 
 section valuation
+
+variables (p : ℕ) [fact(nat.prime p)]
+
+variables (n : ℕ)
+instance padic_pow.topological_space : topological_space (fin n → ℚ_[p]) := infer_instance
+instance padic_pow.topological_ring : topological_ring (fin n → ℚ_[p]) := infer_instance
+
+instance mixed_char_local_field.topological_space (K : Type*) [field K] 
+  [hK : mixed_char_local_field p K] : topological_space K := 
+begin
+  convert padic_pow.topological_space p (finite_dimensional.finrank ℚ_[p] K),
+  sorry
+end 
 /- 
 * Topology on K + this is locally compact.
 * Define normalized discrete valuation on K, using topological nilpotent elements.
