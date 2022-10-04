@@ -363,7 +363,6 @@ lemma mixed_char_local_field.t2_space :
 sorry
 
 
-#exit
 lemma mixed_char_local_field.int_t2_space : 
   @t2_space (𝓞 p K)
     (topological_space.induced (coe : (𝓞 p K) → K) mixed_char_local_field.topological_space p K) := 
