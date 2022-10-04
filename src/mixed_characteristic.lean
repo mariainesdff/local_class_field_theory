@@ -386,13 +386,29 @@ open_locale mixed_char_local_field
 def is_topologically_nilpotent [mixed_char_local_field p K] (x : 𝓞 p K) : Prop :=
 filter.tendsto (λ n : ℕ, x^n) filter.at_top (nhds 0)
 
-def unit_open_ball [mixed_char_local_field p K] : set (𝓞 p K) :=
-{ x : 𝓞 p K | is_topologically_nilpotent p K x}
+-- def unit_open_ball [mixed_char_local_field p K] : set (𝓞 p K) :=
+-- { x : 𝓞 p K | is_topologically_nilpotent p K x}
+
+def unit_open_ball [mixed_char_local_field p K] : ideal (𝓞 p K) :=
+{ carrier := { x : 𝓞 p K | is_topologically_nilpotent p K x},
+  add_mem' := sorry,
+  zero_mem' := sorry,
+  smul_mem' := sorry }
 
 lemma mem_unit_open_ball [mixed_char_local_field p K] {x : 𝓞 p K} :
   x ∈ unit_open_ball p K ↔ is_topologically_nilpotent p K x := iff.rfl
 
-open_locale pointwise
+lemma unit_ball_pow_succ_le [mixed_char_local_field p K] (n : ℕ) :
+  (unit_open_ball p K)^(n.succ) ≤ (unit_open_ball p K)^n :=
+begin
+  induction n,
+  { simp only [pow_zero, ideal.one_eq_top, le_top] },
+  { simp only [nat.succ_eq_add_one, pow_add] at n_ih ⊢,
+    exact ideal.mul_mono_left n_ih}
+end
+
+lemma antitone_unit_ball_pow [mixed_char_local_field p K] :
+  antitone (λ n : ℕ, (unit_open_ball p K)^n) := antitone_nat_of_succ_le (unit_ball_pow_succ_le p K)
 
 def add_valuation_map (x : 𝓞 p K) : ℕ := 
 Sup { n : ℕ | x ∈ (unit_open_ball p K)^n ∧ x ∉ (unit_open_ball p K)^(n + 1)}
@@ -402,12 +418,25 @@ begin
   suffices h : (1 : 𝓞 p K) ∉ (unit_open_ball p K),
   rw ← pow_one (unit_open_ball p K) at h,
   simp [add_valuation_map],
-  { sorry,
-    -- rw nat.Sup_def,
-    -- -- use 0,
-    -- swap,
-    -- use 0,
-    -- intros n hn,
+  { have : ∀ n : ℕ, 1 ≤ n → (1 : 𝓞 p K) ∉ (unit_open_ball p K)^n,
+    { rintros n hn₁,
+      have := (antitone_unit_ball_pow p K).imp hn₁,
+      intro H,
+      exact h (this H),
+    },
+    rw nat.Sup_def,
+    { swap,
+      use 0,
+      rintros n ⟨hn, -⟩,
+      by_contra' h_abs,
+      replace h_abs : 1 ≤ n := nat.one_le_iff_ne_zero.mpr (ne_of_gt h_abs),
+      -- have := (antitone_unit_ball_pow p K).imp h_abs,
+      exact (this n h_abs) hn},
+    { simp only [nat.find_eq_zero, set.mem_set_of_eq, le_zero_iff, and_imp],
+      rintros n hn -,
+      by_contra' h_abs,
+      replace h_abs : 1 ≤ n := nat.one_le_iff_ne_zero.mpr h_abs,
+      exact (this n h_abs) hn },
   },
   rw unit_open_ball,
   rw set.nmem_set_of_iff,
@@ -422,8 +451,6 @@ begin
     exact filter.at_top_ne_bot, },
   exact zero_ne_one this,
 end
-
-#exit
 
 def mixed_char_local_field.valuation : 
   valuation (𝓞 p K) (with_zero (multiplicative ℤ)) :=
