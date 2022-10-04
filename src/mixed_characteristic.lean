@@ -14,8 +14,8 @@ import number_theory.padics.padic_integers
 This file defines a number field, the ring of integers corresponding to it and includes some
 basic facts about the embeddings into an algebraic closed field.
 ## Main definitions
- - `mixed_char_local_field` defines a number field as a field which has characteristic zero and is finite
-    dimensional over ℚ.
+ - `mixed_char_local_field` defines a number field as a field which has characteristic zero and is
+    finite dimensional over ℚ.
  - `ring_of_integers` defines the ring of integers (or number ring) corresponding to a number field
     as the integral closure of ℤ in the number field.
 ## Main Result
@@ -35,7 +35,6 @@ number field, ring of integers
 
 noncomputable theory
 
-
 open function
 open_locale classical big_operators
 
@@ -54,17 +53,77 @@ begin
       ← padic_int.norm_lt_one_iff_dvd, norm_one, not_lt], }
 end
 
-variables (p : ℕ) [fact(nat.prime p)]
+variables {p : ℕ} [fact(nat.prime p)]
+
+lemma padic_int.coe_eq_zero (x : ℤ_[p]) : (x : ℚ_[p]) = 0  ↔ x = 0 :=
+⟨λ h, by {rw ← padic_int.coe_zero at h, exact subtype.coe_inj.mp h},
+    λ h, by {rw h, exact padic_int.coe_zero}⟩
 
 instance padic.algebra : algebra ℤ_[p] ℚ_[p] := ring_hom.to_algebra (padic_int.coe.ring_hom) --It seems this is missing?
 
 -- I had to remove the @[simp] attribute (the simp_nf linter complained)
 lemma padic.algebra_map_def : algebra_map ℤ_[p] ℚ_[p] =  padic_int.coe.ring_hom := rfl
-instance padic.is_scalar_tower : is_scalar_tower ℤ_[p] ℤ_[p] ℚ_[p] := infer_instance
-instance padic.is_fraction_ring : is_fraction_ring ℤ_[p] ℚ_[p] := sorry -- And this
-instance padic_is_integral_closure : is_integral_closure ℤ_[p] ℤ_[p] ℚ_[p] := begin
-  sorry
+lemma padic.algebra_map_apply (x : ℤ_[p]) : algebra_map ℤ_[p] ℚ_[p] x = x := rfl
+--instance padic.is_scalar_tower : is_scalar_tower ℤ_[p] ℤ_[p] ℚ_[p] := infer_instance
+
+lemma padic.norm_le_one_iff_val_nonneg (x : ℚ_[p]) : ∥ x ∥ ≤ 1 ↔ 0 ≤ x.valuation := 
+begin
+  by_cases hx : x = 0,
+  { simp only [hx, norm_zero, padic.valuation_zero, zero_le_one, le_refl], },
+  { rw [padic.norm_eq_pow_val hx, ← zpow_zero (p : ℝ), zpow_le_iff_le 
+      (nat.one_lt_cast.mpr (nat.prime.one_lt' p).1), right.neg_nonpos_iff], 
+    apply_instance, }
 end
+
+instance padic.is_fraction_ring : is_fraction_ring ℤ_[p] ℚ_[p] :=
+{ map_units := 
+  begin
+    rintros ⟨x, hx⟩,
+    rw [set_like.coe_mk, padic.algebra_map_apply, is_unit_iff_ne_zero, ne.def,
+      padic_int.coe_eq_zero],
+    exact mem_non_zero_divisors_iff_ne_zero.mp hx,
+  end,
+  surj      := λ x,
+  begin
+    by_cases hx : ∥ x ∥ ≤ 1,
+    { use (⟨x, hx⟩, 1),
+      rw [submonoid.coe_one, map_one, mul_one],
+      refl, },
+    { set n := int.to_nat(- x.valuation) with hn,
+      have hn_coe : (n : ℤ) = -x.valuation,
+      { rw [hn, int.to_nat_of_nonneg],
+        rw right.nonneg_neg_iff,
+        rw padic.norm_le_one_iff_val_nonneg at hx,
+        exact le_of_lt (not_le.mp hx), },
+      set a := x * p^n with ha,
+      have ha_norm : ∥ a ∥ = 1,
+      { have hx : x ≠ 0,
+        { intro h0,
+          rw [h0, norm_zero] at hx,
+          exact hx (zero_le_one) },
+        rw [ha, norm_mul, ← zpow_coe_nat, padic_norm_e.norm_p_pow, padic.norm_eq_pow_val hx,
+          ← zpow_add' , hn_coe, neg_neg, add_left_neg, zpow_zero],
+        exact or.inl (nat.cast_ne_zero.mpr (ne_zero.ne p)) },
+      set b := (p^n : ℤ_[p]) with hb,
+      have hb_mem : b ∈ non_zero_divisors ℤ_[p],
+      { exact mem_non_zero_divisors_iff_ne_zero.mpr (ne_zero.ne _) },
+      use (⟨a, le_of_eq ha_norm⟩, ⟨b, hb_mem⟩),
+      simp only [set_like.coe_mk, map_pow, map_nat_cast, padic.algebra_map_apply,
+        padic_int.coe_pow, padic_int.coe_nat_cast, subtype.coe_mk] }
+  end,
+  eq_iff_exists := λ x y,
+  begin
+    rw [padic.algebra_map_apply, padic.algebra_map_apply, subtype.coe_inj],
+    refine ⟨λ h, _, _⟩,
+    { use 1,
+      simp only [submonoid.coe_one, mul_one],
+      exact h },
+    { rintro ⟨⟨c, hc⟩, h⟩,
+      exact (mul_eq_mul_right_iff.mp h).resolve_right (mem_non_zero_divisors_iff_ne_zero.mp hc) }
+  end }
+
+-- This is automatic once we have the `is_fraction_ring` instance
+instance : is_integrally_closed ℤ_[p] := infer_instance
 
 end padic
 
