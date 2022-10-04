@@ -3,7 +3,7 @@ Copyright (c) 2022 María Inés de Frutos-Fernández, Filippo A. E. Nuccio. All 
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
-
+import data.set.pointwise
 import ring_theory.dedekind_domain.integral_closure
 import algebra.char_p.algebra
 import number_theory.padics.padic_integers
@@ -123,12 +123,11 @@ instance padic.is_fraction_ring : is_fraction_ring ℤ_[p] ℚ_[p] :=
   end }
 
 -- This is automatic once we have the `is_fraction_ring` instance
-instance : is_integrally_closed ℤ_[p] := infer_instance
+--instance : is_integrally_closed ℤ_[p] := infer_instance
 
 end padic
 
 -- For instances and lemmas that only need `K` to be a `ℚₚ`-algebra
-section padic_algebra
 
 namespace padic_algebra
 
@@ -150,7 +149,7 @@ instance to_int_algebra : algebra ℤ_[p] K :=
   refl,
 end⟩
 
-instance int_is_scalar_tower [algebra K L] [is_scalar_tower ℚ_[p] K L] :
+@[priority 1000] instance int_is_scalar_tower [algebra K L] [is_scalar_tower ℚ_[p] K L] :
   is_scalar_tower ℤ_[p] K L :=
 { smul_assoc := λ x y z,
   begin
@@ -169,7 +168,7 @@ begin
 end
 
 end padic_algebra
-end padic_algebra
+
 
 /-- A mixed characteristic local field is a field which has characteristic zero and is finite
 dimensional over `ℚ_[p]`, for some prime `p`. -/
@@ -189,8 +188,8 @@ namespace mixed_char_local_field
 variables (p : ℕ) [fact(nat.prime p)] (K L : Type*) [field K] [mixed_char_local_field p K] [field L]
   [mixed_char_local_field p L]
 
--- I think we don't need these anymore
-/- instance to_int_algebra : algebra ℤ_[p] K := (ring_hom.comp
+/- -- I think we don't need these anymore
+instance to_int_algebra : algebra ℤ_[p] K := (ring_hom.comp
 (@mixed_char_local_field.to_algebra p _ K _ _).to_ring_hom
   (@padic_int.coe.ring_hom p _)).to_algebra
 
@@ -199,7 +198,7 @@ example (p : ℕ) [fact(nat.prime p)] (K L : Type*) [field K] [mixed_char_local_
   padic_algebra.to_int_algebra p K = mixed_char_local_field.to_int_algebra p K := rfl
 
 @[simp] lemma int_algebra_map_def : algebra_map ℤ_[p] K = 
-  (@mixed_char_local_field.to_int_algebra p _ K _ _).to_ring_hom := rfl  -/
+  (@mixed_char_local_field.to_int_algebra p _ K _ _).to_ring_hom := rfl -/
 
 -- We need to mark this one with high priority to avoid timeouts.
 @[priority 1000] instance : is_scalar_tower ℤ_[p] ℚ_[p] K := infer_instance
@@ -341,12 +340,85 @@ variables (n : ℕ)
 instance padic_pow.topological_space : topological_space (fin n → ℚ_[p]) := infer_instance
 instance padic_pow.topological_ring : topological_ring (fin n → ℚ_[p]) := infer_instance
 
-instance mixed_char_local_field.topological_space (K : Type*) [field K] 
-  [hK : mixed_char_local_field p K] : topological_space K := 
+def K_equiv (K : Type*) [field K] [mixed_char_local_field p K] : 
+  K ≃ₗ[ℚ_[p]] (fin (finite_dimensional.finrank ℚ_[p] K) → ℚ_[p]) :=
 begin
-  convert padic_pow.topological_space p (finite_dimensional.finrank ℚ_[p] K),
+  apply finite_dimensional.linear_equiv.of_finrank_eq,
+  simp,
+end
+
+instance mixed_char_local_field.topological_space (K : Type*) [field K] [mixed_char_local_field p K] :
+  topological_space K := 
+topological_space.induced (K_equiv p K).to_fun (padic_pow.topological_space p
+  (finite_dimensional.finrank ℚ_[p] K))
+
+variables (K : Type*) [field K] [mixed_char_local_field p K] 
+
+lemma mixed_char_local_field.is_locally_compact : 
+  @locally_compact_space K (mixed_char_local_field.topological_space p K) := 
+sorry
+
+lemma mixed_char_local_field.t2_space : 
+  @t2_space K (mixed_char_local_field.topological_space p K) := 
+sorry
+
+
+#exit
+lemma mixed_char_local_field.int_t2_space : 
+  @t2_space (𝓞 p K)
+    (topological_space.induced (coe : (𝓞 p K) → K) mixed_char_local_field.topological_space p K) := 
+sorry
+
+
+open_locale mixed_char_local_field
+
+
+def is_topologically_nilpotent [mixed_char_local_field p K] (x : 𝓞 p K) : Prop :=
+filter.tendsto (λ n : ℕ, x^n) filter.at_top (nhds 0)
+
+def unit_open_ball [mixed_char_local_field p K] : set (𝓞 p K) :=
+{ x : 𝓞 p K | is_topologically_nilpotent p K x}
+
+lemma mem_unit_open_ball [mixed_char_local_field p K] {x : 𝓞 p K} :
+  x ∈ unit_open_ball p K ↔ is_topologically_nilpotent p K x := iff.rfl
+
+open_locale pointwise
+--open mixed_char_local_field.ring_of_integers
+
+def add_valuation_map (x : 𝓞 p K) : ℕ := 
+Sup { n : ℕ | x ∈ (unit_open_ball p K)^n ∧ x ∉ (unit_open_ball p K)^(n + 1)}
+
+lemma add_valuation_map_one : add_valuation_map p K 1 = 0 :=
+begin
+  suffices h : (1 : 𝓞 p K) ∉ (unit_open_ball p K),
+  rw ← pow_one (unit_open_ball p K) at h,
+  simp [add_valuation_map],
+  sorry,
+  rw unit_open_ball,
+  rw set.nmem_set_of_iff,
+  rw is_topologically_nilpotent,
+  simp_rw one_pow,
+  have h1 : filter.tendsto (λ (n : ℕ), 1) filter.at_top (nhds 1) :=
+  tendsto_const_nhds,
+  intro h0,
+  have := tendsto_nhds_unique' _ h0 h1,
   sorry
-end 
+end
+
+def mixed_char_local_field.valuation : 
+  valuation (𝓞 p K) (with_zero (multiplicative ℤ)) :=
+{ to_fun := λ x,
+    if x = 0 then 0 else multiplicative.of_add (0),
+  map_zero'  := sorry,
+  map_one'   := sorry,
+  map_mul'   := sorry,
+  map_add_le_max' := sorry }
+/- lemma exists_uniformizer [mixed_char_local_field p K] :
+  ∃ π : K, π ∈ unit_open_ball p K ∧ ¬ π ∈ (unit_open_ball p K)^2 :=
+begin
+  sorry
+end -/
+
 /- 
 * Topology on K + this is locally compact.
 * Define normalized discrete valuation on K, using topological nilpotent elements.
