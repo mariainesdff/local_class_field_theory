@@ -33,6 +33,8 @@ but are independent of that choice.
 number field, ring of integers
 -/
 
+-- set_option profiler true
+
 noncomputable theory
 
 open function
@@ -42,8 +44,9 @@ open_locale big_operators
 section padic
 
 /-- `ℤ_[p]` with its usual ring structure is not a field. -/
-lemma padic_int.not_is_field (p : ℕ) [hp : fact(nat.prime p)] : ¬ is_field ℤ_[p] :=
+lemma padic_int.not_is_field (p : ℕ) [hp : fact (nat.prime p)] : ¬ is_field ℤ_[p] :=
 begin
+  -- sorry,
   rw ring.not_is_field_iff_exists_ideal_bot_lt_and_lt_top,
   use ideal.span {(p : ℤ_[p])},
   split,
@@ -55,9 +58,18 @@ end
 
 variables {p : ℕ} [fact(nat.prime p)]
 
-lemma padic_int.coe_eq_zero (x : ℤ_[p]) : (x : ℚ_[p]) = 0  ↔ x = 0 :=
-⟨λ h, by {rw ← padic_int.coe_zero at h, exact subtype.coe_inj.mp h},
-    λ h, by {rw h, exact padic_int.coe_zero}⟩
+lemma padic_int.coe_eq_zero (x : ℤ_[p]) : (x : ℚ_[p]) = 0  ↔ x = 0 := --sorry
+begin
+  split,
+  intro h,
+  rw [← padic_int.coe_zero] at h,
+  exact subtype.coe_inj.mp h,
+  intro h,
+  rw h,
+  exact padic_int.coe_zero,
+end
+-- ⟨λ h, by {rw ← padic_int.coe_zero at h, exact subtype.coe_inj.mp h},
+    -- λ h, by {rw h, exact padic_int.coe_zero}⟩
 
 instance padic.algebra : algebra ℤ_[p] ℚ_[p] := ring_hom.to_algebra (padic_int.coe.ring_hom) --It seems this is missing?
 
@@ -68,6 +80,7 @@ lemma padic.algebra_map_apply (x : ℤ_[p]) : algebra_map ℤ_[p] ℚ_[p] x = x 
 
 lemma padic.norm_le_one_iff_val_nonneg (x : ℚ_[p]) : ∥ x ∥ ≤ 1 ↔ 0 ≤ x.valuation := 
 begin
+  -- sorry,
   by_cases hx : x = 0,
   { simp only [hx, norm_zero, padic.valuation_zero, zero_le_one, le_refl], },
   { rw [padic.norm_eq_pow_val hx, ← zpow_zero (p : ℝ), zpow_le_iff_le 
@@ -123,7 +136,7 @@ instance padic.is_fraction_ring : is_fraction_ring ℤ_[p] ℚ_[p] :=
   end }
 
 -- This is automatic once we have the `is_fraction_ring` instance
---instance : is_integrally_closed ℤ_[p] := infer_instance
+-- instance : is_integrally_closed ℤ_[p] := infer_instance
 
 end padic
 
@@ -142,7 +155,7 @@ instance to_int_algebra : algebra ℤ_[p] K :=
 @[simp] lemma int_algebra_map_def : algebra_map ℤ_[p] K = 
   (padic_algebra.to_int_algebra p K).to_ring_hom := rfl 
 
-@[priority 10000] instance : is_scalar_tower ℤ_[p] ℚ_[p] K :=
+@[priority 1000] instance : is_scalar_tower ℤ_[p] ℚ_[p] K :=
 ⟨λ _ _ _, begin
   simp only [algebra.smul_def, int_algebra_map_def, padic.algebra_map_def, map_mul,
     ring_hom.comp_apply, ← mul_assoc],
@@ -298,14 +311,14 @@ instance : is_dedekind_domain (𝓞 p K) :=
 is_integral_closure.is_dedekind_domain ℤ_[p] ℚ_[p] K _
 
 -- TODO : ring of integers is local
-instance : local_ring (𝓞 p K) :=
-{ exists_pair_ne := ⟨0, 1, zero_ne_one⟩,
-  is_unit_or_is_unit_of_add_one := λ a b hab,
-  begin
-    by_cases ha : is_unit a,
-    { exact or.inl ha, },
-    { right, sorry }
-  end }
+-- instance : local_ring (𝓞 p K) :=
+-- { exists_pair_ne := ⟨0, 1, zero_ne_one⟩,
+--   is_unit_or_is_unit_of_add_one := λ a b hab,
+--   begin
+--     by_cases ha : is_unit a,
+--     { exact or.inl ha, },
+--     { right, sorry }
+--   end }
 
 end ring_of_integers
 
@@ -377,22 +390,35 @@ begin
     exact subtype.coe_injective,
     },
   refine @embedding.t2_space _ _ _ _ (mixed_char_local_field.t2_space p K) _ h,
-
 end
 
-open_locale mixed_char_local_field
-
+open_locale mixed_char_local_field pointwise
 
 def is_topologically_nilpotent [mixed_char_local_field p K] (x : 𝓞 p K) : Prop :=
 filter.tendsto (λ n : ℕ, x^n) filter.at_top (nhds 0)
 
-def unit_open_ball [mixed_char_local_field p K] : set (𝓞 p K) :=
-{ x : 𝓞 p K | is_topologically_nilpotent p K x}
+-- [begin `FAE`]
+
+def unit_open_ball [mixed_char_local_field p K] : ideal (𝓞 p K) :=
+{ carrier := { x : 𝓞 p K | is_topologically_nilpotent p K x},
+  add_mem' := sorry,
+  zero_mem' := sorry,
+  smul_mem' := sorry }
 
 lemma mem_unit_open_ball [mixed_char_local_field p K] {x : 𝓞 p K} :
   x ∈ unit_open_ball p K ↔ is_topologically_nilpotent p K x := iff.rfl
 
-open_locale pointwise
+lemma unit_ball_pow_succ_le [mixed_char_local_field p K] (n : ℕ) :
+  (unit_open_ball p K)^(n.succ) ≤ (unit_open_ball p K)^n :=
+begin
+  induction n,
+  { simp only [pow_zero, ideal.one_eq_top, le_top] },
+  { simp only [nat.succ_eq_add_one, pow_add] at n_ih ⊢,
+    exact ideal.mul_mono_left n_ih}
+end
+
+lemma antitone_unit_ball_pow [mixed_char_local_field p K] :
+  antitone (λ n : ℕ, (unit_open_ball p K)^n) := antitone_nat_of_succ_le (unit_ball_pow_succ_le p K)
 
 def add_valuation_map (x : 𝓞 p K) : ℕ := 
 Sup { n : ℕ | x ∈ (unit_open_ball p K)^n ∧ x ∉ (unit_open_ball p K)^(n + 1)}
@@ -402,12 +428,21 @@ begin
   suffices h : (1 : 𝓞 p K) ∉ (unit_open_ball p K),
   rw ← pow_one (unit_open_ball p K) at h,
   simp [add_valuation_map],
-  { sorry,
-    -- rw nat.Sup_def,
-    -- -- use 0,
-    -- swap,
-    -- use 0,
+  { --sorry,
+    rw nat.Sup_def,
+    --   -- use 0,
+    swap,
+    use 0,
+    rintros n ⟨hn, -⟩,
+    by_contra' h_abs,
+    have := (antitone_unit_ball_pow p K).imp (le_of_lt h_abs),
+    sorry
+    -- have : ∀ n : ℕ, 1 ≤ n → (1 : 𝓞 p K) ∉ (unit_open_ball p K) ^ n,
     -- intros n hn,
+    -- induction n with  d hd,
+    -- sorry,
+    -- induction n with n hn,
+    -- simp,
   },
   rw unit_open_ball,
   rw set.nmem_set_of_iff,
