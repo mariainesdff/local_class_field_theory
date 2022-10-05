@@ -425,21 +425,19 @@ begin
       exact h (this H),
     },
     rw nat.Sup_def,
-    { swap,
-      use 0,
-      rintros n ⟨hn, -⟩,
-      by_contra' h_abs,
-      replace h_abs : 1 ≤ n := nat.one_le_iff_ne_zero.mpr (ne_of_gt h_abs),
-      -- have := (antitone_unit_ball_pow p K).imp h_abs,
-      exact (this n h_abs) hn},
     { simp only [nat.find_eq_zero, set.mem_set_of_eq, le_zero_iff, and_imp],
       rintros n hn -,
       by_contra' h_abs,
       replace h_abs : 1 ≤ n := nat.one_le_iff_ne_zero.mpr h_abs,
       exact (this n h_abs) hn },
+    { use 0,
+      rintros n ⟨hn, -⟩,
+      by_contra' h_abs,
+      replace h_abs : 1 ≤ n := nat.one_le_iff_ne_zero.mpr (ne_of_gt h_abs),
+      exact (this n h_abs) hn},
   },
   rw unit_open_ball,
-  rw set.nmem_set_of_iff,
+  simp only [submodule.mem_mk, set.mem_set_of_eq],
   rw is_topologically_nilpotent,
   simp_rw one_pow,
   have h1 : filter.tendsto (λ (n : ℕ), (1 : 𝓞 p K)) filter.at_top (nhds 1) :=
@@ -451,6 +449,8 @@ begin
     exact filter.at_top_ne_bot, },
   exact zero_ne_one this,
 end
+
+open_locale classical
 
 def mixed_char_local_field.valuation : 
   valuation (𝓞 p K) (with_zero (multiplicative ℤ)) :=
