@@ -86,4 +86,5 @@ begin
     polynomial.aeval_def,  subtype.coe_mk, hP],
 end
 
+lemma Z_p_is_ring_of_integers : 𝓞 p ℚ_[p] = ℤ_[p] :=
 

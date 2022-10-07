@@ -22,8 +22,7 @@ class mixed_char_local_field (p : ℕ) [fact (p.prime)] (K : Type*) [field K]
 [to_char_zero : char_zero K]
 [to_finite_dimensional : finite_dimensional ℚ_[p] K] 
 
-
--- -- #exit
+instance (p : ℕ) [fact (p.prime)] : mixed_char_local_field p ℚ_[p] := mixed_char_local_field.mk
 
 -- namespace mixed_char_local_field
 -- -- attribute [nolint dangerous_instance] mixed_char_local_field.to_char_zero
