@@ -6,13 +6,73 @@ Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 
 import number_theory.padics.padic_integers
 import mixed_characteristic_local_field.integer
+import ring_theory.localization.module
 
 noncomputable theory
 
--- set_option profiler true
 
-open function
-open_locale big_operators
+-- section add_comm_monoid
+
+-- variables {R : Type*} (Rₛ : Type*) [comm_ring R] [comm_ring Rₛ] [algebra R Rₛ]
+-- variables (S : submonoid R) [hT : is_localization S Rₛ]
+
+-- include hT
+
+-- variables {M N : Type*} [add_comm_monoid M] [add_comm_monoid N] [module R M] [module R N]
+-- variables [module Rₛ M] [is_scalar_tower R Rₛ M] [module Rₛ N] [is_scalar_tower R Rₛ N]
+
+-- -- def linear_map.localization (f : M →ₗ[R] N) : 
+
+-- end add_comm_monoid
+
+-- set_option profiler true
+section non_standard_topology
+
+variables (p : ℕ) [fact (p.prime)] 
+variables (K: Type*) [field K] [mixed_char_local_field p K]
+
+def pi_equiv_int : (fin (finite_dimensional.finrank ℤ_[p] (𝓞 p K)) → ℤ_[p]) ≃ₗ[ℤ_[p]] 𝓞 p K := 
+begin
+  sorry,
+  -- have := @finite_dimensional.linear_equiv.of_finrank_eq (𝓞 p K)
+  --   (fin (finite_dimensional.finrank ℤ_[p] (𝓞 p K)) → ℤ_[p]),
+  -- -- simp only [finite_dimensional.finrank_fin_fun],
+  -- -- exacts [mixed_char_local_field.to_finite_dimensional,
+  -- --   finite_dimensional.finite_dimensional_pi ℚ_[p]],
+end
+
+def pi_equiv : K ≃ₗ[ℚ_[p]] (fin (finite_dimensional.finrank ℚ_[p] K) → ℚ_[p]) := 
+begin
+  apply finite_dimensional.linear_equiv.of_finrank_eq K 
+    (fin (finite_dimensional.finrank ℚ_[p] K) → ℚ_[p]),
+  simp only [finite_dimensional.finrank_fin_fun],
+  exacts [mixed_char_local_field.to_finite_dimensional,
+    finite_dimensional.finite_dimensional_pi ℚ_[p]],
+end
+
+def mixed_char_local_field.pi_topology : topological_space K := 
+  topological_space.induced (pi_equiv p K) Pi.topological_space
+
+def pi_homeo : @homeomorph K (fin (finite_dimensional.finrank ℚ_[p] K) → ℚ_[p])
+  (mixed_char_local_field.pi_topology p K)  _ :=
+begin
+  letI := mixed_char_local_field.pi_topology p K,
+  have equiv_cont : continuous (pi_equiv p K).to_equiv,
+  { rw [continuous_iff_le_induced],
+    exact le_of_eq (refl _) },
+  have symm_cont : continuous (pi_equiv p K).to_equiv.symm,
+  { rw [continuous_iff_coinduced_le, equiv.coinduced_symm],
+    exact le_of_eq (refl _) },
+  apply homeomorph.mk (pi_equiv p K).to_equiv equiv_cont symm_cont
+end 
+
+lemma mixed_char_local_field.t2_space : @t2_space K (mixed_char_local_field.pi_topology p K):=
+begin
+  letI := mixed_char_local_field.pi_topology p K,
+  exact homeomorph.t2_space (pi_homeo p K).symm,
+end
+
+end non_standard_topology
 
 section open_unit_ball
 
@@ -42,10 +102,9 @@ lemma is_topological_nilpotent_add (x y : 𝓞 p K) (hx : is_topologically_nilpo
 begin
   rw is_topologically_nilpotent_iff_forall_i at hx hy ⊢,
   intro i,
-  specialize hx i,
-  specialize hy i,
   simp only [add_mem_class.coe_add, map_add, pi.add_apply],
-  apply padic.add_valuation.map_add,
+  apply lt_of_le_of_lt (padic_norm_e.nonarchimedean _ _),
+  exact max_lt_iff.mpr ⟨hx i, hy i⟩,
 end
 
 #exit
