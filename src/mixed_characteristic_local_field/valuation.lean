@@ -16,8 +16,8 @@ open_locale big_operators
 
 section open_unit_ball
 
-variables (p : ℕ) [fact (p.prime)] 
-variables (K: Type*) [field K] [mixed_char_local_field p K]
+variables {p : ℕ} [fact (p.prime)] 
+variables {K: Type*} [field K] [mixed_char_local_field p K]
 
 lemma mixed_char_local_field.int_t2_space : 
   @t2_space (𝓞 p K) (@subtype.topological_space K _
@@ -28,12 +28,11 @@ def is_topologically_nilpotent (x : 𝓞 p K) : Prop :=
   filter.tendsto (λ n : ℕ, x^n) filter.at_top (@nhds (𝓞 p K) (@subtype.topological_space K
   (λ x, is_integral ℤ_[p] x) (mixed_char_local_field.pi_topology p K)) 0)
 
--- variable (K)
+variable (K)
 
 -- `FAE` : This lemma is certainly false
-lemma is_topologically_nilpotent_iff_forall_i (x : 𝓞 p K) : is_topologically_nilpotent p K x ↔
-  ∀ i : (fin (finite_dimensional.finrank ℚ_[p] K)),
-    is_topologically_nilpotent p ℚ_[p] ((pi_equiv p K) x i) :=
+lemma is_topologically_nilpotent_iff_forall_i (x : 𝓞 p K) : is_topologically_nilpotent x ↔
+  ∀ i : (fin (finite_dimensional.finrank ℚ_[p] K)), ∥ ((pi_equiv p K) x i) ∥ < 1 :=
 begin
   sorry,
 end
@@ -45,7 +44,11 @@ begin
   intro i,
   specialize hx i,
   specialize hy i,
+  simp only [add_mem_class.coe_add, map_add, pi.add_apply],
+  apply padic.add_valuation.map_add,
 end
+
+#exit
 
 -- variable (p)
 
