@@ -5,8 +5,7 @@ Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
 
 import number_theory.padics.padic_integers
-import mixed_characteristic_local_field.integer
-import ring_theory.localization.module
+import mixed_characteristic.basic
 
 noncomputable theory
 
@@ -26,7 +25,12 @@ noncomputable theory
 -- end add_comm_monoid
 
 -- set_option profiler true
+namespace mixed_char_local_field
+
 section non_standard_topology
+
+open_locale mixed_char_local_field
+
 
 variables (p : ℕ) [fact (p.prime)] 
 variables (K: Type*) [field K] [mixed_char_local_field p K]
@@ -66,7 +70,7 @@ begin
   apply homeomorph.mk (pi_equiv p K).to_equiv equiv_cont symm_cont
 end 
 
-lemma mixed_char_local_field.t2_space : @t2_space K (mixed_char_local_field.pi_topology p K):=
+lemma mixed_char_local_field.to_t2_space : @t2_space K (mixed_char_local_field.pi_topology p K):=
 begin
   letI := mixed_char_local_field.pi_topology p K,
   exact homeomorph.t2_space (pi_homeo p K).symm,
@@ -76,13 +80,16 @@ end non_standard_topology
 
 section open_unit_ball
 
+open mixed_char_local_field
+open_locale mixed_char_local_field
+
 variables {p : ℕ} [fact (p.prime)] 
 variables {K: Type*} [field K] [mixed_char_local_field p K]
 
-lemma mixed_char_local_field.int_t2_space : 
+lemma ring_of_integers.to_t2_space : 
   @t2_space (𝓞 p K) (@subtype.topological_space K _
   (mixed_char_local_field.pi_topology p K)) := @subtype.t2_space K _
-    (mixed_char_local_field.pi_topology p K) (mixed_char_local_field.t2_space p K)
+    (mixed_char_local_field.pi_topology p K) (to_t2_space p K)
 
 def is_topologically_nilpotent (x : 𝓞 p K) : Prop :=
   filter.tendsto (λ n : ℕ, x^n) filter.at_top (@nhds (𝓞 p K) (@subtype.topological_space K
