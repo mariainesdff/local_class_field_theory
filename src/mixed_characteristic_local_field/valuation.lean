@@ -24,13 +24,33 @@ lemma mixed_char_local_field.int_t2_space :
   (mixed_char_local_field.pi_topology p K)) := @subtype.t2_space K _
     (mixed_char_local_field.pi_topology p K) (mixed_char_local_field.t2_space p K)
 
-
-def is_topologically_nilpotent [mixed_char_local_field p K] (x : 𝓞 p K) : Prop :=
+def is_topologically_nilpotent (x : 𝓞 p K) : Prop :=
   filter.tendsto (λ n : ℕ, x^n) filter.at_top (@nhds (𝓞 p K) (@subtype.topological_space K
   (λ x, is_integral ℤ_[p] x) (mixed_char_local_field.pi_topology p K)) 0)
 
-def unit_open_ball [mixed_char_local_field p K] : ideal (𝓞 p K) :=
-{ carrier := { x : 𝓞 p K | is_topologically_nilpotent p K x},
+-- variable (K)
+
+-- `FAE` : This lemma is certainly false
+lemma is_topologically_nilpotent_iff_forall_i (x : 𝓞 p K) : is_topologically_nilpotent p K x ↔
+  ∀ i : (fin (finite_dimensional.finrank ℚ_[p] K)),
+    is_topologically_nilpotent p ℚ_[p] ((pi_equiv p K) x i) :=
+begin
+  sorry,
+end
+
+lemma is_topological_nilpotent_add (x y : 𝓞 p K) (hx : is_topologically_nilpotent x)
+  (hy : is_topologically_nilpotent y) : is_topologically_nilpotent (x + y) :=
+begin
+  rw is_topologically_nilpotent_iff_forall_i at hx hy ⊢,
+  intro i,
+  specialize hx i,
+  specialize hy i,
+end
+
+-- variable (p)
+
+def unit_open_ball : ideal (𝓞 p K) :=
+{ carrier := { x : 𝓞 p K | is_topologically_nilpotent x},
   add_mem' := 
   begin
   sorry
@@ -38,8 +58,8 @@ def unit_open_ball [mixed_char_local_field p K] : ideal (𝓞 p K) :=
   zero_mem' := sorry,
   smul_mem' := sorry }
 
-lemma mem_unit_open_ball [mixed_char_local_field p K] {x : 𝓞 p K} :
-  x ∈ unit_open_ball p K ↔ is_topologically_nilpotent p K x := iff.rfl
+lemma mem_unit_open_ball {x : 𝓞 p K} :
+  x ∈ unit_open_ball p K ↔ is_topologically_nilpotent x := iff.rfl
 
 lemma unit_ball_pow_succ_le [mixed_char_local_field p K] (n : ℕ) :
   (unit_open_ball p K)^(n.succ) ≤ (unit_open_ball p K)^n :=
