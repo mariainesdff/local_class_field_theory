@@ -347,9 +347,9 @@ begin
   simp,
 end
 
-instance mixed_char_local_field.topological_space (K : Type*) [field K] [mixed_char_local_field p K] :
-  topological_space K := 
-topological_space.induced (K_equiv p K).to_fun (padic_pow.topological_space p
+instance mixed_char_local_field.topological_space (K : Type*) [field K]
+  [mixed_char_local_field p K] : topological_space K := 
+  topological_space.induced (K_equiv p K).to_fun (padic_pow.topological_space p
   (finite_dimensional.finrank ℚ_[p] K))
 
 variables (K : Type*) [field K] [mixed_char_local_field p K] 
@@ -358,27 +358,36 @@ lemma mixed_char_local_field.is_locally_compact :
   @locally_compact_space K (mixed_char_local_field.topological_space p K) := 
 sorry
 
+lemma aux : t2_space (fin (finite_dimensional.finrank ℚ_[p] K) → ℚ_[p]) := by  {apply Pi.t2_space}
+-- (padic_pow.topological_space p
+  -- (finite_dimensional.finrank ℚ_[p] K) :=
+-- begin
+--   exact Pi.t2_space _ _ _,
+-- end
+
 lemma mixed_char_local_field.t2_space : 
   @t2_space K (mixed_char_local_field.topological_space p K) := 
-sorry
+begin
+  sorry,
+end
 
 open_locale mixed_char_local_field
 
 lemma mixed_char_local_field.int_t2_space : 
   @t2_space (𝓞 p K) (topological_space.induced (coe : (𝓞 p K) → K)
-    (mixed_char_local_field.topological_space p K)) := 
-begin
-  letI := (topological_space.induced (coe : (𝓞 p K) → K)
-    (mixed_char_local_field.topological_space p K)),
-  have h : embedding (coe : (𝓞 p K) → K),
-  { rw embedding_iff,
-    split,
-    exact inducing_coe,
-    exact subtype.coe_injective,
-    },
-  refine @embedding.t2_space _ _ _ _ (mixed_char_local_field.t2_space p K) _ h,
-
-end
+    (mixed_char_local_field.topological_space p K)) := @subtype.t2_space K _
+    (mixed_char_local_field.topological_space p K) (mixed_char_local_field.t2_space p K)
+-- begin
+--   letI := (topological_space.induced (coe : (𝓞 p K) → K)
+--     (mixed_char_local_field.topological_space p K)),
+--   have h : embedding (coe : (𝓞 p K) → K),
+--   { rw embedding_iff,
+--     split,
+--     exact inducing_coe,
+--     exact subtype.coe_injective,
+--     },
+--   refine @embedding.t2_space _ _ _ _ (mixed_char_local_field.t2_space p K) _ h,
+-- end
 
 open_locale mixed_char_local_field
 
@@ -425,21 +434,19 @@ begin
       exact h (this H),
     },
     rw nat.Sup_def,
-    { swap,
-      use 0,
-      rintros n ⟨hn, -⟩,
-      by_contra' h_abs,
-      replace h_abs : 1 ≤ n := nat.one_le_iff_ne_zero.mpr (ne_of_gt h_abs),
-      -- have := (antitone_unit_ball_pow p K).imp h_abs,
-      exact (this n h_abs) hn},
     { simp only [nat.find_eq_zero, set.mem_set_of_eq, le_zero_iff, and_imp],
       rintros n hn -,
       by_contra' h_abs,
       replace h_abs : 1 ≤ n := nat.one_le_iff_ne_zero.mpr h_abs,
       exact (this n h_abs) hn },
+    { use 0,
+      rintros n ⟨hn, -⟩,
+      by_contra' h_abs,
+      replace h_abs : 1 ≤ n := nat.one_le_iff_ne_zero.mpr (ne_of_gt h_abs),
+      exact (this n h_abs) hn},
   },
   rw unit_open_ball,
-  rw set.nmem_set_of_iff,
+  simp only [submodule.mem_mk, set.mem_set_of_eq],
   rw is_topologically_nilpotent,
   simp_rw one_pow,
   have h1 : filter.tendsto (λ (n : ℕ), (1 : 𝓞 p K)) filter.at_top (nhds 1) :=
@@ -451,6 +458,8 @@ begin
     exact filter.at_top_ne_bot, },
   exact zero_ne_one this,
 end
+
+open_locale classical
 
 def mixed_char_local_field.valuation : 
   valuation (𝓞 p K) (with_zero (multiplicative ℤ)) :=
