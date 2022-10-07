@@ -59,7 +59,7 @@ lemma padic_int.coe_eq_zero (x : ℤ_[p]) : (x : ℚ_[p]) = 0  ↔ x = 0 :=
 ⟨λ h, by {rw ← padic_int.coe_zero at h, exact subtype.coe_inj.mp h},
     λ h, by {rw h, exact padic_int.coe_zero}⟩
 
-instance padic.algebra : algebra ℤ_[p] ℚ_[p] := ring_hom.to_algebra (padic_int.coe.ring_hom) --It seems this is missing?
+instance padic.algebra : algebra ℤ_[p] ℚ_[p] := ring_hom.to_algebra (padic_int.coe.ring_hom)
 
 -- I had to remove the @[simp] attribute (the simp_nf linter complained)
 lemma padic.algebra_map_def : algebra_map ℤ_[p] ℚ_[p] =  padic_int.coe.ring_hom := rfl
@@ -247,7 +247,7 @@ variables {K}
 --set_option trace.class_instances true
 -- I had to increase the priority of `mixed_char_local_field.is_scalar_tower` for this to work.
 -- Otherwise it times out if the is_scalar_tower argument is implicit
-instance : is_fraction_ring (𝓞 p K) K := 
+noncomputable! instance : is_fraction_ring (𝓞 p K) K := 
 --@integral_closure.is_fraction_ring_of_finite_extension ℤ_[p] ℚ_[p] _ _ K _ _ _ _ _ _ 
  -- (mixed_char_local_field.is_scalar_tower p K) _
 integral_closure.is_fraction_ring_of_finite_extension ℚ_[p] _
@@ -256,7 +256,7 @@ instance : is_integral_closure (𝓞 p K) ℤ_[p] K :=
 integral_closure.is_integral_closure _ _
 
 -- Times out if the is_scalar_tower argument is implicit (without the priority fix)
-instance : is_integrally_closed (𝓞 p K) :=
+noncomputable! instance : is_integrally_closed (𝓞 p K) :=
 integral_closure.is_integrally_closed_of_finite_extension ℚ_[p]
 /-  @integral_closure.is_integrally_closed_of_finite_extension ℤ_[p] _ _ ℚ_[p] _ _ _ K _ _ _ 
   (mixed_char_local_field.is_scalar_tower p K) _
@@ -265,7 +265,7 @@ integral_closure.is_integrally_closed_of_finite_extension ℚ_[p]
 lemma is_integral_coe (x : 𝓞 p K) : is_integral ℤ_[p] (x : K) := x.2
 
 /-- The ring of integers of `K` is equivalent to any integral closure of `ℤ_[p]` in `K` -/
-protected noncomputable def equiv (R : Type*) [comm_ring R] [algebra ℤ_[p] R] [algebra R K]
+protected noncomputable! def equiv (R : Type*) [comm_ring R] [algebra ℤ_[p] R] [algebra R K]
   [is_scalar_tower ℤ_[p] R K] [is_integral_closure R ℤ_[p] K] : 𝓞 p K ≃+* R :=
 (is_integral_closure.equiv ℤ_[p] R K _).symm.to_ring_equiv
 
@@ -273,7 +273,8 @@ variables (K)
 
 instance : char_zero (𝓞 p K) := char_zero.of_module _ K
 
-instance : is_noetherian ℤ_[p] (𝓞 p K) := is_integral_closure.is_noetherian _ ℚ_[p] K _
+noncomputable! instance : is_noetherian ℤ_[p] (𝓞 p K) :=
+is_integral_closure.is_noetherian _ ℚ_[p] K _
 
 lemma algebra_map_injective :
   function.injective ⇑(algebra_map ℤ_[p] (ring_of_integers p K)) := 
@@ -294,11 +295,11 @@ lemma not_is_field : ¬ is_field (𝓞 p K) :=
 by simpa [← (is_integral_closure.is_integral_algebra ℤ_[p] K).is_field_iff_is_field
   (algebra_map_injective p K)] using (padic_int.not_is_field p)
 
-instance : is_dedekind_domain (𝓞 p K) :=
+noncomputable! instance : is_dedekind_domain (𝓞 p K) :=
 is_integral_closure.is_dedekind_domain ℤ_[p] ℚ_[p] K _
 
 -- TODO : ring of integers is local
-instance : local_ring (𝓞 p K) :=
+noncomputable!  instance : local_ring (𝓞 p K) :=
 { exists_pair_ne := ⟨0, 1, zero_ne_one⟩,
   is_unit_or_is_unit_of_add_one := λ a b hab,
   begin
@@ -537,7 +538,8 @@ open set polynomial
 /-- Let `A` an algebraically closed field and let `x ∈ K`, with `K` a number field. For `F`,
 subfield of `K`, the images of `x` by the `F`-algebra morphisms from `K` to `A` are exactly
 the roots in `A` of the minimal polynomial of `x` over `F` -/
-lemma range_eq_roots (F K A : Type*) [field F] [mixed_char_local_field F] [field K] [mixed_char_local_field K]
+lemma range_eq_roots (F K A : Type*) [field F] [mixed_char_local_field F] [field K]
+  [mixed_char_local_field K]
   [field A] [is_alg_closed A] [algebra F K] [algebra F A] (x : K) :
   range (λ ψ : K →ₐ[F] A, ψ x) = (minpoly F x).root_set A :=
 begin
@@ -571,7 +573,8 @@ begin
     exact (adjoin_root.lift_root hK).symm, },
 end
 
-variables (K A : Type*) [field K] [mixed_char_local_field K] [field A] [char_zero A] [is_alg_closed A] (x : K)
+variables (K A : Type*) [field K] [mixed_char_local_field K] [field A] [char_zero A]
+  [is_alg_closed A] (x : K)
 
 /-- Let `A` be an algebraically closed field and let `x ∈ K`, with `K` a number field.
 The images of `x` by the embeddings of `K` in `A` are exactly the roots in `A` of
