@@ -5,10 +5,85 @@ Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
 
 import number_theory.padics.padic_integers
+import ring_theory.dedekind_domain.adic_valuation
 import mixed_characteristic.basic
+import for_mathlib.spectral_norm
 
 noncomputable theory
 
+-- /- 
+-- * Topology on K + this is locally compact.
+-- * Define normalized discrete valuation on K, using topological nilpotent elements.
+-- * Unit ball = ring of integers
+-- * Top. nilp. elements are a maximal ideal P in O_K
+-- * Define ramification index e
+-- * P^e = (p)
+-- * Relate to norm (future)
+-- -/
+
+open is_dedekind_domain
+
+open_locale mixed_char_local_field
+
+variables {p : ℕ} [fact (p.prime)] 
+variables {K: Type*} [field K] [mixed_char_local_field p K]
+
+def norm_on_K : K → ℝ := spectral_norm (algebra.is_algebraic_of_finite ℚ_[p] K)
+
+variables (p K)
+
+def open_unit_ball : height_one_spectrum (𝓞 p K) :=
+{ as_ideal := 
+  { carrier   := { x : 𝓞 p K | norm_on_K (x : K) < 1},
+    add_mem'  := λ x y hx hy,
+    begin
+      rw [set.mem_set_of_eq, norm_on_K] at hx hy ⊢,
+      exact lt_of_le_of_lt (spectral_norm.is_nonarchimedean _ padic_norm_e.nonarchimedean (x : K) (y : K))
+        (max_lt_iff.mpr ⟨hx, hy⟩),
+    end,
+    zero_mem' := 
+    begin
+      rw [set.mem_set_of_eq, zero_mem_class.coe_zero, norm_on_K, spectral_norm_zero _],
+      exact zero_lt_one,
+    end,
+    smul_mem' := λ k x hx,
+    begin
+      sorry
+    end },
+  is_prime := 
+  begin
+    rw ideal.is_prime_iff,
+    split,
+    { rw ideal.ne_top_iff_one,
+      simp only [set.mem_set_of_eq, submodule.mem_mk, one_mem_class.coe_one, not_lt],
+      sorry },
+    { intros x y hxy,
+      simp only [set.mem_set_of_eq, submodule.mem_mk, mul_mem_class.coe_mul] at hxy ⊢,
+      sorry }
+  end,
+  ne_bot   := --TODO: golf
+  begin
+    apply ne_of_gt,
+    --apply lt_of_le_not_le,
+    split,
+    { --exact bot_le, 
+      simp only [submodule.bot_coe, submodule.coe_set_mk, set.singleton_subset_iff,
+        set.mem_set_of_eq, zero_mem_class.coe_zero], 
+      
+      rw norm_on_K,
+      rw spectral_norm_zero _,
+      exact zero_lt_one, },
+
+    { simp only [submodule.coe_set_mk, submodule.bot_coe, set.subset_singleton_iff,
+        set.mem_set_of_eq, not_forall, exists_prop], 
+      refine ⟨(p : 𝓞 p K), _, ne_zero.ne ↑p⟩,
+      rw norm_on_K, --TODO : some coercions are needed, but it should work.
+      --rw spectral_norm.extends,
+      sorry }
+  end }
+
+def normalized_valuation : valuation K (with_zero (multiplicative ℤ)) :=
+(open_unit_ball p K).valuation
 
 -- section add_comm_monoid
 
@@ -25,9 +100,9 @@ noncomputable theory
 -- end add_comm_monoid
 
 -- set_option profiler true
-namespace mixed_char_local_field
+--namespace mixed_char_local_field
 
-section non_standard_topology
+/- section non_standard_topology
 
 open_locale mixed_char_local_field
 
@@ -76,9 +151,9 @@ begin
   exact homeomorph.t2_space (pi_homeo p K).symm,
 end
 
-end non_standard_topology
+end non_standard_topology -/
 
-section open_unit_ball
+/- section open_unit_ball
 
 open mixed_char_local_field
 open_locale mixed_char_local_field
@@ -208,13 +283,4 @@ end
 --   sorry
 -- end -/
 
--- /- 
--- * Topology on K + this is locally compact.
--- * Define normalized discrete valuation on K, using topological nilpotent elements.
--- * Unit ball = ring of integers
--- * Top. nilp. elements are a maximal ideal P in O_K
--- * Define ramification index e
--- * P^e = (p)
--- * Relate to norm (future)
--- -/
-end open_unit_ball
+end open_unit_ball -/
