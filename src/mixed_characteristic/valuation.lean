@@ -21,7 +21,7 @@ noncomputable theory
 -- * Relate to norm (future)
 -- -/
 
-open is_dedekind_domain
+open is_dedekind_domain nnreal
 
 open_locale mixed_char_local_field nnreal
 
@@ -32,14 +32,44 @@ def norm_on_K : K → ℝ := spectral_norm (algebra.is_algebraic_of_finite ℚ_[
 
 variables (p K)
 
+lemma norm_of_int_le_one (x : 𝓞 p K) : norm_on_K (x : K) ≤ 1 :=
+begin
+  let min_Z := @minpoly ℤ_[p] (𝓞 p K) _ _ _ x,
+  have h_monic : polynomial.monic min_Z := minpoly.monic (is_integral_closure.is_integral ℤ_[p] K x),
+  let min_Q : polynomial ℚ_[p] := polynomial.map padic_int.coe.ring_hom min_Z,
+  have coeff_coe : ∀ n : ℕ, min_Q.coeff n = min_Z.coeff n := λ n, by {simpa only [polynomial.coeff_map]},
+  replace h_monic : polynomial.monic min_Q := polynomial.monic.map padic_int.coe.ring_hom h_monic,
+  have is_minpoly_Q : min_Q = @minpoly ℚ_[p] K _ _ _ (x : K), 
+  { apply minpoly.unique,
+    exact h_monic,
+    sorry,
+    sorry,
+  },
+  let norm_Q := spectral_value h_monic,
+  have boss : norm_on_K (x : K) = norm_Q,
+  simp only [norm_on_K, spectral_norm, ← is_minpoly_Q],
+  rw boss,
+  
+  refine csupr_le _,
+  intro n,
+  
+  simp only [spectral_value_terms],
+  split_ifs with hn,
+  { rw [coeff_coe n, padic_int.padic_norm_e_of_padic_int],
+    apply real.rpow_le_one (norm_nonneg _) (polynomial.coeff min_Z n).norm_le_one,
+    simp only [one_div, inv_nonneg, sub_nonneg, nat.cast_le],
+    exact (le_of_lt hn) },
+  { exact zero_le_one },
+end
+
 def open_unit_ball : height_one_spectrum (𝓞 p K) :=
 { as_ideal := 
   { carrier   := { x : 𝓞 p K | norm_on_K (x : K) < 1},
     add_mem'  := λ x y hx hy,
     begin
       rw [set.mem_set_of_eq, norm_on_K] at hx hy ⊢,
-      exact lt_of_le_of_lt (spectral_norm.is_nonarchimedean _ padic_norm_e.nonarchimedean (x : K) (y : K))
-        (max_lt_iff.mpr ⟨hx, hy⟩),
+      exact lt_of_le_of_lt (spectral_norm.is_nonarchimedean _ padic_norm_e.nonarchimedean (x : K)
+        (y : K)) (max_lt_iff.mpr ⟨hx, hy⟩),
     end,  
     zero_mem' := 
     begin
@@ -49,23 +79,13 @@ def open_unit_ball : height_one_spectrum (𝓞 p K) :=
     smul_mem' := λ k x hx,
     begin
       dsimp only [norm_on_K],
-      have := spectral_norm.mul (algebra.is_algebraic_of_finite ℚ_[p] K) (k : K) (x : K) _,
       rw smul_eq_mul,
-      rw set.mem_def,
-      suffices boh : spectral_norm (algebra.is_algebraic_of_finite ℚ_[p] K) ((k : K) * (x : K)) < 1,
-      exact boh,
+      have := spectral_norm.mul (algebra.is_algebraic_of_finite ℚ_[p] K) (k : K) (x : K)
+        padic_norm_e.nonarchimedean,
+      convert_to spectral_norm (algebra.is_algebraic_of_finite ℚ_[p] K) ((k : K) * (x : K)) < 1,
       rw this,
-      have h_k : 0 ≤ spectral_norm (algebra.is_algebraic_of_finite ℚ_[p] K) ((k : K)), sorry,
-      have h_x : 0 ≤ spectral_norm (algebra.is_algebraic_of_finite ℚ_[p] K) ((x : K)),sorry,
-      convert_to (⟨_, h_k⟩ : ℝ≥0) * (⟨_, h_x⟩ : ℝ≥0) < 1,
-      -- lift ℝ≥0,
-      -- apply mul_lt_of_lt_of_lt_one,
-      -- dsimp only,
-      -- intro,
-      -- simp only,
-      -- swap,
-      -- exact (algebra.is_algebraic_of_finite ℚ_[p] K),
-      sorry,
+      exact mul_lt_one_of_nonneg_of_lt_one_right (norm_of_int_le_one p K k)
+        (spectral_norm_nonneg _ _) hx,
     end },
   is_prime := 
   begin
@@ -85,18 +105,16 @@ def open_unit_ball : height_one_spectrum (𝓞 p K) :=
     split,
     { --exact bot_le, 
       simp only [submodule.bot_coe, submodule.coe_set_mk, set.singleton_subset_iff,
-        set.mem_set_of_eq, zero_mem_class.coe_zero], 
-      
-      rw norm_on_K,
-      rw spectral_norm_zero _,
+        set.mem_set_of_eq, zero_mem_class.coe_zero, norm_on_K, spectral_norm_zero _],
       exact zero_lt_one, },
-
     { simp only [submodule.coe_set_mk, submodule.bot_coe, set.subset_singleton_iff,
         set.mem_set_of_eq, not_forall, exists_prop], 
       refine ⟨(p : 𝓞 p K), _, ne_zero.ne ↑p⟩,
-      rw norm_on_K, --TODO : some coercions are needed, but it should work.
-      --rw spectral_norm.extends,
-      sorry }
+       --TODO : some coercions are needed, but it should work.
+      have : ((p : 𝓞 p K) : K) = algebra_map ℚ_[p] K (p : ℚ_[p]) :=
+        by {simp only [subring_class.coe_nat_cast, map_nat_cast]},
+      rw [norm_on_K, this, spectral_norm.extends (algebra.is_algebraic_of_finite ℚ_[p] K) p],
+      exact padic_norm_e.norm_p_lt_one }
   end }
 
 def normalized_valuation : valuation K (with_zero (multiplicative ℤ)) :=
