@@ -23,7 +23,7 @@ noncomputable theory
 
 open is_dedekind_domain
 
-open_locale mixed_char_local_field
+open_locale mixed_char_local_field nnreal
 
 variables {p : ℕ} [fact (p.prime)] 
 variables {K: Type*} [field K] [mixed_char_local_field p K]
@@ -40,7 +40,7 @@ def open_unit_ball : height_one_spectrum (𝓞 p K) :=
       rw [set.mem_set_of_eq, norm_on_K] at hx hy ⊢,
       exact lt_of_le_of_lt (spectral_norm.is_nonarchimedean _ padic_norm_e.nonarchimedean (x : K) (y : K))
         (max_lt_iff.mpr ⟨hx, hy⟩),
-    end,
+    end,  
     zero_mem' := 
     begin
       rw [set.mem_set_of_eq, zero_mem_class.coe_zero, norm_on_K, spectral_norm_zero _],
@@ -48,7 +48,24 @@ def open_unit_ball : height_one_spectrum (𝓞 p K) :=
     end,
     smul_mem' := λ k x hx,
     begin
-      sorry
+      dsimp only [norm_on_K],
+      have := spectral_norm.mul (algebra.is_algebraic_of_finite ℚ_[p] K) (k : K) (x : K) _,
+      rw smul_eq_mul,
+      rw set.mem_def,
+      suffices boh : spectral_norm (algebra.is_algebraic_of_finite ℚ_[p] K) ((k : K) * (x : K)) < 1,
+      exact boh,
+      rw this,
+      have h_k : 0 ≤ spectral_norm (algebra.is_algebraic_of_finite ℚ_[p] K) ((k : K)), sorry,
+      have h_x : 0 ≤ spectral_norm (algebra.is_algebraic_of_finite ℚ_[p] K) ((x : K)),sorry,
+      convert_to (⟨_, h_k⟩ : ℝ≥0) * (⟨_, h_x⟩ : ℝ≥0) < 1,
+      -- lift ℝ≥0,
+      -- apply mul_lt_of_lt_of_lt_one,
+      -- dsimp only,
+      -- intro,
+      -- simp only,
+      -- swap,
+      -- exact (algebra.is_algebraic_of_finite ℚ_[p] K),
+      sorry,
     end },
   is_prime := 
   begin
