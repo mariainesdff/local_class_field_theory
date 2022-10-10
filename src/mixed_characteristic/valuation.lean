@@ -30,6 +30,16 @@ variables {K: Type*} [field K] [mixed_char_local_field p K]
 
 def norm_on_K : K → ℝ := spectral_norm (algebra.is_algebraic_of_finite ℚ_[p] K)
 
+lemma aux_monic_mul_monic {R : Type*} [comm_ring R] {a b : polynomial R} (ha : polynomial.monic a)
+  (hb : polynomial.monic b) (r : R) : (polynomial.C r) * a = b → r = 1 := sorry
+
+lemma aux_already_there (Q : polynomial ℤ_[p]) (hQ : irreducible Q) :
+  irreducible ((polynomial.map padic_int.coe.ring_hom Q) : polynomial ℚ_[p]):=
+  begin
+    sorry
+  -- apply polynomial.is_primitive.dvd_iff_fraction_map_dvd_fraction_map,
+  end
+
 variables (p K)
 
 lemma norm_of_int_le_one (x : 𝓞 p K) : norm_on_K (x : K) ≤ 1 :=
@@ -40,9 +50,29 @@ begin
   have coeff_coe : ∀ n : ℕ, min_Q.coeff n = min_Z.coeff n := λ n, by {simpa only [polynomial.coeff_map]},
   replace h_monic : polynomial.monic min_Q := polynomial.monic.map padic_int.coe.ring_hom h_monic,
   have is_minpoly_Q : min_Q = @minpoly ℚ_[p] K _ _ _ (x : K), 
-  { apply minpoly.unique,
-    exact h_monic,
-    sorry,
+  { --apply minpoly.unique,
+    -- exact h_monic,
+    -- sorry,
+    -- intros R hR₁ hR₂,
+    have monic : polynomial.monic (minpoly ℚ_[p] (x : K)), sorry,
+    have root : polynomial.aeval (x : K) min_Q = 0, sorry,
+    have dvd := minpoly.dvd ℚ_[p] (x : K) root,
+    obtain ⟨c, hc⟩ := dvd_iff_exists_eq_mul_left.mp dvd,
+    have aux := aux_already_there (min_Z) _,
+    obtain ⟨-, h₂⟩ := irreducible_iff.mp aux,
+    specialize h₂ c (minpoly ℚ_[p] (x : K)) hc,
+    have not_unit := minpoly.not_is_unit ℚ_[p] (x : K),
+    simp only [or_false, not_unit] at h₂,
+    obtain ⟨r, hr₁, hr₂⟩ := polynomial.is_unit_iff.mp h₂,
+    rw [← hr₂] at hc,
+    have := aux_monic_mul_monic monic h_monic r hc.symm,
+    -- rw this at hc,
+    rwa [this, map_one, one_mul] at hc,
+    -- simp only [*, map_mul, minpoly.aeval, mul_zero, eq_self_iff_true, is_unit.dvd_mul_left,
+    --   or_false, dvd_refl] at *,
+    -- rw polynomial.is_unit_iff at ,
+    -- have := 
+    -- simp [*] at *,
     sorry,
   },
   let norm_Q := spectral_value h_monic,
