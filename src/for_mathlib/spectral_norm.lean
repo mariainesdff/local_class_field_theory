@@ -227,4 +227,8 @@ begin
   exact spectral_value_X_sub_C k,
 end
 
+lemma spectral_norm.aut_isom (σ : L ≃ₐ[K] L) (x : L) : 
+  spectral_norm h_alg x = spectral_norm h_alg (σ x) :=
+sorry
+
 end spectral_norm
