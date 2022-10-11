@@ -24,7 +24,6 @@ noncomputable theory
 -- -/
 
 open is_dedekind_domain nnreal polynomial
-
 open_locale mixed_char_local_field nnreal
 
 variables {p : ℕ} [fact (p.prime)] 
@@ -32,7 +31,12 @@ variables {K: Type*} [field K] [mixed_char_local_field p K]
 
 def norm_on_K : K → ℝ := spectral_norm (algebra.is_algebraic_of_finite ℚ_[p] K)
 
-instance : normalized_gcd_monoid ℤ_[p] := sorry
+instance  : normalized_gcd_monoid ℤ_[p] :=
+begin
+  classical,  
+  have norm_monoid_Zp := @unique_factorization_monoid.normalization_monoid ℤ_[p] _ _ _,
+  exact @unique_factorization_monoid.to_normalized_gcd_monoid ℤ_[p] _ _ norm_monoid_Zp _ _,
+end
 
 variables (p K)
 
