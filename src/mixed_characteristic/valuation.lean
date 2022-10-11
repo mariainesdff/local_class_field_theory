@@ -23,42 +23,6 @@ noncomputable theory
 -- * Relate to norm (future)
 -- -/
 
-lemma foo (R S K L : Type*) 
-  [comm_ring R] 
-  -- [cancel_comm_monoid_with_zero Z]
-  [is_domain R]
-  [normalized_gcd_monoid R]
-  [field K]
-  [comm_ring S] 
-  [is_domain S]
-  [comm_ring L]
-  [nontrivial L]
-  [algebra R S]
-  [algebra R K] 
-  [algebra S L] 
-  [algebra R L]
-  [algebra K L]
-  [is_fraction_ring R K]
-  [is_fraction_ring S L]
-  [is_scalar_tower R S L]
-  [is_scalar_tower R K L]
-  (x : S)
-   (hx : is_integral R x) :
-    polynomial.map (algebra_map R K) (minpoly R x) = minpoly K (algebra_map S L x) :=
-  begin
-  haveI obvious : no_zero_smul_divisors S L, sorry,
-  have h_Z_monic := minpoly.monic hx,
-  have h_Q_monic := polynomial.monic.map (algebra_map R K) h_Z_monic,
-  refine minpoly.eq_of_irreducible_of_monic _ _ h_Q_monic,
-  apply (polynomial.is_primitive.irreducible_iff_irreducible_map_fraction_map 
-    h_Z_monic.is_primitive).mp,
-      { exact minpoly.irreducible hx },
-      {apply_instance},
-    { erw [polynomial.aeval_map_algebra_map K (algebra_map S L x) _],
-      exact (polynomial.aeval_algebra_map_eq_zero_iff L x _).mpr (minpoly.aeval _ _),
-      apply_instance },
-  end
-
 open is_dedekind_domain nnreal polynomial
 
 open_locale mixed_char_local_field nnreal
@@ -68,6 +32,8 @@ variables {K: Type*} [field K] [mixed_char_local_field p K]
 
 def norm_on_K : K → ℝ := spectral_norm (algebra.is_algebraic_of_finite ℚ_[p] K)
 
+instance : normalized_gcd_monoid ℤ_[p] := sorry
+
 variables (p K)
 
 lemma norm_of_int_le_one (x : 𝓞 p K) : norm_on_K (x : K) ≤ 1 :=
@@ -76,14 +42,9 @@ begin
   have h_Z_monic := minpoly.monic (is_integral_closure.is_integral ℤ_[p] K x),
   let min_Q : polynomial ℚ_[p] := polynomial.map padic_int.coe.ring_hom min_Z,
   have h_Q_monic : monic min_Q := polynomial.monic.map padic_int.coe.ring_hom h_Z_monic,
-  have is_minpoly : min_Q = @minpoly ℚ_[p] K _ _ _ (x : K), sorry,
-  -- { refine minpoly.eq_of_irreducible_of_monic _ _ h_Q_monic,
-  --   { haveI : normalized_gcd_monoid ℤ_[p], sorry,
-  --     apply (is_primitive.irreducible_iff_irreducible_map_fraction_map h_Z_monic.is_primitive).mp,
-  --     { exact minpoly.irreducible(is_integral_closure.is_integral ℤ_[p] K x) },
-  --     { apply_instance }},
-  --   { erw [polynomial.aeval_map_algebra_map ℚ_[p] (x : K) min_Z],
-  --     exact (polynomial.aeval_algebra_map_eq_zero_iff K x min_Z).mpr (minpoly.aeval _ _) }},
+  have is_minpoly : min_Q = @minpoly ℚ_[p] K _ _ _ (x : K),
+  exact (minpoly.gcd_domain_eq_field_fractions ℚ_[p] K (is_integral_closure.is_integral
+    ℤ_[p] K x)).symm,
   have : norm_on_K (x : K) = spectral_value h_Q_monic,
   simp only [norm_on_K, spectral_norm, ← is_minpoly],
   rw [this],
