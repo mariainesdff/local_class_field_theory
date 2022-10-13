@@ -5,6 +5,7 @@ Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
 
 import data.polynomial.eval
+import data.real.nnreal
 import number_theory.padics.padic_integers
 import ring_theory.dedekind_domain.adic_valuation
 import ring_theory.polynomial.basic
@@ -26,10 +27,24 @@ noncomputable theory
 open is_dedekind_domain nnreal polynomial
 open_locale mixed_char_local_field nnreal
 
-variables {p : ℕ} [fact (p.prime)] 
+variables {p : out_param(ℕ)} [fact (p.prime)] 
 variables {K: Type*} [field K] [mixed_char_local_field p K]
 
 def norm_on_K : K → ℝ := spectral_norm (algebra.is_algebraic_of_finite ℚ_[p] K)
+
+def nnnorm_on_K : K → ℝ≥0 :=
+  λ x, ⟨norm_on_K x, spectral_norm_nonneg (algebra.is_algebraic_of_finite ℚ_[p] K) x⟩
+
+
+@[simp]
+lemma coe_nnnorm_on_K {K : Type*} [field K] [mixed_char_local_field p K] 
+  (x : K) : 
+  ((nnnorm_on_K x) : ℝ) = norm_on_K x := rfl
+
+@[ext]
+lemma nnnorm_ext_norm {K : Type} [field K] [mixed_char_local_field p K] (x y : K) : 
+  (nnnorm_on_K x) = (nnnorm_on_K y) ↔ norm_on_K x = norm_on_K y := subtype.ext_iff
+
 
 instance  : normalized_gcd_monoid ℤ_[p] :=
 begin
@@ -99,7 +114,12 @@ def open_unit_ball : height_one_spectrum (𝓞 p K) :=
       sorry },
     { intros x y hxy,
       simp only [set.mem_set_of_eq, submodule.mem_mk, mul_mem_class.coe_mul] at hxy ⊢,
-      sorry }
+      have := spectral_norm.mul (algebra.is_algebraic_of_finite ℚ_[p] K) (x : K) (y : K)
+        padic_norm_e.nonarchimedean,
+      rw [norm_on_K, this] at hxy,
+      contrapose! hxy,
+      rw norm_on_K at hxy,
+      exact one_le_mul_of_one_le_of_one_le hxy.1 hxy.2 }
   end,
   ne_bot   := --TODO: golf
   begin
