@@ -30,6 +30,8 @@ open_locale mixed_char_local_field nnreal
 variables {p : out_param(ℕ)} [fact (p.prime)] 
 variables {K: Type*} [field K] [mixed_char_local_field p K]
 
+namespace mixed_char_local_field
+
 def norm_on_K : K → ℝ := spectral_norm (algebra.is_algebraic_of_finite ℚ_[p] K)
 
 def nnnorm_on_K : K → ℝ≥0 :=
@@ -37,12 +39,12 @@ def nnnorm_on_K : K → ℝ≥0 :=
 
 
 @[simp]
-lemma coe_nnnorm_on_K {K : Type*} [field K] [mixed_char_local_field p K] 
+lemma coe_nnnorm {K : Type*} [field K] [mixed_char_local_field p K] 
   (x : K) : 
   ((nnnorm_on_K x) : ℝ) = norm_on_K x := rfl
 
 @[ext]
-lemma nnnorm_ext_norm {K : Type} [field K] [mixed_char_local_field p K] (x y : K) : 
+lemma nnnorm_ext_norm {K : Type*} [field K] [mixed_char_local_field p K] (x y : K) : 
   (nnnorm_on_K x) = (nnnorm_on_K y) ↔ norm_on_K x = norm_on_K y := subtype.ext_iff
 
 
@@ -53,7 +55,12 @@ begin
   exact @unique_factorization_monoid.to_normalized_gcd_monoid ℤ_[p] _ _ norm_monoid_Zp _ _,
 end
 
-variables (p K)
+lemma norm_on_K_one {K : Type*} [field K] [mixed_char_local_field p K] : norm_on_K (1 : K) = 1 := 
+  sorry
+
+variables (K)
+-- variables (p K)
+
 
 lemma norm_of_int_le_one (x : 𝓞 p K) : norm_on_K (x : K) ≤ 1 :=
 begin
@@ -102,7 +109,7 @@ def open_unit_ball : height_one_spectrum (𝓞 p K) :=
         padic_norm_e.nonarchimedean,
       convert_to spectral_norm (algebra.is_algebraic_of_finite ℚ_[p] K) ((k : K) * (x : K)) < 1,
       rw this,
-      exact mul_lt_one_of_nonneg_of_lt_one_right (norm_of_int_le_one p K k)
+      exact mul_lt_one_of_nonneg_of_lt_one_right (norm_of_int_le_one K k)
         (spectral_norm_nonneg _ _) hx,
     end },
   is_prime := 
@@ -111,7 +118,7 @@ def open_unit_ball : height_one_spectrum (𝓞 p K) :=
     split,
     { rw ideal.ne_top_iff_one,
       simp only [set.mem_set_of_eq, submodule.mem_mk, one_mem_class.coe_one, not_lt],
-      sorry },
+      exact le_of_eq (norm_on_K_one).symm, },
     { intros x y hxy,
       simp only [set.mem_set_of_eq, submodule.mem_mk, mul_mem_class.coe_mul] at hxy ⊢,
       have := spectral_norm.mul (algebra.is_algebraic_of_finite ℚ_[p] K) (x : K) (y : K)
@@ -140,8 +147,37 @@ def open_unit_ball : height_one_spectrum (𝓞 p K) :=
       exact padic_norm_e.norm_p_lt_one }
   end }
 
-def normalized_valuation : valuation K (with_zero (multiplicative ℤ)) :=
-(open_unit_ball p K).valuation
+lemma norm_on_K_p_lt_one (K : Type*) [field K] [mixed_char_local_field p K] :
+  norm_on_K (p : K) < 1 :=
+begin
+  sorry-- This is proved in `ne_bot` above, in case we really need it.
+end
+
+def normalized_valuation (K : Type*) [field K]
+  [mixed_char_local_field p K] : valuation K (with_zero (multiplicative ℤ)) :=
+  (open_unit_ball K).valuation
+
+
+lemma normalized_valuation_p_ne_zero : (normalized_valuation K) (p : K) ≠ 0 :=
+by {simp only [ne.def, valuation.zero_iff, nat.cast_eq_zero], from nat.prime.ne_zero (fact.out _)}
+-- end
+
+def ramification_index (K : Type*) [field K] [mixed_char_local_field p K] : ℤ := 
+  with_zero.unzero (normalized_valuation_p_ne_zero K)
+
+localized "notation (name := ramification_index)
+  `e` := mixed_char_local_field.ramification_index" in mixed_char_local_field
+
+lemma is_unramified_ℚ_p : e ℚ_[p] = 1 :=
+begin
+  have : normalized_valuation ℚ_[p] p = 1,
+  sorry,
+  rw ramification_index,
+  sorry,
+end
+
+end mixed_char_local_field
+
 
 -- section add_comm_monoid
 
