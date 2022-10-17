@@ -160,7 +160,6 @@ def normalized_valuation (K : Type*) [field K]
   [mixed_char_local_field p K] : valuation K (with_zero (multiplicative ℤ)) :=
   (open_unit_ball K).valuation
 
-
 lemma normalized_valuation_p_ne_zero : (normalized_valuation K) (p : K) ≠ 0 :=
 by {simp only [ne.def, valuation.zero_iff, nat.cast_eq_zero], from nat.prime.ne_zero (fact.out _)}
 -- end
