@@ -94,7 +94,6 @@ namespace adic_algebra
 variables (K L : Type*) [field K] [algebra 𝔽_[p]⟮⟮X⟯⟯ K] [field L]
   [algebra 𝔽_[p]⟮⟮X⟯⟯ L]
 
--- Q: Is there a general algebra.comp? I think we could prove all of these instances in that generality
 instance to_int_algebra : algebra 𝔽_[p]⟦X⟧ K := 
 (ring_hom.comp (algebra_map 𝔽_[p]⟮⟮X⟯⟯ K) (algebra_map 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯)).to_algebra
 
@@ -130,19 +129,8 @@ dimensional over `𝔽_p((X))`, for some prime `p`. -/
 class eq_char_local_field (K : Type*) [field K] extends algebra 𝔽_[p]⟮⟮X⟯⟯ K :=
 [to_finite_dimensional : finite_dimensional 𝔽_[p]⟮⟮X⟯⟯ K]
 
-
-
 /- 
-
-
 noncomputable theory
-
-/-- A mixed characteristic local field is a field which has characteristic zero and is finite
-dimensional over `ℚ_[p]`, for some prime `p`. -/
-class mixed_char_local_field (p : out_param(ℕ)) [fact(nat.prime p)] (K : Type*) [field K]
-  extends algebra ℚ_[p] K :=
-[to_char_zero : char_zero K]
-[to_finite_dimensional : finite_dimensional ℚ_[p] K] 
 
 attribute [nolint dangerous_instance] mixed_char_local_field.to_char_zero
 
