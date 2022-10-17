@@ -22,9 +22,8 @@ notation (name := prime_galois_field)
 noncomputable! def ideal_X :
   is_dedekind_domain.height_one_spectrum (polynomial 𝔽_[p]) :=
 { as_ideal := ideal.span({X}),
-  is_prime := sorry,
-  ne_bot   := sorry }  -- MI
-
+  is_prime := by { rw ideal.span_singleton_prime, exacts [prime_X, X_ne_zero] },
+  ne_bot   := by { rw [ne.def, ideal.span_singleton_eq_bot], exact X_ne_zero }}  -- MI
 
 /- The valued field `Fp(X)` with the valuation at `X`. -/
 noncomputable! def FpX_valued  : valued (ratfunc 𝔽_[p]) ℤₘ₀ :=
