@@ -42,7 +42,7 @@ def FpX_int_completion  :=
  (ideal_X p).adic_completion_integers (ratfunc 𝔽_[p])
 
 notation (name := FpX_int_completion)
-  `𝔽_[` p `]⟦` X `⟧` := FpX_field_completion p
+  `𝔽_[` p `]⟦` X `⟧` := FpX_int_completion p
 
 variable {p}
 
@@ -55,7 +55,36 @@ lemma isom_laurent : 𝔽_[p]⟮⟮X⟯⟯  ≃+* (laurent_series 𝔽_[p]) := s
 -- Upgrade to (ratfunc Fp)-algebra iso
 lemma isom_power_series : 𝔽_[p]⟦X⟧  ≃+* (power_series 𝔽_[p]) := sorry -- F
 
-noncomputable! instance : is_fraction_ring 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ := sorry  -- F
+instance : algebra 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ :=
+(by apply_instance : algebra ((ideal_X p).adic_completion_integers (ratfunc 𝔽_[p]))
+  ((ideal_X p).adic_completion (ratfunc 𝔽_[p])))
+
+noncomputable! instance : is_fraction_ring 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ := --sorry  -- F
+(by apply_instance : is_fraction_ring ((ideal_X p).adic_completion_integers (ratfunc 𝔽_[p]))
+  ((ideal_X p).adic_completion (ratfunc 𝔽_[p])))
+
+-- For instances and lemmas that only need `K` to be an `𝔽_[p]⟮⟮X⟯⟯`-algebra
+namespace adic_algebra
+
+variables (K L : Type*) [field K] [hK : algebra 𝔽_[p]⟮⟮X⟯⟯ K] [field L]
+  [algebra 𝔽_[p]⟮⟮X⟯⟯ L]
+
+include hK
+
+instance to_int_algebra : algebra 𝔽_[p]⟦X⟧ K := 
+(ring_hom.comp hK.to_ring_hom (algebra_map _ _)).to_algebra
+
+@[simp] lemma int_algebra_map_def : algebra_map 𝔽_[p]⟦X⟧ K = 
+  (adic_algebra.to_int_algebra K).to_ring_hom := rfl 
+
+@[priority 10000] instance : is_scalar_tower 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K :=
+⟨λ _ _ _, begin
+  simp only [algebra.smul_def, int_algebra_map_def], sorry /- padic.algebra_map_def, map_mul,
+    ring_hom.comp_apply, ← mul_assoc],
+  refl, -/
+end⟩
+
+end adic_algebra
 
 -- MI : add algebra instances
 variables (K L : Type*) [field K] [hK : algebra 𝔽_[p]⟮⟮X⟯⟯ K] [field L]
