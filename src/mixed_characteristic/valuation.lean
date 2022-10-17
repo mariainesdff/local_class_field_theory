@@ -48,6 +48,9 @@ lemma nnnorm_ext_norm {K : Type*} [field K] [mixed_char_local_field p K] (x y : 
   (nnnorm_on_K x) = (nnnorm_on_K y) ↔ norm_on_K x = norm_on_K y := subtype.ext_iff
 
 
+--`[FAE]` The following `instance` will probably be PR'd soon in greater generality for all
+-- integrally closed domains: see 
+-- [https://leanprover.zulipchat.com/#narrow/stream/116395-maths/topic/.E2.9C.94.20gcd_monoid]
 instance  : normalized_gcd_monoid ℤ_[p] :=
 begin
   classical,  
