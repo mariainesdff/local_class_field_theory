@@ -75,7 +75,9 @@ is_dedekind_domain.height_one_spectrum.adic_completion.field (ratfunc 𝔽_[p]) 
 instance : inhabited (FpX_field_completion p) := ⟨(0 : FpX_field_completion p)⟩
 
 -- Upgrade to (ratfunc Fp)-algebra iso
-noncomputable! def isom_laurent : 𝔽_[p]⟮⟮X⟯⟯  ≃+* (laurent_series 𝔽_[p]) := sorry -- F
+noncomputable!
+def isom_laurent : 𝔽_[p]⟮⟮X⟯⟯  ≃+* (laurent_series 𝔽_[p]) := sorry -- F
+
 
 -- Upgrade to (ratfunc Fp)-algebra iso
 noncomputable! def isom_power_series : 𝔽_[p]⟦X⟧  ≃+* (power_series 𝔽_[p]) := sorry -- F
@@ -84,7 +86,7 @@ instance : algebra 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ :=
 (by apply_instance : algebra ((ideal_X p).adic_completion_integers (ratfunc 𝔽_[p]))
   ((ideal_X p).adic_completion (ratfunc 𝔽_[p])))
 
-noncomputable! instance : is_fraction_ring 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ := --sorry  -- F
+noncomputable! instance : is_fraction_ring 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ :=
 (by apply_instance : is_fraction_ring ((ideal_X p).adic_completion_integers (ratfunc 𝔽_[p]))
   ((ideal_X p).adic_completion (ratfunc 𝔽_[p])))
 
