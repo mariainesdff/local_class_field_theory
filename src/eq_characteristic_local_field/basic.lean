@@ -7,116 +7,13 @@ import field_theory.finite.galois_field
 import ring_theory.dedekind_domain.adic_valuation
 import ring_theory.laurent_series
 
-noncomputable theory
-
-open_locale discrete_valuation
-open polynomial multiplicative ratfunc
-
-variables (p : ℕ) [fact(nat.prime p)] 
-
-notation (name := prime_galois_field)
-  `𝔽_[` p `]` := galois_field p 1
-
---include hp
-
-noncomputable! def ideal_X :
-  is_dedekind_domain.height_one_spectrum (polynomial 𝔽_[p]) :=
-{ as_ideal := ideal.span({X}),
-  is_prime := by { rw ideal.span_singleton_prime, exacts [prime_X, X_ne_zero] },
-  ne_bot   := by { rw [ne.def, ideal.span_singleton_eq_bot], exact X_ne_zero }}  -- MI
-
-/- The valued field `Fp(X)` with the valuation at `X`. -/
-noncomputable! def FpX_valued  : valued (ratfunc 𝔽_[p]) ℤₘ₀ :=
-valued.mk' (ideal_X p).valuation
-
-/- lemma FqX_valued_def {x : ratfunc Fp} :
-  @valued.v (ratfunc Fp) _ _ _ (FpX_valued hp) x = (ideal_X hp).valuation Fp x := rfl -/
-
-def FpX_field_completion  :=
- (ideal_X p).adic_completion (ratfunc 𝔽_[p])
-
-notation (name := FpX_field_completion)
-  `𝔽_[` p `]⟮⟮` X `⟯⟯` := FpX_field_completion p
-
-def FpX_int_completion  :=
- (ideal_X p).adic_completion_integers (ratfunc 𝔽_[p])
-
-notation (name := FpX_int_completion)
-  `𝔽_[` p `]⟦` X `⟧` := FpX_int_completion p
-
-variable {p}
-
-instance : field 𝔽_[p]⟮⟮X⟯⟯ :=  --sorry
-is_dedekind_domain.height_one_spectrum.adic_completion.field (ratfunc 𝔽_[p]) (ideal_X p)
-
--- Upgrade to (ratfunc Fp)-algebra iso
-lemma isom_laurent : 𝔽_[p]⟮⟮X⟯⟯  ≃+* (laurent_series 𝔽_[p]) := sorry -- F
-
--- Upgrade to (ratfunc Fp)-algebra iso
-lemma isom_power_series : 𝔽_[p]⟦X⟧  ≃+* (power_series 𝔽_[p]) := sorry -- F
-
-instance : algebra 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ :=
-(by apply_instance : algebra ((ideal_X p).adic_completion_integers (ratfunc 𝔽_[p]))
-  ((ideal_X p).adic_completion (ratfunc 𝔽_[p])))
-
-noncomputable! instance : is_fraction_ring 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ := --sorry  -- F
-(by apply_instance : is_fraction_ring ((ideal_X p).adic_completion_integers (ratfunc 𝔽_[p]))
-  ((ideal_X p).adic_completion (ratfunc 𝔽_[p])))
-
--- For instances and lemmas that only need `K` to be an `𝔽_[p]⟮⟮X⟯⟯`-algebra
-namespace adic_algebra
-
-variables (K L : Type*) [field K] [hK : algebra 𝔽_[p]⟮⟮X⟯⟯ K] [field L]
-  [algebra 𝔽_[p]⟮⟮X⟯⟯ L]
-
-include hK
-
-instance to_int_algebra : algebra 𝔽_[p]⟦X⟧ K := 
-(ring_hom.comp hK.to_ring_hom (algebra_map _ _)).to_algebra
-
-@[simp] lemma int_algebra_map_def : algebra_map 𝔽_[p]⟦X⟧ K = 
-  (adic_algebra.to_int_algebra K).to_ring_hom := rfl 
-
-@[priority 10000] instance : is_scalar_tower 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K :=
-⟨λ _ _ _, begin
-  simp only [algebra.smul_def, int_algebra_map_def], sorry /- padic.algebra_map_def, map_mul,
-    ring_hom.comp_apply, ← mul_assoc],
-  refl, -/
-end⟩
-
-end adic_algebra
-
--- MI : add algebra instances
-variables (K L : Type*) [field K] [hK : algebra 𝔽_[p]⟮⟮X⟯⟯ K] [field L]
-  [algebra 𝔽_[p]⟮⟮X⟯⟯ L]
-
-/-- An equal characteristic local field is a field which is finite
-dimensional over `𝔽_p((X))`, for some prime `p`. -/
-class eq_char_local_field (K : Type*) [field K] extends algebra 𝔽_[p]⟮⟮X⟯⟯  K :=
-[to_finite_dimensional : finite_dimensional 𝔽_[p]⟮⟮X⟯⟯ K]
-
-/- lemma FqX.def {x : ratfunc Fq} :
-  @valued.v (ratfunc Fq) _ _ _ (infty_valued_Fqt Fq) x = infty_valuation_def Fq x := rfl -/
-
-/- 
-/-- The valued field `Fq(t)` with the valuation at infinity. -/
-def infty_valued_Fqt : valued (ratfunc Fq) ℤₘ₀ :=
-valued.mk' $ infty_valuation Fq
-
-lemma infty_valued_Fqt.def {x : ratfunc Fq} :
-  @valued.v (ratfunc Fq) _ _ _ (infty_valued_Fqt Fq) x = infty_valuation_def Fq x := rfl-/
-
-/- 
-import ring_theory.dedekind_domain.integral_closure
-import padic
-
 /-!
 --TODO: Fix comments
 # Mixed characteristic local fields fields
 This file defines a number field, the ring of integers corresponding to it and includes some
 basic facts about the embeddings into an algebraic closed field.
 ## Main definitions
- - `mixed_char_local_field` defines a number field as a field which has characteristic zero and is
+ - `eq_char_local_field` defines a number field as a field which has characteristic zero and is
     finite dimensional over ℚ.
  - `ring_of_integers` defines the ring of integers (or number ring) corresponding to a number field
     as the integral closure of ℤ in the number field.
@@ -137,46 +34,108 @@ number field, ring of integers
 
 noncomputable theory
 
--- For instances and lemmas that only need `K` to be a `ℚₚ`-algebra
-namespace padic_algebra
+open_locale discrete_valuation
+open polynomial multiplicative ratfunc
 
-variables (p : ℕ) [fact(nat.prime p)] (K L : Type*) [field K] [hK : algebra ℚ_[p] K] [field L]
-  [algebra ℚ_[p] L]
+variables (p : ℕ) [fact(nat.prime p)] 
 
-include hK
+notation (name := prime_galois_field)
+  `𝔽_[` p `]` := galois_field p 1
 
-instance to_int_algebra : algebra ℤ_[p] K := 
-(ring_hom.comp hK.to_ring_hom (@padic_int.coe.ring_hom p _)).to_algebra
+noncomputable! def ideal_X :
+  is_dedekind_domain.height_one_spectrum (polynomial 𝔽_[p]) :=
+{ as_ideal := ideal.span({X}),
+  is_prime := by { rw ideal.span_singleton_prime, exacts [prime_X, X_ne_zero] },
+  ne_bot   := by { rw [ne.def, ideal.span_singleton_eq_bot], exact X_ne_zero }} 
 
-@[simp] lemma int_algebra_map_def : algebra_map ℤ_[p] K = 
-  (padic_algebra.to_int_algebra p K).to_ring_hom := rfl 
+/- The valued field `Fp(X)` with the valuation at `X`. -/
+noncomputable! def FpX_valued  : valued (ratfunc 𝔽_[p]) ℤₘ₀ :=
+valued.mk' (ideal_X p).valuation
 
-@[priority 10000] instance : is_scalar_tower ℤ_[p] ℚ_[p] K :=
-⟨λ _ _ _, begin
-  simp only [algebra.smul_def, int_algebra_map_def, padic.algebra_map_def, map_mul,
-    ring_hom.comp_apply, ← mul_assoc],
-  refl,
-end⟩
+lemma FqX_valued_def {x : ratfunc 𝔽_[p]} :
+  @valued.v (ratfunc 𝔽_[p]) _ _ _ (FpX_valued p) x = (ideal_X p).valuation x := rfl 
 
-@[priority 1000] instance int_is_scalar_tower [algebra K L] [is_scalar_tower ℚ_[p] K L] :
-  is_scalar_tower ℤ_[p] K L :=
+def FpX_field_completion  :=
+ (ideal_X p).adic_completion (ratfunc 𝔽_[p])
+
+notation (name := FpX_field_completion)
+  `𝔽_[` p `]⟮⟮` X `⟯⟯` := FpX_field_completion p
+
+def FpX_int_completion  :=
+ (ideal_X p).adic_completion_integers (ratfunc 𝔽_[p])
+
+notation (name := FpX_int_completion)
+  `𝔽_[` p `]⟦` X `⟧` := FpX_int_completion p
+
+variable {p}
+
+instance : field 𝔽_[p]⟮⟮X⟯⟯ :=  --sorry
+is_dedekind_domain.height_one_spectrum.adic_completion.field (ratfunc 𝔽_[p]) (ideal_X p)
+
+instance : inhabited (FpX_field_completion p) := ⟨(0 : FpX_field_completion p)⟩
+
+-- Upgrade to (ratfunc Fp)-algebra iso
+noncomputable! def isom_laurent : 𝔽_[p]⟮⟮X⟯⟯  ≃+* (laurent_series 𝔽_[p]) := sorry -- F
+
+-- Upgrade to (ratfunc Fp)-algebra iso
+noncomputable! def isom_power_series : 𝔽_[p]⟦X⟧  ≃+* (power_series 𝔽_[p]) := sorry -- F
+
+instance : algebra 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ :=
+(by apply_instance : algebra ((ideal_X p).adic_completion_integers (ratfunc 𝔽_[p]))
+  ((ideal_X p).adic_completion (ratfunc 𝔽_[p])))
+
+noncomputable! instance : is_fraction_ring 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ := --sorry  -- F
+(by apply_instance : is_fraction_ring ((ideal_X p).adic_completion_integers (ratfunc 𝔽_[p]))
+  ((ideal_X p).adic_completion (ratfunc 𝔽_[p])))
+
+-- For instances and lemmas that only need `K` to be an `𝔽_[p]⟮⟮X⟯⟯`-algebra
+namespace adic_algebra
+
+variables (K L : Type*) [field K] [algebra 𝔽_[p]⟮⟮X⟯⟯ K] [field L]
+  [algebra 𝔽_[p]⟮⟮X⟯⟯ L]
+
+-- Q: Is there a general algebra.comp? I think we could prove all of these instances in that generality
+instance to_int_algebra : algebra 𝔽_[p]⟦X⟧ K := 
+(ring_hom.comp (algebra_map 𝔽_[p]⟮⟮X⟯⟯ K) (algebra_map 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯)).to_algebra
+
+@[simp] lemma int_algebra_map_def : algebra_map 𝔽_[p]⟦X⟧ K = 
+  (adic_algebra.to_int_algebra K).to_ring_hom := rfl 
+
+@[priority 10000] instance : is_scalar_tower 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K :=
+⟨λ _ _ _, by simp only [algebra.smul_def, int_algebra_map_def, map_mul, ← mul_assoc]; refl⟩
+
+@[priority 1000] instance int_is_scalar_tower [algebra K L] [is_scalar_tower 𝔽_[p]⟮⟮X⟯⟯ K L] :
+  is_scalar_tower 𝔽_[p]⟦X⟧ K L :=
 { smul_assoc := λ x y z,
   begin
-    nth_rewrite 0 [← one_smul ℚ_[p] y],
-    rw [← one_smul ℚ_[p] (y • z), ← smul_assoc, ← smul_assoc, ← smul_assoc],
+    nth_rewrite 0 [← one_smul 𝔽_[p]⟮⟮X⟯⟯ y],
+    rw [← one_smul 𝔽_[p]⟮⟮X⟯⟯ (y • z), ← smul_assoc, ← smul_assoc, ← smul_assoc],
   end }
 
-omit hK
-
-lemma algebra_map_injective {E : Type*} [field E] [algebra ℤ_[p] E] [algebra ℚ_[p] E]
-  [is_scalar_tower ℤ_[p] ℚ_[p] E] : function.injective ⇑(algebra_map ℤ_[p] E) :=
+lemma algebra_map_injective {E : Type*} [field E] [algebra 𝔽_[p]⟦X⟧ E] [algebra 𝔽_[p]⟮⟮X⟯⟯ E]
+  [is_scalar_tower 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ E] : function.injective ⇑(algebra_map 𝔽_[p]⟦X⟧ E) :=
 begin
-  rw is_scalar_tower.algebra_map_eq ℤ_[p] ℚ_[p] E,
-  exact function.injective.comp ((algebra_map ℚ_[p] E).injective)
-    (is_fraction_ring.injective ℤ_[p] ℚ_[p])
+  rw is_scalar_tower.algebra_map_eq 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ E,
+  exact function.injective.comp ((algebra_map 𝔽_[p]⟮⟮X⟯⟯ E).injective)
+    (is_fraction_ring.injective 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯)
 end
 
-end padic_algebra
+end adic_algebra
+
+variables (K L : Type*) [field K] [hK : algebra 𝔽_[p]⟮⟮X⟯⟯ K] [field L]
+  [algebra 𝔽_[p]⟮⟮X⟯⟯ L]
+
+/-- An equal characteristic local field is a field which is finite
+dimensional over `𝔽_p((X))`, for some prime `p`. -/
+class eq_char_local_field (K : Type*) [field K] extends algebra 𝔽_[p]⟮⟮X⟯⟯ K :=
+[to_finite_dimensional : finite_dimensional 𝔽_[p]⟮⟮X⟯⟯ K]
+
+
+
+/- 
+
+
+noncomputable theory
 
 /-- A mixed characteristic local field is a field which has characteristic zero and is finite
 dimensional over `ℚ_[p]`, for some prime `p`. -/
