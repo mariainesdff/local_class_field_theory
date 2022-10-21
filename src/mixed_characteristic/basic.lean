@@ -4,6 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
 import ring_theory.dedekind_domain.integral_closure
+
+import algebra_comp
 import padic
 
 /-!
@@ -41,36 +43,33 @@ variables (p : ℕ) [fact(nat.prime p)] (K L : Type*) [field K] [hK : algebra �
 
 include hK
 
-instance to_int_algebra : algebra ℤ_[p] K := 
-(ring_hom.comp hK.to_ring_hom (@padic_int.coe.ring_hom p _)).to_algebra
+instance to_int_algebra : algebra ℤ_[p] K := algebra.comp ℤ_[p] ℚ_[p] K
+--(ring_hom.comp hK.to_ring_hom (@padic_int.coe.ring_hom p _)).to_algebra
 
 @[simp] lemma int_algebra_map_def : algebra_map ℤ_[p] K = 
   (padic_algebra.to_int_algebra p K).to_ring_hom := rfl 
 
-@[priority 10000] instance : is_scalar_tower ℤ_[p] ℚ_[p] K :=
-⟨λ _ _ _, begin
+@[priority 10000] instance : is_scalar_tower ℤ_[p] ℚ_[p] K := is_scalar_tower.comp ℤ_[p] ℚ_[p] K
+/- ⟨λ _ _ _, begin
   simp only [algebra.smul_def, int_algebra_map_def, padic.algebra_map_def, map_mul,
     ring_hom.comp_apply, ← mul_assoc],
   refl,
-end⟩
+end⟩ -/
 
 @[priority 1000] instance int_is_scalar_tower [algebra K L] [is_scalar_tower ℚ_[p] K L] :
-  is_scalar_tower ℤ_[p] K L :=
-{ smul_assoc := λ x y z,
+  is_scalar_tower ℤ_[p] K L := 
+is_scalar_tower.comp' ℤ_[p] ℚ_[p] K L
+/- { smul_assoc := λ x y z,
   begin
     nth_rewrite 0 [← one_smul ℚ_[p] y],
     rw [← one_smul ℚ_[p] (y • z), ← smul_assoc, ← smul_assoc, ← smul_assoc],
-  end }
+  end } -/
 
 omit hK
 
 lemma algebra_map_injective {E : Type*} [field E] [algebra ℤ_[p] E] [algebra ℚ_[p] E]
   [is_scalar_tower ℤ_[p] ℚ_[p] E] : function.injective ⇑(algebra_map ℤ_[p] E) :=
-begin
-  rw is_scalar_tower.algebra_map_eq ℤ_[p] ℚ_[p] E,
-  exact function.injective.comp ((algebra_map ℚ_[p] E).injective)
-    (is_fraction_ring.injective ℤ_[p] ℚ_[p])
-end
+algebra_map_injective' ℤ_[p] ℚ_[p] E
 
 end padic_algebra
 
@@ -162,15 +161,17 @@ noncomputable! lemma algebra_map_injective :
   function.injective ⇑(algebra_map ℤ_[p] (ring_of_integers p K)) := 
 begin
   have hinj : function.injective ⇑(algebra_map ℤ_[p] K),
-  { rw is_scalar_tower.algebra_map_eq ℤ_[p] ℚ_[p] K,
+  { exact algebra_map_injective' ℤ_[p] ℚ_[p] K
+    /- rw is_scalar_tower.algebra_map_eq ℤ_[p] ℚ_[p] K,
     exact function.injective.comp ((algebra_map ℚ_[p] K).injective)
-      (is_fraction_ring.injective ℤ_[p] ℚ_[p]), },
+      (is_fraction_ring.injective ℤ_[p] ℚ_[p]),  -/},
   rw injective_iff_map_eq_zero (algebra_map ℤ_[p] ↥(𝓞 p K)),
   intros x hx,
   rw [← subtype.coe_inj, subalgebra.coe_zero] at hx,
   rw injective_iff_map_eq_zero (algebra_map ℤ_[p] K) at hinj,
   exact hinj x hx,
 end
+
 
 /-- The ring of integers of a mixed characteristic local field is not a field. -/
 lemma not_is_field : ¬ is_field (𝓞 p K) :=

@@ -7,6 +7,8 @@ import field_theory.finite.galois_field
 import ring_theory.dedekind_domain.adic_valuation
 import ring_theory.laurent_series
 
+import algebra_comp
+
 /-!
 --TODO: Fix comments
 # Mixed characteristic local fields fields
@@ -96,31 +98,29 @@ namespace adic_algebra
 variables (K L : Type*) [field K] [algebra 𝔽_[p]⟮⟮X⟯⟯ K] [field L]
   [algebra 𝔽_[p]⟮⟮X⟯⟯ L]
 
-instance to_int_algebra : algebra 𝔽_[p]⟦X⟧ K := 
-(ring_hom.comp (algebra_map 𝔽_[p]⟮⟮X⟯⟯ K) (algebra_map 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯)).to_algebra
+instance to_int_algebra : algebra 𝔽_[p]⟦X⟧ K := algebra.comp 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K
+--(ring_hom.comp (algebra_map 𝔽_[p]⟮⟮X⟯⟯ K) (algebra_map 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯)).to_algebra
 
 @[simp] lemma int_algebra_map_def : algebra_map 𝔽_[p]⟦X⟧ K = 
   (adic_algebra.to_int_algebra K).to_ring_hom := rfl 
 
 @[priority 10000] instance : is_scalar_tower 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K :=
-⟨λ _ _ _, by simp only [algebra.smul_def, int_algebra_map_def, map_mul, ← mul_assoc]; refl⟩
+is_scalar_tower.comp 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K
+/- ⟨λ _ _ _, by simp only [algebra.smul_def, int_algebra_map_def, map_mul, ← mul_assoc]; refl⟩ -/
 
 @[priority 1000] instance int_is_scalar_tower [algebra K L] [is_scalar_tower 𝔽_[p]⟮⟮X⟯⟯ K L] :
   is_scalar_tower 𝔽_[p]⟦X⟧ K L :=
-{ smul_assoc := λ x y z,
+is_scalar_tower.comp' 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K L
+
+/- { smul_assoc := λ x y z,
   begin
     nth_rewrite 0 [← one_smul 𝔽_[p]⟮⟮X⟯⟯ y],
     rw [← one_smul 𝔽_[p]⟮⟮X⟯⟯ (y • z), ← smul_assoc, ← smul_assoc, ← smul_assoc],
-  end }
+  end } -/
 
 lemma algebra_map_injective {E : Type*} [field E] [algebra 𝔽_[p]⟦X⟧ E] [algebra 𝔽_[p]⟮⟮X⟯⟯ E]
   [is_scalar_tower 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ E] : function.injective ⇑(algebra_map 𝔽_[p]⟦X⟧ E) :=
-begin
-  rw is_scalar_tower.algebra_map_eq 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ E,
-  exact function.injective.comp ((algebra_map 𝔽_[p]⟮⟮X⟯⟯ E).injective)
-    (is_fraction_ring.injective 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯)
-end
-
+algebra_map_injective' 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ E
 end adic_algebra
 
 variables (K L : Type*) [field K] [hK : algebra 𝔽_[p]⟮⟮X⟯⟯ K] [field L]
