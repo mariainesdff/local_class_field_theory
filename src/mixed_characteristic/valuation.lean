@@ -25,7 +25,7 @@ noncomputable theory
 -- -/
 
 open is_dedekind_domain nnreal polynomial
-open_locale mixed_char_local_field nnreal
+open_locale mixed_char_local_field nnreal discrete_valuation
 
 variables {p : out_param(ℕ)} [fact (p.prime)] 
 variables {K: Type*} [field K] [mixed_char_local_field p K]
@@ -156,9 +156,11 @@ begin
   sorry-- This is proved in `ne_bot` above, in case we really need it.
 end
 
-def normalized_valuation (K : Type*) [field K]
-  [mixed_char_local_field p K] : valuation K (with_zero (multiplicative ℤ)) :=
+def normalized_valuation (K : Type*) [field K] [mixed_char_local_field p K] : valuation K ℤₘ₀ :=
   (open_unit_ball K).valuation
+
+instance (K : Type*) [field K] [mixed_char_local_field p K] : valued K ℤₘ₀ :=
+  valued.mk' (normalized_valuation K)
 
 lemma normalized_valuation_p_ne_zero : (normalized_valuation K) (p : K) ≠ 0 :=
 by {simp only [ne.def, valuation.zero_iff, nat.cast_eq_zero], from nat.prime.ne_zero (fact.out _)}
