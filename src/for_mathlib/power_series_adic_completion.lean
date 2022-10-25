@@ -28,9 +28,6 @@ instance : algebra K (polynomial K) := infer_instance
 
 variable (F : completion_of_ratfunc K)
 
-#check (quot.exists_rep F).some
-#check (@adic_valued (polynomial K) _ _ _ (ratfunc K) _ _ _ (ideal_X K)).to_uniform_space
-
 instance : uniform_space (ratfunc K) :=
   (@adic_valued (polynomial K) _ _ _ (ratfunc K) _ _ _ (ideal_X K)).to_uniform_space
 
@@ -38,7 +35,28 @@ def entourage : ℕ → set ((ratfunc K) × (ratfunc K)):= λ n,
   {x | ↑(multiplicative.of_add (n : ℤ)) ≤ ((ideal_X K).valuation x) } ×ˢ
   { x | ↑(multiplicative.of_add (n : ℤ)) ≤ ((ideal_X K).valuation x) }
 
-lemma entourage_subset (n : ℕ) : entourage K n ∈ (𝓤 (ratfunc K)) := sorry
+example : add_group (ratfunc K) := 
+begin
+  apply_instance,
+end
+
+local attribute [instance] topological_add_group.to_uniform_space
+
+example (G : Type*) [_inst_1 : add_group G] [_inst_2 : topological_space G] [_inst_3 : topological_add_group G] :
+    𝓤 G = filter.comap (λ (p : G × G), p.snd - p.fst) (nhds 0) :=
+begin
+  apply uniformity_eq_comap_nhds_zero',
+end
+
+lemma entourage_subset (n : ℕ) : entourage K n ∈ (𝓤 (ratfunc K)) :=
+begin
+  rw uniformity_eq_comap_nhds_zero' (ratfunc K),
+  rw filter.mem_comap',
+  rw entourage,
+  simp,
+  rw nhds_def,
+  sorry,
+end
 
 #check seq ((quot.exists_rep F).some).2 (entourage_subset K)
 
