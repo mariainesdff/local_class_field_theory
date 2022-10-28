@@ -7,8 +7,11 @@ import ring_theory.dedekind_domain.adic_valuation
 import ring_theory.laurent_series
 import ring_theory.power_series.well_known
 
-open polynomial is_dedekind_domain.height_one_spectrum ratfunc sequentially_complete-- uniform_space
-open_locale discrete_valuation uniformity
+open polynomial is_dedekind_domain.height_one_spectrum topological_space ratfunc sequentially_complete filter
+open_locale discrete_valuation uniformity filter topological_space
+
+-- open filter topological_space set classical uniform_space function
+-- open_locale classical uniformity topological_space filter
 
 variables (K : Type*) [field K]
 
@@ -36,6 +39,12 @@ begin
   sorry
 end
 
+lemma foo' : (nhds (0 : ratfunc K)).has_basis set.univ (λ n : ℤ,
+  {F : (ratfunc K) | ↑(multiplicative.of_add n) ≤ (ideal_X K).valuation F}) :=
+begin
+  sorry
+end
+
 -- def boo := filter.has_basis.uniformity_of_nhds_zero (foo K)
 
 -- #check boo K
@@ -52,6 +61,10 @@ def ss (F : completion_of_ratfunc K) : ℕ → (ratfunc K) := seq ((quot.exists_
     (filter.has_basis.uniformity_of_nhds_zero (foo K)) trivial)
 
 variable (F : completion_of_ratfunc K)
+#check filter.map (ratfunc.coe_alg_hom K) ((quot.exists_rep F).some).1
+
+
+
 #check ss K F
 -- --   use this,
 -- -- end
@@ -108,21 +121,44 @@ variable (F : completion_of_ratfunc K)
 
 -- #check seq ((quot.exists_rep F).some).2 (entourage_subset K)
 
-def ss_int : ℤ → ratfunc K
+def ss_int : ℤ → laurent_series K
 |(n : nat) := ss K F n
 | _ := 0
+
+-- lemma exists_eventual_coeff (ℱ : filter (completion_of_ratfunc K)) (h : cauchy ℱ) (d : ℤ) : true :=
+-- -- ∃ (t : set (laurent_series K)), t ∈ ℱ.map (ratfunc.coe_alg_hom K) ∧ t ≠ ∅ ∧ (∀ F G : (laurent_series K), F ∈ t → G ∈ t → F.coeff d = G.coeff d),
+--   sorry,
+
+
+
 
 def isom : 
   -- adic_completion.field (ratfunc K) (ideal_X K) ≃ ℤ := sorry
   (completion_of_ratfunc K) ≃ (laurent_series K) :=
 { to_fun :=
   begin
-  intro F,
-  -- let φ : ℤ → K := ss_int K F,
-  let φ : ℤ → K := λ n, 0,
-  apply hahn_series.mk φ,
-  have : set.is_pwo φ.support, sorry,
-  exact this,
+  intro α,
+  -- let φ : 
+  -- apply hahn_series.mk,
+  -- swap,
+  -- use λ n, Lim k (ss_int K α k).coeff n,
+
+  obtain ⟨a, ha⟩ := (quot.exists_rep α).some,
+  let b := a.map (ratfunc.coe_alg_hom K),
+  let φ : ℤ → (laurent_series K → K) := λ i : ℤ, λ F : (laurent_series K), F.coeff i,
+  apply hahn_series.mk,
+  swap,
+  intro d,
+  let c:= b.map (φ d),
+  letI : topological_space K := sorry,--discrete one
+  use Lim c,
+  -- have hc : cauchy c, sorry,
+  -- have : ∃ (t : set (laurent_series K)), t ∈ b ∧ nonempty t ∧ (∀ F G : (laurent_series K), F ∈ t → G ∈ t → F.coeff d = G.coeff d),
+  -- sorry,
+  -- let F : laurent_series K := ((this.some_spec).2.1).some,
+  -- use F.coeff d,
+  -- sorry,
+
   end,
   inv_fun := sorry,
   left_inv := sorry,
