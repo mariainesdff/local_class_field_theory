@@ -28,11 +28,14 @@ open is_dedekind_domain nnreal polynomial
 open_locale mixed_char_local_field nnreal discrete_valuation
 
 variables {p : out_param(ℕ)} [fact (p.prime)] 
-variables {K: Type*} [field K] [mixed_char_local_field p K]
+variables {K : Type*} [field K] [mixed_char_local_field p K]
 
 namespace mixed_char_local_field
 
 def norm_on_K : K → ℝ := spectral_norm (algebra.is_algebraic_of_finite ℚ_[p] K)
+
+lemma norm_on_padic : (norm_on_K : ℚ_[p] → ℝ) = (norm : ℚ_[p] → ℝ) := 
+by { ext x, exact spectral_norm.extends _ _ }
 
 def nnnorm_on_K : K → ℝ≥0 :=
   λ x, ⟨norm_on_K x, spectral_norm_nonneg (algebra.is_algebraic_of_finite ℚ_[p] K) x⟩
@@ -166,18 +169,64 @@ lemma normalized_valuation_p_ne_zero : (normalized_valuation K) (p : K) ≠ 0 :=
 by {simp only [ne.def, valuation.zero_iff, nat.cast_eq_zero], from nat.prime.ne_zero (fact.out _)}
 -- end
 
+open multiplicative is_dedekind_domain.height_one_spectrum
 def ramification_index (K : Type*) [field K] [mixed_char_local_field p K] : ℤ := 
-  with_zero.unzero (normalized_valuation_p_ne_zero K)
+  -(with_zero.unzero (normalized_valuation_p_ne_zero K)).to_add
 
 localized "notation (name := ramification_index)
   `e` := mixed_char_local_field.ramification_index" in mixed_char_local_field
 
+variable (p)
+
+-- Even compiling the statement is slow...
+noncomputable! lemma padic.open_unit_ball_def : 
+  (open_unit_ball ℚ_[p]).as_ideal = ideal.span {(p : 𝓞 p ℚ_[p])} := 
+begin
+  have hiff : ∀ (y : ℚ_[p]), y ∈ 𝓞 p ℚ_[p] ↔ ∥y∥ ≤ 1, -- we should extract this to a lemma
+  { intro y, rw mem_ring_of_integers,
+    rw is_integrally_closed.is_integral_iff,
+    refine ⟨λ h, _, λ h, ⟨⟨y, h⟩, rfl⟩⟩,
+    { obtain ⟨x, hx⟩ := h,
+      rw [← hx],
+      exact padic_int.norm_le_one _, }},
+  simp only [open_unit_ball],
+  ext ⟨x, hx⟩,
+  have hx' : x = (⟨x, (hiff x).mp hx⟩ : ℤ_[p]) := rfl,
+  rw [submodule.mem_mk, set.mem_set_of_eq, ideal.mem_span_singleton, norm_on_padic, 
+    set_like.coe_mk],
+  conv_lhs {rw hx'},
+  rw [← padic_int.norm_def, padic_int.norm_lt_one_iff_dvd, dvd_iff_exists_eq_mul_left,
+    dvd_iff_exists_eq_mul_left],
+  refine ⟨λ h, _, λ h, _⟩,
+  { obtain ⟨⟨c, hc⟩, hcx⟩ := h, 
+    use ⟨c, (hiff c).mpr hc⟩,
+    rw subtype.ext_iff at hcx ⊢,
+    exact hcx },
+  { obtain ⟨⟨c, hc⟩, hcx⟩ := h, 
+    use ⟨c, (hiff c).mp hc⟩,
+    rw subtype.ext_iff at hcx ⊢,
+    exact hcx },
+end
+
+variable {p}
+
+--set_option profiler true
 lemma is_unramified_ℚ_p : e ℚ_[p] = 1 :=
 begin
-  have : normalized_valuation ℚ_[p] p = 1,
-  sorry,
-  rw ramification_index,
-  sorry,
+  have hp : normalized_valuation ℚ_[p] p = (of_add (-1 : ℤ)),
+  { have hp0 : (p : 𝓞 p ℚ_[p]) ≠ 0,
+    { simp only [ne.def, nat.cast_eq_zero], exact nat.prime.ne_zero (_inst_1.1) }, --looks bad
+    have hp_alg : (p : ℚ_[p]) = algebra_map (𝓞 p ℚ_[p]) ℚ_[p] (p : 𝓞 p ℚ_[p]) := rfl,
+    simp only [normalized_valuation],
+    rw [hp_alg, valuation_of_algebra_map],
+    simp only [int_valuation, ← valuation.to_fun_eq_coe],
+    rw [int_valuation_def_if_neg _ hp0, ← padic.open_unit_ball_def, associates.count_self],
+    refl,
+    { exact associates_irreducible (open_unit_ball ℚ_[p]), }}, -- so slow!
+  rw [ramification_index, neg_eq_iff_neg_eq, ← to_add_of_add (-1 : ℤ)],
+  apply congr_arg,
+  rw [← with_zero.coe_inj, ← hp, with_zero.coe_unzero],
+ 
 end
 
 end mixed_char_local_field
