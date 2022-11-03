@@ -155,23 +155,19 @@ variables (K)
 instance : char_zero (𝓞 p K) := char_zero.of_module _ K
 
 noncomputable! instance : is_noetherian ℤ_[p] (𝓞 p K) :=
-is_integral_closure.is_noetherian _ ℚ_[p] K _
+is_integral_closure.is_noetherian ℤ_[p] ℚ_[p] K (𝓞 p K)
 
 noncomputable! lemma algebra_map_injective :
   function.injective ⇑(algebra_map ℤ_[p] (ring_of_integers p K)) := 
 begin
   have hinj : function.injective ⇑(algebra_map ℤ_[p] K),
-  { exact algebra_map_injective' ℤ_[p] ℚ_[p] K
-    /- rw is_scalar_tower.algebra_map_eq ℤ_[p] ℚ_[p] K,
-    exact function.injective.comp ((algebra_map ℚ_[p] K).injective)
-      (is_fraction_ring.injective ℤ_[p] ℚ_[p]),  -/},
+  { exact algebra_map_injective' ℤ_[p] ℚ_[p] K},
   rw injective_iff_map_eq_zero (algebra_map ℤ_[p] ↥(𝓞 p K)),
   intros x hx,
   rw [← subtype.coe_inj, subalgebra.coe_zero] at hx,
   rw injective_iff_map_eq_zero (algebra_map ℤ_[p] K) at hinj,
-  exact hinj x hx,
+  exact hinj x hx, 
 end
-
 
 /-- The ring of integers of a mixed characteristic local field is not a field. -/
 lemma not_is_field : ¬ is_field (𝓞 p K) :=
