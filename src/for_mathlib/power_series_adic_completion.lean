@@ -200,6 +200,12 @@ end
 def set_fae (d : ℤ) : set (ratfunc K × ratfunc K) :=
   {P | ↑(multiplicative.of_add d) ≤ (ideal_X K).valuation (P.1 - P.2)}
 
+lemma coeff_fae (d : ℤ) (x y : ratfunc K) (H : (x, y) ∈ (set_fae K d)) :
+ (x : laurent_series K).coeff d = (y : laurent_series K).coeff d :=
+begin
+  sorry
+end
+
 lemma entourage_fae (d : ℤ) : set_fae K d ∈ 𝓤 (ratfunc K) :=
 begin
   sorry,
@@ -211,6 +217,21 @@ def isom :
 { to_fun :=
   begin
   intro α,
+  apply hahn_series.mk,
+  swap,
+  intro d,
+  obtain ⟨ℱ, hℱ⟩ := (quot.exists_rep α).some,
+  replace hℱ := cauchy_iff'.mp hℱ,
+  have hℱ_unif := hℱ.2 (set_fae K d) (entourage_fae K d),
+  let T := hℱ_unif.some,
+  have hT := hℱ_unif.some_spec,
+  have hT_nebot : T.nonempty,
+  sorry,
+  have : true,
+  obtain ⟨x, hx⟩ := set.nonempty_def.mp hT_nebot,
+  -- let x := hT_nebot.some,
+  -- have hx := ht_nebot.some_mem,
+  -- rcases hT with ⟨a, b⟩,
   -- let φ : 
   -- apply hahn_series.mk,
   -- swap,
