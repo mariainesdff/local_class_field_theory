@@ -211,6 +211,23 @@ begin
   sorry,
 end
 
+instance discrete_fae : uniform_space K := ⊥
+
+def eval_fae (d : ℤ) : ratfunc K → K := λ x : ratfunc K, (x : laurent_series K).coeff d
+
+lemma unif_cnts_fae (d : ℤ) : uniform_continuous (eval_fae K d) :=
+-- begin
+  sorry
+-- end
+
+def eval_compl_fae (d : ℤ) : (completion_of_ratfunc K) → K := sorry -- use `eval_fae` and `unif_cnts_fae` to prove that the first extends to the completion
+
+lemma cauchy_fae (d : ℤ) (α : filter (completion_of_ratfunc K)) (hα : cauchy α) :
+  cauchy (α.map (eval_compl_fae K d)) := sorry
+
+variables (d : ℤ) (ℱ : filter (completion_of_ratfunc K))
+#check ℱ.map (eval_compl_fae K d) --questo tizio è di Cauchy ma K è banale, quindi è costante!
+
 def isom : 
   -- adic_completion.field (ratfunc K) (ideal_X K) ≃ ℤ := sorry
   (completion_of_ratfunc K) ≃ (laurent_series K) :=
@@ -221,7 +238,8 @@ def isom :
   swap,
   intro d,
   obtain ⟨ℱ, hℱ⟩ := (quot.exists_rep α).some,
-  replace hℱ := cauchy_iff'.mp hℱ,
+  have hℱ1 := cauchy_iff.mp hℱ,
+  have hℱ2 := hℱ.2,
   have hℱ_unif := hℱ.2 (set_fae K d) (entourage_fae K d),
   let T := hℱ_unif.some,
   have hT := hℱ_unif.some_spec,
