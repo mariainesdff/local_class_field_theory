@@ -13,6 +13,16 @@ open_locale discrete_valuation uniformity filter topological_space
 -- open filter topological_space set classical uniform_space function
 -- open_locale classical uniformity topological_space filter
 
+section for_mathlib
+open power_series laurent_series hahn_series
+
+variables {F : Type*} [field F] (f g : ratfunc F)
+
+@[simp, norm_cast] lemma coe_sub : ((f - g : ratfunc F) : laurent_series F) = f - g :=
+(coe_alg_hom F).map_sub _ _
+end for_mathlib
+
+
 variables (K : Type*) [field K]
 
 noncomputable theory
@@ -22,6 +32,8 @@ def ideal_X : is_dedekind_domain.height_one_spectrum (polynomial K) :=
   is_prime := by { rw ideal.span_singleton_prime, exacts [prime_X, X_ne_zero] },
   ne_bot   := by { rw [ne.def, ideal.span_singleton_eq_bot], exact X_ne_zero }} 
 
+@[simp]
+lemma ideal_X_span : (ideal_X K).as_ideal = ideal.span({polynomial.X}) := rfl
 
 def completion_of_ratfunc  := adic_completion (ratfunc K) (ideal_X K)
 
@@ -32,13 +44,13 @@ instance : algebra K (polynomial K) := infer_instance
 instance : uniform_space (ratfunc K) :=
   (@adic_valued (polynomial K) _ _ _ (ratfunc K) _ _ _ (ideal_X K)).to_uniform_space
 
--- instance : valued (completion_of_ratfunc K) ℤₘ₀ :=
---   @valued.valued_completion _ _ _ _ (ideal_X K).adic_valued
+instance : valued (completion_of_ratfunc K) ℤₘ₀ :=
+  @valued.valued_completion _ _ _ _ (ideal_X K).adic_valued
 
--- instance : uniform_space (completion_of_ratfunc K) := 
--- begin
---   apply_instance,
--- end
+instance : uniform_space (completion_of_ratfunc K) := 
+begin
+  apply_instance,
+end
   -- is_dedekind_domain.height_one_spectrum.uniform_space_adic_completion (ratfunc K) _
 
 lemma foo : (nhds (0 : ratfunc K)).has_basis set.univ (λ n : ℕ,
@@ -197,13 +209,38 @@ begin
   refine uniform_space.completion.uniform_continuous_coe X,
 end
 
+
 def set_fae (d : ℤ) : set (ratfunc K × ratfunc K) :=
   {P | ↑(multiplicative.of_add d) ≤ (ideal_X K).valuation (P.1 - P.2)}
+
+example (f  : polynomial K) (d : ℕ) (hf : (ideal_X K).int_valuation f ≤ 
+  ↑(multiplicative.of_add (- (d+(1 : ℕ)) : ℤ))) : f.coeff d = 0 :=
+begin 
+  erw [int_valuation_le_pow_iff_dvd _ _ (d+1)] at hf,
+  simp only [ideal_X_span, ideal.dvd_span_singleton, ideal.span_singleton_pow,
+    ideal.mem_span_singleton'] at hf,
+  cases hf with a ha,
+  simp only [← ha, coeff_mul_X_pow', add_le_iff_nonpos_right, le_zero_iff, nat.one_ne_zero,
+    if_false],
+end
+
+
+example (f  : ratfunc K) (d : ℤ) (hf : ↑(multiplicative.of_add d) ≤ (ideal_X K).valuation f) :
+  (f : laurent_series K).coeff d = 0 :=
+begin
+  by_cases hf : f.denom = 1,
+end
 
 lemma coeff_fae (d : ℤ) (x y : ratfunc K) (H : (x, y) ∈ (set_fae K d)) :
  (x : laurent_series K).coeff d = (y : laurent_series K).coeff d :=
 begin
-  sorry
+  -- rw [set_fae] at H,
+  dsimp only [set_fae] at H,--useless?
+  -- simp only at H,
+  apply eq_of_sub_eq_zero,
+  rw [← hahn_series.sub_coeff],
+  rw [← coe_sub],
+  sorry,
 end
 
 lemma entourage_fae (d : ℤ) : set_fae K d ∈ 𝓤 (ratfunc K) :=
@@ -211,24 +248,58 @@ begin
   sorry,
 end
 
-instance discrete_fae : uniform_space K := ⊥
+-- instance discrete_fae : uniform_space K := ⊤
 
 def eval_fae (d : ℤ) : ratfunc K → K := λ x : ratfunc K, (x : laurent_series K).coeff d
 
-lemma unif_cnts_fae (d : ℤ) : uniform_continuous (eval_fae K d) :=
+lemma unif_cnts_fae (d : ℤ) {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel)
+: uniform_continuous (eval_fae K d) :=
+begin
+  refine uniform_continuous_iff_eventually.mpr _,
+  intros S hS,
+  rw h at hS,
+  simp only [mem_principal, id_rel_subset] at hS,--probably useless,
+  refine eventually_iff_exists_mem.mpr _,
+  use set_fae K d,
+  split,
+  exact entourage_fae K d,
+  intros x hx,
+  suffices : (eval_fae K d x.fst) = (eval_fae K d x.snd),
+  rw this,
+  exact (hS (eval_fae K d x.snd)),
+  apply coeff_fae,
+  exact hx,
+end
+
+-- lemma discrete_complete_fae (d : ℤ) {uK : uniform_space K}
+--   (h : uniformity K = 𝓟 id_rel) : is_complete (⊤ : (set K)) :=
 -- begin
-  sorry
+--   sorry
 -- end
 
-def eval_compl_fae (d : ℤ) : (completion_of_ratfunc K) → K := sorry -- use `eval_fae` and `unif_cnts_fae` to prove that the first extends to the completion
+-- def eval_compl_fae (d : ℤ) {uK : uniform_space K}
+--   (h : uniformity K = 𝓟 id_rel) : (completion_of_ratfunc K) → K := 
+--   uniform_space.completion.extension (eval_fae K d)
 
-lemma cauchy_fae (d : ℤ) (α : filter (completion_of_ratfunc K)) (hα : cauchy α) :
-  cauchy (α.map (eval_compl_fae K d)) := sorry
+--the `instance : uniform_space (completion_of_ratfunc K) :=` is needed for the `lemma` below
+lemma cauchy_fae (d : ℤ) {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel)
+  (α : filter (ratfunc K)) (hα : cauchy α) :
+  cauchy (α.map (eval_fae K d)) := hα.map (unif_cnts_fae K d h)
 
-variables (d : ℤ) (ℱ : filter (completion_of_ratfunc K))
-#check ℱ.map (eval_compl_fae K d) --questo tizio è di Cauchy ma K è banale, quindi è costante!
 
-def isom : 
+def constant_cauchy_fae {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) 
+  (α : filter K) (hα : cauchy α) : K :=
+begin
+  sorry
+end
+
+lemma constant_cauchy_fae_principal {uK : uniform_space K} 
+  (h : uniformity K = 𝓟 id_rel) (α : filter K) (hα : cauchy α) :
+  α ≤ filter.principal {constant_cauchy_fae K h α hα} := sorry
+
+
+def isom 
+  {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) : 
   -- adic_completion.field (ratfunc K) (ideal_X K) ≃ ℤ := sorry
   (completion_of_ratfunc K) ≃ (laurent_series K) :=
 { to_fun :=
@@ -238,39 +309,10 @@ def isom :
   swap,
   intro d,
   obtain ⟨ℱ, hℱ⟩ := (quot.exists_rep α).some,
-  have hℱ1 := cauchy_iff.mp hℱ,
-  have hℱ2 := hℱ.2,
-  have hℱ_unif := hℱ.2 (set_fae K d) (entourage_fae K d),
-  let T := hℱ_unif.some,
-  have hT := hℱ_unif.some_spec,
-  have hT_nebot : T.nonempty,
+  use (constant_cauchy_fae K h (ℱ.map (eval_fae K d)) (cauchy_fae K d h ℱ hℱ)),
+  have : set.is_pwo (⊤ : (set ℤ)),
   sorry,
-  have : true,
-  obtain ⟨x, hx⟩ := set.nonempty_def.mp hT_nebot,
-  -- let x := hT_nebot.some,
-  -- have hx := ht_nebot.some_mem,
-  -- rcases hT with ⟨a, b⟩,
-  -- let φ : 
-  -- apply hahn_series.mk,
-  -- swap,
-  -- use λ n, Lim k (ss_int K α k).coeff n,
-
-  obtain ⟨a, ha⟩ := (quot.exists_rep α).some,
-  let b := a.map (ratfunc.coe_alg_hom K),
-  let φ : ℤ → (laurent_series K → K) := λ i : ℤ, λ F : (laurent_series K), F.coeff i,
-  apply hahn_series.mk,
-  swap,
-  intro d,
-  let c:= b.map (φ d),
-  letI : topological_space K := sorry,--discrete one
-  use Lim c,
-  -- have hc : cauchy c, sorry,
-  -- have : ∃ (t : set (laurent_series K)), t ∈ b ∧ nonempty t ∧ (∀ F G : (laurent_series K), F ∈ t → G ∈ t → F.coeff d = G.coeff d),
-  -- sorry,
-  -- let F : laurent_series K := ((this.some_spec).2.1).some,
-  -- use F.coeff d,
-  -- sorry,
-
+  exact set.is_pwo.mono this (set.subset_univ _),
   end,
   inv_fun := sorry,
   left_inv := sorry,
