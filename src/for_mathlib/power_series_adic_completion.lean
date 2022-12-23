@@ -14,12 +14,21 @@ open_locale discrete_valuation uniformity filter topological_space
 -- open_locale classical uniformity topological_space filter
 
 section for_mathlib
-open power_series laurent_series hahn_series
+open power_series laurent_series hahn_series multiplicative is_dedekind_domain
 
 variables {F : Type*} [field F] (f g : ratfunc F)
 
 @[simp, norm_cast] lemma coe_sub : ((f - g : ratfunc F) : laurent_series F) = f - g :=
 (coe_alg_hom F).map_sub _ _
+
+-- variables {R : Type*} [comm_ring R] [is_domain R] [is_dedekind_domain R] {K : Type*} [field K]
+--   [algebra R K] [is_fraction_ring R K] (v : height_one_spectrum R)
+
+-- open is_dedekind_domain.height_one_spectrum
+
+-- lemma valuation_le_pow_iff_dvd (x : K) (n : ℤ) :
+--   v.valuation x ≤ multiplicative.of_add (- n ) ↔ v.as_ideal^n ∣ ideal.span {x} :=
+
 end for_mathlib
 
 
@@ -213,7 +222,7 @@ end
 def set_fae (d : ℤ) : set (ratfunc K × ratfunc K) :=
   {P | ↑(multiplicative.of_add d) ≤ (ideal_X K).valuation (P.1 - P.2)}
 
-example (f  : polynomial K) (d : ℕ) (hf : (ideal_X K).int_valuation f ≤ 
+lemma fae_for_pol (f  : polynomial K) (d : ℕ) (hf : (ideal_X K).int_valuation f ≤ 
   ↑(multiplicative.of_add (- (d+(1 : ℕ)) : ℤ))) : f.coeff d = 0 :=
 begin 
   erw [int_valuation_le_pow_iff_dvd _ _ (d+1)] at hf,
@@ -225,11 +234,34 @@ begin
 end
 
 
-example (f  : ratfunc K) (d : ℤ) (hf : ↑(multiplicative.of_add d) ≤ (ideal_X K).valuation f) :
+lemma fae_pol (f : ratfunc K)  (d : ℤ) (hf : (ideal_X K).valuation f ≤
+  ↑(multiplicative.of_add (- d - 1))) : 
+  ratfunc.X^d * f  ∈ (algebra_map (polynomial K) (ratfunc K)).range :=
+begin
+  suffices : (ideal_X K).valuation (ratfunc.X^d * f) ≤ ↑(multiplicative.of_add (- d - 1))
+
+end
+
+example (f  : ratfunc K) (d : ℕ) (hf : (ideal_X K).valuation f ≤
+  ↑(multiplicative.of_add (- (d+(1 : ℕ)) : ℤ))) :
   (f : laurent_series K).coeff d = 0 :=
 begin
-  by_cases hf : f.denom = 1,
+  -- erw [valuation_le_pow_iff_dvd _ _ (d+1)] at hf,
+
+  
+  -- by_cases h_denom : f.denom = 1,
+  
+    -- have := @valuation_of_algebra_map (polynomial K) _ _ _ (ratfunc K) _ _ _ (ideal_X K) f.num,
+    -- have h_eq_f : algebra_map (polynomial K) (ratfunc K) f.num = f, sorry,
+    -- rw h_eq_f at this,
+    -- rw this at hf,
+    -- have := fae_for_pol K f.num d hf,
+    -- convert this,
+    
+
 end
+
+#exit
 
 lemma coeff_fae (d : ℤ) (x y : ratfunc K) (H : (x, y) ∈ (set_fae K d)) :
  (x : laurent_series K).coeff d = (y : laurent_series K).coeff d :=
@@ -242,6 +274,8 @@ begin
   rw [← coe_sub],
   sorry,
 end
+
+
 
 lemma entourage_fae (d : ℤ) : set_fae K d ∈ 𝓤 (ratfunc K) :=
 begin
