@@ -114,12 +114,15 @@ begin
 end
 
 include dec_dvd
-lemma exists_reduced_fraction' (b : B) (hx : irreducible x) :
+
+
+-- the following `lemma` is false: it can happen that `b` is integral. 
+lemma exists_reduced_fraction' (hx : irreducible x) (b : B):
   ∃ (a : A) (n : ℕ), ¬ x ∣ a ∧ mk' B (a : A) (⟨x, submonoid.mem_powers _⟩^n) = b :=
   -- (∀ {d}, d ∣ a → d ∣ b → is_unit d) ∧ mk' K a b = x :=
 begin
-  have : is_unit (mk' B x 1),
-  convert map_units B ⟨x, submonoid.mem_powers _⟩,
+  -- have : is_unit (mk' B x 1),
+  -- convert map_units B ⟨x, submonoid.mem_powers _⟩,
   
   obtain ⟨⟨y', hy'⟩, a', hab⟩ := exists_integer_multiple (submonoid.powers x) b,
   let m := (unique_factorization_monoid.normalized_factors a').count (normalize x),
