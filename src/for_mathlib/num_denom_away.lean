@@ -115,10 +115,34 @@ end
 
 include dec_dvd
 
+example (n : ℕ) (a : A) : is_unit (mk' B (1 : A) ⟨x, submonoid.mem_powers _⟩) :=
+begin
+  apply is_unit_of_mul_eq_one _ (algebra_map A B x),
+  convert @mk'_spec_mk A _ (submonoid.powers x) B _ _ _ 1 x (submonoid.mem_powers _),
+  exact (map_one _).symm,
+end
+
+example (n : ℕ) (a : A) : is_unit (mk' B (1 : A) ⟨x, submonoid.mem_powers _⟩^n) :=
+begin
+  apply is_unit_of_mul_eq_one _ (algebra_map A B x^n),
+  convert @mk'_spec_mk A _ (submonoid.powers x) B _ _ _ 1 (x ^ n)
+    (pow_mem (submonoid.mem_powers _) n),
+  swap,
+  simp only [map_pow],
+  swap,
+  exact (map_one _).symm,
+  rw [← localization.mk_eq_monoid_of_mk'],
+  rw mk',
+  rw mk',
+
+  -- have := @localization.mk_pow,
+  -- simp,
+  -- simp only [map_pow],
+end
 
 -- the following `lemma` is false: it can happen that `b` is integral. 
 lemma exists_reduced_fraction' (hx : irreducible x) (b : B):
-  ∃ (a : A) (n : ℕ), ¬ x ∣ a ∧ mk' B (a : A) (⟨x, submonoid.mem_powers _⟩^n) = b :=
+  ∃ (a : A) (n : ℕ), ¬ x ∣ a ∧ mk' B (a : A)  = b :=
   -- (∀ {d}, d ∣ a → d ∣ b → is_unit d) ∧ mk' K a b = x :=
 begin
   -- have : is_unit (mk' B x 1),
