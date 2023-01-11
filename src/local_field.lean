@@ -8,7 +8,8 @@ open valuation
 open_locale discrete_valuation
 
 class local_field (K : Type*) [field K] extends valued K ℤₘ₀ :=
-(finite_residue_field : fintype (residue_ring K) )
+(complete : complete_space K)
+(finite_residue_field : fintype (residue_ring K))
 
 
 end local_field
