@@ -122,27 +122,76 @@ begin
   exact (map_one _).symm,
 end
 
+-- example (n : ℕ) (a : A) : is_unit (mk' B (1 : A) ⟨x, submonoid.mem_powers _⟩^n) :=
+
 example (n : ℕ) (a : A) : is_unit (mk' B (1 : A) ⟨x, submonoid.mem_powers _⟩^n) :=
 begin
-  apply is_unit_of_mul_eq_one _ (algebra_map A B x^n),
-  convert @mk'_spec_mk A _ (submonoid.powers x) B _ _ _ 1 (x ^ n)
-    (pow_mem (submonoid.mem_powers _) n),
-  swap,
-  simp only [map_pow],
-  swap,
-  exact (map_one _).symm,
-  rw [← localization.mk_eq_monoid_of_mk'],
+  -- suffices is_unit 
+  apply is_unit_of_mul_eq_one _ (mk' B (x^n) (1 : (submonoid.powers x))),
+  suggest,
+  -- simp only [map_pow],
+  -- simp,
+  -- convert @mk'_spec_mk A _ (submonoid.powers x) B _ _ _ 1 (x ^ n)
+  --   (pow_mem (submonoid.mem_powers _) n),
+  -- swap,
+  -- simp only [map_pow],
+  -- swap,
+  -- exact (map_one _).symm,
+  -- -- rw [← localization.mk_eq_monoid_of_mk'],
+  -- rw mk',
+  -- -- rw mk',
+  -- have := @localization.mk_pow A _ (submonoid.powers x) n 1 ⟨x, submonoid.mem_powers _⟩,
+  have α := _inst_9.map_units ⟨x ^ n, pow_mem (submonoid.mem_powers _) n⟩,
+  convert α,
+  simp only [set_like.coe_mk, map_pow],
+  refine congr_arg2 pow _ rfl,
   rw mk',
-  rw mk',
-
-  -- have := @localization.mk_pow,
+  -- suggest,
+  -- simp,
+  -- rw this,
   -- simp,
   -- simp only [map_pow],
 end
 
+def lsa : has_pow ℤ (submonoid.powers (x)) :=
+begin
+sorry
+end
+
+lemma inv_self_unit : is_unit ((away.inv_self x) : B) :=
+begin
+  apply is_unit_of_mul_eq_one _ (mk' B x (1 : (submonoid.powers x))),
+  simp only [away.inv_self, ←mk'_mul, one_mul, mul_one, mk'_self], 
+end
+
+lemma inv_self_pow_unit (n : ℕ) : is_unit ((away.inv_self x)^n : B) := (inv_self_unit A x).pow n
+
+example (hx : irreducible x) (b : B) : true :=
+begin
+  obtain ⟨b, hb⟩ := inv_self_unit A x,
+--  let α : Bˣ,-- := ⟨away.inv_self x, inv_self_unit A x⟩,
+--  fconstructor,
+--  use away.inv_self x,
+--  have := (inv_self_unit A x),
+end
+
+example (hx : irreducible x) (b : B) : is_unit (mk' B x (1 : submonoid.powers x)) :=
+begin
+  apply is_unit_of_mul_eq_one _ (mk' B (x^n) (1 : (submonoid.powers x))),
+  convert @map_units A _ (submonoid.powers x) B _ _ _ ⟨x, submonoid.mem_powers _⟩,
+  simp,
+  rw mk',
+  have := _inst_9.1,
+  have := _inst_9.2,
+  have := _inst_9.3,
+  -- have := @map_mk',
+end
+
 -- the following `lemma` is false: it can happen that `b` is integral. 
 lemma exists_reduced_fraction' (hx : irreducible x) (b : B):
-  ∃ (a : A) (n : ℕ), ¬ x ∣ a ∧ mk' B (a : A)  = b :=
+  ∃ (a : A) (n : ℤ), ¬ x ∣ a ∧
+  (⟨away.inv_self x, map_units ⟨x, submonoid.mem_powers _⟩⟩ : Bˣ ) = 1 :=
+  -- (mk' B a (1 : (submonoid.powers x))) * (((away.inv_self x) : Bˣ ) : B)= b :=
   -- (∀ {d}, d ∣ a → d ∣ b → is_unit d) ∧ mk' K a b = x :=
 begin
   -- have : is_unit (mk' B x 1),
