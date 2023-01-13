@@ -170,13 +170,17 @@ noncomputable def inv_self.unit : Bˣ :=
   ⟨away.inv_self x, algebra_map _ _ x, by {rw mul_comm, exact away.mul_inv_self _},
     away.mul_inv_self _⟩
 
+noncomputable def x_as_unit : Bˣ :=
+  ⟨algebra_map _ _ x, away.inv_self x, away.mul_inv_self _,
+    by {rw mul_comm, exact away.mul_inv_self _}⟩
+
 --⟨away.inv_self x, algebra_map A B x, by [rw mul_comm, from  away.mul_inv_self], from away.mul_inv_self⟩
 
 -- lemma inv_self_npow_unit (n : ℕ) : is_unit ((away.inv_self x)^n : B) := (inv_self_unit x B).pow n
 
 include B
 
-#check inv_self.unit x B
+-- #check inv_self.unit x B
 
 -- lemma inv_self_zpow_unit (d : ℤ) : is_unit ((inv_self.unit x B) ^ d) := 
 -- begin
@@ -216,7 +220,7 @@ include B
 -- the following `lemma` is false: it can happen that `b` is integral. 
 lemma exists_reduced_fraction' (hx : irreducible x) (b : B):
   ∃ (a : A) (n : ℤ), ¬ x ∣ a ∧
-  (((inv_self.unit x B)^n : Bˣ) : B) * mk' B a (1 : submonoid.powers x) = b :=
+  (((x_as_unit x B)^n : Bˣ) : B) * mk' B a (1 : submonoid.powers x) = b :=
   -- (mk' B a (1 : (submonoid.powers x))) * (((away.inv_self x) : Bˣ ) : B)= b :=
   -- (∀ {d}, d ∣ a → d ∣ b → is_unit d) ∧ mk' K a b = x :=
 begin
