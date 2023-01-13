@@ -102,8 +102,8 @@ variables (S)
 
 section away
 
-variables (A : Type*) [comm_ring A] [is_domain A]
-variables (x : A) {B : Type*} [comm_ring B] [algebra A B] [away x B] [decidable_eq A]
+variables {A : Type*} [comm_ring A] [is_domain A]
+variables (x : A) (B : Type*) [comm_ring B] [algebra A B] [is_localization.away x B] [decidable_eq A]
 variables [cancel_comm_monoid_with_zero A] [normalization_monoid A] [unique_factorization_monoid A]
 variables [dec_dvd : decidable_rel (has_dvd.dvd : A → A → Prop)]
 open multiplicity
@@ -153,44 +153,70 @@ begin
   -- simp only [map_pow],
 end
 
-def lsa : has_pow ℤ (submonoid.powers (x)) :=
-begin
-sorry
-end
+-- def lsa : has_pow ℤ (submonoid.powers (x)) :=
+-- begin
+-- sorry
+-- end
 
-lemma inv_self_unit : is_unit ((away.inv_self x) : B) :=
-begin
-  apply is_unit_of_mul_eq_one _ (mk' B x (1 : (submonoid.powers x))),
-  simp only [away.inv_self, ←mk'_mul, one_mul, mul_one, mk'_self], 
-end
+-- lemma inv_self.is_unit : is_unit ((away.inv_self x) : B) :=
+-- begin
+--   apply is_unit_of_mul_eq_one _ (mk' B x (1 : (submonoid.powers x))),
+--   simp only [away.inv_self, ←mk'_mul, one_mul, mul_one, mk'_self],
+-- end
 
-lemma inv_self_pow_unit (n : ℕ) : is_unit ((away.inv_self x)^n : B) := (inv_self_unit A x).pow n
+include x
 
-example (hx : irreducible x) (b : B) : true :=
-begin
-  obtain ⟨b, hb⟩ := inv_self_unit A x,
---  let α : Bˣ,-- := ⟨away.inv_self x, inv_self_unit A x⟩,
---  fconstructor,
---  use away.inv_self x,
---  have := (inv_self_unit A x),
-end
+noncomputable def inv_self.unit : Bˣ :=
+  ⟨away.inv_self x, algebra_map _ _ x, by {rw mul_comm, exact away.mul_inv_self _},
+    away.mul_inv_self _⟩
 
-example (hx : irreducible x) (b : B) : is_unit (mk' B x (1 : submonoid.powers x)) :=
-begin
-  apply is_unit_of_mul_eq_one _ (mk' B (x^n) (1 : (submonoid.powers x))),
-  convert @map_units A _ (submonoid.powers x) B _ _ _ ⟨x, submonoid.mem_powers _⟩,
-  simp,
-  rw mk',
-  have := _inst_9.1,
-  have := _inst_9.2,
-  have := _inst_9.3,
-  -- have := @map_mk',
-end
+--⟨away.inv_self x, algebra_map A B x, by [rw mul_comm, from  away.mul_inv_self], from away.mul_inv_self⟩
+
+-- lemma inv_self_npow_unit (n : ℕ) : is_unit ((away.inv_self x)^n : B) := (inv_self_unit x B).pow n
+
+include B
+
+#check inv_self.unit x B
+
+-- lemma inv_self_zpow_unit (d : ℤ) : is_unit ((inv_self.unit x B) ^ d) := 
+-- begin
+-- simp,
+-- end
+
+-- example (hx : irreducible x) (β : B) (d : ℤ) : true :=
+-- begin
+--   obtain ⟨b₁, hb⟩ := inv_self_unit x B,
+--   let b := (inv_self_unit x B).some ^ d,
+--   have := is_unit b,
+--   let c : Bˣ,
+--   fconstructor,
+--   use away.inv_self x,
+--   use algebra_map A B x,
+--   rw mul_comm,
+--   apply away.mul_inv_self,
+--   apply away.mul_inv_self,
+-- --  let α : Bˣ,-- := ⟨away.inv_self x, inv_self_unit A x⟩,
+-- --  fconstructor,
+-- --  use away.inv_self x,
+-- --  have := (inv_self_unit A x),
+-- end
+
+-- example (hx : irreducible x) (b : B) : is_unit (mk' B x (1 : submonoid.powers x)) :=
+-- begin
+--   apply is_unit_of_mul_eq_one _ (mk' B (x^n) (1 : (submonoid.powers x))),
+--   convert @map_units A _ (submonoid.powers x) B _ _ _ ⟨x, submonoid.mem_powers _⟩,
+--   simp,
+--   rw mk',
+--   have := _inst_9.1,
+--   have := _inst_9.2,
+--   have := _inst_9.3,
+--   -- have := @map_mk',
+-- end
 
 -- the following `lemma` is false: it can happen that `b` is integral. 
 lemma exists_reduced_fraction' (hx : irreducible x) (b : B):
   ∃ (a : A) (n : ℤ), ¬ x ∣ a ∧
-  (⟨away.inv_self x, map_units ⟨x, submonoid.mem_powers _⟩⟩ : Bˣ ) = 1 :=
+  (((inv_self.unit x B)^n : Bˣ) : B) * mk' B a (1 : submonoid.powers x) = b :=
   -- (mk' B a (1 : (submonoid.powers x))) * (((away.inv_self x) : Bˣ ) : B)= b :=
   -- (∀ {d}, d ∣ a → d ∣ b → is_unit d) ∧ mk' K a b = x :=
 begin
