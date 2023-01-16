@@ -102,18 +102,36 @@ variables (S)
 
 section away
 
-variables {A : Type*} [comm_ring A] [is_domain A]
-variables (x : A) (B : Type*) [comm_ring B] [algebra A B] [is_localization.away x B] [decidable_eq A]
+variables {A : Type*} [decidable_eq A]
 variables [cancel_comm_monoid_with_zero A] [normalization_monoid A] [unique_factorization_monoid A]
 variables [dec_dvd : decidable_rel (has_dvd.dvd : A → A → Prop)]
+variables (x : A) [hx : irreducible x]
+
+include hx dec_dvd
+
+lemma uno_remarkable (a₀ : A) (h : a₀ ≠ 0) [nontrivial A] : ∃ n : ℕ, ∃ a : A, ¬ x ∣ a₀ ∧ a₀ = x ^ n * a :=
+begin
+  use (unique_factorization_monoid.normalized_factors a₀).count (normalize x),
+  -- have := @unique_factorization_monoid.multiplicity_eq_count_normalized_factors
+  --   A _ _ _ _ _ dec_dvd x a₀ hx h,
+  -- rw ← this,
+  -- have := unique_factorization_monoid.multiplicity_eq_count_normalized_factors hx h,
+
+  obtain ⟨a, y, ε, no_factor, hyp1, hyp2⟩ :=
+    unique_factorization_monoid.exists_reduced_factors a₀ h x,
+  use a,
+end
+
+
+variables [comm_ring A] [is_domain A]
+variables (B : Type*) [comm_ring B] [algebra A B] [is_localization.away x B] 
+
 open multiplicity
 
 example (a : Aˣ) (b c : A) (d : ℤ) (hb : is_unit b) : ((hb.some^d : Aˣ) : A) * c = 0 :=
 begin
   sorry,
 end
-
-include dec_dvd
 
 example (n : ℕ) (a : A) : is_unit (mk' B (1 : A) ⟨x, submonoid.mem_powers _⟩) :=
 begin
@@ -217,6 +235,7 @@ include B
 --   -- have := @map_mk',
 -- end
 
+
 -- the following `lemma` is false: it can happen that `b` is integral. 
 lemma exists_reduced_fraction' (hx : irreducible x) (b : B):
   ∃ (a : A) (n : ℤ), ¬ x ∣ a ∧
@@ -224,17 +243,25 @@ lemma exists_reduced_fraction' (hx : irreducible x) (b : B):
   -- (mk' B a (1 : (submonoid.powers x))) * (((away.inv_self x) : Bˣ ) : B)= b :=
   -- (∀ {d}, d ∣ a → d ∣ b → is_unit d) ∧ mk' K a b = x :=
 begin
-  -- have : is_unit (mk' B x 1),
-  -- convert map_units B ⟨x, submonoid.mem_powers _⟩,
+  obtain ⟨⟨a₀, y⟩, H⟩ := is_localization.surj (submonoid.powers x) b,
+  obtain ⟨d, hy⟩ := (submonoid.mem_powers_iff y.1 x).mp y.2,
+  simp only [← subtype.val_eq_coe, ← hy] at H,--needed?
+
+  set uy : Bˣ := ⟨algebra_map A B x^d, (((x_as_unit x B)^(-(d : ℤ)) : Bˣ) : B),
+  by {simp only [← subtype.val_eq_coe, ← hy, map_pow, zpow_neg, zpow_coe_nat,
+    units.mul_inv_eq_one, units.coe_pow],
+  refl},
+  by {simp only [← subtype.val_eq_coe, ← hy, map_pow, zpow_neg, zpow_coe_nat,
+    units.inv_mul_eq_one, units.coe_pow],
+  refl}⟩ with huy,--was it enough to simply use `(x_as_unit x B)^d`?
+
+  let m := (unique_factorization_monoid.normalized_factors a₀).count (normalize x),
   
-  obtain ⟨⟨y', hy'⟩, a', hab⟩ := exists_integer_multiple (submonoid.powers x) b,
-  let m := (unique_factorization_monoid.normalized_factors a').count (normalize x),
-  obtain ⟨d, hyd⟩ := (submonoid.mem_powers_iff y' x).mp hy',
-  use a',
-  use m,
-  have := @unique_factorization_monoid.exists_associated_prime_pow_of_unique_normalized_factor,
+  -- use a',
+  -- use m,
+  -- have := @unique_factorization_monoid.exists_associated_prime_pow_of_unique_normalized_factor,
   obtain ⟨a, y, c, no_factor, hca, hcy⟩ := 
-    @unique_factorization_monoid.exists_reduced_factors' A _ _ a' y' _,
+    @unique_factorization_monoid.exists_reduced_factors' A _ _ a₀ y _,
   
   -- obtain ⟨a', b', c', no_factor, rfl, rfl⟩ :=
   --   unique_factorization_monoid.exists_reduced_factors' a x _,
