@@ -99,18 +99,36 @@ num_denom_reduced A x (h.symm ▸ dvd_zero _) dvd_rfl
 end num_denom
 
 variables (S)
+universes u v
 
 section away
 
-variables {A : Type*} [decidable_eq A]
+variables {A : Type u} [decidable_eq A]
 variables [cancel_comm_monoid_with_zero A] [normalization_monoid A] [unique_factorization_monoid A]
 variables [dec_dvd : decidable_rel (has_dvd.dvd : A → A → Prop)]
-variables (x : A) [hx : irreducible x]
+variable {x : A}
+variable (hx : irreducible x)
 open multiplicity unique_factorization_monoid
 
-include hx dec_dvd
+end away
 
-lemma uno_remarkable (a₀ : A) (h : a₀ ≠ 0) [nontrivial A] : ∃ n : ℕ, ∃ a : A, ¬ x ∣ a ∧ a₀ = x ^ n * a :=
+section away
+
+open multiplicity unique_factorization_monoid
+
+variables {A : Type u} [comm_ring A] [is_domain A]
+variables [dec_dvd : decidable_rel (has_dvd.dvd : A → A → Prop)]
+variable (x : A)
+variables (B : Type v) [comm_ring B] [algebra A B] [is_localization.away x B] 
+variable (hx' : irreducible x)
+variable (n : ℕ)
+
+#where
+
+include dec_dvd
+
+lemma uno_remarkable (a₀ : A) (h : a₀ ≠ 0) [nontrivial A] (hx : irreducible x) : 
+  ∃ n : ℕ, ∃ a : A, ¬ x ∣ a ∧ a₀ = x ^ n * a :=
 begin
   let n := (normalized_factors a₀).count (normalize x),
   obtain ⟨a, ha1, ha2⟩ := (@exists_eq_pow_mul_and_not_dvd A _ _ x a₀
@@ -120,154 +138,59 @@ begin
   use [n, (multiplicity_eq_count_normalized_factors hx h)],
 end
 
-
-variables [comm_ring A] [is_domain A]
-variables (B : Type*) [comm_ring B] [algebra A B] [is_localization.away x B] 
-
-example (a : Aˣ) (b c : A) (d : ℤ) (hb : is_unit b) : ((hb.some^d : Aˣ) : A) * c = 0 :=
+lemma due_remarkable (a : A) (m n : ℕ) :
+  (mk' B a ⟨x^n, (submonoid.mem_powers_iff (x^n) x).mpr ⟨n, rfl⟩⟩) = 
+  (mk' B (a * x^m) ⟨x^(n), (submonoid.mem_powers_iff (x^n) x).mpr ⟨n, rfl⟩⟩) :=
 begin
-  sorry,
+sorry
 end
 
-example (n : ℕ) (a : A) : is_unit (mk' B (1 : A) ⟨x, submonoid.mem_powers _⟩) :=
-begin
-  apply is_unit_of_mul_eq_one _ (algebra_map A B x),
-  convert @mk'_spec_mk A _ (submonoid.powers x) B _ _ _ 1 x (submonoid.mem_powers _),
-  exact (map_one _).symm,
-end
+-- include x
 
--- example (n : ℕ) (a : A) : is_unit (mk' B (1 : A) ⟨x, submonoid.mem_powers _⟩^n) :=
-
-example (n : ℕ) (a : A) : is_unit (mk' B (1 : A) ⟨x, submonoid.mem_powers _⟩^n) :=
-begin
-  -- suffices is_unit 
-  apply is_unit_of_mul_eq_one _ (mk' B (x^n) (1 : (submonoid.powers x))),
-  suggest,
-  -- simp only [map_pow],
-  -- simp,
-  -- convert @mk'_spec_mk A _ (submonoid.powers x) B _ _ _ 1 (x ^ n)
-  --   (pow_mem (submonoid.mem_powers _) n),
-  -- swap,
-  -- simp only [map_pow],
-  -- swap,
-  -- exact (map_one _).symm,
-  -- -- rw [← localization.mk_eq_monoid_of_mk'],
-  -- rw mk',
-  -- -- rw mk',
-  -- have := @localization.mk_pow A _ (submonoid.powers x) n 1 ⟨x, submonoid.mem_powers _⟩,
-  have α := _inst_9.map_units ⟨x ^ n, pow_mem (submonoid.mem_powers _) n⟩,
-  convert α,
-  simp only [set_like.coe_mk, map_pow],
-  refine congr_arg2 pow _ rfl,
-  rw mk',
-  -- suggest,
-  -- simp,
-  -- rw this,
-  -- simp,
-  -- simp only [map_pow],
-end
-
--- def lsa : has_pow ℤ (submonoid.powers (x)) :=
--- begin
--- sorry
--- end
-
--- lemma inv_self.is_unit : is_unit ((away.inv_self x) : B) :=
--- begin
---   apply is_unit_of_mul_eq_one _ (mk' B x (1 : (submonoid.powers x))),
---   simp only [away.inv_self, ←mk'_mul, one_mul, mul_one, mk'_self],
--- end
-
-include x
-
-noncomputable def inv_self.unit : Bˣ :=
-  ⟨away.inv_self x, algebra_map _ _ x, by {rw mul_comm, exact away.mul_inv_self _},
-    away.mul_inv_self _⟩
+-- noncomputable def inv_self.unit : Bˣ :=
+--   ⟨away.inv_self x, algebra_map _ _ x, by {rw mul_comm, exact away.mul_inv_self _},
+--     away.mul_inv_self _⟩
 
 noncomputable def x_as_unit : Bˣ :=
   ⟨algebra_map _ _ x, away.inv_self x, away.mul_inv_self _,
     by {rw mul_comm, exact away.mul_inv_self _}⟩
 
---⟨away.inv_self x, algebra_map A B x, by [rw mul_comm, from  away.mul_inv_self], from away.mul_inv_self⟩
 
--- lemma inv_self_npow_unit (n : ℕ) : is_unit ((away.inv_self x)^n : B) := (inv_self_unit x B).pow n
+lemma due_remarkable' (a : A) (b : B) (m d : ℤ) :
+  (((x_as_unit x B ^ (m - d)) : Bˣ ) : B) * mk' B a (1 : submonoid.powers x) = b ↔
+  (((x_as_unit x B ^ m) : Bˣ) : B) * mk' B a (1 : submonoid.powers x) = (((x_as_unit x B ^ d) : Bˣ) : B) * b :=
+begin
+sorry
+end
 
-include B
+lemma aux (d : ℕ) : (((x_as_unit x B)^(d : ℤ) : Bˣ) : B) = (algebra_map A B x)^d := sorry --rfl
+#check aux x B
 
--- #check inv_self.unit x B
-
--- lemma inv_self_zpow_unit (d : ℤ) : is_unit ((inv_self.unit x B) ^ d) := 
--- begin
--- simp,
--- end
-
--- example (hx : irreducible x) (β : B) (d : ℤ) : true :=
--- begin
---   obtain ⟨b₁, hb⟩ := inv_self_unit x B,
---   let b := (inv_self_unit x B).some ^ d,
---   have := is_unit b,
---   let c : Bˣ,
---   fconstructor,
---   use away.inv_self x,
---   use algebra_map A B x,
---   rw mul_comm,
---   apply away.mul_inv_self,
---   apply away.mul_inv_self,
--- --  let α : Bˣ,-- := ⟨away.inv_self x, inv_self_unit A x⟩,
--- --  fconstructor,
--- --  use away.inv_self x,
--- --  have := (inv_self_unit A x),
--- end
-
--- example (hx : irreducible x) (b : B) : is_unit (mk' B x (1 : submonoid.powers x)) :=
--- begin
---   apply is_unit_of_mul_eq_one _ (mk' B (x^n) (1 : (submonoid.powers x))),
---   convert @map_units A _ (submonoid.powers x) B _ _ _ ⟨x, submonoid.mem_powers _⟩,
---   simp,
---   rw mk',
---   have := _inst_9.1,
---   have := _inst_9.2,
---   have := _inst_9.3,
---   -- have := @map_mk',
--- end
-
+include hx'
 
 -- the following `lemma` is false: it can happen that `b` is integral. 
-lemma exists_reduced_fraction' (hx : irreducible x) (b : B):
+lemma exists_reduced_fraction' (b : B) :
   ∃ (a : A) (n : ℤ), ¬ x ∣ a ∧
   (((x_as_unit x B)^n : Bˣ) : B) * mk' B a (1 : submonoid.powers x) = b :=
   -- (mk' B a (1 : (submonoid.powers x))) * (((away.inv_self x) : Bˣ ) : B)= b :=
   -- (∀ {d}, d ∣ a → d ∣ b → is_unit d) ∧ mk' K a b = x :=
 begin
-  obtain ⟨⟨a₀, y⟩, H⟩ := is_localization.surj (submonoid.powers x) b,
-  obtain ⟨d, hy⟩ := (submonoid.mem_powers_iff y.1 x).mp y.2,
-  simp only [← subtype.val_eq_coe, ← hy] at H,--needed?
+  by_cases hb : b = 0,
+  { sorry, },
+  { obtain ⟨⟨a₀, y⟩, H⟩ := is_localization.surj (submonoid.powers x) b,
+    have ha₀ : a₀ ≠ 0,
+    { sorry, --have := ne_zero_of_mk'_ne_zero,
 
-  set uy : Bˣ := ⟨algebra_map A B x^d, (((x_as_unit x B)^(-(d : ℤ)) : Bˣ) : B),
-  by {simp only [← subtype.val_eq_coe, ← hy, map_pow, zpow_neg, zpow_coe_nat,
-    units.mul_inv_eq_one, units.coe_pow],
-  refl},
-  by {simp only [← subtype.val_eq_coe, ← hy, map_pow, zpow_neg, zpow_coe_nat,
-    units.inv_mul_eq_one, units.coe_pow],
-  refl}⟩ with huy,--was it enough to simply use `(x_as_unit x B)^d`?
-
-  let m := (unique_factorization_monoid.normalized_factors a₀).count (normalize x),
-  
-  -- use a',
-  -- use m,
-  -- have := @unique_factorization_monoid.exists_associated_prime_pow_of_unique_normalized_factor,
-  obtain ⟨a, y, c, no_factor, hca, hcy⟩ := 
-    @unique_factorization_monoid.exists_reduced_factors' A _ _ a₀ y _,
-  
-  -- obtain ⟨a', b', c', no_factor, rfl, rfl⟩ :=
-  --   unique_factorization_monoid.exists_reduced_factors' a x _,
-      -- (mem_non_zero_divisors_iff_ne_zero.mp y),
-  obtain ⟨c'_nonzero, b'_nonzero⟩ := mul_mem_non_zero_divisors.mp b_nonzero,
-  refine ⟨a', ⟨b', b'_nonzero⟩, @no_factor, _⟩,
-  refine mul_left_cancel₀
-    (is_fraction_ring.to_map_ne_zero_of_mem_non_zero_divisors b_nonzero) _,
-  simp only [subtype.coe_mk, ring_hom.map_mul, algebra.smul_def] at *,
-  erw [←hab, mul_assoc, mk'_spec' _ a' ⟨b', b'_nonzero⟩],
+    },
+    obtain ⟨d, hy⟩ := (submonoid.mem_powers_iff y.1 x).mp y.2,
+    simp only [← subtype.val_eq_coe, ← hy] at H,--needed?
+    obtain ⟨m, a, hyp1, hyp2⟩ := uno_remarkable x a₀ ha₀ hx',
+    use a,
+    use m - d,
+    rw [due_remarkable' x B a b m d, aux x B d, mul_comm _ b, ← map_pow, H, hyp2, aux x B m,
+      map_mul, map_pow],
+    exact ⟨hyp1, (congr_arg _ (is_localization.mk'_one _ _))⟩,
+  }
 end
 
 end away
