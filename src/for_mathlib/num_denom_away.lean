@@ -106,60 +106,18 @@ variables {A : Type*} [decidable_eq A]
 variables [cancel_comm_monoid_with_zero A] [normalization_monoid A] [unique_factorization_monoid A]
 variables [dec_dvd : decidable_rel (has_dvd.dvd : A → A → Prop)]
 variables (x : A) [hx : irreducible x]
-open multiplicity
+open multiplicity unique_factorization_monoid
 
 include hx dec_dvd
 
 lemma uno_remarkable (a₀ : A) (h : a₀ ≠ 0) [nontrivial A] : ∃ n : ℕ, ∃ a : A, ¬ x ∣ a ∧ a₀ = x ^ n * a :=
 begin
-
-  set m := (unique_factorization_monoid.normalized_factors a₀).count (normalize x) with hm,
-  have := (@unique_factorization_monoid.multiplicity_eq_count_normalized_factors A _ _ _ _ _ dec_dvd
-    x a₀ hx h).symm,
-  rw ← hm at this,
-  use m,
-  -- have uno : x^m ∣ a₀,
-  -- {apply pow_dvd_of_le_multiplicity (le_of_eq _),
-  -- exact dec_dvd,
-  -- exact this},
-  -- set a := uno.some with a_def,
-  -- let ha := uno.some_spec,
-  -- rw ← a_def at ha,
-  have due : ¬ x^(m+1) ∣ a₀,
-  {refine is_greatest _,
-  rw ← this,
-  rw part_enat.coe_lt_coe,
-  simp only [lt_add_iff_pos_right, nat.lt_one_iff],
-  },
-  have quattro := lt_top_iff_finite.mp,
-  -- have tre := finite_def.mpr,
-  -- use a,
-  -- split,
-  -- swap,
-  -- exact ha,
-  -- rw ha at due,
-  -- rw pow_succ at due,
-
-  obtain ⟨a, ha1, ha2⟩ := (@exists_eq_pow_mul_and_not_dvd A _ dec_dvd x a₀ (quattro _)),
-  use a,
-  split,
-  exact ha2,
-  convert ha1,
-  have uff := (@part_enat.get_eq_iff_eq_coe (multiplicity x a₀) _ m).mpr this.symm,
-  exact uff.symm,
-  -- simp [*] at *,
-
-  -- -- unfold has_dvd.dvd at uno,
-  -- -- let := m.1,
-  -- -- rw this,
-  -- have := @unique_factorization_monoid.multiplicity_eq_count_normalized_factors
-  --   A _ _ _ _ _ dec_dvd x a₀ hx h,
-  -- -- rw ← this,
-  -- -- have := unique_factorization_monoid.multiplicity_eq_count_normalized_factors hx h,
-
-  -- obtain ⟨a, y, ε, no_factor, hyp1, hyp2⟩ :=
-  --   unique_factorization_monoid.exists_reduced_factors a₀ h x,
-  -- use a,
+  let n := (normalized_factors a₀).count (normalize x),
+  obtain ⟨a, ha1, ha2⟩ := (@exists_eq_pow_mul_and_not_dvd A _ _ x a₀
+    (ne_top_iff_finite.mp (part_enat.ne_top_iff.mpr _))),
+  simp_rw [← (multiplicity_eq_count_normalized_factors hx h).symm] at ha1,
+  use [n, a, ha2, ha1],
+  use [n, (multiplicity_eq_count_normalized_factors hx h)],
 end
 
 
