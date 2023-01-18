@@ -169,20 +169,32 @@ lemma aux (d : ℕ) : (((x_as_unit x B)^(d : ℤ) : Bˣ) : B) = (algebra_map A B
 include hx'
 
 -- the following `lemma` is false: it can happen that `b` is integral. 
-lemma exists_reduced_fraction' (b : B) :
+lemma exists_reduced_fraction' (b : B) (hb : b ≠ 0) :
   ∃ (a : A) (n : ℤ), ¬ x ∣ a ∧
   (((x_as_unit x B)^n : Bˣ) : B) * mk' B a (1 : submonoid.powers x) = b :=
   -- (mk' B a (1 : (submonoid.powers x))) * (((away.inv_self x) : Bˣ ) : B)= b :=
   -- (∀ {d}, d ∣ a → d ∣ b → is_unit d) ∧ mk' K a b = x :=
 begin
-  by_cases hb : b = 0,
-  { sorry, },
-  { obtain ⟨⟨a₀, y⟩, H⟩ := is_localization.surj (submonoid.powers x) b,
+  obtain ⟨⟨a₀, y⟩, H⟩ := is_localization.surj (submonoid.powers x) b,
+  obtain ⟨d, hy⟩ := (submonoid.mem_powers_iff y.1 x).mp y.2,
     have ha₀ : a₀ ≠ 0,
-    { sorry, --have := ne_zero_of_mk'_ne_zero,
-
+    { --have : (y : A) ≠ 0,
+      -- rw coe_zero,
+      -- by_contra,
+      have h_inj := @is_localization.injective A _ (submonoid.powers x) B _ _ _ 
+        (powers_le_non_zero_divisors_of_no_zero_divisors (hx'.ne_zero)),
+      haveI := @is_domain_of_le_non_zero_divisors B _ A _ _ _ (submonoid.powers x) _
+       (powers_le_non_zero_divisors_of_no_zero_divisors hx'.ne_zero),
+      simp only [map_zero, ← subtype.val_eq_coe, ← hy, map_pow] at H,
+      apply ((injective_iff_map_eq_zero' (algebra_map A B)).mp (h_inj) a₀).mpr.mt,
+      rw ← H,
+      apply mul_ne_zero hb,
+      apply pow_ne_zero,
+      apply @is_localization.to_map_ne_zero_of_mem_non_zero_divisors
+        A _ (submonoid.powers x) B _ _ _ _ _ x _,
+      apply powers_le_non_zero_divisors_of_no_zero_divisors (hx'.ne_zero),
+      exact mem_non_zero_divisors_iff_ne_zero.mpr hx'.ne_zero,
     },
-    obtain ⟨d, hy⟩ := (submonoid.mem_powers_iff y.1 x).mp y.2,
     simp only [← subtype.val_eq_coe, ← hy] at H,--needed?
     obtain ⟨m, a, hyp1, hyp2⟩ := uno_remarkable x a₀ ha₀ hx',
     use a,
@@ -190,7 +202,6 @@ begin
     rw [due_remarkable' x B a b m d, aux x B d, mul_comm _ b, ← map_pow, H, hyp2, aux x B m,
       map_mul, map_pow],
     exact ⟨hyp1, (congr_arg _ (is_localization.mk'_one _ _))⟩,
-  }
 end
 
 end away
