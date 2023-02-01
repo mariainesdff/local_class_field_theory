@@ -98,32 +98,31 @@ num_denom_reduced A x (h.symm ▸ dvd_zero _) dvd_rfl
 
 end num_denom
 
-variables (S)
+-- variables (S)
 universes u v
 
+-- section away
+
+-- variables {A : Type u} [decidable_eq A]
+-- variables [cancel_comm_monoid_with_zero A] [normalization_monoid A] [unique_factorization_monoid A]
+-- variables [dec_dvd : decidable_rel (has_dvd.dvd : A → A → Prop)]
+-- variable {x : A}
+-- variable (hx : irreducible x)
+-- open multiplicity unique_factorization_monoid
+
+-- end away
+
 section away
 
-variables {A : Type u} [decidable_eq A]
-variables [cancel_comm_monoid_with_zero A] [normalization_monoid A] [unique_factorization_monoid A]
-variables [dec_dvd : decidable_rel (has_dvd.dvd : A → A → Prop)]
-variable {x : A}
-variable (hx : irreducible x)
 open multiplicity unique_factorization_monoid
 
-end away
-
-section away
-
-open multiplicity unique_factorization_monoid
-
-variables {A : Type u} [comm_ring A] [is_domain A]
+variables {A : Type u} [comm_ring A] [is_domain A] [decidable_eq A] [normalization_monoid A] [unique_factorization_monoid A]
 variables [dec_dvd : decidable_rel (has_dvd.dvd : A → A → Prop)]
 variable (x : A)
-variables (B : Type v) [comm_ring B] [algebra A B] [is_localization.away x B] 
-variable (hx' : irreducible x)
-variable (n : ℕ)
 
-#where
+-- variable (n : ℕ)
+
+-- #where
 
 include dec_dvd
 
@@ -138,12 +137,12 @@ begin
   use [n, (multiplicity_eq_count_normalized_factors hx h)],
 end
 
-lemma due_remarkable (a : A) (m n : ℕ) :
-  (mk' B a ⟨x^n, (submonoid.mem_powers_iff (x^n) x).mpr ⟨n, rfl⟩⟩) = 
-  (mk' B (a * x^m) ⟨x^(n), (submonoid.mem_powers_iff (x^n) x).mpr ⟨n, rfl⟩⟩) :=
-begin
-sorry
-end
+-- lemma due_remarkable (a : A) (m n : ℕ) :
+--   (mk' B a ⟨x^n, (submonoid.mem_powers_iff (x^n) x).mpr ⟨n, rfl⟩⟩) = 
+--   (mk' B (a * x^m) ⟨x^(n), (submonoid.mem_powers_iff (x^n) x).mpr ⟨n, rfl⟩⟩) :=
+-- begin
+-- sorry
+-- end
 
 -- include x
 
@@ -151,24 +150,24 @@ end
 --   ⟨away.inv_self x, algebra_map _ _ x, by {rw mul_comm, exact away.mul_inv_self _},
 --     away.mul_inv_self _⟩
 
+variables (B : Type v) [comm_ring B] [algebra A B] [is_localization.away x B] 
+variable (hx' : irreducible x)
+
 noncomputable def x_as_unit : Bˣ :=
   ⟨algebra_map _ _ x, away.inv_self x, away.mul_inv_self _,
     by {rw mul_comm, exact away.mul_inv_self _}⟩
 
-
 lemma due_remarkable' (a : A) (b : B) (m d : ℤ) :
   (((x_as_unit x B ^ (m - d)) : Bˣ ) : B) * mk' B a (1 : submonoid.powers x) = b ↔
-  (((x_as_unit x B ^ m) : Bˣ) : B) * mk' B a (1 : submonoid.powers x) = (((x_as_unit x B ^ d) : Bˣ) : B) * b :=
-begin
-sorry
-end
+  (((x_as_unit x B ^ m) : Bˣ) : B) * mk' B a (1 : submonoid.powers x) =
+    (((x_as_unit x B ^ d) : Bˣ) : B) * b := by {simp only [zpow_sub, units.coe_mul,
+    mul_comm (((x_as_unit x B ^ m) : Bˣ) : B) _,  mul_assoc, units.inv_mul_eq_iff_eq_mul]}
 
-lemma aux (d : ℕ) : (((x_as_unit x B)^(d : ℤ) : Bˣ) : B) = (algebra_map A B x)^d := sorry --rfl
-#check aux x B
+lemma aux (d : ℕ) : (((x_as_unit x B)^(d : ℤ) : Bˣ) : B) = (algebra_map A B x)^d :=
+  by {simp only [x_as_unit, zpow_coe_nat, units.coe_pow, units.coe_mk]}
 
 include hx'
 
--- the following `lemma` is false: it can happen that `b` is integral. 
 lemma exists_reduced_fraction' (b : B) (hb : b ≠ 0) :
   ∃ (a : A) (n : ℤ), ¬ x ∣ a ∧
   (((x_as_unit x B)^n : Bˣ) : B) * mk' B a (1 : submonoid.powers x) = b :=
@@ -199,8 +198,11 @@ begin
     obtain ⟨m, a, hyp1, hyp2⟩ := uno_remarkable x a₀ ha₀ hx',
     use a,
     use m - d,
-    rw [due_remarkable' x B a b m d, aux x B d, mul_comm _ b, ← map_pow, H, hyp2, aux x B m,
+    rw due_remarkable' x B a b m d, --replace?
+    rw [aux x B d, mul_comm _ b, ← map_pow, H, hyp2, aux x B m,
       map_mul, map_pow],
+    -- rw [due_remarkable' x B a b m d, aux x B d, mul_comm _ b, ← map_pow, H, hyp2, aux x B m,
+    --   map_mul, map_pow],
     exact ⟨hyp1, (congr_arg _ (is_localization.mk'_one _ _))⟩,
 end
 
