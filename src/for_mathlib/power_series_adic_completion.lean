@@ -45,6 +45,8 @@ def ideal_X : is_dedekind_domain.height_one_spectrum (polynomial K) :=
 @[simp]
 lemma ideal_X_span : (ideal_X K).as_ideal = ideal.span({polynomial.X}) := rfl
 
+lemma val_X_eq_one : (ideal_X K).valuation (X : ratfunc K) = 1 := sorry
+
 def completion_of_ratfunc  := adic_completion (ratfunc K) (ideal_X K)
 
 instance : field (completion_of_ratfunc K) := adic_completion.field (ratfunc K) (ideal_X K)
@@ -280,16 +282,47 @@ open laurent_series
 lemma val_X_fae : ((X : ratfunc K): laurent_series K).order = 1 :=
 by simp only [ratfunc.coe_X, hahn_series.order_single, ne.def, one_ne_zero, not_false_iff]
 
-example (f : ratfunc K) : ↑(multiplicative.of_add (f : laurent_series K).order) 
+example (f : laurent_series K) (hf : f ≠ 0) : (hahn_series.add_val ℤ K f) = f.order :=
+begin
+  exact hahn_series.add_val_apply_of_ne hf,
+end
+
+-- lemma valuation.map_zpow  : ∀ (f : ratfunc K) (d : ℤ), (ideal_X K).valuation (f ^ d) = (v x)^n :=
+-- v.to_monoid_with_zero_hom.to_monoid_hom.map_pow
+
+lemma fae_order_eq_val (f : ratfunc K) (hf : f ≠ 0) : ↑(multiplicative.of_add (f : laurent_series K).order) 
   = ((ideal_X K).valuation f) :=
 begin
   set F : laurent_series K := f with hF,
   set m := F.order with hm,
-  set a := power_series_part F with ha,
-  have uno := of_power_series_power_series_part F,
-  rw ← ha at uno,
-  rw ← hm at uno,
-  rw power_series.order_mul at uno,
+  set A := power_series_part F with hA,
+  set a := ratfunc.X ^(-m) * f with ha,
+  have haA : (a : laurent_series K) = A,
+  { have uno := of_power_series_power_series_part F,
+    have triv_X : hahn_series.single (-m) 1 = ((X :ratfunc K) : laurent_series K) ^ (-m),
+    sorry,
+    have ratfunc.coe_zpow : ((X :ratfunc K) : laurent_series K) ^ (-m)
+      = ((X ^ (-m) :ratfunc K) : laurent_series K), sorry,  
+    rw hA,
+    rw ha,
+    rw ← hm at uno,
+    rw triv_X at uno,
+    rw hF at uno,
+    rw ratfunc.coe_mul,
+    rw [← ratfunc.coe_zpow],
+    exact uno.symm },
+    replace ha : ratfunc.X^m * a= f,
+    {rwa [zpow_neg, eq_inv_mul_iff_mul_eq₀] at ha,
+      exact (zpow_ne_zero _ ratfunc.X_ne_zero)},
+    rw ← ha,
+    rw valuation.map_mul,
+    rw map_zpow₀,
+    rw val_X_eq_one,
+    
+    -- have := valuation.map_pow (ideal_X K).valuation,
+    -- suggest,
+  
+
 end
 
 lemma coeff_fae (d : ℤ) (x y : ratfunc K) (H : (x, y) ∈ (set_fae K d)) :
