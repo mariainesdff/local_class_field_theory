@@ -243,62 +243,59 @@ end
 
 -- end
 
+instance : is_principal_ideal_ring (power_series K) := sorry
+
 variable [decidable_eq (power_series K)]
-variable [normalization_monoid (power_series K)]
+lemma boo : unique_factorization_monoid (power_series K):=
+begin
+  -- haveI : is_principal_ideal_ring (power_series K), sorry,
+  apply principal_ideal_ring.to_unique_factorization_monoid,
+end
+
 variable [unique_factorization_monoid (power_series K)]
 variable [decidable_rel (has_dvd.dvd : (power_series K) → (power_series K) → Prop)]
+variable [normalization_monoid (power_series K)]
 
-lemma fae_denom_x_nat (f : ratfunc K) (hf : f ≠ 0) : 
-  ∃ (g : power_series K) (n : ℕ), ¬ power_series.X ∣ g ∧
-  ((((power_series.X)^n * g) : (power_series K)) : laurent_series K)= f :=
+def unit_X : (laurent_series K)ˣ :=
+  @self_as_unit (power_series K) _ _ _ _ _ _ (power_series.X) (laurent_series K) _ _ _
+
+lemma fae_denom_X (f : ratfunc K) (hf : f ≠ 0) : 
+  ∃ (g : power_series K) (n : ℤ), ¬ power_series.X ∣ g ∧
+  (((unit_X K)^n * g) : laurent_series K)= f :=
 begin
-  obtain ⟨g, M, hg, hM⟩ := @exists_reduced_fraction' (power_series K) _ _ _ _ _ _ power_series.X
-    (laurent_series K) _ _ _ (prime.irreducible power_series.X_prime) f _,
-  use g,
-  have bleah : M ≥ 0, sorry,
-  use (int.eq_coe_of_zero_le bleah).some,
-  split,
-  exact hg,
-  convert hM,
-  have : is_localization.mk' (laurent_series K) g 1 = g,
-  apply is_localization.mk'_one,
-  rw this,
-  rw power_series.coe_mul,
-  apply congr_arg (λ x, x * (g : laurent_series K)),
-  rw power_series.coe_pow,
-  rw units.coe_zpow,
-  rw ← zpow_coe_nat,
-  rw [← (int.eq_coe_of_zero_le bleah).some_spec],
-  refl,
-  {rw [← ratfunc.coe_zero],
+  obtain ⟨g, n, hg, hn⟩ := exists_reduced_fraction _ (laurent_series K)
+    (@prime.irreducible (power_series K) _ _ (power_series.X_prime)) f _,
+  have : is_localization.mk' (laurent_series K) g 1 = g := is_localization.mk'_one _ _,
+  use [g, n, hg],
+  { rw ← this,
+    convert hn,
+    rw units.coe_zpow,
+    refl },
+  { rw [← ratfunc.coe_zero],
     exact ratfunc.coe_injective.ne hf},
 end
 
+open laurent_series
 
-example (f  : ratfunc K) (d : ℕ) (hf : (ideal_X K).valuation f ≤
-  ↑(multiplicative.of_add (- (d+(1 : ℕ)) : ℤ))) :
-  (f : laurent_series K).coeff d = 0 :=
+lemma val_X_fae : ((X : ratfunc K): laurent_series K).order = 1 :=
+by simp only [ratfunc.coe_X, hahn_series.order_single, ne.def, one_ne_zero, not_false_iff]
+
+example (f : ratfunc K) : ↑(multiplicative.of_add (f : laurent_series K).order) 
+  = ((ideal_X K).valuation f) :=
 begin
-  -- erw [valuation_le_pow_iff_dvd _ _ (d+1)] at hf,
-
-  
-  -- by_cases h_denom : f.denom = 1,
-  
-    -- have := @valuation_of_algebra_map (polynomial K) _ _ _ (ratfunc K) _ _ _ (ideal_X K) f.num,
-    -- have h_eq_f : algebra_map (polynomial K) (ratfunc K) f.num = f, sorry,
-    -- rw h_eq_f at this,
-    -- rw this at hf,
-    -- have := fae_for_pol K f.num d hf,
-    -- convert this,
-    
-
+  set F : laurent_series K := f with hF,
+  set m := F.order with hm,
+  set a := power_series_part F with ha,
+  have uno := of_power_series_power_series_part F,
+  rw ← ha at uno,
+  rw ← hm at uno,
+  rw power_series.order_mul at uno,
 end
-
--- #exit
 
 lemma coeff_fae (d : ℤ) (x y : ratfunc K) (H : (x, y) ∈ (set_fae K d)) :
  (x : laurent_series K).coeff d = (y : laurent_series K).coeff d :=
 begin
+  -- THIS SEEMS THE CRUCIAL TOOL: hahn_series.coeff_eq_zero_of_lt_order
   -- rw [set_fae] at H,
   dsimp only [set_fae] at H,--useless?
   -- simp only at H,

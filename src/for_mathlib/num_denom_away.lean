@@ -153,24 +153,24 @@ end
 variables (B : Type v) [comm_ring B] [algebra A B] [is_localization.away x B] 
 variable (hx' : irreducible x)
 
-noncomputable def x_as_unit : Bˣ :=
+noncomputable def self_as_unit : Bˣ :=
   ⟨algebra_map _ _ x, away.inv_self x, away.mul_inv_self _,
     by {rw mul_comm, exact away.mul_inv_self _}⟩
 
 lemma due_remarkable' (a : A) (b : B) (m d : ℤ) :
-  (((x_as_unit x B ^ (m - d)) : Bˣ ) : B) * mk' B a (1 : submonoid.powers x) = b ↔
-  (((x_as_unit x B ^ m) : Bˣ) : B) * mk' B a (1 : submonoid.powers x) =
-    (((x_as_unit x B ^ d) : Bˣ) : B) * b := by {simp only [zpow_sub, units.coe_mul,
-    mul_comm (((x_as_unit x B ^ m) : Bˣ) : B) _,  mul_assoc, units.inv_mul_eq_iff_eq_mul]}
+  (((self_as_unit x B ^ (m - d)) : Bˣ ) : B) * mk' B a (1 : submonoid.powers x) = b ↔
+  (((self_as_unit x B ^ m) : Bˣ) : B) * mk' B a (1 : submonoid.powers x) =
+    (((self_as_unit x B ^ d) : Bˣ) : B) * b := by {simp only [zpow_sub, units.coe_mul,
+    mul_comm (((self_as_unit x B ^ m) : Bˣ) : B) _,  mul_assoc, units.inv_mul_eq_iff_eq_mul]}
 
-lemma aux (d : ℕ) : (((x_as_unit x B)^(d : ℤ) : Bˣ) : B) = (algebra_map A B x)^d :=
-  by {simp only [x_as_unit, zpow_coe_nat, units.coe_pow, units.coe_mk]}
+lemma aux (d : ℕ) : (((self_as_unit x B)^(d : ℤ) : Bˣ) : B) = (algebra_map A B x)^d :=
+  by {simp only [self_as_unit, zpow_coe_nat, units.coe_pow, units.coe_mk]}
 
 include hx'
 
-lemma exists_reduced_fraction' (b : B) (hb : b ≠ 0) :
+lemma exists_reduced_fraction (b : B) (hb : b ≠ 0) :
   ∃ (a : A) (n : ℤ), ¬ x ∣ a ∧
-  (((x_as_unit x B)^n : Bˣ) : B) * mk' B a (1 : submonoid.powers x) = b :=
+  (((self_as_unit x B)^n : Bˣ) : B) * mk' B a (1 : submonoid.powers x) = b :=
   -- (mk' B a (1 : (submonoid.powers x))) * (((away.inv_self x) : Bˣ ) : B)= b :=
   -- (∀ {d}, d ∣ a → d ∣ b → is_unit d) ∧ mk' K a b = x :=
 begin
