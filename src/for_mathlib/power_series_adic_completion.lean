@@ -45,7 +45,8 @@ def ideal_X : is_dedekind_domain.height_one_spectrum (polynomial K) :=
 @[simp]
 lemma ideal_X_span : (ideal_X K).as_ideal = ideal.span({polynomial.X}) := rfl
 
-lemma val_X_eq_one : (ideal_X K).valuation (X : ratfunc K) = 1 := sorry
+lemma val_X_eq_one : (ideal_X K).valuation (X : ratfunc K) = multiplicative.of_add (-1 : ℤ) := 
+sorry
 
 def completion_of_ratfunc  := adic_completion (ratfunc K) (ideal_X K)
 
@@ -223,7 +224,12 @@ end
 
 
 def set_fae (d : ℤ) : set (ratfunc K × ratfunc K) :=
-  {P | ↑(multiplicative.of_add d) ≤ (ideal_X K).valuation (P.1 - P.2)}
+  {P | (ideal_X K).valuation (P.1 - P.2) < ↑(multiplicative.of_add (- d))}
+
+-- *FAE* This was the old definition, but I think I got the inequalities wrong, since I did not
+-- know yet how to play with `multiplicative.of_add`.
+-- def set_fae (d : ℤ) : set (ratfunc K × ratfunc K) :=
+--   {P | ↑(multiplicative.of_add d) ≤ (ideal_X K).valuation (P.1 - P.2)}
 
 lemma fae_for_pol (f  : polynomial K) (d : ℕ) (hf : (ideal_X K).int_valuation f ≤ 
   ↑(multiplicative.of_add (- (d+(1 : ℕ)) : ℤ))) : f.coeff d = 0 :=
@@ -287,11 +293,23 @@ begin
   exact hahn_series.add_val_apply_of_ne hf,
 end
 
--- lemma valuation.map_zpow  : ∀ (f : ratfunc K) (d : ℤ), (ideal_X K).valuation (f ^ d) = (v x)^n :=
--- v.to_monoid_with_zero_hom.to_monoid_hom.map_pow
+-- lemma fae_hahn_single {Γ : Type*} [ordered_cancel_add_comm_monoid Γ]
+--    (m : ℤ) : (hahn_series.single 1 (1 : K))^m = hahn_series.single m 1 :=
+-- begin
+--   ext d,
+--   simp only [hahn_series.single_coeff],
+--   split_ifs,
+--   sorry,
+--   -- { dsimp [hahn_series.single],
+    
+  
+  
+--   -- },
+-- end
 
-lemma fae_order_eq_val (f : ratfunc K) (hf : f ≠ 0) : ↑(multiplicative.of_add (f : laurent_series K).order) 
-  = ((ideal_X K).valuation f) :=
+
+lemma fae_order_eq_val (f : ratfunc K) (hf : f ≠ 0) :
+ ↑(multiplicative.of_add (- (f : laurent_series K).order)) = ((ideal_X K).valuation f) :=
 begin
   set F : laurent_series K := f with hF,
   set m := F.order with hm,
@@ -300,7 +318,9 @@ begin
   have haA : (a : laurent_series K) = A,
   { have uno := of_power_series_power_series_part F,
     have triv_X : hahn_series.single (-m) 1 = ((X :ratfunc K) : laurent_series K) ^ (-m),
-    sorry,
+    { --have : ((X: ratfunc K) : laurent_series K) = (power_series.X : power_series K),
+      simp only [ratfunc.coe_X, power_series.coe_X],
+      sorry },
     have ratfunc.coe_zpow : ((X :ratfunc K) : laurent_series K) ^ (-m)
       = ((X ^ (-m) :ratfunc K) : laurent_series K), sorry,  
     rw hA,
@@ -311,31 +331,57 @@ begin
     rw ratfunc.coe_mul,
     rw [← ratfunc.coe_zpow],
     exact uno.symm },
-    replace ha : ratfunc.X^m * a= f,
+    replace ha : ratfunc.X^m * a = f,
     {rwa [zpow_neg, eq_inv_mul_iff_mul_eq₀] at ha,
       exact (zpow_ne_zero _ ratfunc.X_ne_zero)},
     rw ← ha,
     rw valuation.map_mul,
     rw map_zpow₀,
     rw val_X_eq_one,
-    
-    -- have := valuation.map_pow (ideal_X K).valuation,
-    -- suggest,
-  
-
+    have : (ideal_X K).valuation a = 1,
+    sorry,
+    rw this,
+    rw [mul_one, ← with_zero.coe_zpow, ← of_add_zsmul, smul_neg, zsmul_one],
+    refl,
 end
+
+lemma fae_order_eq_val' (f : ratfunc K) (hf : f ≠ 0) :
+ ↑(multiplicative.of_add ((f : laurent_series K).order)) = ((ideal_X K).valuation f)⁻¹ :=
+begin
+  rw [← neg_neg f],
+    sorry,
+  -- have := (ratfunc.coe_alg_hom K).map_neg,
+  -- rw of_add_neg,
+end
+
+-- example (G : Type*) [group G] [has_lt G] (a b : G) : a < b ↔ b⁻¹ < a⁻¹ :=
+-- begin
+--   rw inv_lt',
+-- end
 
 lemma coeff_fae (d : ℤ) (x y : ratfunc K) (H : (x, y) ∈ (set_fae K d)) :
  (x : laurent_series K).coeff d = (y : laurent_series K).coeff d :=
 begin
-  -- THIS SEEMS THE CRUCIAL TOOL: hahn_series.coeff_eq_zero_of_lt_order
-  -- rw [set_fae] at H,
-  dsimp only [set_fae] at H,--useless?
-  -- simp only at H,
-  apply eq_of_sub_eq_zero,
-  rw [← hahn_series.sub_coeff],
-  rw [← coe_sub],
-  sorry,
+  by_cases triv : x = y,
+  { rw triv },
+  { dsimp only [set_fae] at H,
+    apply eq_of_sub_eq_zero,
+    rw [← hahn_series.sub_coeff],
+    rw [← coe_sub],
+    apply hahn_series.coeff_eq_zero_of_lt_order,
+    rw ← multiplicative.of_add_lt,
+    rw ← with_zero.coe_lt_coe,
+    rw @fae_order_eq_val' K _ _ _ _ _ (x - y) (sub_ne_zero_of_ne triv),
+    rw [of_add_neg] at H,
+    replace triv : ((ideal_X K).valuation) (x - y) ≠ 0 :=
+      (valuation.ne_zero_iff _).mpr (sub_ne_zero_of_ne triv),
+    rw ← with_zero.coe_unzero triv,
+    rw ← with_zero.coe_inv,
+    rw with_zero.coe_lt_coe,
+    rw lt_inv',
+    rw ← with_zero.coe_lt_coe,
+    rw with_zero.coe_unzero triv,
+    exact H },
 end
 
 
