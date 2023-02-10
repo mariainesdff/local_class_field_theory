@@ -9,7 +9,7 @@ import ring_theory.laurent_series
 import ring_theory.power_series.well_known
 
 open polynomial is_dedekind_domain.height_one_spectrum topological_space ratfunc sequentially_complete filter
-open_locale discrete_valuation uniformity filter topological_space
+open_locale big_operators discrete_valuation uniformity filter topological_space
 
 -- open filter topological_space set classical uniform_space function
 -- open_locale classical uniformity topological_space filter
@@ -293,19 +293,29 @@ begin
   exact hahn_series.add_val_apply_of_ne hf,
 end
 
--- lemma fae_hahn_single {Γ : Type*} [ordered_cancel_add_comm_monoid Γ]
---    (m : ℤ) : (hahn_series.single 1 (1 : K))^m = hahn_series.single m 1 :=
--- begin
---   ext d,
---   simp only [hahn_series.single_coeff],
---   split_ifs,
---   sorry,
---   -- { dsimp [hahn_series.single],
-    
-  
-  
---   -- },
--- end
+lemma fae_X_pow (n : ℤ) : (hahn_series.single (n : ℤ) 1) =
+  ((X :ratfunc K) : laurent_series K) ^ n :=
+begin
+  induction n with n_pos n_neg,
+  induction n_pos with hn,
+  simp,
+  have := @hahn_series.single_zero_one K _ _,
+  -- have NtoZ := @hahn_series.emb_domain_ring_hom ℕ K _ ℤ _ _ (nat.cast_add_monoid_hom _) _ _,
+  -- have NtoZ_one := NtoZ.map_one,
+  let NinjZ : ℕ ↪ ℤ := ⟨coe, nat.cast_injective⟩,
+  let embNZ : ℕ ↪o ℤ := ⟨NinjZ, by {simp only [function.embedding.coe_fn_mk, nat.cast_le, iff_self,
+    forall_const]}⟩,
+  have NtoZ_one' := @hahn_series.emb_domain_one ℕ K _ ℤ _ _ embNZ _,
+  -- rw [← this] at NtoZ_one,
+  -- convert NtoZ_one',
+  have emb_sing := @hahn_series.emb_domain_single ℕ K _ _ ℤ _ embNZ 0 1,
+  -- rw ← emb_sing,
+  -- simp,
+end
+
+
+
+-- lemma fae_X_zpow
 
 
 lemma fae_order_eq_val (f : ratfunc K) (hf : f ≠ 0) :
@@ -321,19 +331,14 @@ begin
     { --have : ((X: ratfunc K) : laurent_series K) = (power_series.X : power_series K),
       simp only [ratfunc.coe_X, power_series.coe_X],
       sorry },
-    have ratfunc.coe_zpow : ((X :ratfunc K) : laurent_series K) ^ (-m)
-      = ((X ^ (-m) :ratfunc K) : laurent_series K),
-    { sorry,
-
-    },  
     rw hA,
     rw ha,
     rw ← hm at uno,
     rw triv_X at uno,
     rw hF at uno,
     rw ratfunc.coe_mul,
-    rw [← ratfunc.coe_zpow],
-    exact uno.symm },
+    simp only [ratfunc.coe_def, map_zpow₀],
+    exact uno.symm, },
     replace ha : ratfunc.X^m * a = f,
     {rwa [zpow_neg, eq_inv_mul_iff_mul_eq₀] at ha,
       exact (zpow_ne_zero _ ratfunc.X_ne_zero)},
