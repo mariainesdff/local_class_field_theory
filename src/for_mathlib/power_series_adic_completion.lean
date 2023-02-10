@@ -348,28 +348,30 @@ end
 
 -- do for general hahn series
 lemma fae_order_neg {f : ratfunc K} : -- (hf : f ≠ 0) :
- (- f : laurent_series K).order = (f : laurent_series K).order := sorry
+ (- f : laurent_series K).order = (f : laurent_series K).order :=
+begin
+  classical,
+  by_cases hf : f = 0,
+  { simp only [hf, ratfunc.coe_zero, neg_zero]},
+  { simp only [hahn_series.order, hahn_series.support_neg, neg_eq_zero]}
+end
 
 lemma fae_order_eq_val' (f : ratfunc K) (hf : f ≠ 0) :
  ↑(multiplicative.of_add ((f : laurent_series K).order)) = ((ideal_X K).valuation f)⁻¹ :=
 begin
-  have hf_val : ((ideal_X K).valuation f) ≠ 0, sorry,
+  have := fae_order_eq_val K (-f) (neg_ne_zero.mpr hf),
   nth_rewrite 0 [← neg_neg f],
   rw ratfunc.coe_def,
   rw (ratfunc.coe_alg_hom K).map_neg,
   rw ← ratfunc.coe_def,
   rw fae_order_neg,
-  -- rw ratfunc.coe_def,
-  -- rw (ratfunc.coe_alg_hom K).map_neg,
-  -- rw ← ratfunc.coe_def,
-  -- rw fae_order_neg,
-  have := fae_order_eq_val K (-f) _,
   rw of_add_neg at this,
-  rw ← with_zero.coe_unzero hf_val,
-  
-  -- sorry,
-  -- a parte qualche scemenza di invertire cose in ℤₘ₀, ci siamo
-  -- rw inv_eq_iff_inv_eq at this,
+  rw [← with_zero.coe_unzero $((ideal_X K).valuation).ne_zero_iff.mpr hf],
+  rw ← with_zero.coe_inv,
+  rw with_zero.coe_inj,
+  rw eq_inv_iff_eq_inv,
+  rw ← with_zero.coe_inj,
+  simp only [this, with_zero.coe_unzero, valuation.map_neg],
 end
 
 lemma coeff_fae (d : ℤ) (x y : ratfunc K) (H : (x, y) ∈ (set_fae K d)) :
