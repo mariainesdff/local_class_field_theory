@@ -322,7 +322,10 @@ begin
       simp only [ratfunc.coe_X, power_series.coe_X],
       sorry },
     have ratfunc.coe_zpow : ((X :ratfunc K) : laurent_series K) ^ (-m)
-      = ((X ^ (-m) :ratfunc K) : laurent_series K), sorry,  
+      = ((X ^ (-m) :ratfunc K) : laurent_series K),
+    { sorry,
+
+    },  
     rw hA,
     rw ha,
     rw ← hm at uno,
