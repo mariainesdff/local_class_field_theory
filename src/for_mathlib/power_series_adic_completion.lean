@@ -297,22 +297,23 @@ lemma fae_X_pow (n : ℤ) : (hahn_series.single (n : ℤ) 1) =
   ((X :ratfunc K) : laurent_series K) ^ n :=
 begin
   induction n with n_pos n_neg,
-  induction n_pos with hn,
-  simp,
-  have := @hahn_series.single_zero_one K _ _,
-  -- have NtoZ := @hahn_series.emb_domain_ring_hom ℕ K _ ℤ _ _ (nat.cast_add_monoid_hom _) _ _,
-  -- have NtoZ_one := NtoZ.map_one,
-  let NinjZ : ℕ ↪ ℤ := ⟨coe, nat.cast_injective⟩,
-  let embNZ : ℕ ↪o ℤ := ⟨NinjZ, by {simp only [function.embedding.coe_fn_mk, nat.cast_le, iff_self,
-    forall_const]}⟩,
-  have NtoZ_one' := @hahn_series.emb_domain_one ℕ K _ ℤ _ _ embNZ _,
-  -- rw [← this] at NtoZ_one,
-  -- convert NtoZ_one',
-  have emb_sing := @hahn_series.emb_domain_single ℕ K _ _ ℤ _ embNZ 0 1,
-  -- rw ← emb_sing,
-  -- simp,
+  { induction n_pos with n h_ind ,
+    { simp only [nat.nat_zero_eq_zero, int.of_nat_eq_coe, zmod.nat_cast_self, zpow_zero],
+     refl, },
+    { rw ← int.coe_nat_eq,
+      rw ← int.coe_nat_add_one_out,
+      rw [← one_mul (1 : K)],
+      rw ← hahn_series.single_mul_single,
+      rw int.coe_nat_eq,
+      rw h_ind,
+      rw zpow_add_one₀,
+      simp only [ratfunc.coe_X],
+      rw ratfunc.coe_def,
+      rw map_ne_zero_iff (ratfunc.coe_alg_hom K) ratfunc.coe_injective,
+      exact ratfunc.X_ne_zero, 
+      }},
+  sorry,
 end
-
 
 
 -- lemma fae_X_zpow
