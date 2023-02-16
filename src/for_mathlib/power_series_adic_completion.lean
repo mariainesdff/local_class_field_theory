@@ -66,17 +66,17 @@ begin
 end
   -- is_dedekind_domain.height_one_spectrum.uniform_space_adic_completion (ratfunc K) _
 
-lemma foo : (nhds (0 : ratfunc K)).has_basis set.univ (λ n : ℕ,
-  {F : (ratfunc K) | ↑(multiplicative.of_add (n : ℤ)) ≤ (ideal_X K).valuation F}) :=
-begin
-  sorry
-end
+-- lemma foo : (nhds (0 : ratfunc K)).has_basis set.univ (λ n : ℕ,
+--   {F : (ratfunc K) | ↑(multiplicative.of_add (n : ℤ)) ≤ (ideal_X K).valuation F}) :=
+-- begin
+--   sorry
+-- end
 
-lemma foo' : (nhds (0 : ratfunc K)).has_basis set.univ (λ n : ℤ,
-  {F : (ratfunc K) | ↑(multiplicative.of_add n) ≤ (ideal_X K).valuation F}) :=
-begin
-  sorry
-end
+-- lemma foo' : (nhds (0 : ratfunc K)).has_basis set.univ (λ n : ℤ,
+--   {F : (ratfunc K) | ↑(multiplicative.of_add n) ≤ (ideal_X K).valuation F}) :=
+-- begin
+--   sorry
+-- end
 
 -- def boo := filter.has_basis.uniformity_of_nhds_zero (foo K)
 
@@ -89,16 +89,16 @@ end
 -- lemma uff : true := sorry
 -- include K F
 
-def ss (F : completion_of_ratfunc K) : ℕ → (ratfunc K) := seq ((quot.exists_rep F).some).2
-    (λ n, @filter.has_basis.mem_of_mem _ _ _ _ _ n
-    (filter.has_basis.uniformity_of_nhds_zero (foo K)) trivial)
+-- def ss (F : completion_of_ratfunc K) : ℕ → (ratfunc K) := seq ((quot.exists_rep F).some).2
+--     (λ n, @filter.has_basis.mem_of_mem _ _ _ _ _ n
+--     (filter.has_basis.uniformity_of_nhds_zero (foo K)) trivial)
 
 variable (F : completion_of_ratfunc K)
 #check filter.map (ratfunc.coe_alg_hom K) ((quot.exists_rep F).some).1
 
 
 
-#check ss K F
+-- #check ss K F
 -- --   use this,
 -- -- end
 -- -- #check @filter.has_basis.mem_of_mem (ratfunc K) ℕ (nhds 0) (λ n, true) _ d (foo K)
@@ -154,73 +154,73 @@ variable (F : completion_of_ratfunc K)
 
 -- #check seq ((quot.exists_rep F).some).2 (entourage_subset K)
 
-def ss_int : ℤ → laurent_series K
-|(n : nat) := ss K F n
-| _ := 0
+-- def ss_int : ℤ → laurent_series K
+-- |(n : nat) := ss K F n
+-- | _ := 0
 
-lemma foo2 (α : Type*) (u : ℕ → α) (N : ℕ) (hu : ∀ m : ℕ, N ≤ m → u m = u N) :
-  at_top.map u ≤ pure (u N) := --at_top.map u ≤ 𝓟 ({u N}) :=
-begin
-  simp only [le_pure_iff, mem_map, mem_at_top_sets, ge_iff_le, set.mem_preimage,
-    set.mem_singleton_iff],
-  exact ⟨N, hu⟩,
-end
+-- lemma foo2 (α : Type*) (u : ℕ → α) (N : ℕ) (hu : ∀ m : ℕ, N ≤ m → u m = u N) :
+--   at_top.map u ≤ pure (u N) := --at_top.map u ≤ 𝓟 ({u N}) :=
+-- begin
+--   simp only [le_pure_iff, mem_map, mem_at_top_sets, ge_iff_le, set.mem_preimage,
+--     set.mem_singleton_iff],
+--   exact ⟨N, hu⟩,
+-- end
 
-lemma bar (α : Type*) (u : ℕ → α) (N : ℕ) (H : at_top.map u ≤ pure (u N)) :
-  ∃ d, ∀ m : ℕ, d ≤ m → u m = u d :=
-  --  := --at_top.map u ≤ 𝓟 ({u N}) :=
-begin
-  -- intros m hm,
-  -- simp only [le_pure_iff, mem_map, mem_at_top_sets, ge_iff_le, set.mem_preimage,
-  --   set.mem_singleton_iff] at H,
-  simp at H,
-  obtain ⟨a, ha⟩ := H,
-  use a,
-  intros m hm,
-  by_cases a ≤ N,
-  { have : u a = u N,
-    exact ha a (le_of_eq (refl _)),
-    rw this,
-    exact ha _ hm },
-  { replace h : N < a, sorry, sorry,  },
-  -- let A := min a N,
-  -- have hm' : A ≤ m,
-  -- simp * at *,
-  -- apply ha,
-  -- have := (le_of_eq (refl a)),
-  -- specialize ha b (le_max_iff.mpr _),
-  -- apply or.intro_left _, 
-  -- exact this,
+-- lemma bar (α : Type*) (u : ℕ → α) (N : ℕ) (H : at_top.map u ≤ pure (u N)) :
+--   ∃ d, ∀ m : ℕ, d ≤ m → u m = u d :=
+--   --  := --at_top.map u ≤ 𝓟 ({u N}) :=
+-- begin
+--   -- intros m hm,
+--   -- simp only [le_pure_iff, mem_map, mem_at_top_sets, ge_iff_le, set.mem_preimage,
+--   --   set.mem_singleton_iff] at H,
+--   simp at H,
+--   obtain ⟨a, ha⟩ := H,
+--   use a,
+--   intros m hm,
+--   by_cases a ≤ N,
+--   { have : u a = u N,
+--     exact ha a (le_of_eq (refl _)),
+--     rw this,
+--     exact ha _ hm },
+--   { replace h : N < a, sorry, sorry,  },
+--   -- let A := min a N,
+--   -- have hm' : A ≤ m,
+--   -- simp * at *,
+--   -- apply ha,
+--   -- have := (le_of_eq (refl a)),
+--   -- specialize ha b (le_max_iff.mpr _),
+--   -- apply or.intro_left _, 
+--   -- exact this,
   
-  -- simp only [this, true_or],
-  -- have := (true_or (le_of_eq (refl a))),
+--   -- simp only [this, true_or],
+--   -- have := (true_or (le_of_eq (refl a))),
 
-  -- squeeze_simp [b],
-  -- simp only [le_pure_iff, mem_map, mem_at_top_sets, ge_iff_le, set.mem_preimage,
-  --   set.mem_singleton_iff],
-  -- exact ⟨N, hu⟩,
-end
+--   -- squeeze_simp [b],
+--   -- simp only [le_pure_iff, mem_map, mem_at_top_sets, ge_iff_le, set.mem_preimage,
+--   --   set.mem_singleton_iff],
+--   -- exact ⟨N, hu⟩,
+-- end
 
-def eventual_coeff (ℱ : filter (ratfunc K)) (h : cauchy ℱ) (d : ℤ) : K :=
--- ∃ (t : set (laurent_series K)), t ∈ ℱ.map (ratfunc.coe_alg_hom K) ∧ t ≠ ∅ ∧ (∀ F G : (laurent_series K), F ∈ t → G ∈ t → F.coeff d = G.coeff d),
-  sorry
+-- def eventual_coeff (ℱ : filter (ratfunc K)) (h : cauchy ℱ) (d : ℤ) : K :=
+-- -- ∃ (t : set (laurent_series K)), t ∈ ℱ.map (ratfunc.coe_alg_hom K) ∧ t ≠ ∅ ∧ (∀ F G : (laurent_series K), F ∈ t → G ∈ t → F.coeff d = G.coeff d),
+--   sorry
 
-def temp_coeff : ℤ → (laurent_series K → K) := λ i F, F.coeff i
+-- def temp_coeff : ℤ → (laurent_series K → K) := λ i F, F.coeff i
 
-lemma eventually_eq_eventual_coeff (ℱ : filter (ratfunc K)) (h : cauchy ℱ) (d : ℤ) :
-  -- ( T : set (completion_of_ratfunc K)) : 
-  ∀ T ∈ ℱ, (ℱ.map (ratfunc.coe_alg_hom K)).map (temp_coeff K d) = (ℱ.map (ratfunc.coe_alg_hom K)).map (temp_coeff K d) :=
-begin
-  sorry,
-end
+-- lemma eventually_eq_eventual_coeff (ℱ : filter (ratfunc K)) (h : cauchy ℱ) (d : ℤ) :
+--   -- ( T : set (completion_of_ratfunc K)) : 
+--   ∀ T ∈ ℱ, (ℱ.map (ratfunc.coe_alg_hom K)).map (temp_coeff K d) = (ℱ.map (ratfunc.coe_alg_hom K)).map (temp_coeff K d) :=
+-- begin
+--   sorry,
+-- end
 
-example (X : Type*) [uniform_space X] (ℱ : filter X) (hF : cauchy ℱ) :
-  ∃ x : uniform_space.completion X, ℱ.map coe ≤ 𝓝 x :=
-begin
-  refine complete_space.complete _,
-  refine cauchy.map hF _,
-  refine uniform_space.completion.uniform_continuous_coe X,
-end
+-- example (X : Type*) [uniform_space X] (ℱ : filter X) (hF : cauchy ℱ) :
+--   ∃ x : uniform_space.completion X, ℱ.map coe ≤ 𝓝 x :=
+-- begin
+--   refine complete_space.complete _,
+--   refine cauchy.map hF _,
+--   refine uniform_space.completion.uniform_continuous_coe X,
+-- end
 
 
 def set_fae (d : ℤ) : set (ratfunc K × ratfunc K) :=
@@ -293,30 +293,47 @@ begin
   exact hahn_series.add_val_apply_of_ne hf,
 end
 
-lemma fae_X_pow (n : ℤ) : (hahn_series.single (n : ℤ) 1) =
+lemma fae_X_pow (n : ℕ) : (hahn_series.single (n : ℤ) 1) =
+  ((X :ratfunc K) : laurent_series K) ^ n :=
+begin
+induction n with n h_ind ,
+    { simp only [nat.nat_zero_eq_zero, int.of_nat_eq_coe, zmod.nat_cast_self, zpow_zero],
+     refl, },
+    { rw ← int.coe_nat_add_one_out,
+      rw [← one_mul (1 : K)],
+      rw ← hahn_series.single_mul_single,
+      rw h_ind,
+      rw ratfunc.coe_X,
+      rw pow_succ' },
+end
+
+lemma fae_single_inv (d : ℤ) (α : K) (hα : α ≠ 0) : (hahn_series.single (d : ℤ) (α : K))⁻¹ 
+  = hahn_series.single (-d) (α⁻¹ : K) :=
+by {rw [inv_eq_of_mul_eq_one_left], simpa only [hahn_series.single_mul_single, 
+  add_left_neg, inv_mul_cancel hα]}
+
+
+lemma fae_X_zpow (n : ℤ) : (hahn_series.single (n : ℤ) 1) =
   ((X :ratfunc K) : laurent_series K) ^ n :=
 begin
   induction n with n_pos n_neg,
-  { induction n_pos with n h_ind ,
-    { simp only [nat.nat_zero_eq_zero, int.of_nat_eq_coe, zmod.nat_cast_self, zpow_zero],
-     refl, },
-    { rw ← int.coe_nat_eq,
-      rw ← int.coe_nat_add_one_out,
-      rw [← one_mul (1 : K)],
-      rw ← hahn_series.single_mul_single,
-      rw int.coe_nat_eq,
-      rw h_ind,
-      rw zpow_add_one₀,
-      simp only [ratfunc.coe_X],
-      rw ratfunc.coe_def,
-      rw map_ne_zero_iff (ratfunc.coe_alg_hom K) ratfunc.coe_injective,
-      exact ratfunc.X_ne_zero, 
-      }},
-  sorry,
+  apply fae_X_pow,
+  rw ratfunc.coe_X,
+  have := fae_single_inv K ((n_neg + 1) : ℤ) 1 one_ne_zero,
+  rw int.neg_succ_of_nat_coe,
+  rw int.coe_nat_add,
+  rw nat.cast_one,
+  nth_rewrite 0 [← inv_one],
+  rw ← this,
+  rw zpow_neg,
+  rw ← nat.cast_one,
+  rw ← int.coe_nat_add,
+  rw fae_X_pow,
+  rw ratfunc.coe_X,
+  rw [algebra_map.coe_one, inv_inj],
+  rw zpow_coe_nat,
 end
 
-
--- lemma fae_X_zpow
 
 
 lemma fae_order_eq_val (f : ratfunc K) (hf : f ≠ 0) :
@@ -328,14 +345,10 @@ begin
   set a := ratfunc.X ^(-m) * f with ha,
   have haA : (a : laurent_series K) = A,
   { have uno := of_power_series_power_series_part F,
-    have triv_X : hahn_series.single (-m) 1 = ((X :ratfunc K) : laurent_series K) ^ (-m),
-    { --have : ((X: ratfunc K) : laurent_series K) = (power_series.X : power_series K),
-      simp only [ratfunc.coe_X, power_series.coe_X],
-      sorry },
     rw hA,
     rw ha,
     rw ← hm at uno,
-    rw triv_X at uno,
+    rw fae_X_zpow at uno,
     rw hF at uno,
     rw ratfunc.coe_mul,
     simp only [ratfunc.coe_def, map_zpow₀],
