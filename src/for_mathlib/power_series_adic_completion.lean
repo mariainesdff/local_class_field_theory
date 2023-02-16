@@ -9,7 +9,7 @@ import ring_theory.laurent_series
 import ring_theory.power_series.well_known
 
 open polynomial is_dedekind_domain.height_one_spectrum topological_space ratfunc sequentially_complete filter
-open_locale big_operators discrete_valuation uniformity filter topological_space
+open_locale big_operators discrete_valuation uniformity filter topology
 
 -- open filter topological_space set classical uniform_space function
 -- open_locale classical uniformity topological_space filter

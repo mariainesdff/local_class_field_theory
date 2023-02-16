@@ -1,8 +1,8 @@
 [package]
 name = "local_class_field_theory"
 version = "0.1"
-lean_version = "leanprover-community/lean:3.48.0"
+lean_version = "leanprover-community/lean:3.50.3"
 path = "src"
 
 [dependencies]
-mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "8a8470cc4d27ead7252b37f604f845096101a643"}
+mathlib = {git = "https://github.com/leanprover-community/mathlib", rev = "5a82b0671532663333e205f422124a98bdfe673f"}

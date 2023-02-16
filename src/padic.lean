@@ -14,9 +14,10 @@ namespace padic_int
 
 variables {p : ℕ} [fact(nat.prime p)]
 
-lemma coe_eq_zero (x : ℤ_[p]) : (x : ℚ_[p]) = 0  ↔ x = 0 :=
-⟨λ h, by {rw ← padic_int.coe_zero at h, exact subtype.coe_inj.mp h},
-    λ h, by {rw h, exact padic_int.coe_zero}⟩
+-- *[FAE]*: `Already declared`, probably already pushed?
+-- lemma coe_eq_zero (x : ℤ_[p]) : (x : ℚ_[p]) = 0  ↔ x = 0 :=
+-- ⟨λ h, by {rw ← padic_int.coe_zero at h, exact subtype.coe_inj.mp h},
+--     λ h, by {rw h, exact padic_int.coe_zero}⟩
 
 /-- `ℤ_[p]` with its usual ring structure is not a field. -/
 lemma not_is_field (p : ℕ) [hp : fact(nat.prime p)] : ¬ is_field ℤ_[p] :=
@@ -42,14 +43,15 @@ instance algebra : algebra ℤ_[p] ℚ_[p] := ring_hom.to_algebra (padic_int.coe
 lemma algebra_map_def : algebra_map ℤ_[p] ℚ_[p] =  padic_int.coe.ring_hom := rfl
 lemma algebra_map_apply (x : ℤ_[p]) : algebra_map ℤ_[p] ℚ_[p] x = x := rfl
 
-lemma norm_le_one_iff_val_nonneg (x : ℚ_[p]) : ∥ x ∥ ≤ 1 ↔ 0 ≤ x.valuation := 
-begin
-  by_cases hx : x = 0,
-  { simp only [hx, norm_zero, padic.valuation_zero, zero_le_one, le_refl], },
-  { rw [padic.norm_eq_pow_val hx, ← zpow_zero (p : ℝ), zpow_le_iff_le 
-      (nat.one_lt_cast.mpr (nat.prime.one_lt' p).1), right.neg_nonpos_iff], 
-    apply_instance, }
-end
+-- *[FAE]* `Already declared`: already pushed?
+-- lemma norm_le_one_iff_val_nonneg (x : ℚ_[p]) : ‖x‖ ≤ 1 ↔ 0 ≤ x.valuation := 
+-- begin
+--   by_cases hx : x = 0,
+--   { simp only [hx, norm_zero, padic.valuation_zero, zero_le_one, le_refl], },
+--   { rw [padic.norm_eq_pow_val hx, ← zpow_zero (p : ℝ), zpow_le_iff_le 
+--       (nat.one_lt_cast.mpr (nat.prime.one_lt' p).1), right.neg_nonpos_iff], 
+--     apply_instance, }
+-- end
 
 instance is_fraction_ring : is_fraction_ring ℤ_[p] ℚ_[p] :=
 { map_units := 
@@ -61,7 +63,7 @@ instance is_fraction_ring : is_fraction_ring ℤ_[p] ℚ_[p] :=
   end,
   surj      := λ x,
   begin
-    by_cases hx : ∥ x ∥ ≤ 1,
+    by_cases hx : ‖x‖ ≤ 1,
     { use (⟨x, hx⟩, 1),
       rw [submonoid.coe_one, map_one, mul_one],
       refl, },
@@ -72,14 +74,15 @@ instance is_fraction_ring : is_fraction_ring ℤ_[p] ℚ_[p] :=
         rw norm_le_one_iff_val_nonneg at hx,
         exact le_of_lt (not_le.mp hx), },
       set a := x * p^n with ha,
-      have ha_norm : ∥ a ∥ = 1,
+      have ha_norm : ‖a‖ = 1,
       { have hx : x ≠ 0,
         { intro h0,
           rw [h0, norm_zero] at hx,
           exact hx (zero_le_one) },
-        rw [ha, norm_mul, ← zpow_coe_nat, padic_norm_e.norm_p_pow, norm_eq_pow_val hx,
-          ← zpow_add' , hn_coe, neg_neg, add_left_neg, zpow_zero],
-        exact or.inl (nat.cast_ne_zero.mpr (ne_zero.ne p)) },
+        rw [padic_norm_e.mul, padic_norm_e.norm_p_pow, zpow_neg,
+          norm_eq_pow_val hx, mul_inv_eq_one₀, hn_coe],
+        apply zpow_ne_zero_of_ne_zero,
+        exact nat.cast_ne_zero.mpr (ne_zero.ne p) },
       set b := (p^n : ℤ_[p]) with hb,
       have hb_mem : b ∈ non_zero_divisors ℤ_[p],
       { exact mem_non_zero_divisors_iff_ne_zero.mpr (ne_zero.ne _) },
@@ -92,10 +95,10 @@ instance is_fraction_ring : is_fraction_ring ℤ_[p] ℚ_[p] :=
     rw [algebra_map_apply, algebra_map_apply, subtype.coe_inj],
     refine ⟨λ h, _, _⟩,
     { use 1,
-      simp only [submonoid.coe_one, mul_one],
+      simp only [submonoid.coe_one, one_mul],
       exact h },
     { rintro ⟨⟨c, hc⟩, h⟩,
-      exact (mul_eq_mul_right_iff.mp h).resolve_right (mem_non_zero_divisors_iff_ne_zero.mp hc) }
+      exact (mul_eq_mul_left_iff.mp h).resolve_right (mem_non_zero_divisors_iff_ne_zero.mp hc) }
   end }
 
 end padic
