@@ -1,0 +1,51 @@
+\section{Introduction}
+
+\begin{definition}
+\label{local_field}
+\lean{local_field}
+\leanok
+A \textit{(nonarchimedean) local field} is a field complete with respect to a discrete
+valuation and with finite residue field.
+\end{definition}
+
+\begin{definition}
+\label{mixed_char_local_field}
+\lean{mixed_char_local_field}
+\leanok
+A \textit{mixed characteristic local field} is a finite field extension of the field 
+$\mathbb{Q}_p$ of $p$-adic numbers, for some prime $p$.
+\end{definition}
+
+\begin{definition}
+\label{eq_char_local_field}
+\lean{eq_char_local_field}
+\leanok
+An \textit{equal characteristic local field} is a finite field extension of the field 
+$\mathbb{F}_p((X))$, for some prime $p$.
+\end{definition}
+
+\begin{lemma}
+\label{mixed_char_local_field.to_local_field}
+\lean{mixed_char_local_field.to_local_field}
+\uses{local_field, mixed_char_local_field}
+A mixed characteristic local field is a local field.
+\end{lemma}
+
+\begin{lemma}
+\label{eq_char_local_field.to_local_field}
+\lean{eq_char_local_field.to_local_field}
+\uses{local_field, eq_char_local_field}
+An equal characteristic local field is a local field.
+\end{lemma}
+
+\begin{definition}
+\label{def_local_field}
+\lean{blueprint.first_test}
+A local field is a field
+\end{definition}
+
+
+\begin{proof}
+\leanok
+Omitted, but it uses \cite{SerCF} and also \cite{Se2}.
+\end{proof}
