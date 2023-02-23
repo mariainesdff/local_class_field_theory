@@ -75,7 +75,7 @@ begin
   let min_Q : polynomial ℚ_[p] := polynomial.map padic_int.coe.ring_hom min_Z,
   have h_Q_monic : monic min_Q := polynomial.monic.map padic_int.coe.ring_hom h_Z_monic,
   have is_minpoly : min_Q = @minpoly ℚ_[p] K _ _ _ (x : K),
-  exact (minpoly.gcd_domain_eq_field_fractions ℚ_[p] K (is_integral_closure.is_integral
+  exact (minpoly.is_integrally_closed_eq_field_fractions ℚ_[p] K (is_integral_closure.is_integral
     ℤ_[p] K x)).symm,
   have : norm_on_K (x : K) = spectral_value h_Q_monic,
   simp only [norm_on_K, spectral_norm, ← is_minpoly],
@@ -182,7 +182,7 @@ variable (p)
 noncomputable! lemma padic.open_unit_ball_def : 
   (open_unit_ball ℚ_[p]).as_ideal = ideal.span {(p : 𝓞 p ℚ_[p])} := 
 begin
-  have hiff : ∀ (y : ℚ_[p]), y ∈ 𝓞 p ℚ_[p] ↔ ∥y∥ ≤ 1, -- we should extract this to a lemma
+  have hiff : ∀ (y : ℚ_[p]), y ∈ 𝓞 p ℚ_[p] ↔ ‖ y ‖  ≤ 1, -- we should extract this to a lemma
   { intro y, rw mem_ring_of_integers,
     rw is_integrally_closed.is_integral_iff,
     refine ⟨λ h, _, λ h, ⟨⟨y, h⟩, rfl⟩⟩,
