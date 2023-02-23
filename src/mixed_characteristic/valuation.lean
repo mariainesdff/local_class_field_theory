@@ -27,19 +27,18 @@ noncomputable theory
 open is_dedekind_domain nnreal polynomial
 open_locale mixed_char_local_field nnreal discrete_valuation
 
-variables {p : out_param(ℕ)} [fact (p.prime)] 
+variables {p : ℕ} [fact (p.prime)] 
 variables {K : Type*} [field K] [mixed_char_local_field p K]
 
 namespace mixed_char_local_field
 
 def norm_on_K : K → ℝ := spectral_norm (algebra.is_algebraic_of_finite ℚ_[p] K)
 
-lemma norm_on_padic : (norm_on_K : ℚ_[p] → ℝ) = (norm : ℚ_[p] → ℝ) := 
+lemma norm_on_padic : ((norm_on_K ) : ℚ_[p] → ℝ) = (norm : ℚ_[p] → ℝ) := 
 by { ext x, exact spectral_norm.extends _ _ }
 
 def nnnorm_on_K : K → ℝ≥0 :=
-  λ x, ⟨norm_on_K x, spectral_norm_nonneg (algebra.is_algebraic_of_finite ℚ_[p] K) x⟩
-
+λ x, ⟨@norm_on_K _ _ K  _ _ x, spectral_norm_nonneg (algebra.is_algebraic_of_finite ℚ_[p] K) x⟩
 
 @[simp]
 lemma coe_nnnorm {K : Type*} [field K] [mixed_char_local_field p K] 
