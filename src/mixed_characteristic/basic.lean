@@ -77,14 +77,21 @@ end padic_algebra
 dimensional over `ℚ_[p]`, for some prime `p`. -/
 class mixed_char_local_field (p : out_param(ℕ)) [fact(nat.prime p)] (K : Type*) [field K]
   extends algebra ℚ_[p] K :=
-[to_char_zero : char_zero K]
 [to_finite_dimensional : finite_dimensional ℚ_[p] K] 
 
-attribute [nolint dangerous_instance] mixed_char_local_field.to_char_zero
+@[priority 100, nolint dangerous_instance]
+instance mixed_char_local_field.to_char_zero (p : out_param(ℕ)) [fact(nat.prime p)]
+  (K : Type*) [field K] [mixed_char_local_field p K] : char_zero K := 
+⟨λ n m h, by rwa [← map_nat_cast (algebra_map ℚ_[p] K), ← map_nat_cast (algebra_map ℚ_[p] K),
+  (algebra_map ℚ_[p] K).injective.eq_iff, nat.cast_inj] at h⟩
+
+attribute [priority 100, instance] mixed_char_local_field.to_finite_dimensional
+
+/- attribute [nolint dangerous_instance] mixed_char_local_field.to_char_zero
 
 -- See note [lower instance priority]
 attribute [priority 100, instance] mixed_char_local_field.to_char_zero
-  mixed_char_local_field.to_finite_dimensional
+  mixed_char_local_field.to_finite_dimensional -/
 
 namespace mixed_char_local_field
 
@@ -196,13 +203,12 @@ namespace padic
 open mixed_char_local_field
 
 instance mixed_char_local_field (p : ℕ) [fact(nat.prime p)] : mixed_char_local_field p ℚ_[p] :=
-{ to_char_zero := infer_instance,
-  to_finite_dimensional :=
-    -- The vector space structure of `ℚ` over itself can arise in multiple ways:
-    -- all fields are vector spaces over themselves (used in `rat.finite_dimensional`)
-    -- all char 0 fields have a canonical embedding of `ℚ` (used in `mixed_char_local_field`).
-    -- Show that these coincide:
-    by convert (infer_instance : finite_dimensional ℚ_[p] ℚ_[p]), }
+{ to_finite_dimensional :=
+  -- The vector space structure of `ℚ` over itself can arise in multiple ways:
+  -- all fields are vector spaces over themselves (used in `rat.finite_dimensional`)
+  -- all char 0 fields have a canonical embedding of `ℚ` (used in `mixed_char_local_field`).
+  -- Show that these coincide:
+  by convert (infer_instance : finite_dimensional ℚ_[p] ℚ_[p]), }
 
 /-- The ring of integers of `ℚ_[p]` as a mixed characteristic local field is just `ℤ_[p]`. -/
 noncomputable def ring_of_integers_equiv (p : ℕ) [fact(nat.prime p)] :
