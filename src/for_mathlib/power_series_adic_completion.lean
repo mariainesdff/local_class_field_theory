@@ -269,7 +269,7 @@ def unit_X : (laurent_series K)ˣ :=
 
 lemma fae_denom_X (f : ratfunc K) (hf : f ≠ 0) : 
   ∃ (g : power_series K) (n : ℤ), ¬ power_series.X ∣ g ∧
-  (((unit_X K)^n * g) : laurent_series K)= f :=
+  (((unit_X K)^n * g) : laurent_series K) = f :=
 begin
   obtain ⟨g, n, hg, hn⟩ := exists_reduced_fraction _ (laurent_series K)
     (@prime.irreducible (power_series K) _ _ (power_series.X_prime)) f _,
@@ -288,10 +288,10 @@ open laurent_series
 lemma val_X_fae : ((X : ratfunc K): laurent_series K).order = 1 :=
 by simp only [ratfunc.coe_X, hahn_series.order_single, ne.def, one_ne_zero, not_false_iff]
 
-example (f : laurent_series K) (hf : f ≠ 0) : (hahn_series.add_val ℤ K f) = f.order :=
-begin
-  exact hahn_series.add_val_apply_of_ne hf,
-end
+-- example (f : laurent_series K) (hf : f ≠ 0) : (hahn_series.add_val ℤ K f) = f.order :=
+-- begin
+--   exact hahn_series.add_val_apply_of_ne hf,
+-- end
 
 lemma fae_X_pow (n : ℕ) : (hahn_series.single (n : ℤ) 1) =
   ((X :ratfunc K) : laurent_series K) ^ n :=
@@ -335,6 +335,31 @@ begin
 end
 
 
+lemma fae_pol_order_eq_val (f : polynomial K) (hf : f ≠ 0) :
+ ↑(multiplicative.of_add (- (f : laurent_series K).order)) = ((ideal_X K).int_valuation f) :=
+begin
+sorry,
+end
+
+lemma fae_order_eq_val' (x : ratfunc K) (hf : x ≠ 0) :
+ ↑(multiplicative.of_add (- (x : laurent_series K).order)) = ((ideal_X K).valuation x) :=
+begin
+  -- let f := x.1,
+  let denom' : non_zero_divisors _,
+  { use x.num_denom.2, sorry },
+  have := @valuation_of_mk' (polynomial K) _ _ _ (ratfunc K) _ _ _ (ideal_X K)
+    x.num_denom.1 denom',
+  have triv : is_localization.mk' (ratfunc K) x.num_denom.fst denom' = x,
+  {simp only [is_fraction_ring.mk'_eq_div, set_like.coe_mk]},
+  rw ← triv,
+  rw this,
+  -- rw this,
+
+    -- denom',
+
+
+    -- use  lift_monoid_with_zero_hom to posibly extend order
+end
 
 lemma fae_order_eq_val (f : ratfunc K) (hf : f ≠ 0) :
  ↑(multiplicative.of_add (- (f : laurent_series K).order)) = ((ideal_X K).valuation f) :=
@@ -361,6 +386,12 @@ begin
     rw map_zpow₀,
     rw val_X_eq_one,
     have : (ideal_X K).valuation a = 1,
+    -- { have := A.order_eq_multiplicity_X,--rw haA,
+    --   suffices speriamo : ¬ ratfunc.X ∣ a,
+    --   have := @valuation_le_one (polynomial K) _ _ _ (ratfunc K) _ _ _ (ideal_X K) a,
+      -- apply (eq_of_le_of_not_lt (valuation_le_one (ideal_X K) a _)),
+
+    -- },
     sorry,
     rw this,
     rw [mul_one, ← with_zero.coe_zpow, ← of_add_zsmul, smul_neg, zsmul_one],
@@ -473,9 +504,9 @@ begin
   sorry
 end
 
-lemma constant_cauchy_fae_principal {uK : uniform_space K} 
-  (h : uniformity K = 𝓟 id_rel) (α : filter K) (hα : cauchy α) :
-  α ≤ filter.principal {constant_cauchy_fae K h α hα} := sorry
+-- lemma constant_cauchy_fae_principal {uK : uniform_space K} 
+--   (h : uniformity K = 𝓟 id_rel) (α : filter K) (hα : cauchy α) :
+--   α ≤ filter.principal {constant_cauchy_fae K h α hα} := sorry
 
 
 def isom 
