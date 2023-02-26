@@ -339,11 +339,9 @@ end
 lemma fae_int_valuation_apply (f : polynomial K) : 
   ((ideal_X K).int_valuation f) = ((ideal_X K).int_valuation_def f) := refl _
 
-/-
+/- `USE THIS LEMMA`
 lemma order_eq_multiplicity_X {R : Type*} [semiring R] (φ : power_series R) :
   order φ = multiplicity X φ :=
-
-
 -/
 
 lemma fae_pol_order_eq_val {f : polynomial K} (hf : f ≠ 0) :
@@ -364,25 +362,6 @@ begin
 --  simp,
 end
 
--- lemma fae_order_eq_val (x : ratfunc K) (hf : x ≠ 0) :
---  ↑(multiplicative.of_add (- (x : laurent_series K).order)) = ((ideal_X K).valuation x) :=
--- begin
---   -- let f := x.1,
---   let denom' : non_zero_divisors _,
---   { use x.num_denom.2, sorry },
---   have := @valuation_of_mk' (polynomial K) _ _ _ (ratfunc K) _ _ _ (ideal_X K)
---     x.num_denom.1 denom',
---   have triv : is_localization.mk' (ratfunc K) x.num_denom.fst denom' = x,
---   {simp only [is_fraction_ring.mk'_eq_div, set_like.coe_mk]},
---   rw ← triv,
---   rw this,
---   -- rw this,
-
---     -- denom',
-
-
---     -- use  lift_monoid_with_zero_hom to posibly extend order
--- end
 
 lemma fae_order_inv {a : laurent_series K} (ha : a ≠ 0) : a⁻¹.order = - a.order :=
   by {simp only [eq_neg_iff_add_eq_zero, ← hahn_series.order_mul  (inv_ne_zero ha) ha, 
@@ -416,10 +395,8 @@ begin
   rw ← of_add_sub,
   apply congr_arg,
   rw neg_eq_iff_neg_eq,
-  -- rw neg_of
   rw neg_sub_neg,
   rw neg_sub,
-  -- simp only [coe_coe, neg_sub_neg, neg_sub],
   rw ← fae_order_div,
   rw ← hf,
   apply congr_arg,
@@ -435,11 +412,6 @@ begin
     rw [div_mul_cancel _ _],
     sorry,
     sorry,
-    -- have := ratfunc.coe_mul (↑P : ratfunc K) (↑Q : ratfunc K),
-  --squeeze_dsimp [ratfunc.algebra_map_apply],
-    --let := ratfunc.algebra_map,-- (polynomial K) (ratfunc K),
-    -- sorry
-  -- use `is_scalar_tower F[X] (ratfunc F) (laurent_series F)` ?
   },
   rw ← coe_div,
   apply congr_arg,
@@ -450,50 +422,6 @@ begin
     exact hP this,
      },
   sorry,
-  
-    
-  -- apply _root_.polynomial.algebra_map_hahn_series_injective,
-  
-  
-  
-
-
-  -- rw is_localization.algebra_map_mk' at val_P_Q,
-  -- rw hf at val_P_Q,
-/-
-  set F : laurent_series K := f with hF,
-  set m := F.order with hm,
-  set A := power_series_part F with hA,
-  set a := ratfunc.X ^(-m) * f with ha,
-  have haA : (a : laurent_series K) = A,
-  { have uno := of_power_series_power_series_part F,
-    rw hA,
-    rw ha,
-    rw ← hm at uno,
-    rw fae_X_zpow at uno,
-    rw hF at uno,
-    rw ratfunc.coe_mul,
-    simp only [ratfunc.coe_def, map_zpow₀],
-    exact uno.symm, },
-    replace ha : ratfunc.X^m * a = f,
-    {rwa [zpow_neg, eq_inv_mul_iff_mul_eq₀] at ha,
-      exact (zpow_ne_zero _ ratfunc.X_ne_zero)},
-    rw ← ha,
-    rw valuation.map_mul,
-    rw map_zpow₀,
-    rw val_X_eq_one,
-    have : (ideal_X K).valuation a = 1,
-    -- { have := A.order_eq_multiplicity_X,--rw haA,
-    --   suffices speriamo : ¬ ratfunc.X ∣ a,
-    --   have := @valuation_le_one (polynomial K) _ _ _ (ratfunc K) _ _ _ (ideal_X K) a,
-      -- apply (eq_of_le_of_not_lt (valuation_le_one (ideal_X K) a _)),
-
-    -- },
-    sorry,
-    rw this,
-    rw [mul_one, ← with_zero.coe_zpow, ← of_add_zsmul, smul_neg, zsmul_one],
-    refl,
-  -/
 end
 
 
