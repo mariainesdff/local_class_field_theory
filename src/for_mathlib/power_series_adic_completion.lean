@@ -335,35 +335,132 @@ begin
 end
 
 
-lemma fae_pol_order_eq_val (f : polynomial K) (hf : f ≠ 0) :
+-- FAE for `mathlib`?
+lemma fae_int_valuation_apply (f : polynomial K) : 
+  ((ideal_X K).int_valuation f) = ((ideal_X K).int_valuation_def f) := refl _
+
+/-
+lemma order_eq_multiplicity_X {R : Type*} [semiring R] (φ : power_series R) :
+  order φ = multiplicity X φ :=
+
+
+-/
+
+lemma fae_pol_order_eq_val {f : polynomial K} (hf : f ≠ 0) :
  ↑(multiplicative.of_add (- (f : laurent_series K).order)) = ((ideal_X K).int_valuation f) :=
 begin
-sorry,
+  sorry,
+  -- rw fae_int_valuation_apply,
+  -- rw (ideal_X K).int_valuation_def_if_neg hf,
+  -- simp only [coe_coe, of_add_neg, ideal_X_span, inv_inj, with_zero.coe_inj,
+  --   embedding_like.apply_eq_iff_eq],
+  -- rw int_valuation,
+  -- funex
+  -- simp only,
+  -- rw [int_valuation_def_if_neg hf],
+  -- unfold_coes,-- [is_dedekind_domain.height_one_spectrum.int_valuation_def],
+  -- funext,
+--  rw if_neg hf,
+--  simp,
 end
 
-lemma fae_order_eq_val' (x : ratfunc K) (hf : x ≠ 0) :
- ↑(multiplicative.of_add (- (x : laurent_series K).order)) = ((ideal_X K).valuation x) :=
-begin
-  -- let f := x.1,
-  let denom' : non_zero_divisors _,
-  { use x.num_denom.2, sorry },
-  have := @valuation_of_mk' (polynomial K) _ _ _ (ratfunc K) _ _ _ (ideal_X K)
-    x.num_denom.1 denom',
-  have triv : is_localization.mk' (ratfunc K) x.num_denom.fst denom' = x,
-  {simp only [is_fraction_ring.mk'_eq_div, set_like.coe_mk]},
-  rw ← triv,
-  rw this,
-  -- rw this,
+-- lemma fae_order_eq_val (x : ratfunc K) (hf : x ≠ 0) :
+--  ↑(multiplicative.of_add (- (x : laurent_series K).order)) = ((ideal_X K).valuation x) :=
+-- begin
+--   -- let f := x.1,
+--   let denom' : non_zero_divisors _,
+--   { use x.num_denom.2, sorry },
+--   have := @valuation_of_mk' (polynomial K) _ _ _ (ratfunc K) _ _ _ (ideal_X K)
+--     x.num_denom.1 denom',
+--   have triv : is_localization.mk' (ratfunc K) x.num_denom.fst denom' = x,
+--   {simp only [is_fraction_ring.mk'_eq_div, set_like.coe_mk]},
+--   rw ← triv,
+--   rw this,
+--   -- rw this,
 
-    -- denom',
+--     -- denom',
 
 
-    -- use  lift_monoid_with_zero_hom to posibly extend order
-end
+--     -- use  lift_monoid_with_zero_hom to posibly extend order
+-- end
 
-lemma fae_order_eq_val (f : ratfunc K) (hf : f ≠ 0) :
+lemma fae_order_inv {a : laurent_series K} (ha : a ≠ 0) : a⁻¹.order = - a.order :=
+  by {simp only [eq_neg_iff_add_eq_zero, ← hahn_series.order_mul  (inv_ne_zero ha) ha, 
+    inv_mul_cancel ha, hahn_series.order_one]}
+
+lemma fae_order_div {a b : laurent_series K} (ha : a ≠ 0) (hb : b ≠ 0) : (a / b).order =
+  a.order - b.order := by {rw [div_eq_mul_inv, hahn_series.order_mul ha (inv_ne_zero hb), 
+  fae_order_inv _ hb, sub_eq_add_neg]}
+
+-- `FAE` for mathlib?
+lemma fae_coe (P : polynomial K) : (P : laurent_series K) = (↑P : ratfunc K) :=
+  by { erw [ratfunc.coe_def, ratfunc.coe_alg_hom, lift_alg_hom_apply, ratfunc.num_algebra_map,
+    ratfunc.denom_algebra_map P, map_one, div_one], refl}
+
+lemma fae_order_eq_val {f : ratfunc K} (hf : f ≠ 0) :
  ↑(multiplicative.of_add (- (f : laurent_series K).order)) = ((ideal_X K).valuation f) :=
 begin
+  obtain ⟨P, ⟨Q, hQ, hf⟩⟩ := @is_fraction_ring.div_surjective (polynomial K) _ _ (ratfunc K) _ _ _ f,
+  have hP : P ≠ 0, sorry,
+  have hQ₀ : Q ≠ 0, sorry,
+  replace hf : is_localization.mk' (ratfunc K) P ⟨Q, hQ⟩ = f,
+  simp only [hf, is_fraction_ring.mk'_eq_div, set_like.coe_mk],
+  have val_P_Q := @valuation_of_mk' (polynomial K) _ _ _ (ratfunc K) _ _ _ (ideal_X K) P ⟨Q, hQ⟩,
+  rw hf at val_P_Q,
+  rw val_P_Q,
+  simp only [← subtype.val_eq_coe],
+  rw [← (fae_pol_order_eq_val _ hP)],
+  rw [← (fae_pol_order_eq_val _ hQ₀)],
+  rw ← with_zero.coe_div,
+  rw with_zero.coe_inj,
+  rw ← of_add_sub,
+  apply congr_arg,
+  rw neg_eq_iff_neg_eq,
+  -- rw neg_of
+  rw neg_sub_neg,
+  rw neg_sub,
+  -- simp only [coe_coe, neg_sub_neg, neg_sub],
+  rw ← fae_order_div,
+  rw ← hf,
+  apply congr_arg,
+  convert_to ((↑P : ratfunc K) : laurent_series K)/ (↑Q : ratfunc K) =
+    ↑(is_localization.mk' (ratfunc K) P ⟨Q, hQ⟩),
+  { have := ratfunc.coe_div (↑P : ratfunc K) (↑Q : ratfunc K),
+    rw ← this,
+    rw div_eq_iff,
+    rw fae_coe,
+    rw fae_coe,
+    rw ← ratfunc.coe_mul,
+    apply congr_arg,
+    rw [div_mul_cancel _ _],
+    sorry,
+    sorry,
+    -- have := ratfunc.coe_mul (↑P : ratfunc K) (↑Q : ratfunc K),
+  --squeeze_dsimp [ratfunc.algebra_map_apply],
+    --let := ratfunc.algebra_map,-- (polynomial K) (ratfunc K),
+    -- sorry
+  -- use `is_scalar_tower F[X] (ratfunc F) (laurent_series F)` ?
+  },
+  rw ← coe_div,
+  apply congr_arg,
+  simpa only [mk_eq_div, is_fraction_ring.mk'_eq_div, set_like.coe_mk],
+  { intro hneP,
+    have hinj := @_root_.polynomial.algebra_map_hahn_series_injective ℤ K _ _,
+    have := ((@injective_iff_map_eq_zero' _ _ _ _ _ _ (_ : (polynomial K) →+* (laurent_series K))).mp hinj P).mp hneP,
+    exact hP this,
+     },
+  sorry,
+  
+    
+  -- apply _root_.polynomial.algebra_map_hahn_series_injective,
+  
+  
+  
+
+
+  -- rw is_localization.algebra_map_mk' at val_P_Q,
+  -- rw hf at val_P_Q,
+/-
   set F : laurent_series K := f with hF,
   set m := F.order with hm,
   set A := power_series_part F with hA,
@@ -396,6 +493,7 @@ begin
     rw this,
     rw [mul_one, ← with_zero.coe_zpow, ← of_add_zsmul, smul_neg, zsmul_one],
     refl,
+  -/
 end
 
 
@@ -409,10 +507,11 @@ begin
   { simp only [hahn_series.order, hahn_series.support_neg, neg_eq_zero]}
 end
 
+-- `FAE` Depends on `fae_order_eq_val`
 lemma fae_order_eq_val' (f : ratfunc K) (hf : f ≠ 0) :
  ↑(multiplicative.of_add ((f : laurent_series K).order)) = ((ideal_X K).valuation f)⁻¹ :=
 begin
-  have := fae_order_eq_val K (-f) (neg_ne_zero.mpr hf),
+  have := fae_order_eq_val K (neg_ne_zero.mpr hf),
   nth_rewrite 0 [← neg_neg f],
   rw ratfunc.coe_def,
   rw (ratfunc.coe_alg_hom K).map_neg,
