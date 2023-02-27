@@ -368,7 +368,7 @@ begin
     rw hn,
     apply congr_arg,
     -- simp * at *,
-    ext,
+    sorry,
     -- rw part.mem_eq,
     -- rw hn,
 
