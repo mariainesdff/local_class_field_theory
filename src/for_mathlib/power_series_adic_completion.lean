@@ -347,6 +347,41 @@ lemma order_eq_multiplicity_X {R : Type*} [semiring R] (φ : power_series R) :
   order φ = multiplicity X φ :=
 -/
 
+-- ***TO DO*** Generalize to Hahn Series over semirings {R : Type*} [semiring R] (φ : power_series R) :
+lemma fae_order_power_series_hahn {R : Type*} [semiring R] (φ : power_series R) : --order φ 
+  power_series.order φ = (hahn_series.of_power_series ℕ R φ).order :=
+begin
+  by_cases hφ : φ = 0,
+  { rw hφ,
+    rw power_series.order_zero,
+    rw map_zero,
+    rw hahn_series.order_zero,
+    simp,
+    sorry--and it is false
+  },
+  { set o := (@power_series.order_finite_iff_ne_zero R _ φ).mpr hφ with ho,
+    obtain ⟨m, hm⟩ := part.dom_iff_mem.mp o,
+    rw part.mem_eq at hm,
+    cases hm with n hn,
+    have := @part_enat.coe_get φ.order n,
+    rw ← this,
+    rw hn,
+    apply congr_arg,
+    -- simp * at *,
+    ext,
+    -- rw part.mem_eq,
+    -- rw hn,
+
+
+  },
+end
+
+lemma fae_pol_order_eq_val' {f : polynomial K} (hf : f ≠ 0) :
+ ↑(multiplicative.of_add (- (↑f : (hahn_series ℕ K)).order : ℤ)) = ((ideal_X K).int_valuation f) :=
+begin
+  have := power_series.order_eq_multiplicity_X ↑f,
+end
+
 lemma fae_pol_order_eq_val {f : polynomial K} (hf : f ≠ 0) :
  ↑(multiplicative.of_add (- (f : laurent_series K).order)) = ((ideal_X K).int_valuation f) :=
 begin
