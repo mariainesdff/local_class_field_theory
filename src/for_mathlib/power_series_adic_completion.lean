@@ -352,38 +352,32 @@ lemma order_eq_multiplicity_X {R : Type*} [semiring R] (φ : power_series R) :
 -- exact antisymm,
 -- end 
 
--- ***TO DO*** Generalize to Hahn Series over semirings {R : Type*} [semiring R] (φ : power_series R) :
-lemma fae_order_power_series_hahn {R : Type*} [semiring R] (φ : power_series R) : --order φ 
+-- ***TO DO*** understand what to do with `φ = 0`
+lemma fae_order_power_series_hahn {R : Type*} [semiring R] (φ : power_series R) (hφ : φ ≠ 0) :
   power_series.order φ = (hahn_series.of_power_series ℕ R φ).order :=
 begin
-  by_cases hφ : φ = 0,
-  { rw hφ,
-    rw power_series.order_zero,
-    rw map_zero,
-    rw hahn_series.order_zero,
-    simp,
-    sorry--and it is false
-  },
-  { obtain ⟨m, ⟨n, hm⟩⟩ := part.dom_iff_mem.mp ((power_series.order_finite_iff_ne_zero).mpr hφ),
+  -- by_cases hφ : φ = 0,
+  -- { rw hφ,
+  --   rw power_series.order_zero,
+  --   rw map_zero,
+  --   rw hahn_series.order_zero,
+  --   simp,
+  --   sorry--and it is false
+  -- },
+  obtain ⟨m, ⟨n, hm⟩⟩ := part.dom_iff_mem.mp ((power_series.order_finite_iff_ne_zero).mpr hφ),
     rw [← @part_enat.coe_get φ.order],
     apply congr_arg,
     apply le_antisymm _ (hahn_series.order_le_of_coeff_ne_zero _),
-    { rw hm,
-      have := @power_series.order_le _ _ φ m, 
-      have := @hahn_series.of_power_series_apply_coeff ℕ _ _ _ φ m,
-      sorry,
+    { rw [← part_enat.coe_le_coe, part_enat.coe_get],
+      apply power_series.order_le,
+      erw [← @hahn_series.of_power_series_apply_coeff ℕ _ _ _ _ _],
+      apply hahn_series.coeff_order_ne_zero,
+      exact (map_ne_zero_iff (hahn_series.of_power_series ℕ R)
+        (hahn_series.of_power_series_injective)).mpr hφ,
     },
     { erw [hahn_series.of_power_series_apply_coeff φ],
-      apply power_series.coeff_order,
-    },
-    
-    -- simp * at *,
-    -- sorry,
-    -- rw part.mem_eq,
-    -- rw hn,
-
-
-  },
+      apply power_series.coeff_order, },
+    use n,--strange
 end
 
 lemma fae_pol_order_eq_val' {f : polynomial K} (hf : f ≠ 0) :
