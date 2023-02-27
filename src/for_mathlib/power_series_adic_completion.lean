@@ -45,8 +45,11 @@ def ideal_X : is_dedekind_domain.height_one_spectrum (polynomial K) :=
 @[simp]
 lemma ideal_X_span : (ideal_X K).as_ideal = ideal.span({polynomial.X}) := rfl
 
-lemma val_X_eq_one : (ideal_X K).valuation (X : ratfunc K) = multiplicative.of_add (-1 : ℤ) := 
-sorry
+lemma val_X_eq_one : (ideal_X K).valuation (X : ratfunc K) = multiplicative.of_add (-1 : ℤ) :=
+begin
+  rw is_dedekind_domain.height_one_spectrum.valuation,
+  sorry,
+end
 
 def completion_of_ratfunc  := adic_completion (ratfunc K) (ideal_X K)
 
