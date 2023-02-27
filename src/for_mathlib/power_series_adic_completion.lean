@@ -347,6 +347,11 @@ lemma order_eq_multiplicity_X {R : Type*} [semiring R] (φ : power_series R) :
   order φ = multiplicity X φ :=
 -/
 
+-- example (a b : ℝ) : a ≤ b → b ≤ a → a = b := 
+-- begin
+-- exact antisymm,
+-- end 
+
 -- ***TO DO*** Generalize to Hahn Series over semirings {R : Type*} [semiring R] (φ : power_series R) :
 lemma fae_order_power_series_hahn {R : Type*} [semiring R] (φ : power_series R) : --order φ 
   power_series.order φ = (hahn_series.of_power_series ℕ R φ).order :=
@@ -359,16 +364,21 @@ begin
     simp,
     sorry--and it is false
   },
-  { set o := (@power_series.order_finite_iff_ne_zero R _ φ).mpr hφ with ho,
-    obtain ⟨m, hm⟩ := part.dom_iff_mem.mp o,
-    rw part.mem_eq at hm,
-    cases hm with n hn,
-    have := @part_enat.coe_get φ.order n,
-    rw ← this,
-    rw hn,
+  { obtain ⟨m, ⟨n, hm⟩⟩ := part.dom_iff_mem.mp ((power_series.order_finite_iff_ne_zero).mpr hφ),
+    rw [← @part_enat.coe_get φ.order],
     apply congr_arg,
+    apply le_antisymm _ (hahn_series.order_le_of_coeff_ne_zero _),
+    { rw hm,
+      have := @power_series.order_le _ _ φ m, 
+      have := @hahn_series.of_power_series_apply_coeff ℕ _ _ _ φ m,
+      sorry,
+    },
+    { erw [hahn_series.of_power_series_apply_coeff φ],
+      apply power_series.coeff_order,
+    },
+    
     -- simp * at *,
-    sorry,
+    -- sorry,
     -- rw part.mem_eq,
     -- rw hn,
 
