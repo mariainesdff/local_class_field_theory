@@ -44,7 +44,7 @@ variables (p : ℕ) [fact(nat.prime p)]
 notation (name := prime_galois_field)
   `𝔽_[` p `]` := galois_field p 1
 
-noncomputable! def ideal_X :
+noncomputable! def ideal_X' :
   is_dedekind_domain.height_one_spectrum (polynomial 𝔽_[p]) :=
 { as_ideal := ideal.span({X}),
   is_prime := by { rw ideal.span_singleton_prime, exacts [prime_X, X_ne_zero] },
@@ -52,19 +52,19 @@ noncomputable! def ideal_X :
 
 /- The valued field `Fp(X)` with the valuation at `X`. -/
 noncomputable! def FpX_valued  : valued (ratfunc 𝔽_[p]) ℤₘ₀ :=
-valued.mk' (ideal_X p).valuation
+valued.mk' (ideal_X' p).valuation
 
 lemma FqX_valued_def {x : ratfunc 𝔽_[p]} :
-  @valued.v (ratfunc 𝔽_[p]) _ _ _ (FpX_valued p) x = (ideal_X p).valuation x := rfl 
+  @valued.v (ratfunc 𝔽_[p]) _ _ _ (FpX_valued p) x = (ideal_X' p).valuation x := rfl 
 
 def FpX_field_completion  :=
- (ideal_X p).adic_completion (ratfunc 𝔽_[p])
+ (ideal_X' p).adic_completion (ratfunc 𝔽_[p])
 
 notation (name := FpX_field_completion)
   `𝔽_[` p `]⟮⟮` X `⟯⟯` := FpX_field_completion p
 
 def FpX_int_completion  :=
- (ideal_X p).adic_completion_integers (ratfunc 𝔽_[p])
+ (ideal_X' p).adic_completion_integers (ratfunc 𝔽_[p])
 
 notation (name := FpX_int_completion)
   `𝔽_[` p `]⟦` X `⟧` := FpX_int_completion p
@@ -72,7 +72,7 @@ notation (name := FpX_int_completion)
 variable {p}
 
 instance : field 𝔽_[p]⟮⟮X⟯⟯ :=  --sorry
-is_dedekind_domain.height_one_spectrum.adic_completion.field (ratfunc 𝔽_[p]) (ideal_X p)
+is_dedekind_domain.height_one_spectrum.adic_completion.field (ratfunc 𝔽_[p]) (ideal_X' p)
 
 instance : inhabited (FpX_field_completion p) := ⟨(0 : FpX_field_completion p)⟩
 
@@ -85,12 +85,12 @@ def isom_laurent : 𝔽_[p]⟮⟮X⟯⟯  ≃+* (laurent_series 𝔽_[p]) := sor
 noncomputable! def isom_power_series : 𝔽_[p]⟦X⟧  ≃+* (power_series 𝔽_[p]) := sorry -- F
 
 instance : algebra 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ :=
-(by apply_instance : algebra ((ideal_X p).adic_completion_integers (ratfunc 𝔽_[p]))
-  ((ideal_X p).adic_completion (ratfunc 𝔽_[p])))
+(by apply_instance : algebra ((ideal_X' p).adic_completion_integers (ratfunc 𝔽_[p]))
+  ((ideal_X' p).adic_completion (ratfunc 𝔽_[p])))
 
 noncomputable! instance : is_fraction_ring 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ :=
-(by apply_instance : is_fraction_ring ((ideal_X p).adic_completion_integers (ratfunc 𝔽_[p]))
-  ((ideal_X p).adic_completion (ratfunc 𝔽_[p])))
+(by apply_instance : is_fraction_ring ((ideal_X' p).adic_completion_integers (ratfunc 𝔽_[p]))
+  ((ideal_X' p).adic_completion (ratfunc 𝔽_[p])))
 
 -- For instances and lemmas that only need `K` to be an `𝔽_[p]⟮⟮X⟯⟯`-algebra
 namespace adic_algebra
