@@ -421,6 +421,7 @@ namespace polynomial
 open polynomial
 open_locale polynomial
 
+-- The following theorem is `PR #18528`
 theorem X_pow_dvd_iff {α : Type } [comm_semiring α] {f : α[X]} {n : ℕ} : 
   X^n ∣ f ↔ ∀ d < n, f.coeff d = 0 :=
 ⟨λ ⟨g, hgf⟩ d hd, by {simp only [hgf, coeff_X_pow_mul', ite_eq_right_iff, not_le_of_lt hd,
@@ -451,8 +452,8 @@ begin
   { simp only [pow_zero, one_dvd] },
   { obtain ⟨g, hgf⟩ := hn (λ d : ℕ, λ H : d < n, hd _ (nat.lt_succ_of_lt H)),
     have := coeff_X_pow_mul g n 0,
-    rw [zero_add, ← hgf, hd n (nat.lt_succ_self n)] at this,
-    obtain ⟨k, hgk⟩ := X_dvd_iff.mpr this.symm,
+    rw [zero_add, ← hgf, hd n (nat.lt_succ_self n), coeff_zero_eq_constant_coeff] at this,  
+    obtain ⟨k, hgk⟩ := (@X_dvd_iff _ _ g).mpr this.symm,
     use k,
     rwa [pow_succ, mul_comm X _, mul_assoc, ← hgk]},
 end ⟩
