@@ -246,13 +246,7 @@ begin
 end
 
 
--- lemma fae_pol (f : ratfunc K)  (d : ℤ) (hf : (ideal_X K).valuation f ≤
---   ↑(multiplicative.of_add (- d - 1))) : 
---   ratfunc.X^d * f  ∈ (algebra_map (polynomial K) (ratfunc K)).range :=
--- begin
---   suffices : (ideal_X K).valuation (ratfunc.X^d * f) ≤ ↑(multiplicative.of_add (- d - 1)),
-
--- end
+section num_denom_away
 
 instance : is_principal_ideal_ring (power_series K) := sorry
 
@@ -284,6 +278,8 @@ begin
   { rw [← ratfunc.coe_zero],
     exact ratfunc.coe_injective.ne hf},
 end
+
+end num_denom_away
 
 open laurent_series hahn_series
 
@@ -373,7 +369,7 @@ begin
   --   sorry--and it is false
   -- },
   obtain ⟨_, ⟨H, hm⟩⟩ := part.dom_iff_mem.mp ((power_series.order_finite_iff_ne_zero).mpr hφ),
-    rw [← @part_enat.coe_get φ.order H],
+    rw [← @part_enat.coe_get _ H],
     apply congr_arg,
     apply le_antisymm _ (hahn_series.order_le_of_coeff_ne_zero _),
     { rw [← part_enat.coe_le_coe, part_enat.coe_get],
@@ -397,46 +393,127 @@ begin
   rw to_power_series_of_power_series,
 end
 
-variable [decidable_rel (has_dvd.dvd : (polynomial K) → (polynomial K) → Prop)]
+-- variable [decidable_rel (has_dvd.dvd : (polynomial K) → (polynomial K) → Prop)]
+-- variable [decidable_rel (has_dvd.dvd : (power_series K) → (power_series K) → Prop)]
 
-lemma multiplicity_pol_eq_multiplicity_power_series {f : polynomial K} (hf :f ≠ 0) :
-  multiplicity power_series.X (↑f : power_series K) = multiplicity polynomial.X f :=
+-- lemma multiplicity_pol_eq_multiplicity_power_series {f : polynomial K} (hf :f ≠ 0) :
+--   multiplicity power_series.X (↑f : power_series K) = multiplicity polynomial.X f :=
+-- begin
+--   sorry,
+-- end
+
+
+-- -- variable [decidable_rel (has_dvd.dvd : (hahn_series ℕ K) → (hahn_series ℕ K) → Prop)]
+
+-- -- lemma multiplicity_pol_eq_multiplicity_hahn_series {f : polynomial K} (hf :f ≠ 0) :
+-- --   multiplicity power_series.X (↑f : power_series K) = multiplicity polynomial.X f :=
+-- -- begin
+-- --   sorry,
+-- -- end
+
+-- -- lemma multiplicity_hahn_series_eq_multiplicity_pow_series {φ : hahn_series ℕ K} (hφ : φ ≠ 0) :
+-- --   multiplicity (single 1 1) φ = multiplicity power_series.X (to_power_series φ) :=
+-- -- begin
+-- --   sorry,
+-- -- end
+
+namespace polynomial
+open polynomial
+open_locale polynomial
+
+theorem X_pow_dvd_iff {α : Type } [comm_semiring α] {f : α[X]} {n : ℕ} : 
+  X^n ∣ f ↔ ∀ d < n, f.coeff d = 0 :=
+⟨λ ⟨g, hgf⟩ d hd, by {simp only [hgf, coeff_X_pow_mul', ite_eq_right_iff, not_le_of_lt hd,
+    is_empty.forall_iff]}, λ hd, 
 begin
-  sorry,
+  induction n with n hn,
+  { simp only [pow_zero, one_dvd] },
+  { obtain ⟨g, hgf⟩ := hn (λ d : ℕ, λ H : d < n, hd _ (nat.lt_succ_of_lt H)),
+    have := coeff_X_pow_mul g n 0,
+    rw [zero_add, ← hgf, hd n (nat.lt_succ_self n)] at this,
+    obtain ⟨k, hgk⟩ := polynomial.X_dvd_iff.mpr this.symm,
+    use k,
+    rwa [pow_succ, mul_comm X _, mul_assoc, ← hgk]},
+end ⟩
+
+end polynomial
+
+namespace power_series
+
+open mv_power_series power_series
+
+theorem pow_X_dvd_iff {α : Type } [comm_semiring α] {f : power_series α} {n : ℕ} : 
+  power_series.X^n ∣ f ↔ ∀ d < n, coeff α d f = 0 :=
+  ⟨λ ⟨g, hgf⟩ d hd, by {simp only [hgf, polynomial.coeff_X_pow_mul', ite_eq_right_iff, not_le_of_lt hd,
+    is_empty.forall_iff]}, λ hd, 
+begin
+  induction n with n hn,
+  { simp only [pow_zero, one_dvd] },
+  { obtain ⟨g, hgf⟩ := hn (λ d : ℕ, λ H : d < n, hd _ (nat.lt_succ_of_lt H)),
+    have := coeff_X_pow_mul g n 0,
+    rw [zero_add, ← hgf, hd n (nat.lt_succ_self n)] at this,
+    obtain ⟨k, hgk⟩ := X_dvd_iff.mpr this.symm,
+    use k,
+    rwa [pow_succ, mul_comm X _, mul_assoc, ← hgk]},
+end ⟩
+
+end power_series
+
+example (A : Type) [comm_ring A] (P : polynomial A) (n : ℕ) :
+  -- [decidable_rel (has_dvd.dvd : (power_series A) → (power_series A) → Prop)] 
+  -- [decidable_rel (has_dvd.dvd : (polynomial A) → (polynomial A) → Prop)] :
+  (polynomial.X)^n ∣ P ↔ (power_series.X)^n ∣ (P : power_series A) :=
+begin
+  simp [power_series.X_pow_dvd_iff],
+  split,
+  intros hn d hnd,
+  have := polynomial.coeff_mul_X_pow' 1 n d,
+  -- library_search,
 end
 
+-- set_option pp.all true
 
-variable [decidable_rel (has_dvd.dvd : (hahn_series ℕ K) → (hahn_series ℕ K) → Prop)]
-
-lemma multiplicity_pol_eq_multiplicity_hahn_series {f : polynomial K} (hf :f ≠ 0) :
-  multiplicity (single 1 1) (↑f : hahn_series ℕ K) = multiplicity polynomial.X f :=
-begin
-  sorry,
-end
-
-lemma multiplicity_hahn_series_eq_multiplicity_pow_series {φ : hahn_series ℕ K} (hφ : φ ≠ 0) :
-  multiplicity (single 1 1) φ = multiplicity power_series.X (to_power_series φ) :=
-begin
-  sorry,
-end
-
-lemma fae_pol_power_series_order_eq_val {f : polynomial K} (hf : f ≠ 0) :
- ↑(multiplicative.of_add (- (↑f : (hahn_series ℕ K)).order : ℤ)) = ((ideal_X K).int_valuation f) :=
-begin
-  have hf' : (↑f : hahn_series ℕ K) ≠ 0, sorry, --just injectivity
-  have hf'' : ((to_power_series (↑f : hahn_series ℕ K)) : power_series K) ≠ 0, sorry, --just injectivity
-  obtain ⟨m, ⟨H, hm⟩⟩ := part.dom_iff_mem.mp ((power_series.order_finite_iff_ne_zero).mpr hf''),
-  have := power_series.order_eq_multiplicity_X (to_power_series (↑f : hahn_series ℕ K)),--exists also `to_power_series_alg`
-  -- rw hm at this,
-  rw [order_eq_to_power_series hf'] at this,
-  have ser := @multiplicity_hahn_series_eq_multiplicity_pow_series K _ _ _ _ _ _ _ (↑f : hahn_series ℕ K) hf',
-  -- rw ← ser at this,
-  sorry,
-  -- have pol := @multiplicity_pol_eq_multiplicity_power_series K _ _ _ _ _ _ f hf,
+-- lemma fae_pol_power_series_order_eq_val {f : polynomial K} (hf : f ≠ 0) :
+--  ↑(multiplicative.of_add (- (↑f : (hahn_series ℕ K)).order : ℤ)) = ((ideal_X K).int_valuation f) :=
+-- begin
+--   -- have test : ↑f = (↑f : power_series K), refl,
+--   have hf' : (f : power_series K) ≠ 0, sorry, --just injectivity
+--   have hf'' : ((to_power_series (↑f : hahn_series ℕ K)) : power_series K) ≠ 0, sorry, --just injectivity
+--   -- obtain ⟨m, ⟨H, hm⟩⟩ := part.dom_iff_mem.mp ((power_series.order_finite_iff_ne_zero).mpr hf''),
+--   -- let semiK := @semiring.to_monoid_with_zero K _,
+--   have mul_fin : multiplicity.finite power_series.X (f : power_series K),
+--   { apply multiplicity.finite_prime_left,
+--     { exact power_series.X_prime },
+--     { exact hf' }},
+--   rw multiplicity.finite_iff_dom at mul_fin,
+--   obtain ⟨m, ⟨H, hm⟩⟩ := part.dom_iff_mem.mp mul_fin,
+--   have := power_series.order_eq_multiplicity_X (f : power_series K),--exists also `to_power_series_alg`
+--   have temp := @part_enat.coe_get _ H,
+--   -- unfold_coes at this,
+--   -- unfold_coes at temp,
+--   set A := multiplicity power_series.X (power_series.mk (λ n : ℕ, f.coeff n)) with hA,
+--   -- simp_rw ← hA at temp,
+--   simp_rw ← hA at this,
+--   -- rw hm at temp,
+--   -- erw [← power_series.order_eq_multiplicity_X] at temp,
+--   -- erw [← temp] at this,
+--   -- -- rw hm at this,
+--   -- rw [order_eq_of_power_series] at this,
+--   -- have diamante : (↑f : hahn_series ℕ K) = of_power_series ℕ K (↑f : power_series K), sorry,
+--   -- rw diamante,
+--   -- rw this,
+--   -- -- have mr :
+--   -- have ser := @multiplicity_hahn_series_eq_multiplicity_pow_series K _ _ _ _ _ _ _
+--   --   (↑f : hahn_series ℕ K) hf',
+--   -- -- rw ← ser at this,
+--   -- sorry,
+--   -- -- have pol := @multiplicity_pol_eq_multiplicity_power_series K _ _ _ _ _ _ f hf,
   
-  -- rw hm at this,
-  -- sorry,
-end
+--   -- -- rw hm at this,
+--   -- -- sorry,
+-- end
+
+-- #exit
 
 lemma fae_pol_order_eq_val {f : polynomial K} (hf : f ≠ 0) :
  ↑(multiplicative.of_add (- (f : laurent_series K).order)) = ((ideal_X K).int_valuation f) :=
@@ -470,6 +547,8 @@ lemma fae_coe (P : polynomial K) : (P : laurent_series K) = (↑P : ratfunc K) :
   by { erw [ratfunc.coe_def, ratfunc.coe_alg_hom, lift_alg_hom_apply, ratfunc.num_algebra_map,
     ratfunc.denom_algebra_map P, map_one, div_one], refl}
 
+
+-- depends on  `fae_pol_order_eq_val`
 lemma fae_order_eq_val {f : ratfunc K} (hf : f ≠ 0) :
  ↑(multiplicative.of_add (- (f : laurent_series K).order)) = ((ideal_X K).valuation f) :=
 begin
