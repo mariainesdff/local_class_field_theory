@@ -420,9 +420,8 @@ end
 namespace polynomial
 open polynomial
 open_locale polynomial
-
 -- The following theorem is `PR #18528`
-theorem X_pow_dvd_iff {α : Type } [comm_semiring α] {f : α[X]} {n : ℕ} : 
+theorem X_pow_dvd_iff {α : Type*} [comm_semiring α] {f : α[X]} {n : ℕ} : 
   X^n ∣ f ↔ ∀ d < n, f.coeff d = 0 :=
 ⟨λ ⟨g, hgf⟩ d hd, by {simp only [hgf, coeff_X_pow_mul', ite_eq_right_iff, not_le_of_lt hd,
     is_empty.forall_iff]}, λ hd, 
@@ -439,44 +438,35 @@ end ⟩
 
 end polynomial
 
-namespace power_series
+lemma X_pow_dvd_pol_iff_dvd_power_series (A : Type) [comm_ring A] (P : polynomial A) (n : ℕ) :
+  (polynomial.X)^n ∣ P ↔ (power_series.X)^n ∣ (P : power_series A) := by
+ simp only [power_series.X_pow_dvd_iff, polynomial.X_pow_dvd_iff, coeff_coe]
 
-open mv_power_series power_series
 
-theorem pow_X_dvd_iff {α : Type } [comm_semiring α] {f : power_series α} {n : ℕ} : 
-  power_series.X^n ∣ f ↔ ∀ d < n, coeff α d f = 0 :=
-  ⟨λ ⟨g, hgf⟩ d hd, by {simp only [hgf, polynomial.coeff_X_pow_mul', ite_eq_right_iff, not_le_of_lt hd,
-    is_empty.forall_iff]}, λ hd, 
+/-
+`FAE`: The strategy for the lemma below should now be to use that
+* the order of the hahn_series 
+* orders of power_series and of hahn_series ℕ _ are the same by some lemma above
+* the order of a power_series is the minimum of the non-zero-coefficients
+* this is equivalent to the power series being divisible exactly by X^{ord} by
+`power_series.X_pow_dvd_iff`
+* this is equivalent to the polynomial being divisible exactly by by X^{ord} by
+`X_pow_dvd_pol_iff_dvd_power_series` (that need not be a lemma? or yes?)
+* this coincides with the definition of the valuation.
+-/
+
+lemma fae_pol_power_series_order_eq_val {f : polynomial K} (hf : f ≠ 0) :
+ ↑(multiplicative.of_add (- (↑f : (hahn_series ℕ K)).order : ℤ)) = ((ideal_X K).int_valuation f) :=
 begin
-  induction n with n hn,
-  { simp only [pow_zero, one_dvd] },
-  { obtain ⟨g, hgf⟩ := hn (λ d : ℕ, λ H : d < n, hd _ (nat.lt_succ_of_lt H)),
-    have := coeff_X_pow_mul g n 0,
-    rw [zero_add, ← hgf, hd n (nat.lt_succ_self n), coeff_zero_eq_constant_coeff] at this,  
-    obtain ⟨k, hgk⟩ := (@X_dvd_iff _ _ g).mpr this.symm,
-    use k,
-    rwa [pow_succ, mul_comm X _, mul_assoc, ← hgk]},
-end ⟩
-
-end power_series
-
-example (A : Type) [comm_ring A] (P : polynomial A) (n : ℕ) :
-  -- [decidable_rel (has_dvd.dvd : (power_series A) → (power_series A) → Prop)] 
-  -- [decidable_rel (has_dvd.dvd : (polynomial A) → (polynomial A) → Prop)] :
-  (polynomial.X)^n ∣ P ↔ (power_series.X)^n ∣ (P : power_series A) :=
-begin
-  simp [power_series.X_pow_dvd_iff],
-  split,
-  intros hn d hnd,
-  have := polynomial.coeff_mul_X_pow' 1 n d,
-  -- library_search,
+  set n := (↑f : (hahn_series ℕ K)).order with hn,
+  have := (ideal_X K).int_valuation_le_pow_iff_dvd f n,
+  simp only [of_add_neg, with_zero.coe_inv, ideal_X_span, ideal.dvd_span_singleton,
+    ideal.span_singleton_pow, ideal.mem_span_singleton] at this,
+  rw [@polynomial.X_pow_dvd_iff K _ f n] at this,
+  --and now we must connect `n` with the order of a power_series
+  set m := (↑f : power_series K).order with hm,
+  -- simp_rw [X_pow_dvd_pol_iff_dvd_power_series] at this,
 end
-
--- set_option pp.all true
-
--- lemma fae_pol_power_series_order_eq_val {f : polynomial K} (hf : f ≠ 0) :
---  ↑(multiplicative.of_add (- (↑f : (hahn_series ℕ K)).order : ℤ)) = ((ideal_X K).int_valuation f) :=
--- begin
 --   -- have test : ↑f = (↑f : power_series K), refl,
 --   have hf' : (f : power_series K) ≠ 0, sorry, --just injectivity
 --   have hf'' : ((to_power_series (↑f : hahn_series ℕ K)) : power_series K) ≠ 0, sorry, --just injectivity
