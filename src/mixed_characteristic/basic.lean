@@ -137,6 +137,8 @@ namespace ring_of_integers
 
 variables {K}
 
+--set_option profiler true 
+-- Takes 2.62 s
 --set_option trace.class_instances true
 -- I had to increase the priority of `mixed_char_local_field.is_scalar_tower` for this to work.
 -- Otherwise it times out if the is_scalar_tower argument is implicit
@@ -146,6 +148,8 @@ integral_closure.is_fraction_ring_of_finite_extension ℚ_[p] _
 instance : is_integral_closure (𝓞 p K) ℤ_[p] K :=
 integral_closure.is_integral_closure _ _
 
+--set_option profiler true
+-- Takes 3.29 s
 -- Times out if the is_scalar_tower argument is implicit (without the priority fix)
 noncomputable! instance : is_integrally_closed (𝓞 p K) :=
 integral_closure.is_integrally_closed_of_finite_extension ℚ_[p]
