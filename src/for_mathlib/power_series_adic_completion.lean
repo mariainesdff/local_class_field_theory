@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
 import for_mathlib.num_denom_away
+import for_mathlib.polynomial
 import ring_theory.dedekind_domain.adic_valuation
 import ring_theory.laurent_series
 import ring_theory.power_series.well_known
@@ -11,24 +12,14 @@ import ring_theory.power_series.well_known
 open polynomial is_dedekind_domain.height_one_spectrum topological_space ratfunc sequentially_complete filter
 open_locale big_operators discrete_valuation uniformity filter topology
 
--- open filter topological_space set classical uniform_space function
--- open_locale classical uniformity topological_space filter
-
 section for_mathlib
 open power_series laurent_series hahn_series multiplicative is_dedekind_domain
 
 variables {F : Type*} [field F] (f g : ratfunc F)
 
+-- #This is `PR #18542`
 @[simp, norm_cast] lemma coe_sub : ((f - g : ratfunc F) : laurent_series F) = f - g :=
 (coe_alg_hom F).map_sub _ _
-
--- variables {R : Type*} [comm_ring R] [is_domain R] [is_dedekind_domain R] {K : Type*} [field K]
---   [algebra R K] [is_fraction_ring R K] (v : height_one_spectrum R)
-
--- open is_dedekind_domain.height_one_spectrum
-
--- lemma valuation_le_pow_iff_dvd (x : K) (n : ℤ) :
---   v.valuation x ≤ multiplicative.of_add (- n ) ↔ v.as_ideal^n ∣ ideal.span {x} :=
 
 end for_mathlib
 
@@ -36,21 +27,6 @@ end for_mathlib
 variables (K : Type*) [field K]
 
 noncomputable theory
-
-def ideal_X : is_dedekind_domain.height_one_spectrum (polynomial K) := 
-{ as_ideal := ideal.span({X}),
-  is_prime := by { rw ideal.span_singleton_prime, exacts [prime_X, X_ne_zero] },
-  ne_bot   := by { rw [ne.def, ideal.span_singleton_eq_bot], exact X_ne_zero }} 
-
-@[simp]
-lemma ideal_X_span : (ideal_X K).as_ideal = ideal.span({polynomial.X}) := rfl
-
-lemma val_X_eq_one : (ideal_X K).valuation (X : ratfunc K) = multiplicative.of_add (-1 : ℤ) :=
-begin
-  rw is_dedekind_domain.height_one_spectrum.valuation,
-  sorry,
-end
-
 def completion_of_ratfunc  := adic_completion (ratfunc K) (ideal_X K)
 
 instance : field (completion_of_ratfunc K) := adic_completion.field (ratfunc K) (ideal_X K)
@@ -63,10 +39,525 @@ instance : uniform_space (ratfunc K) :=
 instance : valued (completion_of_ratfunc K) ℤₘ₀ :=
   @valued.valued_completion _ _ _ _ (ideal_X K).adic_valued
 
-instance : uniform_space (completion_of_ratfunc K) := 
-begin
-  apply_instance,
+instance : uniform_space (completion_of_ratfunc K) := infer_instance
+
+
+variable (F : completion_of_ratfunc K)
+
+def entourage (d : ℤ) : set (ratfunc K × ratfunc K) :=
+  {P | (ideal_X K).valuation (P.1 - P.2) < ↑(multiplicative.of_add (- d))}
+
+-- *FAE* This was the old definition, but I think I got the inequalities wrong, since I did not
+-- know yet how to play with `multiplicative.of_add`.
+-- def set_fae (d : ℤ) : set (ratfunc K × ratfunc K) :=
+--   {P | ↑(multiplicative.of_add d) ≤ (ideal_X K).valuation (P.1 - P.2)}
+
+lemma fae_for_pol (f  : polynomial K) (d : ℕ) (hf : (ideal_X K).int_valuation f ≤ 
+  ↑(multiplicative.of_add (- (d+(1 : ℕ)) : ℤ))) : f.coeff d = 0 :=
+begin 
+  erw [int_valuation_le_pow_iff_dvd _ _ (d+1)] at hf,
+  simp only [ideal_X_span, ideal.dvd_span_singleton, ideal.span_singleton_pow,
+    ideal.mem_span_singleton'] at hf,
+  cases hf with a ha,
+  simp only [← ha, coeff_mul_X_pow', add_le_iff_nonpos_right, le_zero_iff, nat.one_ne_zero,
+    if_false],
 end
+
+
+section num_denom_away
+
+instance : is_principal_ideal_ring (power_series K) := sorry
+
+variable [decidable_eq (power_series K)]
+lemma boo : unique_factorization_monoid (power_series K):=
+begin
+  apply principal_ideal_ring.to_unique_factorization_monoid,
+end
+
+variable [unique_factorization_monoid (power_series K)]
+variable [decidable_rel (has_dvd.dvd : (power_series K) → (power_series K) → Prop)]
+variable [normalization_monoid (power_series K)]
+
+def unit_X : (laurent_series K)ˣ :=
+  @self_as_unit (power_series K) _ _ _ _ _ _ (power_series.X) (laurent_series K) _ _ _
+
+lemma fae_denom_X (f : ratfunc K) (hf : f ≠ 0) : 
+  ∃ (g : power_series K) (n : ℤ), ¬ power_series.X ∣ g ∧
+  (((unit_X K)^n * g) : laurent_series K) = f :=
+begin
+  obtain ⟨g, n, hg, hn⟩ := exists_reduced_fraction _ (laurent_series K)
+    (@prime.irreducible (power_series K) _ _ (power_series.X_prime)) f _,
+  have : is_localization.mk' (laurent_series K) g 1 = g := is_localization.mk'_one _ _,
+  use [g, n, hg],
+  { rw ← this,
+    convert hn,
+    rw units.coe_zpow,
+    refl },
+  { rw [← ratfunc.coe_zero],
+    exact ratfunc.coe_injective.ne hf},
+end
+
+end num_denom_away
+
+open laurent_series hahn_series
+
+lemma val_X_fae : ((X : ratfunc K): laurent_series K).order = 1 :=
+by simp only [ratfunc.coe_X, hahn_series.order_single, ne.def, one_ne_zero, not_false_iff]
+
+lemma fae_X_pow (n : ℕ) : (hahn_series.single (n : ℤ) 1) =
+  ((X :ratfunc K) : laurent_series K) ^ n :=
+begin
+induction n with n h_ind ,
+    { simp only [nat.nat_zero_eq_zero, int.of_nat_eq_coe, zmod.nat_cast_self, zpow_zero],
+     refl, },
+    { rw ← int.coe_nat_add_one_out,
+      rw [← one_mul (1 : K)],
+      rw ← hahn_series.single_mul_single,
+      rw h_ind,
+      rw ratfunc.coe_X,
+      rw pow_succ' },
+end
+
+lemma fae_single_inv (d : ℤ) (α : K) (hα : α ≠ 0) : (hahn_series.single (d : ℤ) (α : K))⁻¹ 
+  = hahn_series.single (-d) (α⁻¹ : K) :=
+by {rw [inv_eq_of_mul_eq_one_left], simpa only [hahn_series.single_mul_single, 
+  add_left_neg, inv_mul_cancel hα]}
+
+
+lemma fae_X_zpow (n : ℤ) : (hahn_series.single (n : ℤ) 1) =
+  ((X :ratfunc K) : laurent_series K) ^ n :=
+begin
+  induction n with n_pos n_neg,
+  apply fae_X_pow,
+  rw ratfunc.coe_X,
+  have := fae_single_inv K ((n_neg + 1) : ℤ) 1 one_ne_zero,
+  rw int.neg_succ_of_nat_coe,
+  rw int.coe_nat_add,
+  rw nat.cast_one,
+  nth_rewrite 0 [← inv_one],
+  rw ← this,
+  rw zpow_neg,
+  rw ← nat.cast_one,
+  rw ← int.coe_nat_add,
+  rw fae_X_pow,
+  rw ratfunc.coe_X,
+  rw [algebra_map.coe_one, inv_inj],
+  rw zpow_coe_nat,
+end
+
+
+-- FAE for `mathlib`?
+lemma fae_int_valuation_apply (f : polynomial K) : 
+  ((ideal_X K).int_valuation f) = ((ideal_X K).int_valuation_def f) := refl _
+
+-- `FAE` The two lemmas that follow are not `refl` because the iso `to_power_series` is an iso with
+-- Hahn series indexed on `ℕ` while `of_power_series` embeds the power series in any ring of Hahn
+-- series indexed on a linearly ordered monoid (or blablabla).
+lemma to_power_series_of_power_series {R : Type*} [semiring R] {φ : hahn_series ℕ R} :
+  of_power_series ℕ R (to_power_series φ) = φ :=
+begin
+  ext,
+  convert of_power_series_apply_coeff (to_power_series φ) _,
+  simp only [finsupp.single_eq_same],
+end
+
+lemma of_power_series_to_power_series {R : Type*} [semiring R] {φ : power_series R} :
+  to_power_series (of_power_series ℕ R φ) = φ :=
+begin
+  ext,
+  convert @coeff_to_power_series _ _ (of_power_series ℕ R φ) _,
+  exact (of_power_series_apply_coeff φ n).symm,
+end
+
+-- ***TO DO*** understand what to do with `φ = 0`
+lemma order_eq_of_power_series {R : Type*} [semiring R] {φ : power_series R} (hφ : φ ≠ 0) :
+  power_series.order φ = (hahn_series.of_power_series ℕ R φ).order :=
+begin
+  -- by_cases hφ : φ = 0,
+  -- { rw hφ,
+  --   rw power_series.order_zero,
+  --   rw map_zero,
+  --   rw hahn_series.order_zero,
+  --   simp,
+  --   sorry--and it is false
+  -- },
+  obtain ⟨_, ⟨H, hm⟩⟩ := part.dom_iff_mem.mp ((power_series.order_finite_iff_ne_zero).mpr hφ),
+    rw [← @part_enat.coe_get _ H],
+    apply congr_arg,
+    apply le_antisymm _ (hahn_series.order_le_of_coeff_ne_zero _),
+    { rw [← part_enat.coe_le_coe, part_enat.coe_get],
+      apply power_series.order_le,
+      erw [← @hahn_series.of_power_series_apply_coeff ℕ _ _ _ _ _],
+      apply hahn_series.coeff_order_ne_zero,
+      exact (map_ne_zero_iff (hahn_series.of_power_series ℕ R)
+        (hahn_series.of_power_series_injective)).mpr hφ,
+    },
+    { erw [hahn_series.of_power_series_apply_coeff φ],
+      apply power_series.coeff_order, },
+end
+
+-- `FAE` probably needed with `to_power_series_alg` rather
+lemma order_eq_to_power_series {R : Type*} [comm_semiring R] {φ : hahn_series ℕ R} (hφ : φ ≠ 0) :
+  power_series.order (to_power_series φ) = φ.order :=
+begin
+  replace hφ : (to_power_series φ) ≠ 0, sorry,--just injectivity
+  have := order_eq_of_power_series hφ,
+  rw this,
+  rw to_power_series_of_power_series,
+end
+
+lemma hahn_series.X_pow_dvd_iff {f : hahn_series ℕ K} {n : ℕ} (hf : f ≠ 0) :
+ (single 1 1) ^ n ∣ f ↔ ∀ d : ℕ, d < n → f.coeff d = 0 := sorry
+
+
+namespace polynomial
+open polynomial
+open_locale polynomial
+-- The following theorem is `PR #18528`
+theorem X_pow_dvd_iff {α : Type*} [comm_semiring α] {f : α[X]} {n : ℕ} : 
+  X^n ∣ f ↔ ∀ d < n, f.coeff d = 0 :=
+⟨λ ⟨g, hgf⟩ d hd, by {simp only [hgf, coeff_X_pow_mul', ite_eq_right_iff, not_le_of_lt hd,
+    is_empty.forall_iff]}, λ hd, 
+begin
+  induction n with n hn,
+  { simp only [pow_zero, one_dvd] },
+  { obtain ⟨g, hgf⟩ := hn (λ d : ℕ, λ H : d < n, hd _ (nat.lt_succ_of_lt H)),
+    have := coeff_X_pow_mul g n 0,
+    rw [zero_add, ← hgf, hd n (nat.lt_succ_self n)] at this,
+    obtain ⟨k, hgk⟩ := polynomial.X_dvd_iff.mpr this.symm,
+    use k,
+    rwa [pow_succ, mul_comm X _, mul_assoc, ← hgk]},
+end ⟩
+
+end polynomial
+
+lemma X_pow_dvd_pol_iff_dvd_power_series (A : Type) [comm_ring A] (P : polynomial A) (n : ℕ) :
+  (polynomial.X)^n ∣ P ↔ (power_series.X)^n ∣ (P : power_series A) := by
+ simp only [power_series.X_pow_dvd_iff, polynomial.X_pow_dvd_iff, coeff_coe]
+
+
+/-
+`FAE`: The strategy for the lemma below should now be to use that
+* the order of the hahn_series 
+* orders of power_series and of hahn_series ℕ _ are the same by some lemma above
+* the order of a power_series is the minimum of the non-zero-coefficients
+* this is equivalent to the power series being divisible exactly by X^{ord} by
+`power_series.X_pow_dvd_iff`
+* this is equivalent to the polynomial being divisible exactly by by X^{ord} by
+`X_pow_dvd_pol_iff_dvd_power_series` (that need not be a lemma? or yes?)
+* this coincides with the definition of the valuation.
+-/
+
+local attribute [instance] classical.prop_decidable
+
+lemma fae_pol_ps_order_mul {f : polynomial K} : --(hf : f ≠ 0) :
+  (↑f : power_series K).order = multiplicity polynomial.X f :=
+begin
+  rw power_series.order_eq_multiplicity_X,
+  sorry,
+end
+
+section nat_order
+namespace power_series
+
+variable {K}
+def nat_order {φ : power_series K} (h : φ ≠ 0) : ℕ := 
+  nat.find (exists_coeff_ne_zero_iff_ne_zero.mpr h)
+
+lemma nat_order_eq_order {φ : power_series K} (h : φ ≠ 0) : ↑(nat_order h) = φ.order :=
+begin
+  simp only [order, ne.def],
+  rw [dif_neg h],
+  simp only [part_enat.coe_inj],
+  sorry,
+  -- apply eq.symm,
+  -- simp,
+  -- refl,
+end
+
+end power_series
+end nat_order
+
+variable {K}
+lemma polynomial.coe_ne_zero {f : polynomial K} : f ≠ 0 → (↑f : (power_series K)) ≠ 0 :=
+by simp only [ne.def, coe_eq_zero_iff, imp_self]
+
+
+variable (K)
+lemma fae_pol_ps_order_val {f : polynomial K} (hf : f ≠ 0) :
+ ↑(multiplicative.of_add (- (power_series.nat_order (polynomial.coe_ne_zero hf )) : ℤ)) = 
+    ((ideal_X K).int_valuation f) :=
+begin
+  have := fae_pol_ps_order_mul,
+  have := power_series.nat_order_eq_order (polynomial.coe_ne_zero hf),
+end
+
+lemma fae_pol_power_series_order_eq_val {f : polynomial K} (hf : f ≠ 0) :
+ ↑(multiplicative.of_add (- (↑f : (hahn_series ℕ K)).order : ℤ)) = ((ideal_X K).int_valuation f) :=
+begin
+  set n := (↑f : (hahn_series ℕ K)).order with hn,
+  have := (ideal_X K).int_valuation_le_pow_iff_dvd f n,
+  simp only [of_add_neg, with_zero.coe_inv, ideal_X_span, ideal.dvd_span_singleton,
+    ideal.span_singleton_pow, ideal.mem_span_singleton] at this,
+  rw [@polynomial.X_pow_dvd_iff K _ f n] at this,
+  --and now we must connect `n` with the order of a power_series
+  set m := (↑f : power_series K).order with hm,
+  sorry,
+  -- simp_rw [X_pow_dvd_pol_iff_dvd_power_series] at this,
+end
+--   -- have test : ↑f = (↑f : power_series K), refl,
+--   have hf' : (f : power_series K) ≠ 0, sorry, --just injectivity
+--   have hf'' : ((to_power_series (↑f : hahn_series ℕ K)) : power_series K) ≠ 0, sorry, --just injectivity
+--   -- obtain ⟨m, ⟨H, hm⟩⟩ := part.dom_iff_mem.mp ((power_series.order_finite_iff_ne_zero).mpr hf''),
+--   -- let semiK := @semiring.to_monoid_with_zero K _,
+--   have mul_fin : multiplicity.finite power_series.X (f : power_series K),
+--   { apply multiplicity.finite_prime_left,
+--     { exact power_series.X_prime },
+--     { exact hf' }},
+--   rw multiplicity.finite_iff_dom at mul_fin,
+--   obtain ⟨m, ⟨H, hm⟩⟩ := part.dom_iff_mem.mp mul_fin,
+--   have := power_series.order_eq_multiplicity_X (f : power_series K),--exists also `to_power_series_alg`
+--   have temp := @part_enat.coe_get _ H,
+--   -- unfold_coes at this,
+--   -- unfold_coes at temp,
+--   set A := multiplicity power_series.X (power_series.mk (λ n : ℕ, f.coeff n)) with hA,
+--   -- simp_rw ← hA at temp,
+--   simp_rw ← hA at this,
+--   -- rw hm at temp,
+--   -- erw [← power_series.order_eq_multiplicity_X] at temp,
+--   -- erw [← temp] at this,
+--   -- -- rw hm at this,
+--   -- rw [order_eq_of_power_series] at this,
+--   -- have diamante : (↑f : hahn_series ℕ K) = of_power_series ℕ K (↑f : power_series K), sorry,
+--   -- rw diamante,
+--   -- rw this,
+--   -- -- have mr :
+--   -- have ser := @multiplicity_hahn_series_eq_multiplicity_pow_series K _ _ _ _ _ _ _
+--   --   (↑f : hahn_series ℕ K) hf',
+--   -- -- rw ← ser at this,
+--   -- sorry,
+--   -- -- have pol := @multiplicity_pol_eq_multiplicity_power_series K _ _ _ _ _ _ f hf,
+  
+--   -- -- rw hm at this,
+--   -- -- sorry,
+-- end
+
+-- #exit
+
+lemma fae_pol_order_eq_val {f : polynomial K} (hf : f ≠ 0) :
+ ↑(multiplicative.of_add (- (f : laurent_series K).order)) = ((ideal_X K).int_valuation f) :=
+begin
+  sorry,
+--   rw fae_int_valuation_apply,
+--   rw (ideal_X K).int_valuation_def_if_neg hf,
+--   simp only [coe_coe, of_add_neg, ideal_X_span, inv_inj, with_zero.coe_inj,
+--     embedding_like.apply_eq_iff_eq],
+--   -- rw int_valuation,
+-- --   funex
+-- --   simp only,
+-- --   rw [int_valuation_def_if_neg hf],
+-- --   unfold_coes,-- [is_dedekind_domain.height_one_spectrum.int_valuation_def],
+-- --   funext,
+-- --  rw if_neg hf,
+-- --  simp,
+end
+
+
+lemma fae_order_inv {a : laurent_series K} (ha : a ≠ 0) : a⁻¹.order = - a.order :=
+  by {simp only [eq_neg_iff_add_eq_zero, ← hahn_series.order_mul  (inv_ne_zero ha) ha, 
+    inv_mul_cancel ha, hahn_series.order_one]}
+
+lemma fae_order_div {a b : laurent_series K} (ha : a ≠ 0) (hb : b ≠ 0) : (a / b).order =
+  a.order - b.order := by {rw [div_eq_mul_inv, hahn_series.order_mul ha (inv_ne_zero hb), 
+  fae_order_inv _ hb, sub_eq_add_neg]}
+
+-- `FAE` for mathlib?
+lemma fae_coe (P : polynomial K) : (P : laurent_series K) = (↑P : ratfunc K) :=
+  by { erw [ratfunc.coe_def, ratfunc.coe_alg_hom, lift_alg_hom_apply, ratfunc.num_algebra_map,
+    ratfunc.denom_algebra_map P, map_one, div_one], refl}
+
+
+-- depends on  `fae_pol_order_eq_val`
+lemma fae_order_eq_val {f : ratfunc K} (hf : f ≠ 0) :
+ ↑(multiplicative.of_add (- (f : laurent_series K).order)) = ((ideal_X K).valuation f) :=
+begin
+  obtain ⟨P, ⟨Q, hQ, hf⟩⟩ := @is_fraction_ring.div_surjective (polynomial K) _ _ (ratfunc K) _ _ _ f,
+  have hP : P ≠ 0, sorry,
+  have hQ₀ : Q ≠ 0, sorry,
+  replace hf : is_localization.mk' (ratfunc K) P ⟨Q, hQ⟩ = f,
+  simp only [hf, is_fraction_ring.mk'_eq_div, set_like.coe_mk],
+  have val_P_Q := @valuation_of_mk' (polynomial K) _ _ _ (ratfunc K) _ _ _ (ideal_X K) P ⟨Q, hQ⟩,
+  rw hf at val_P_Q,
+  rw val_P_Q,
+  simp only [← subtype.val_eq_coe],
+  rw [← (fae_pol_order_eq_val _ hP)],
+  rw [← (fae_pol_order_eq_val _ hQ₀)],
+  rw ← with_zero.coe_div,
+  rw with_zero.coe_inj,
+  rw ← of_add_sub,
+  apply congr_arg,
+  rw neg_eq_iff_neg_eq,
+  rw neg_sub_neg,
+  rw neg_sub,
+  rw ← fae_order_div,
+  rw ← hf,
+  apply congr_arg,
+  convert_to ((↑P : ratfunc K) : laurent_series K)/ (↑Q : ratfunc K) =
+    ↑(is_localization.mk' (ratfunc K) P ⟨Q, hQ⟩),
+  { have := ratfunc.coe_div (↑P : ratfunc K) (↑Q : ratfunc K),
+    rw ← this,
+    rw div_eq_iff,
+    rw fae_coe,
+    rw fae_coe,
+    rw ← ratfunc.coe_mul,
+    apply congr_arg,
+    rw [div_mul_cancel _ _],
+    sorry,
+    sorry,
+  },
+  rw ← coe_div,
+  apply congr_arg,
+  simpa only [mk_eq_div, is_fraction_ring.mk'_eq_div, set_like.coe_mk],
+  { intro hneP,
+    have hinj := @_root_.polynomial.algebra_map_hahn_series_injective ℤ K _ _,
+    have := ((@injective_iff_map_eq_zero' _ _ _ _ _ _ (_ : (polynomial K) →+* (laurent_series K))).mp hinj P).mp hneP,
+    exact hP this,
+     },
+  sorry,
+end
+
+
+-- This is `PR #18541`
+lemma order_neg (Γ : Type*) (R : Type*) [partial_order Γ] [has_zero Γ] [add_group R] 
+ {f : hahn_series Γ R} : (- f).order = f.order :=
+begin
+  classical,
+  by_cases hf : f = 0,
+  { simp only [hf, ratfunc.coe_zero, neg_zero]},
+  { simp only [hahn_series.order, hahn_series.support_neg, neg_eq_zero]}
+end
+
+-- `FAE` Depends on `fae_order_eq_val`
+lemma fae_order_eq_val' {f : ratfunc K} (hf : f ≠ 0) :
+ ↑(multiplicative.of_add ((f : laurent_series K).order)) = ((ideal_X K).valuation f)⁻¹ :=
+begin
+  have := fae_order_eq_val K (neg_ne_zero.mpr hf),
+  nth_rewrite 0 [← neg_neg f],
+  rw ratfunc.coe_def,
+  rw (ratfunc.coe_alg_hom K).map_neg,
+  rw ← ratfunc.coe_def,
+  rw order_neg,
+  rw of_add_neg at this,
+  rw [← with_zero.coe_unzero $((ideal_X K).valuation).ne_zero_iff.mpr hf],
+  rw ← with_zero.coe_inv,
+  rw with_zero.coe_inj,
+  rw eq_inv_iff_eq_inv,
+  rw ← with_zero.coe_inj,
+  simp only [this, with_zero.coe_unzero, valuation.map_neg],
+end
+
+namespace ratfunc
+
+variable {K}
+def coeff (f : ratfunc K) (d : ℤ) : K := (f : laurent_series K).coeff d
+
+variable (K)
+def coeff_map (d : ℤ) : ratfunc K → K := λ x, coeff x d
+
+-- transform into add_map ? The `def` below takes centuries to compile
+-- def coeff_map_add (d : ℤ) : ratfunc K →+ K :=
+-- begin
+--   fconstructor,
+--   { 
+--   },
+
+-- end
+
+end ratfunc
+
+
+lemma eq_coeff_of_mem_entourage (d : ℤ) (x y : ratfunc K) (H : (x, y) ∈ (entourage K d)) :
+ x.coeff d = y.coeff d :=
+begin
+  by_cases triv : x = y,
+  { rw triv },
+  { dsimp only [entourage] at H,
+    apply eq_of_sub_eq_zero,
+    erw [← hahn_series.sub_coeff],--need to pass to Hahn series here, because `coeff` for a rational
+      -- function is defined as its coefficient once seen as a Hahn/Laurent series
+    rw [← coe_sub],
+    apply hahn_series.coeff_eq_zero_of_lt_order,
+    rw ← multiplicative.of_add_lt,
+    rw ← with_zero.coe_lt_coe,
+    rw fae_order_eq_val' K (sub_ne_zero_of_ne triv),
+    rw [of_add_neg] at H,
+    replace triv : ((ideal_X K).valuation) (x - y) ≠ 0 :=
+      (valuation.ne_zero_iff _).mpr (sub_ne_zero_of_ne triv),
+    rw ← with_zero.coe_unzero triv,
+    rw ← with_zero.coe_inv,
+    rw with_zero.coe_lt_coe,
+    rw lt_inv',
+    rw ← with_zero.coe_lt_coe,
+    rw with_zero.coe_unzero triv,
+    exact H },
+end
+
+lemma entourage_uniformity_mem (d : ℤ) : entourage K d ∈ 𝓤 (ratfunc K) :=
+begin
+  sorry,
+end
+
+
+lemma uniform_continuous_coeff_map {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) (d : ℤ)
+: uniform_continuous (ratfunc.coeff_map K d) :=
+begin
+  refine uniform_continuous_iff_eventually.mpr _,
+  intros S hS,
+  rw h at hS,
+  simp only [mem_principal, id_rel_subset] at hS,--probably useless,
+  refine eventually_iff_exists_mem.mpr _,
+  use entourage K d,
+  split,
+  exact entourage_uniformity_mem K d,
+  intros x hx,
+  suffices : x.fst.coeff_map K d = x.snd.coeff_map K d,
+  rw this,
+  exact hS (x.snd.coeff d),
+  apply eq_coeff_of_mem_entourage,
+  exact hx,
+end
+
+--this `def` has nothing to do with (local) fields
+def cauchy_discrete_is_constant {K} {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) 
+  (α : filter K) (hα : cauchy α) : K :=
+begin
+  sorry
+end
+
+
+def isom 
+  {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) : 
+  -- adic_completion.field (ratfunc K) (ideal_X K) ≃ ℤ := sorry
+  (completion_of_ratfunc K) ≃ (laurent_series K) :=
+{ to_fun :=
+  begin
+  intro α,
+  apply hahn_series.mk,
+  swap,
+  intro d,
+  obtain ⟨ℱ, hℱ⟩ := (quot.exists_rep α).some,
+  use (cauchy_discrete_is_constant h (ℱ.map (ratfunc.coeff_map K d))
+    (hℱ.map (uniform_continuous_coeff_map K h d))),
+  have : set.is_pwo (⊤ : (set ℤ)),
+  sorry,
+  exact set.is_pwo.mono this (set.subset_univ _),
+  end,
+  inv_fun := sorry,
+  left_inv := sorry,
+  right_inv := sorry }
+
+/- **OLD THINGS** 
+
   -- is_dedekind_domain.height_one_spectrum.uniform_space_adic_completion (ratfunc K) _
 
 -- lemma foo : (nhds (0 : ratfunc K)).has_basis set.univ (λ n : ℕ,
@@ -96,10 +587,34 @@ end
 --     (λ n, @filter.has_basis.mem_of_mem _ _ _ _ _ n
 --     (filter.has_basis.uniformity_of_nhds_zero (foo K)) trivial)
 
-variable (F : completion_of_ratfunc K)
-#check filter.map (ratfunc.coe_alg_hom K) ((quot.exists_rep F).some).1
+  -- is_dedekind_domain.height_one_spectrum.uniform_space_adic_completion (ratfunc K) _
 
+-- lemma foo : (nhds (0 : ratfunc K)).has_basis set.univ (λ n : ℕ,
+--   {F : (ratfunc K) | ↑(multiplicative.of_add (n : ℤ)) ≤ (ideal_X K).valuation F}) :=
+-- begin
+--   sorry
+-- end
 
+-- lemma foo' : (nhds (0 : ratfunc K)).has_basis set.univ (λ n : ℤ,
+--   {F : (ratfunc K) | ↑(multiplicative.of_add n) ≤ (ideal_X K).valuation F}) :=
+-- begin
+--   sorry
+-- end
+
+-- def boo := filter.has_basis.uniformity_of_nhds_zero (foo K)
+
+-- #check boo K
+
+-- lemma boo_subset (n : ℕ) : (boo K n) ∈ (𝓤 (ratfunc K)) :=
+-- variable (d : ℤ)
+-- #check foo K
+
+-- lemma uff : true := sorry
+-- include K F
+
+-- def ss (F : completion_of_ratfunc K) : ℕ → (ratfunc K) := seq ((quot.exists_rep F).some).2
+--     (λ n, @filter.has_basis.mem_of_mem _ _ _ _ _ n
+--     (filter.has_basis.uniformity_of_nhds_zero (foo K)) trivial)
 
 -- #check ss K F
 -- --   use this,
@@ -225,174 +740,6 @@ variable (F : completion_of_ratfunc K)
 --   refine uniform_space.completion.uniform_continuous_coe X,
 -- end
 
-
-def set_fae (d : ℤ) : set (ratfunc K × ratfunc K) :=
-  {P | (ideal_X K).valuation (P.1 - P.2) < ↑(multiplicative.of_add (- d))}
-
--- *FAE* This was the old definition, but I think I got the inequalities wrong, since I did not
--- know yet how to play with `multiplicative.of_add`.
--- def set_fae (d : ℤ) : set (ratfunc K × ratfunc K) :=
---   {P | ↑(multiplicative.of_add d) ≤ (ideal_X K).valuation (P.1 - P.2)}
-
-lemma fae_for_pol (f  : polynomial K) (d : ℕ) (hf : (ideal_X K).int_valuation f ≤ 
-  ↑(multiplicative.of_add (- (d+(1 : ℕ)) : ℤ))) : f.coeff d = 0 :=
-begin 
-  erw [int_valuation_le_pow_iff_dvd _ _ (d+1)] at hf,
-  simp only [ideal_X_span, ideal.dvd_span_singleton, ideal.span_singleton_pow,
-    ideal.mem_span_singleton'] at hf,
-  cases hf with a ha,
-  simp only [← ha, coeff_mul_X_pow', add_le_iff_nonpos_right, le_zero_iff, nat.one_ne_zero,
-    if_false],
-end
-
-
-section num_denom_away
-
-instance : is_principal_ideal_ring (power_series K) := sorry
-
-variable [decidable_eq (power_series K)]
-lemma boo : unique_factorization_monoid (power_series K):=
-begin
-  apply principal_ideal_ring.to_unique_factorization_monoid,
-end
-
-variable [unique_factorization_monoid (power_series K)]
-variable [decidable_rel (has_dvd.dvd : (power_series K) → (power_series K) → Prop)]
-variable [normalization_monoid (power_series K)]
-
-def unit_X : (laurent_series K)ˣ :=
-  @self_as_unit (power_series K) _ _ _ _ _ _ (power_series.X) (laurent_series K) _ _ _
-
-lemma fae_denom_X (f : ratfunc K) (hf : f ≠ 0) : 
-  ∃ (g : power_series K) (n : ℤ), ¬ power_series.X ∣ g ∧
-  (((unit_X K)^n * g) : laurent_series K) = f :=
-begin
-  obtain ⟨g, n, hg, hn⟩ := exists_reduced_fraction _ (laurent_series K)
-    (@prime.irreducible (power_series K) _ _ (power_series.X_prime)) f _,
-  have : is_localization.mk' (laurent_series K) g 1 = g := is_localization.mk'_one _ _,
-  use [g, n, hg],
-  { rw ← this,
-    convert hn,
-    rw units.coe_zpow,
-    refl },
-  { rw [← ratfunc.coe_zero],
-    exact ratfunc.coe_injective.ne hf},
-end
-
-end num_denom_away
-
-open laurent_series hahn_series
-
-lemma val_X_fae : ((X : ratfunc K): laurent_series K).order = 1 :=
-by simp only [ratfunc.coe_X, hahn_series.order_single, ne.def, one_ne_zero, not_false_iff]
-
--- example (f : laurent_series K) (hf : f ≠ 0) : (hahn_series.add_val ℤ K f) = f.order :=
--- begin
---   exact hahn_series.add_val_apply_of_ne hf,
--- end
-
-lemma fae_X_pow (n : ℕ) : (hahn_series.single (n : ℤ) 1) =
-  ((X :ratfunc K) : laurent_series K) ^ n :=
-begin
-induction n with n h_ind ,
-    { simp only [nat.nat_zero_eq_zero, int.of_nat_eq_coe, zmod.nat_cast_self, zpow_zero],
-     refl, },
-    { rw ← int.coe_nat_add_one_out,
-      rw [← one_mul (1 : K)],
-      rw ← hahn_series.single_mul_single,
-      rw h_ind,
-      rw ratfunc.coe_X,
-      rw pow_succ' },
-end
-
-lemma fae_single_inv (d : ℤ) (α : K) (hα : α ≠ 0) : (hahn_series.single (d : ℤ) (α : K))⁻¹ 
-  = hahn_series.single (-d) (α⁻¹ : K) :=
-by {rw [inv_eq_of_mul_eq_one_left], simpa only [hahn_series.single_mul_single, 
-  add_left_neg, inv_mul_cancel hα]}
-
-
-lemma fae_X_zpow (n : ℤ) : (hahn_series.single (n : ℤ) 1) =
-  ((X :ratfunc K) : laurent_series K) ^ n :=
-begin
-  induction n with n_pos n_neg,
-  apply fae_X_pow,
-  rw ratfunc.coe_X,
-  have := fae_single_inv K ((n_neg + 1) : ℤ) 1 one_ne_zero,
-  rw int.neg_succ_of_nat_coe,
-  rw int.coe_nat_add,
-  rw nat.cast_one,
-  nth_rewrite 0 [← inv_one],
-  rw ← this,
-  rw zpow_neg,
-  rw ← nat.cast_one,
-  rw ← int.coe_nat_add,
-  rw fae_X_pow,
-  rw ratfunc.coe_X,
-  rw [algebra_map.coe_one, inv_inj],
-  rw zpow_coe_nat,
-end
-
-
--- FAE for `mathlib`?
-lemma fae_int_valuation_apply (f : polynomial K) : 
-  ((ideal_X K).int_valuation f) = ((ideal_X K).int_valuation_def f) := refl _
-
--- `FAE` The two lemmas that follow are not `refl` because the iso `to_power_series` is an iso with
--- Hahn series indexed on `ℕ` while `of_power_series` embeds the power series in any ring of Hahn
--- series indexed on a linearly ordered monoid (or blablabla).
-lemma to_power_series_of_power_series {R : Type*} [semiring R] {φ : hahn_series ℕ R} :
-  of_power_series ℕ R (to_power_series φ) = φ :=
-begin
-  ext,
-  convert of_power_series_apply_coeff (to_power_series φ) _,
-  simp only [finsupp.single_eq_same],
-end
-
-lemma of_power_series_to_power_series {R : Type*} [semiring R] {φ : power_series R} :
-  to_power_series (of_power_series ℕ R φ) = φ :=
-begin
-  ext,
-  convert @coeff_to_power_series _ _ (of_power_series ℕ R φ) _,
-  exact (of_power_series_apply_coeff φ n).symm,
-end
-
--- ***TO DO*** understand what to do with `φ = 0`
-lemma order_eq_of_power_series {R : Type*} [semiring R] {φ : power_series R} (hφ : φ ≠ 0) :
-  power_series.order φ = (hahn_series.of_power_series ℕ R φ).order :=
-begin
-  -- by_cases hφ : φ = 0,
-  -- { rw hφ,
-  --   rw power_series.order_zero,
-  --   rw map_zero,
-  --   rw hahn_series.order_zero,
-  --   simp,
-  --   sorry--and it is false
-  -- },
-  obtain ⟨_, ⟨H, hm⟩⟩ := part.dom_iff_mem.mp ((power_series.order_finite_iff_ne_zero).mpr hφ),
-    rw [← @part_enat.coe_get _ H],
-    apply congr_arg,
-    apply le_antisymm _ (hahn_series.order_le_of_coeff_ne_zero _),
-    { rw [← part_enat.coe_le_coe, part_enat.coe_get],
-      apply power_series.order_le,
-      erw [← @hahn_series.of_power_series_apply_coeff ℕ _ _ _ _ _],
-      apply hahn_series.coeff_order_ne_zero,
-      exact (map_ne_zero_iff (hahn_series.of_power_series ℕ R)
-        (hahn_series.of_power_series_injective)).mpr hφ,
-    },
-    { erw [hahn_series.of_power_series_apply_coeff φ],
-      apply power_series.coeff_order, },
-end
-
--- `FAE` probably needed with `to_power_series_alg` rather
-lemma order_eq_to_power_series {R : Type*} [comm_semiring R] {φ : hahn_series ℕ R} (hφ : φ ≠ 0) :
-  power_series.order (to_power_series φ) = φ.order :=
-begin
-  replace hφ : (to_power_series φ) ≠ 0, sorry,--just injectivity
-  have := order_eq_of_power_series hφ,
-  rw this,
-  rw to_power_series_of_power_series,
-end
-
 -- variable [decidable_rel (has_dvd.dvd : (polynomial K) → (polynomial K) → Prop)]
 -- variable [decidable_rel (has_dvd.dvd : (power_series K) → (power_series K) → Prop)]
 
@@ -417,306 +764,26 @@ end
 -- --   sorry,
 -- -- end
 
-namespace polynomial
-open polynomial
-open_locale polynomial
--- The following theorem is `PR #18528`
-theorem X_pow_dvd_iff {α : Type*} [comm_semiring α] {f : α[X]} {n : ℕ} : 
-  X^n ∣ f ↔ ∀ d < n, f.coeff d = 0 :=
-⟨λ ⟨g, hgf⟩ d hd, by {simp only [hgf, coeff_X_pow_mul', ite_eq_right_iff, not_le_of_lt hd,
-    is_empty.forall_iff]}, λ hd, 
-begin
-  induction n with n hn,
-  { simp only [pow_zero, one_dvd] },
-  { obtain ⟨g, hgf⟩ := hn (λ d : ℕ, λ H : d < n, hd _ (nat.lt_succ_of_lt H)),
-    have := coeff_X_pow_mul g n 0,
-    rw [zero_add, ← hgf, hd n (nat.lt_succ_self n)] at this,
-    obtain ⟨k, hgk⟩ := polynomial.X_dvd_iff.mpr this.symm,
-    use k,
-    rwa [pow_succ, mul_comm X _, mul_assoc, ← hgk]},
-end ⟩
+instance discrete_fae : uniform_space K := ⊤
+section ratfunc_coeff
 
-end polynomial
-
-lemma X_pow_dvd_pol_iff_dvd_power_series (A : Type) [comm_ring A] (P : polynomial A) (n : ℕ) :
-  (polynomial.X)^n ∣ P ↔ (power_series.X)^n ∣ (P : power_series A) := by
- simp only [power_series.X_pow_dvd_iff, polynomial.X_pow_dvd_iff, coeff_coe]
-
-
-/-
-`FAE`: The strategy for the lemma below should now be to use that
-* the order of the hahn_series 
-* orders of power_series and of hahn_series ℕ _ are the same by some lemma above
-* the order of a power_series is the minimum of the non-zero-coefficients
-* this is equivalent to the power series being divisible exactly by X^{ord} by
-`power_series.X_pow_dvd_iff`
-* this is equivalent to the polynomial being divisible exactly by by X^{ord} by
-`X_pow_dvd_pol_iff_dvd_power_series` (that need not be a lemma? or yes?)
-* this coincides with the definition of the valuation.
--/
-
-lemma fae_pol_power_series_order_eq_val {f : polynomial K} (hf : f ≠ 0) :
- ↑(multiplicative.of_add (- (↑f : (hahn_series ℕ K)).order : ℤ)) = ((ideal_X K).int_valuation f) :=
-begin
-  set n := (↑f : (hahn_series ℕ K)).order with hn,
-  have := (ideal_X K).int_valuation_le_pow_iff_dvd f n,
-  simp only [of_add_neg, with_zero.coe_inv, ideal_X_span, ideal.dvd_span_singleton,
-    ideal.span_singleton_pow, ideal.mem_span_singleton] at this,
-  rw [@polynomial.X_pow_dvd_iff K _ f n] at this,
-  --and now we must connect `n` with the order of a power_series
-  set m := (↑f : power_series K).order with hm,
-  -- simp_rw [X_pow_dvd_pol_iff_dvd_power_series] at this,
-end
---   -- have test : ↑f = (↑f : power_series K), refl,
---   have hf' : (f : power_series K) ≠ 0, sorry, --just injectivity
---   have hf'' : ((to_power_series (↑f : hahn_series ℕ K)) : power_series K) ≠ 0, sorry, --just injectivity
---   -- obtain ⟨m, ⟨H, hm⟩⟩ := part.dom_iff_mem.mp ((power_series.order_finite_iff_ne_zero).mpr hf''),
---   -- let semiK := @semiring.to_monoid_with_zero K _,
---   have mul_fin : multiplicity.finite power_series.X (f : power_series K),
---   { apply multiplicity.finite_prime_left,
---     { exact power_series.X_prime },
---     { exact hf' }},
---   rw multiplicity.finite_iff_dom at mul_fin,
---   obtain ⟨m, ⟨H, hm⟩⟩ := part.dom_iff_mem.mp mul_fin,
---   have := power_series.order_eq_multiplicity_X (f : power_series K),--exists also `to_power_series_alg`
---   have temp := @part_enat.coe_get _ H,
---   -- unfold_coes at this,
---   -- unfold_coes at temp,
---   set A := multiplicity power_series.X (power_series.mk (λ n : ℕ, f.coeff n)) with hA,
---   -- simp_rw ← hA at temp,
---   simp_rw ← hA at this,
---   -- rw hm at temp,
---   -- erw [← power_series.order_eq_multiplicity_X] at temp,
---   -- erw [← temp] at this,
---   -- -- rw hm at this,
---   -- rw [order_eq_of_power_series] at this,
---   -- have diamante : (↑f : hahn_series ℕ K) = of_power_series ℕ K (↑f : power_series K), sorry,
---   -- rw diamante,
---   -- rw this,
---   -- -- have mr :
---   -- have ser := @multiplicity_hahn_series_eq_multiplicity_pow_series K _ _ _ _ _ _ _
---   --   (↑f : hahn_series ℕ K) hf',
---   -- -- rw ← ser at this,
---   -- sorry,
---   -- -- have pol := @multiplicity_pol_eq_multiplicity_power_series K _ _ _ _ _ _ f hf,
-  
---   -- -- rw hm at this,
---   -- -- sorry,
--- end
-
--- #exit
-
-lemma fae_pol_order_eq_val {f : polynomial K} (hf : f ≠ 0) :
- ↑(multiplicative.of_add (- (f : laurent_series K).order)) = ((ideal_X K).int_valuation f) :=
-begin
-  sorry,
---   rw fae_int_valuation_apply,
---   rw (ideal_X K).int_valuation_def_if_neg hf,
---   simp only [coe_coe, of_add_neg, ideal_X_span, inv_inj, with_zero.coe_inj,
---     embedding_like.apply_eq_iff_eq],
---   -- rw int_valuation,
--- --   funex
--- --   simp only,
--- --   rw [int_valuation_def_if_neg hf],
--- --   unfold_coes,-- [is_dedekind_domain.height_one_spectrum.int_valuation_def],
--- --   funext,
--- --  rw if_neg hf,
--- --  simp,
-end
-
-
-lemma fae_order_inv {a : laurent_series K} (ha : a ≠ 0) : a⁻¹.order = - a.order :=
-  by {simp only [eq_neg_iff_add_eq_zero, ← hahn_series.order_mul  (inv_ne_zero ha) ha, 
-    inv_mul_cancel ha, hahn_series.order_one]}
-
-lemma fae_order_div {a b : laurent_series K} (ha : a ≠ 0) (hb : b ≠ 0) : (a / b).order =
-  a.order - b.order := by {rw [div_eq_mul_inv, hahn_series.order_mul ha (inv_ne_zero hb), 
-  fae_order_inv _ hb, sub_eq_add_neg]}
-
--- `FAE` for mathlib?
-lemma fae_coe (P : polynomial K) : (P : laurent_series K) = (↑P : ratfunc K) :=
-  by { erw [ratfunc.coe_def, ratfunc.coe_alg_hom, lift_alg_hom_apply, ratfunc.num_algebra_map,
-    ratfunc.denom_algebra_map P, map_one, div_one], refl}
-
-
--- depends on  `fae_pol_order_eq_val`
-lemma fae_order_eq_val {f : ratfunc K} (hf : f ≠ 0) :
- ↑(multiplicative.of_add (- (f : laurent_series K).order)) = ((ideal_X K).valuation f) :=
-begin
-  obtain ⟨P, ⟨Q, hQ, hf⟩⟩ := @is_fraction_ring.div_surjective (polynomial K) _ _ (ratfunc K) _ _ _ f,
-  have hP : P ≠ 0, sorry,
-  have hQ₀ : Q ≠ 0, sorry,
-  replace hf : is_localization.mk' (ratfunc K) P ⟨Q, hQ⟩ = f,
-  simp only [hf, is_fraction_ring.mk'_eq_div, set_like.coe_mk],
-  have val_P_Q := @valuation_of_mk' (polynomial K) _ _ _ (ratfunc K) _ _ _ (ideal_X K) P ⟨Q, hQ⟩,
-  rw hf at val_P_Q,
-  rw val_P_Q,
-  simp only [← subtype.val_eq_coe],
-  rw [← (fae_pol_order_eq_val _ hP)],
-  rw [← (fae_pol_order_eq_val _ hQ₀)],
-  rw ← with_zero.coe_div,
-  rw with_zero.coe_inj,
-  rw ← of_add_sub,
-  apply congr_arg,
-  rw neg_eq_iff_neg_eq,
-  rw neg_sub_neg,
-  rw neg_sub,
-  rw ← fae_order_div,
-  rw ← hf,
-  apply congr_arg,
-  convert_to ((↑P : ratfunc K) : laurent_series K)/ (↑Q : ratfunc K) =
-    ↑(is_localization.mk' (ratfunc K) P ⟨Q, hQ⟩),
-  { have := ratfunc.coe_div (↑P : ratfunc K) (↑Q : ratfunc K),
-    rw ← this,
-    rw div_eq_iff,
-    rw fae_coe,
-    rw fae_coe,
-    rw ← ratfunc.coe_mul,
-    apply congr_arg,
-    rw [div_mul_cancel _ _],
-    sorry,
-    sorry,
-  },
-  rw ← coe_div,
-  apply congr_arg,
-  simpa only [mk_eq_div, is_fraction_ring.mk'_eq_div, set_like.coe_mk],
-  { intro hneP,
-    have hinj := @_root_.polynomial.algebra_map_hahn_series_injective ℤ K _ _,
-    have := ((@injective_iff_map_eq_zero' _ _ _ _ _ _ (_ : (polynomial K) →+* (laurent_series K))).mp hinj P).mp hneP,
-    exact hP this,
-     },
-  sorry,
-end
-
-
--- do for general hahn series
-lemma fae_order_neg {f : ratfunc K} : -- (hf : f ≠ 0) :
- (- f : laurent_series K).order = (f : laurent_series K).order :=
-begin
-  classical,
-  by_cases hf : f = 0,
-  { simp only [hf, ratfunc.coe_zero, neg_zero]},
-  { simp only [hahn_series.order, hahn_series.support_neg, neg_eq_zero]}
-end
-
--- `FAE` Depends on `fae_order_eq_val`
-lemma fae_order_eq_val' (f : ratfunc K) (hf : f ≠ 0) :
- ↑(multiplicative.of_add ((f : laurent_series K).order)) = ((ideal_X K).valuation f)⁻¹ :=
-begin
-  have := fae_order_eq_val K (neg_ne_zero.mpr hf),
-  nth_rewrite 0 [← neg_neg f],
-  rw ratfunc.coe_def,
-  rw (ratfunc.coe_alg_hom K).map_neg,
-  rw ← ratfunc.coe_def,
-  rw fae_order_neg,
-  rw of_add_neg at this,
-  rw [← with_zero.coe_unzero $((ideal_X K).valuation).ne_zero_iff.mpr hf],
-  rw ← with_zero.coe_inv,
-  rw with_zero.coe_inj,
-  rw eq_inv_iff_eq_inv,
-  rw ← with_zero.coe_inj,
-  simp only [this, with_zero.coe_unzero, valuation.map_neg],
-end
-
-lemma coeff_fae (d : ℤ) (x y : ratfunc K) (H : (x, y) ∈ (set_fae K d)) :
- (x : laurent_series K).coeff d = (y : laurent_series K).coeff d :=
-begin
-  by_cases triv : x = y,
-  { rw triv },
-  { dsimp only [set_fae] at H,
-    apply eq_of_sub_eq_zero,
-    rw [← hahn_series.sub_coeff],
-    rw [← coe_sub],
-    apply hahn_series.coeff_eq_zero_of_lt_order,
-    rw ← multiplicative.of_add_lt,
-    rw ← with_zero.coe_lt_coe,
-    rw @fae_order_eq_val' K _ _ _ _ _ (x - y) (sub_ne_zero_of_ne triv),
-    rw [of_add_neg] at H,
-    replace triv : ((ideal_X K).valuation) (x - y) ≠ 0 :=
-      (valuation.ne_zero_iff _).mpr (sub_ne_zero_of_ne triv),
-    rw ← with_zero.coe_unzero triv,
-    rw ← with_zero.coe_inv,
-    rw with_zero.coe_lt_coe,
-    rw lt_inv',
-    rw ← with_zero.coe_lt_coe,
-    rw with_zero.coe_unzero triv,
-    exact H },
-end
-
-
-
-lemma entourage_fae (d : ℤ) : set_fae K d ∈ 𝓤 (ratfunc K) :=
-begin
-  sorry,
-end
-
--- instance discrete_fae : uniform_space K := ⊤
-
-def eval_fae (d : ℤ) : ratfunc K → K := λ x : ratfunc K, (x : laurent_series K).coeff d
-
-lemma unif_cnts_fae (d : ℤ) {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel)
-: uniform_continuous (eval_fae K d) :=
-begin
-  refine uniform_continuous_iff_eventually.mpr _,
-  intros S hS,
-  rw h at hS,
-  simp only [mem_principal, id_rel_subset] at hS,--probably useless,
-  refine eventually_iff_exists_mem.mpr _,
-  use set_fae K d,
-  split,
-  exact entourage_fae K d,
-  intros x hx,
-  suffices : (eval_fae K d x.fst) = (eval_fae K d x.snd),
-  rw this,
-  exact (hS (eval_fae K d x.snd)),
-  apply coeff_fae,
-  exact hx,
-end
-
--- lemma discrete_complete_fae (d : ℤ) {uK : uniform_space K}
---   (h : uniformity K = 𝓟 id_rel) : is_complete (⊤ : (set K)) :=
--- begin
---   sorry
--- end
-
--- def eval_compl_fae (d : ℤ) {uK : uniform_space K}
---   (h : uniformity K = 𝓟 id_rel) : (completion_of_ratfunc K) → K := 
---   uniform_space.completion.extension (eval_fae K d)
-
---the `instance : uniform_space (completion_of_ratfunc K) :=` is needed for the `lemma` below
-lemma cauchy_fae (d : ℤ) {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel)
-  (α : filter (ratfunc K)) (hα : cauchy α) :
-  cauchy (α.map (eval_fae K d)) := hα.map (unif_cnts_fae K d h)
-
-
-def constant_cauchy_fae {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) 
-  (α : filter K) (hα : cauchy α) : K :=
+lemma discrete_complete_fae (d : ℤ) {uK : uniform_space K}
+  (h : uniformity K = 𝓟 id_rel) : is_complete (⊤ : (set K)) :=
 begin
   sorry
 end
 
--- lemma constant_cauchy_fae_principal {uK : uniform_space K} 
---   (h : uniformity K = 𝓟 id_rel) (α : filter K) (hα : cauchy α) :
---   α ≤ filter.principal {constant_cauchy_fae K h α hα} := sorry
+def eval_compl_fae (d : ℤ) {uK : uniform_space K}
+  (h : uniformity K = 𝓟 id_rel) : (completion_of_ratfunc K) → K := 
+  uniform_space.completion.extension (eval_fae K d)
 
+the `instance : uniform_space (completion_of_ratfunc K) :=` is needed for the `lemma` below
+lemma cauchy_fae (d : ℤ) {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel)
+  (α : filter (ratfunc K)) (hα : cauchy α) :
+  cauchy (α.map (ratfunc.coeff_map K d)) := hα.map (unif_cnts_fae K d h)
 
-def isom 
-  {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) : 
-  -- adic_completion.field (ratfunc K) (ideal_X K) ≃ ℤ := sorry
-  (completion_of_ratfunc K) ≃ (laurent_series K) :=
-{ to_fun :=
-  begin
-  intro α,
-  apply hahn_series.mk,
-  swap,
-  intro d,
-  obtain ⟨ℱ, hℱ⟩ := (quot.exists_rep α).some,
-  use (constant_cauchy_fae K h (ℱ.map (eval_fae K d)) (cauchy_fae K d h ℱ hℱ)),
-  have : set.is_pwo (⊤ : (set ℤ)),
-  sorry,
-  exact set.is_pwo.mono this (set.subset_univ _),
-  end,
-  inv_fun := sorry,
-  left_inv := sorry,
-  right_inv := sorry }
+lemma constant_cauchy_fae_principal {uK : uniform_space K} 
+  (h : uniformity K = 𝓟 id_rel) (α : filter K) (hα : cauchy α) :
+  α ≤ filter.principal {constant_cauchy_fae K h α hα} := sorry
 
+-/
