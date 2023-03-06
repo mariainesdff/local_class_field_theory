@@ -290,6 +290,7 @@ lemma fae_pol_ps_order_val {f : polynomial K} (hf : f ≠ 0) :
 begin
   have := fae_pol_ps_order_mul,
   have := power_series.nat_order_eq_order (polynomial.coe_ne_zero hf),
+  sorry,
 end
 
 lemma fae_pol_power_series_order_eq_val {f : polynomial K} (hf : f ≠ 0) :
