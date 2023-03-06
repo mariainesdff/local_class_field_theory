@@ -222,7 +222,9 @@ variables (K)
 
 instance ratfunc.char_p : char_p (ratfunc 𝔽_[p]) p := sorry
 
-noncomputable! instance : algebra (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯ := sorry
+noncomputable! instance : algebra (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯ := sorry --`FAE` tried to remove after 
+--  bump on 06.03.2023 but it still breaks
+
 
 instance FpX_field_completion.char_p : char_p 𝔽_[p]⟮⟮X⟯⟯ p := 
 char_p_of_injective_algebra_map

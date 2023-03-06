@@ -12,18 +12,6 @@ import ring_theory.power_series.well_known
 open polynomial is_dedekind_domain.height_one_spectrum topological_space ratfunc sequentially_complete filter
 open_locale big_operators discrete_valuation uniformity filter topology
 
-section for_mathlib
-open power_series laurent_series hahn_series multiplicative is_dedekind_domain
-
-variables {F : Type*} [field F] (f g : ratfunc F)
-
--- #This is `PR #18542`
-@[simp, norm_cast] lemma coe_sub : ((f - g : ratfunc F) : laurent_series F) = f - g :=
-(coe_alg_hom F).map_sub _ _
-
-end for_mathlib
-
-
 variables (K : Type*) [field K]
 
 noncomputable theory
@@ -206,30 +194,9 @@ begin
   rw to_power_series_of_power_series,
 end
 
-lemma hahn_series.X_pow_dvd_iff {f : hahn_series ℕ K} {n : ℕ} (hf : f ≠ 0) :
- (single 1 1) ^ n ∣ f ↔ ∀ d : ℕ, d < n → f.coeff d = 0 := sorry
+-- lemma hahn_series.X_pow_dvd_iff {f : hahn_series ℕ K} {n : ℕ} (hf : f ≠ 0) :
+--  (single 1 1) ^ n ∣ f ↔ ∀ d : ℕ, d < n → f.coeff d = 0 := sorry
 
-
-namespace polynomial
-open polynomial
-open_locale polynomial
--- The following theorem is `PR #18528`
-theorem X_pow_dvd_iff {α : Type*} [comm_semiring α] {f : α[X]} {n : ℕ} : 
-  X^n ∣ f ↔ ∀ d < n, f.coeff d = 0 :=
-⟨λ ⟨g, hgf⟩ d hd, by {simp only [hgf, coeff_X_pow_mul', ite_eq_right_iff, not_le_of_lt hd,
-    is_empty.forall_iff]}, λ hd, 
-begin
-  induction n with n hn,
-  { simp only [pow_zero, one_dvd] },
-  { obtain ⟨g, hgf⟩ := hn (λ d : ℕ, λ H : d < n, hd _ (nat.lt_succ_of_lt H)),
-    have := coeff_X_pow_mul g n 0,
-    rw [zero_add, ← hgf, hd n (nat.lt_succ_self n)] at this,
-    obtain ⟨k, hgk⟩ := polynomial.X_dvd_iff.mpr this.symm,
-    use k,
-    rwa [pow_succ, mul_comm X _, mul_assoc, ← hgk]},
-end ⟩
-
-end polynomial
 
 lemma X_pow_dvd_pol_iff_dvd_power_series (A : Type) [comm_ring A] (P : polynomial A) (n : ℕ) :
   (polynomial.X)^n ∣ P ↔ (power_series.X)^n ∣ (P : power_series A) := by
@@ -425,17 +392,6 @@ begin
     exact hP this,
      },
   sorry,
-end
-
-
--- This is `PR #18541`
-lemma order_neg (Γ : Type*) (R : Type*) [partial_order Γ] [has_zero Γ] [add_group R] 
- {f : hahn_series Γ R} : (- f).order = f.order :=
-begin
-  classical,
-  by_cases hf : f = 0,
-  { simp only [hf, ratfunc.coe_zero, neg_zero]},
-  { simp only [hahn_series.order, hahn_series.support_neg, neg_eq_zero]}
 end
 
 -- `FAE` Depends on `fae_order_eq_val`
