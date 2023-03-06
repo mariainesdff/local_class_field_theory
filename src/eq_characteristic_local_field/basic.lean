@@ -88,9 +88,11 @@ instance : algebra 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ :=
 (by apply_instance : algebra ((ideal_X 𝔽_[p]).adic_completion_integers (ratfunc 𝔽_[p]))
   ((ideal_X 𝔽_[p]).adic_completion (ratfunc 𝔽_[p])))
 
-noncomputable! instance : is_fraction_ring 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ :=
+instance FpX_completion.is_fraction_ring : is_fraction_ring 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ :=
 (by apply_instance : is_fraction_ring ((ideal_X 𝔽_[p]).adic_completion_integers (ratfunc 𝔽_[p]))
   ((ideal_X 𝔽_[p]).adic_completion (ratfunc 𝔽_[p])))
+
+
 
 -- For instances and lemmas that only need `K` to be an `𝔽_[p]⟮⟮X⟯⟯`-algebra
 namespace adic_algebra
@@ -140,10 +142,9 @@ variables (p) (K L : Type*) [field K] [eq_char_local_field p K] [field L] [eq_ch
 
 
 -- We need to mark this one with high priority to avoid timeouts. (TODO: Check)
-@[priority 10000] instance : is_scalar_tower 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K := infer_instance
+--@[priority 100000] instance : is_scalar_tower 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K := sorry infer_instance
 
--- Why protected?
-/- protected  -/lemma is_algebraic : algebra.is_algebraic 𝔽_[p]⟮⟮X⟯⟯ K := algebra.is_algebraic_of_finite _ _
+protected lemma is_algebraic : algebra.is_algebraic 𝔽_[p]⟮⟮X⟯⟯ K := algebra.is_algebraic_of_finite _ _
 
 /-- The ring of integers of a mixed characteristic local field is the integral closure of ℤ_[p]
   in the local field. -/
@@ -185,12 +186,15 @@ namespace ring_of_integers
 
 variables {K}
 
+
+
 --set_option profiler true
 --set_option trace.class_instances true
 -- I had to increase the priority of `eq_char_local_field.is_scalar_tower` for this to work.
 -- Otherwise it times out if the is_scalar_tower argument is implicit (TODO: check)
 noncomputable! instance : is_fraction_ring (𝓞 p K) K := 
-sorry --integral_closure.is_fraction_ring_of_finite_extension 𝔽_[p]⟮⟮X⟯⟯ K 
+@integral_closure.is_fraction_ring_of_finite_extension 
+  𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ _ _ K _ _ _ FpX_completion.is_fraction_ring _ _ _ _
 --This takes about 7s, I think it should be faster...
 
 
@@ -201,9 +205,10 @@ integral_closure.is_integral_closure _ _
 --set_option profiler true
 -- Times out if the is_scalar_tower argument is implicit (without the priority fix) (TODO: check)
 noncomputable! instance : is_integrally_closed (𝓞 p K) :=
-sorry --integral_closure.is_integrally_closed_of_finite_extension 𝔽_[p]⟮⟮X⟯⟯
+@integral_closure.is_integrally_closed_of_finite_extension _ _ 𝔽_[p]⟮⟮X⟯⟯ _ _ _
+  FpX_completion.is_fraction_ring _ _ _ _ _ _
 
-lemma is_integral_coe (x : 𝓞 p K) : is_integral 𝔽_[p]⟦X⟧  (x : K) := x.2
+lemma is_integral_coe (x : 𝓞 p K) : is_integral 𝔽_[p]⟦X⟧ (x : K) := x.2
 
 -- 2.81 s
 /-- The ring of integers of `K` is equivalent to any integral closure of `𝔽_[p]⟦X⟧` in `K` -/
@@ -236,7 +241,7 @@ noncomputable! instance : is_noetherian_ring ↥(FpX_int_completion p) := sorry
 
 --timeout
 noncomputable! instance : is_noetherian 𝔽_[p]⟦X⟧ (𝓞 p K) :=
-sorry --is_integral_closure.is_noetherian 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K (𝓞 p K)
+sorry --@is_integral_closure.is_noetherian 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K (𝓞 p K)
 
 -- Same proof skeleton
 noncomputable! lemma algebra_map_injective :
@@ -291,10 +296,16 @@ instance mixed_char_local_field (p : ℕ) [fact(nat.prime p)] :
   -- Show that these coincide:
   by convert (infer_instance : finite_dimensional 𝔽_[p]⟮⟮X⟯⟯ 𝔽_[p]⟮⟮X⟯⟯), }
 
+
+instance asdf (p : ℕ) [fact(nat.prime p)] : is_scalar_tower 𝔽_[p]⟦X⟧ 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ := 
+infer_instance
+
+#exit
+
 /-- The ring of integers of `𝔽_[p]⟮⟮X⟯⟯` as a mixed characteristic local field is just `𝔽_[p]⟦X⟧`. -/
 noncomputable! def ring_of_integers_equiv (p : ℕ) [fact(nat.prime p)] :
   ring_of_integers p 𝔽_[p]⟮⟮X⟯⟯ ≃+* 𝔽_[p]⟦X⟧ :=
-sorry --ring_of_integers.equiv p 𝔽_[p]⟦X⟧ --timeout
+@ring_of_integers.equiv p _ 𝔽_[p]⟮⟮X⟯⟯ _ _ 𝔽_[p]⟦X⟧ _ _ _ _ (asdf p) _ --timeout
 
 
 end FpX_completion
