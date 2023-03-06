@@ -8,6 +8,8 @@ import algebra.char_p.subring
 
 import field_theory.finite.galois_field
 import ring_theory.dedekind_domain.adic_valuation
+import ring_theory.dedekind_domain.integral_closure
+
 import ring_theory.laurent_series
 
 import algebra_comp
@@ -72,7 +74,7 @@ variable {p}
 instance : field 𝔽_[p]⟮⟮X⟯⟯ :=  --sorry
 is_dedekind_domain.height_one_spectrum.adic_completion.field (ratfunc 𝔽_[p]) (ideal_X 𝔽_[p])
 
-instance : inhabited (FpX_field_completion p) := ⟨(0 : FpX_field_completion p)⟩
+instance : inhabited 𝔽_[p]⟮⟮X⟯⟯ := ⟨(0 : 𝔽_[p]⟮⟮X⟯⟯)⟩
 
 -- Upgrade to (ratfunc Fp)-algebra iso
 noncomputable!
@@ -213,56 +215,52 @@ sorry --(is_integral_closure.equiv 𝔽_[p]⟦X⟧ R K _).symm.to_ring_equiv
 
 variables (K)
 
-instance FpX_field_completion.char_p : char_p (FpX_field_completion p) p := 
-begin 
-  sorry
-end
+instance ratfunc.char_p : char_p (ratfunc 𝔽_[p]) p := sorry
+
+noncomputable! instance : algebra (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯ := sorry
+
+instance FpX_field_completion.char_p : char_p 𝔽_[p]⟮⟮X⟯⟯ p := 
+char_p_of_injective_algebra_map
+  ((algebra_map (ratfunc (galois_field p 1)) (FpX_field_completion p)).injective) p
+
 
 instance eq_char_local_field.char_p : char_p K p := 
-char_p_of_injective_algebra_map (algebra_map (FpX_field_completion p) K).injective p
+char_p_of_injective_algebra_map (algebra_map 𝔽_[p]⟮⟮X⟯⟯ K).injective p
 
 instance : char_p (𝓞 p K) p := char_p.subring' K p (𝓞 p K).to_subring --char_zero.of_module _ K
 
-/- noncomputable! instance : is_noetherian ℤ_[p] (𝓞 p K) :=
-is_integral_closure.is_noetherian ℤ_[p] ℚ_[p] K (𝓞 p K)
- -/
+ -- ?
+noncomputable! instance : is_separable 𝔽_[p]⟮⟮X⟯⟯ K := sorry
 
-end ring_of_integers
+noncomputable! instance : is_noetherian_ring ↥(FpX_int_completion p) := sorry
 
-end eq_char_local_field
+--timeout
+noncomputable! instance : is_noetherian 𝔽_[p]⟦X⟧ (𝓞 p K) :=
+sorry --is_integral_closure.is_noetherian 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K (𝓞 p K)
 
-
-/-  
-
-namespace mixed_char_local_field
-
-
-
-
-
-
-
-
-
+-- Same proof skeleton
 noncomputable! lemma algebra_map_injective :
-  function.injective ⇑(algebra_map ℤ_[p] (ring_of_integers p K)) := 
+  function.injective ⇑(algebra_map 𝔽_[p]⟦X⟧ (ring_of_integers p K)) := 
 begin
-  have hinj : function.injective ⇑(algebra_map ℤ_[p] K),
-  { exact algebra_map_injective' ℤ_[p] ℚ_[p] K},
-  rw injective_iff_map_eq_zero (algebra_map ℤ_[p] ↥(𝓞 p K)),
+  have hinj : function.injective ⇑(algebra_map 𝔽_[p]⟦X⟧ K),
+  { exact algebra_map_injective' 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K},
+  rw injective_iff_map_eq_zero (algebra_map 𝔽_[p]⟦X⟧ ↥(𝓞 p K)),
   intros x hx,
   rw [← subtype.coe_inj, subalgebra.coe_zero] at hx,
-  rw injective_iff_map_eq_zero (algebra_map ℤ_[p] K) at hinj,
+  rw injective_iff_map_eq_zero (algebra_map 𝔽_[p]⟦X⟧ K) at hinj,
   exact hinj x hx, 
 end
 
 /-- The ring of integers of a mixed characteristic local field is not a field. -/
 lemma not_is_field : ¬ is_field (𝓞 p K) :=
-by simpa [← (is_integral_closure.is_integral_algebra ℤ_[p] K).is_field_iff_is_field
-  (algebra_map_injective p K)] using (padic_int.not_is_field p)
+sorry -- TODO
+/- by simpa [← (is_integral_closure.is_integral_algebra 𝔽_[p]⟦X⟧ K).is_field_iff_is_field
+  (algebra_map_injective p K)] using (padic_int.not_is_field p) -/
+
+instance : is_dedekind_domain ↥(FpX_int_completion p) := sorry
 
 noncomputable! instance : is_dedekind_domain (𝓞 p K) :=
-is_integral_closure.is_dedekind_domain ℤ_[p] ℚ_[p] K _
+is_integral_closure.is_dedekind_domain 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K _
 
 -- TODO : ring of integers is local
 noncomputable!  instance : local_ring (𝓞 p K) :=
@@ -274,27 +272,29 @@ noncomputable!  instance : local_ring (𝓞 p K) :=
     { right, sorry }
   end }
 
+
 end ring_of_integers
 
-end mixed_char_local_field
+end eq_char_local_field
 
-namespace padic
+namespace FpX_completion
 
-open mixed_char_local_field
+open eq_char_local_field
 
-instance mixed_char_local_field (p : ℕ) [fact(nat.prime p)] : mixed_char_local_field p ℚ_[p] :=
+-- TODO: change comment
+instance mixed_char_local_field (p : ℕ) [fact(nat.prime p)] : 
+  eq_char_local_field p 𝔽_[p]⟮⟮X⟯⟯ :=
 { to_finite_dimensional :=
   -- The vector space structure of `ℚ` over itself can arise in multiple ways:
   -- all fields are vector spaces over themselves (used in `rat.finite_dimensional`)
   -- all char 0 fields have a canonical embedding of `ℚ` (used in `mixed_char_local_field`).
   -- Show that these coincide:
-  by convert (infer_instance : finite_dimensional ℚ_[p] ℚ_[p]), }
+  by convert (infer_instance : finite_dimensional 𝔽_[p]⟮⟮X⟯⟯ 𝔽_[p]⟮⟮X⟯⟯), }
 
-/-- The ring of integers of `ℚ_[p]` as a mixed characteristic local field is just `ℤ_[p]`. -/
-noncomputable def ring_of_integers_equiv (p : ℕ) [fact(nat.prime p)] :
-  ring_of_integers p ℚ_[p] ≃+* ℤ_[p] :=
-ring_of_integers.equiv p ℤ_[p]
+/-- The ring of integers of `𝔽_[p]⟮⟮X⟯⟯` as a mixed characteristic local field is just `𝔽_[p]⟦X⟧`. -/
+noncomputable! def ring_of_integers_equiv (p : ℕ) [fact(nat.prime p)] :
+  ring_of_integers p 𝔽_[p]⟮⟮X⟯⟯ ≃+* 𝔽_[p]⟦X⟧ :=
+sorry --ring_of_integers.equiv p 𝔽_[p]⟦X⟧ --timeout
 
-end padic
 
--/
+end FpX_completion
