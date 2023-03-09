@@ -3,11 +3,13 @@ Copyright (c) 2022 María Inés de Frutos-Fernández, Filippo A. E. Nuccio. All 
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
+import algebra.order.hom.monoid
 import for_mathlib.num_denom_away
 import for_mathlib.polynomial
 import ring_theory.dedekind_domain.adic_valuation
 import ring_theory.laurent_series
 import ring_theory.power_series.well_known
+
 
 open polynomial is_dedekind_domain.height_one_spectrum topological_space ratfunc sequentially_complete filter
 open_locale big_operators discrete_valuation uniformity filter topology
@@ -133,6 +135,74 @@ begin
   rw zpow_coe_nat,
 end
 
+#check set.is_wf
+
+-- example (X Y : Type) [preorder X] [has_lt X] (S : set X) (hS : S.is_wf)
+
+lemma uno {X Y : Type} [preorder X] [preorder Y] {S : set X} (hS : S.is_pwo)
+  (f : X ↪o Y) : set.is_wf (f '' S) :=
+begin
+  apply set.is_pwo.is_wf,
+  apply set.is_pwo.image_of_monotone hS f.monotone,
+end
+
+lemma due {X Y : Type} [preorder X] [preorder Y] {S : set X} (hS : S.is_pwo) (H : S.nonempty)
+  (f : X ↪o Y) : f (set.is_wf.min (hS.is_wf) H) = 
+    set.is_wf.min (uno hS f) (set.nonempty_image_iff.2 H) := 
+begin
+  sorry,
+end
+
+
+namespace function
+
+variables {Γ Γ' : Type} [linear_ordered_cancel_add_comm_monoid Γ] 
+  [linear_ordered_cancel_add_comm_monoid Γ'] {ι : Γ →+o Γ'}
+
+@[simps]
+def injective.order_embedding (hι : function.injective ι) : Γ ↪o Γ' := 
+  order_embedding.of_strict_mono _ ((order_hom_class.mono ι).strict_mono_of_injective hι)
+
+end function
+
+-- lemma order_emb_domain {R Γ Γ' : Type} [comm_ring R] [is_domain R]
+-- [linear_ordered_cancel_add_comm_monoid Γ]
+-- [linear_ordered_cancel_add_comm_monoid Γ'] 
+-- (ι : Γ →+o Γ') (hι : function.injective ι) (φ : hahn_series Γ R) :
+--   (with_top.map (↑ι : _ →+ _)) (hahn_series.add_val Γ R φ) = hahn_series.add_val Γ' R
+--   (emb_domain hι.order_embedding φ) :=
+-- begin
+--   sorry,
+-- end
+namespace hahn_series
+open set
+variables {Γ Γ' R : Type*} [linear_order Γ] [linear_order Γ']
+  [has_zero R] [has_zero Γ] [has_zero Γ']
+
+lemma eq_order_of_emb_domain (φ : hahn_series Γ R) {ι : Γ ↪o Γ'} (hι : ι 0 = 0) :
+  (emb_domain ι φ).order = ι φ.order :=
+begin
+  by_cases h : φ = 0,
+  { simp [h, hι] },
+  have : emb_domain ι φ ≠ 0,
+  { intro h0,
+    rw [← @emb_domain_zero Γ _ _ _ _ _ ι] at h0,
+    exact h (emb_domain_injective h0) },
+  rw [order_of_ne h, order_of_ne this],
+  refine le_antisymm (is_wf.min_le _ _ _) ((is_wf.le_min_iff _ _).2 (λ b hb, _)),
+  { simp only [mem_support, emb_domain_coeff, ne.def],
+    intro h0,
+    rw [← order_of_ne h] at h0,
+    exact coeff_order_ne_zero h h0 },
+  { simp only [mem_support, ne.def] at hb,
+    replace hb : b ∈ ι '' φ.support,
+    { by_contra' habs,
+      exact hb (emb_domain_notin_image_support habs) },
+    obtain ⟨c, hcmem, hbc⟩ := hb,
+    rw [← hbc, ι.le_iff_le],
+    exact is_wf.min_le _ _ hcmem },
+end
+end hahn_series
 
 -- FAE for `mathlib`?
 lemma fae_int_valuation_apply (f : polynomial K) : 
@@ -260,17 +330,37 @@ begin
   sorry,
 end
 
-lemma fae_pol_power_series_order_eq_val {f : polynomial K} (hf : f ≠ 0) :
+lemma fae_pol_hs_order_eq_val {f : polynomial K} (hf : f ≠ 0) :
  ↑(multiplicative.of_add (- (↑f : (hahn_series ℕ K)).order : ℤ)) = ((ideal_X K).int_valuation f) :=
 begin
-  set n := (↑f : (hahn_series ℕ K)).order with hn,
-  have := (ideal_X K).int_valuation_le_pow_iff_dvd f n,
-  simp only [of_add_neg, with_zero.coe_inv, ideal_X_span, ideal.dvd_span_singleton,
-    ideal.span_singleton_pow, ideal.mem_span_singleton] at this,
-  rw [@polynomial.X_pow_dvd_iff K _ f n] at this,
-  --and now we must connect `n` with the order of a power_series
-  set m := (↑f : power_series K).order with hm,
-  sorry,
+  rw [← fae_pol_ps_order_val K hf],
+  simp only [of_add_neg, inv_inj, with_zero.coe_inj, embedding_like.apply_eq_iff_eq, nat.cast_inj],
+  have hf' : (↑f : hahn_series ℕ K) ≠ 0, sorry,
+  have hf'' : (f : power_series K) ≠ 0, sorry,
+  have uno := @order_eq_to_power_series K _ ↑f hf',
+  rw ← part_enat.coe_inj,
+  rw ← uno,
+  simp only [to_power_series_apply],
+  rw power_series.order_eq_nat,
+  split,
+  { simp,
+    obtain ⟨A, hA⟩ : part_enat := ↑(power_series.nat_order hf''),
+    have := @power_series.coeff_order K _ ↑f _,
+
+  },
+  -- ext,
+  -- refl,
+  -- suffices := power_series.mk ↑f.coeff = po
+  -- suff
+  -- have due := order_eq_of_power_series hf'',
+  -- set n := (↑f : (hahn_series ℕ K)).order with hn,
+  -- have := (ideal_X K).int_valuation_le_pow_iff_dvd f n,
+  -- simp only [of_add_neg, with_zero.coe_inv, ideal_X_span, ideal.dvd_span_singleton,
+  --   ideal.span_singleton_pow, ideal.mem_span_singleton] at this,
+  -- rw [@polynomial.X_pow_dvd_iff K _ f n] at this,
+  -- --and now we must connect `n` with the order of a power_series
+  -- set m := (↑f : power_series K).order with hm,
+  -- sorry,
   -- simp_rw [X_pow_dvd_pol_iff_dvd_power_series] at this,
 end
 --   -- have test : ↑f = (↑f : power_series K), refl,
@@ -312,10 +402,25 @@ end
 
 -- #exit
 
+-- lemma order_hs_N_coe_Z (φ : hahn_series ℕ K) : (φ.order : ℤ) = (φ : (hahn_series ℤ K)).order :=
+-- begin
+
+-- end
+-- example : ((0 : ℕ) : ℤ) = 0 := by library_search
+
+example : ℕ ↪o ℤ := library_search
+
+
 lemma fae_pol_order_eq_val {f : polynomial K} (hf : f ≠ 0) :
  ↑(multiplicative.of_add (- (f : laurent_series K).order)) = ((ideal_X K).int_valuation f) :=
 begin
   sorry,
+  -- have := @fae_pol_hs_order_eq_val K _ f hf,
+  -- convert this,
+  -- have := @hahn_series.eq_order_of_emb_domain ℕ ℤ K _ _ _ _ _ (↑f : hahn_series ℕ K) _
+  --   (nat.cast_zero),
+  -- simp,
+  -- exact hf,
 --   rw fae_int_valuation_apply,
 --   rw (ideal_X K).int_valuation_def_if_neg hf,
 --   simp only [coe_coe, of_add_neg, ideal_X_span, inv_inj, with_zero.coe_inj,
@@ -330,7 +435,7 @@ begin
 -- --  simp,
 end
 
-
+variable {K}
 lemma fae_order_inv {a : laurent_series K} (ha : a ≠ 0) : a⁻¹.order = - a.order :=
   by {simp only [eq_neg_iff_add_eq_zero, ← hahn_series.order_mul  (inv_ne_zero ha) ha, 
     inv_mul_cancel ha, hahn_series.order_one]}
@@ -344,7 +449,13 @@ lemma fae_coe (P : polynomial K) : (P : laurent_series K) = (↑P : ratfunc K) :
   by { erw [ratfunc.coe_def, ratfunc.coe_alg_hom, lift_alg_hom_apply, ratfunc.num_algebra_map,
     ratfunc.denom_algebra_map P, map_one, div_one], refl}
 
+-- `FAE` for mathlib?
+@[simp]
+lemma ratfunc.coe_ne_zero_iff {f : ratfunc K} : f ≠ 0 ↔ (↑f : laurent_series K) ≠ 0 :=
+⟨λ h, by simp only [h, ne.def, algebra_map.lift_map_eq_zero_iff, not_false_iff],
+  λ h, by {apply (ratfunc.coe_injective.ne_iff).mp, simpa only [ratfunc.coe_zero]}⟩
 
+variable (K)
 -- depends on  `fae_pol_order_eq_val`
 lemma fae_order_eq_val {f : ratfunc K} (hf : f ≠ 0) :
  ↑(multiplicative.of_add (- (f : laurent_series K).order)) = ((ideal_X K).valuation f) :=
@@ -363,6 +474,7 @@ begin
   rw ← with_zero.coe_div,
   rw with_zero.coe_inj,
   rw ← of_add_sub,
+  replace hQ₀ : (↑Q : ratfunc K) ≠ 0, sorry,--already done for `P` on the last `{---}` block of the proof below
   apply congr_arg,
   rw neg_eq_iff_neg_eq,
   rw neg_sub_neg,
@@ -375,13 +487,12 @@ begin
   { have := ratfunc.coe_div (↑P : ratfunc K) (↑Q : ratfunc K),
     rw ← this,
     rw div_eq_iff,
-    rw fae_coe,
-    rw fae_coe,
-    rw ← ratfunc.coe_mul,
-    apply congr_arg,
-    rw [div_mul_cancel _ _],
-    sorry,
-    sorry,
+    { rw fae_coe,
+      rw fae_coe,
+      rw ← ratfunc.coe_mul,
+      apply congr_arg,
+      rwa [div_mul_cancel] },
+    { rwa [fae_coe, ← ratfunc.coe_ne_zero_iff] },
   },
   rw ← coe_div,
   apply congr_arg,
@@ -391,7 +502,7 @@ begin
     have := ((@injective_iff_map_eq_zero' _ _ _ _ _ _ (_ : (polynomial K) →+* (laurent_series K))).mp hinj P).mp hneP,
     exact hP this,
      },
-  sorry,
+  { rwa [fae_coe, ← ratfunc.coe_ne_zero_iff], },
 end
 
 -- `FAE` Depends on `fae_order_eq_val`
