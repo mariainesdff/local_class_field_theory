@@ -258,7 +258,7 @@ end
 
 -- ***TO DO*** understand what to do with `φ = 0`
 
-lemma X_pow_dvd_pol_iff_dvd_power_series (A : Type) [comm_ring A] (P : polynomial A) (n : ℕ) :
+lemma X_pow_dvd_pol_iff_dvd_power_series (A : Type*) [comm_ring A] (P : polynomial A) (n : ℕ) :
   (polynomial.X)^n ∣ P ↔ (power_series.X)^n ∣ (P : power_series A) := by
  simp only [power_series.X_pow_dvd_iff, polynomial.X_pow_dvd_iff, coeff_coe]
 
@@ -277,17 +277,30 @@ lemma X_pow_dvd_pol_iff_dvd_power_series (A : Type) [comm_ring A] (P : polynomia
 
 local attribute [instance] classical.prop_decidable
 
+open multiplicity
+
 lemma fae_pol_ps_order_mul {f : polynomial K} : --(hf : f ≠ 0) :
   (↑f : power_series K).order = multiplicity polynomial.X f :=
 begin
-sorry,
+-- sorry,
 -- {
---   by_cases hf_pol : f = 0, sorry,
---   rw power_series.order_eq_multiplicity_X,
---   have hf_ps : multiplicity.finite power_series.X ↑f, sorry,
---   replace hf_pol: multiplicity.finite polynomial.X f, sorry,
---   obtain ⟨P, hfP, h_nXP⟩ := multiplicity.exists_eq_pow_mul_and_not_dvd hf_pol;
---   apply le_antisymm;
+  by_cases hf_pol : f = 0, sorry,
+  rw power_series.order_eq_multiplicity_X,
+  have hf_ps : finite (power_series.X : power_series K) ↑f, sorry,
+  set d_ps := (multiplicity power_series.X ↑f).get hf_ps with hd_ps,
+  replace hf_pol: finite polynomial.X f, sorry,
+  set d_pol := (multiplicity polynomial.X f).get hf_pol with hd_pol,
+  obtain ⟨P, hfP, h_nXP⟩ := exists_eq_pow_mul_and_not_dvd hf_pol,
+  rw ← hd_pol at hfP,
+  obtain ⟨φ, hfφ, h_nXφ⟩ := exists_eq_pow_mul_and_not_dvd hf_ps,
+  rw ← hd_ps at hfφ,
+  apply le_antisymm,
+  { have Hpol := @pow_dvd_iff_le_multiplicity (polynomial K) _ _ X f d_ps,
+    rw [X_pow_dvd_pol_iff_dvd_power_series] at Hpol,
+    replace Hpol := Hpol.mp (dvd_of_mul_right_eq _ hfφ.symm),
+    rwa [hd_ps, part_enat.coe_get] at Hpol,
+  },
+  have Hps := @pow_dvd_iff_le_multiplicity (power_series K) _ _ power_series.X f,
 --   }
 end
 
