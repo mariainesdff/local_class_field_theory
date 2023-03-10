@@ -254,6 +254,11 @@ begin
       apply power_series.coeff_order, },
 end
 
+lemma nat_order_eq_of_power_series {R : Type*} [semiring R] {φ : power_series R} (hφ : φ ≠ 0) :
+  (φ.order).get (power_series.order_finite_iff_ne_zero.mpr hφ) =
+    (hahn_series.of_power_series ℕ R φ).order :=
+by simp only [order_eq_of_power_series hφ, part_enat.get_coe']
+
 -- `FAE` probably needed with `to_power_series_alg` rather
 lemma order_eq_to_power_series {R : Type*} [comm_semiring R] {φ : hahn_series ℕ R} (hφ : φ ≠ 0) :
   power_series.order (to_power_series φ) = φ.order :=
@@ -264,9 +269,7 @@ begin
   rw to_power_series_of_power_series,
 end
 
--- lemma hahn_series.X_pow_dvd_iff {f : hahn_series ℕ K} {n : ℕ} (hf : f ≠ 0) :
---  (single 1 1) ^ n ∣ f ↔ ∀ d : ℕ, d < n → f.coeff d = 0 := sorry
-
+-- lemma riccardo_bis {φ : power_series K} (hφ : φ ≠ 0) : (↑φ : laurent_series K).order = φ.add_val :=
 
 lemma X_pow_dvd_pol_iff_dvd_power_series (A : Type) [comm_ring A] (P : polynomial A) (n : ℕ) :
   (polynomial.X)^n ∣ P ↔ (power_series.X)^n ∣ (P : power_series A) := by
@@ -294,74 +297,108 @@ begin
   sorry,
 end
 
-section nat_order
-namespace power_series
-
-variable {K}
-def nat_order {φ : power_series K} (h : φ ≠ 0) : ℕ := 
-  nat.find (exists_coeff_ne_zero_iff_ne_zero.mpr h)
-
-lemma nat_order_eq_order {φ : power_series K} (h : φ ≠ 0) : ↑(nat_order h) = φ.order :=
-begin
-  simp only [order, ne.def],
-  rw [dif_neg h],
-  simp only [part_enat.coe_inj],
-  sorry,
-  -- apply eq.symm,
-  -- simp,
-  -- refl,
-end
-
-end power_series
-end nat_order
-
 variable {K}
 lemma polynomial.coe_ne_zero {f : polynomial K} : f ≠ 0 → (↑f : (power_series K)) ≠ 0 :=
 by simp only [ne.def, coe_eq_zero_iff, imp_self]
+variable (K)
+
+--mathlib
+variable {K}
+lemma finite_multiplicity_of_ne_zero {f : polynomial K} (hf : f ≠ 0) : 
+  multiplicity.finite polynomial.X f :=
+@multiplicity.finite_prime_left (polynomial K) _ _ _ _ prime_X hf
 
 
 variable (K)
-lemma fae_pol_ps_order_val {f : polynomial K} (hf : f ≠ 0) :
- ↑(multiplicative.of_add (- (power_series.nat_order (polynomial.coe_ne_zero hf )) : ℤ)) = 
-    ((ideal_X K).int_valuation f) :=
+lemma fae_pol_ps_nat_order_mul {f : polynomial K} (hf : f ≠ 0) :
+  ((↑f : power_series K).order).get (power_series.order_finite_iff_ne_zero.mpr
+    (polynomial.coe_ne_zero hf)) =
+    (multiplicity polynomial.X f).get (finite_multiplicity_of_ne_zero hf) :=
+by simpa only [fae_pol_ps_order_mul]
+
+
+-- section nat_order
+-- namespace power_series
+
+-- variable {K}
+-- def nat_order {φ : power_series K} (h : φ ≠ 0) : ℕ := 
+--   nat.find (exists_coeff_ne_zero_iff_ne_zero.mpr h)
+
+-- lemma nat_order_eq_order {φ : power_series K} (h : φ ≠ 0) : ↑(nat_order h) = φ.order :=
+-- begin
+--   simp only [order, ne.def],
+--   rw [dif_neg h],
+--   simp only [part_enat.coe_inj],
+--   sorry,
+--   -- apply eq.symm,
+--   -- simp,
+--   -- refl,
+-- end
+
+-- end power_series
+-- end nat_order
+
+
+variable (K)
+-- lemma fae_pol_ps_order_val {f : polynomial K} (hf : f ≠ 0) :
+--  ↑(multiplicative.of_add (- (power_series.nat_order (polynomial.coe_ne_zero hf )) : ℤ)) = 
+--     ((ideal_X K).int_valuation f) :=
+-- begin 
+--   have := fae_pol_ps_order_mul,
+--   have := power_series.nat_order_eq_order (polynomial.coe_ne_zero hf),
+--   sorry,
+-- end
+
+lemma fae_pol_ps_nat_order_val {f : polynomial K} (hf : f ≠ 0) :
+  ↑(multiplicative.of_add 
+  (-((↑f : power_series K).order).get (power_series.order_finite_iff_ne_zero.mpr
+    (polynomial.coe_ne_zero hf)) : ℤ)) = ((ideal_X K).int_valuation f) :=
 begin
-  have := fae_pol_ps_order_mul,
-  have := power_series.nat_order_eq_order (polynomial.coe_ne_zero hf),
-  sorry,
+  rw [fae_pol_ps_nat_order_mul],
+  -- simp,
+  rw fae_int_valuation_apply,
+  rw [int_valuation_def_if_neg],
+  simp only [of_add_neg, ideal_X_span, inv_inj, with_zero.coe_inj, embedding_like.apply_eq_iff_eq,
+    nat.cast_inj],--`[FAE]` From here on, it is "just" a matter of irreducible factors in `K[X]` 
+  { have := @unique_factorization_monoid.multiplicity_eq_count_normalized_factors (polynomial K)
+    _ _ _ _ _ _ polynomial.X f (irreducible_X) hf,
+    simp only [this, normalize_apply, coe_norm_unit, leading_coeff_X, norm_unit_one, units.coe_one,
+    map_one, mul_one, part_enat.get_coe'],
+    set S := associates.factors' (ideal.span {f} : ideal (polynomial K)) with hS,
+    have temp : irreducible (associates.mk (ideal.span {polynomial.X})), sorry,
+    have uff := @associates.count_some (ideal (polynomial K)) _ _ _ 
+      (associates.mk (ideal.span {polynomial.X})) temp S,
+    have ancora := @associates.factors_mk (ideal (polynomial K)) _ _ _ _ (ideal.span {f}) _,
+    have pure := @associates.map_subtype_coe_factors' (ideal (polynomial K)) _ _ _
+      (ideal.span {f} : ideal (polynomial K)),
+    rw [← hS] at pure,
+    sorry,
+    sorry,
+  },
+  exact hf,
 end
+
+
+lemma cruciale (f : polynomial K) :
+  (hahn_series.of_power_series ℕ K (↑f : power_series K)) = (↑f : hahn_series ℕ K) :=
+begin
+  refl,
+end
+
+example (f : polynomial K) :
+  (hahn_series.of_power_series ℤ K (↑f : power_series K)) = (↑f : power_series K) :=
+begin
+  refl,
+end
+
 
 lemma fae_pol_hs_order_eq_val {f : polynomial K} (hf : f ≠ 0) :
  ↑(multiplicative.of_add (- (↑f : (hahn_series ℕ K)).order : ℤ)) = ((ideal_X K).int_valuation f) :=
 begin
-  rw [← fae_pol_ps_order_val K hf],
-  simp only [of_add_neg, inv_inj, with_zero.coe_inj, embedding_like.apply_eq_iff_eq, nat.cast_inj],
-  have hf' : (↑f : hahn_series ℕ K) ≠ 0, sorry,
-  have hf'' : (f : power_series K) ≠ 0, sorry,
-  have uno := @order_eq_to_power_series K _ ↑f hf',
-  rw ← part_enat.coe_inj,
-  rw ← uno,
-  simp only [to_power_series_apply],
-  rw power_series.order_eq_nat,
-  split,
-  { simp,
-    obtain ⟨A, hA⟩ : part_enat := ↑(power_series.nat_order hf''),
-    have := @power_series.coeff_order K _ ↑f _,
-
-  },
-  -- ext,
-  -- refl,
-  -- suffices := power_series.mk ↑f.coeff = po
-  -- suff
-  -- have due := order_eq_of_power_series hf'',
-  -- set n := (↑f : (hahn_series ℕ K)).order with hn,
-  -- have := (ideal_X K).int_valuation_le_pow_iff_dvd f n,
-  -- simp only [of_add_neg, with_zero.coe_inv, ideal_X_span, ideal.dvd_span_singleton,
-  --   ideal.span_singleton_pow, ideal.mem_span_singleton] at this,
-  -- rw [@polynomial.X_pow_dvd_iff K _ f n] at this,
-  -- --and now we must connect `n` with the order of a power_series
-  -- set m := (↑f : power_series K).order with hm,
-  -- sorry,
-  -- simp_rw [X_pow_dvd_pol_iff_dvd_power_series] at this,
+  have := fae_pol_ps_nat_order_val K hf,
+  rw nat_order_eq_of_power_series at this,
+  rw ← this,
+  simpa only [of_add_neg, of_power_series_apply, inv_inj, with_zero.coe_inj, embedding_like.apply_eq_iff_eq, nat.cast_inj],
 end
 --   -- have test : ↑f = (↑f : power_series K), refl,
 --   have hf' : (f : power_series K) ≠ 0, sorry, --just injectivity
@@ -408,17 +445,44 @@ end
 -- end
 -- example : ((0 : ℕ) : ℤ) = 0 := by library_search
 
-example : ℕ ↪o ℤ := library_search
+-- example : ℕ ↪o ℤ := infer_instance
+
+def pippo : ℕ ↪o ℤ := 
+{ to_fun := nat.cast,
+  inj' := nat.cast_injective,
+  map_rel_iff' := λ _ _, nat.cast_le, }
+  
+lemma pippo_zero : pippo 0 = 0 := nat.cast_zero
+
+lemma pippo_zero_iff (n : ℕ) : pippo n = 0 ↔ n = 0 := nat.cast_eq_zero 
+
+example (f : power_series K) : hahn_series ℤ K :=
+begin
+  let g := (↑f : hahn_series ℤ K),
+end
 
 
 lemma fae_pol_order_eq_val {f : polynomial K} (hf : f ≠ 0) :
  ↑(multiplicative.of_add (- (f : laurent_series K).order)) = ((ideal_X K).int_valuation f) :=
 begin
-  sorry,
-  -- have := @fae_pol_hs_order_eq_val K _ f hf,
-  -- convert this,
-  -- have := @hahn_series.eq_order_of_emb_domain ℕ ℤ K _ _ _ _ _ (↑f : hahn_series ℕ K) _
-  --   (nat.cast_zero),
+  -- sorry,
+  set g : hahn_series ℕ K := ↑f with hgf,
+  -- rw ← hgf,
+  have uno := @fae_pol_hs_order_eq_val K _ f hf,
+  convert uno,
+  rw ← hgf,
+  have due := (@hahn_series.eq_order_of_emb_domain ℕ ℤ K _ _ _ _ _ g pippo pippo_zero).symm,
+  convert due,
+  rw hgf,
+  rw pippo,
+  simp only [coe_coe, rel_embedding.coe_fn_mk, function.embedding.coe_fn_mk],
+  -- symmetry,
+  -- refine hahn_series.eq_order_of_emb_domain ↑f _ _,
+  -- have tre : ((↑f : power_series K) : laurent_series K).order =
+  --   ((↑f : hahn_series ℕ K) : hahn_series ℤ K).order, sorry,
+  -- refl,
+  --   (nat.cast_add_monoid_hom ℤ),
+    -- (nat.cast_zero),
   -- simp,
   -- exact hf,
 --   rw fae_int_valuation_apply,
