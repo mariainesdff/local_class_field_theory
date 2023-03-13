@@ -556,35 +556,28 @@ def coeff_map (d : ℤ) : ratfunc K → K := λ x, coeff x d
 
 end ratfunc
 
-
-lemma eq_coeff_of_mem_entourage (d : ℤ) (x y : ratfunc K) (H : (x, y) ∈ (entourage K d)) :
- x.coeff d = y.coeff d :=
-begin
+lemma eq_coeff_of_mem_entourage {d n : ℤ} {x y : ratfunc K} (H : (x, y) ∈ (entourage K d)) :
+ n ≤ d → x.coeff n = y.coeff n :=
+ begin
   by_cases triv : x = y,
-  { rw triv },
+  { intro _,
+    rw triv },
   { dsimp only [entourage] at H,
+    intro hn,
     apply eq_of_sub_eq_zero,
-    erw [← hahn_series.sub_coeff],--need to pass to Hahn series here, because `coeff` for a rational
-      -- function is defined as its coefficient once seen as a Hahn/Laurent series
+    erw [← hahn_series.sub_coeff],
     rw [← coe_sub],
     apply hahn_series.coeff_eq_zero_of_lt_order,
-    rw ← multiplicative.of_add_lt,
-    rw ← with_zero.coe_lt_coe,
-    rw fae_order_eq_val' K (sub_ne_zero_of_ne triv),
-    rw [of_add_neg] at H,
-    replace triv : ((ideal_X K).valuation) (x - y) ≠ 0 :=
-      (valuation.ne_zero_iff _).mpr (sub_ne_zero_of_ne triv),
-    rw ← with_zero.coe_unzero triv,
-    rw ← with_zero.coe_inv,
-    rw with_zero.coe_lt_coe,
-    rw lt_inv',
-    rw ← with_zero.coe_lt_coe,
-    rw with_zero.coe_unzero triv,
-    exact H },
+    suffices : d < (↑(x - y) : laurent_series K).order,
+    { exact lt_of_le_of_lt hn this },
+    { rw [← multiplicative.of_add_lt, ← with_zero.coe_lt_coe,
+      fae_order_eq_val' K (sub_ne_zero_of_ne triv)],
+      rw [of_add_neg] at H,
+      replace triv : ((ideal_X K).valuation) (x - y) ≠ 0 :=
+        (valuation.ne_zero_iff _).mpr (sub_ne_zero_of_ne triv),
+      rwa [← with_zero.coe_unzero triv, ← with_zero.coe_inv, with_zero.coe_lt_coe, lt_inv',
+        ← with_zero.coe_lt_coe, with_zero.coe_unzero triv] }},
 end
-
-lemma eq_coeff_of_mem_entourage' (d n : ℤ) (x y : ratfunc K) (H : (x, y) ∈ (entourage K d)) :
- n ≤ d → x.coeff n = y.coeff n := sorry
 
 lemma bounded_coeff_of_mem_entourage (x : ratfunc K) (d : ℤ) : ∃ N : ℤ, ∀ y : ratfunc K, 
   (x, y) ∈ (entourage K d) → ∀ n  < N, y.coeff n = 0 :=
@@ -598,7 +591,7 @@ begin
   -- is so small that everything is 0 already
   have : x.coeff n = 0, sorry,
   rw ← this,
-  exact (eq_coeff_of_mem_entourage' K d n x y hy hn').symm,
+  exact (eq_coeff_of_mem_entourage K hy hn').symm,
 end
 
 lemma entourage_uniformity_mem (d : ℤ) : entourage K d ∈ 𝓤 (ratfunc K) :=
@@ -621,9 +614,7 @@ begin
   intros x hx,
   suffices : x.fst.coeff_map K d = x.snd.coeff_map K d,
   rw this,
-  exact hS (x.snd.coeff d),
-  apply eq_coeff_of_mem_entourage,
-  exact hx,
+  exacts [hS (x.snd.coeff d), eq_coeff_of_mem_entourage K hx ( le_of_eq (refl _))],
 end
 
 --this `def` has nothing to do with (local) fields
