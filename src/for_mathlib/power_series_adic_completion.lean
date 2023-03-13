@@ -24,11 +24,20 @@ instance : field (completion_of_ratfunc K) := adic_completion.field (ratfunc K) 
 
 instance : algebra K (polynomial K) := infer_instance
 
-instance : uniform_space (ratfunc K) :=
+instance adic_uniformity_ratfunc : uniform_space (ratfunc K) :=
   (@adic_valued (polynomial K) _ _ _ (ratfunc K) _ _ _ (ideal_X K)).to_uniform_space
+
+instance adic_uniformity_ratfunc_add_group : uniform_add_group (ratfunc K) := sorry
+  -- (@adic_valued (polynomial K) _ _ _ (ratfunc K) _ _ _ (ideal_X K)).to_uniform_space
 
 instance : valued (completion_of_ratfunc K) ℤₘ₀ :=
   @valued.valued_completion _ _ _ _ (ideal_X K).adic_valued
+
+-- #where
+-- instance uff : valued (ratfunc K) ℤₘ₀ :=
+-- begin
+
+-- end
 
 instance : uniform_space (completion_of_ratfunc K) := infer_instance
 
@@ -594,9 +603,38 @@ begin
   exact (eq_coeff_of_mem_entourage K hy hn').symm,
 end
 
+example : valued (ratfunc K) ℤₘ₀ :=
+begin
+  apply_instance,
+end
+
 lemma entourage_uniformity_mem (d : ℤ) : entourage K d ∈ 𝓤 (ratfunc K) :=
 begin
-  sorry,
+  have := @uniformity_eq_comap_nhds_zero (ratfunc K) (adic_uniformity_ratfunc K),
+  
+  simp only [entourage, of_add_neg, with_zero.coe_inv, mem_comap,
+    exists_prop],
+  let T : set (ratfunc K) := {P | ((ideal_X K).valuation) P < (multiplicative.of_add d)⁻¹},
+  -- use {P | ((ideal_X K).valuation) P < (multiplicative.of_add d)⁻¹},
+  use T,
+  split,
+  { --simp only,
+    -- haveI : valued (ratfunc K) ℤₘ₀,
+    -- -- apply_instance,
+    -- use (ideal_X K).valuation,
+    -- sorry,
+    haveI := @is_dedekind_domain.height_one_spectrum.adic_valued (polynomial K) _ _ _ (ratfunc K) 
+      _ _ _(ideal_X K),
+    have temp : ∃ (γ : ℤₘ₀ˣ), {y : ratfunc K | valued.v (y - 0) < ↑γ} ⊆ T, sorry,
+    have := (@valued.mem_nhds (ratfunc K) _ ℤₘ₀ _ _ T 0).mpr temp,
+    convert this,
+    -- refl,
+     
+
+  },
+  { simp only [set.preimage_set_of_eq, set.set_of_subset_set_of, prod.forall],
+    intros,
+    rwa [← valuation.map_neg, neg_sub]},
 end
 
 
