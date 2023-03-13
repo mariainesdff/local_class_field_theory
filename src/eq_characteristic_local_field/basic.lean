@@ -43,15 +43,14 @@ number field, ring of integers
 noncomputable theory
 
 open_locale discrete_valuation
-open polynomial multiplicative ratfunc
-
+open polynomial multiplicative ratfunc is_dedekind_domain is_dedekind_domain.height_one_spectrum
 variables (p : ℕ) [fact(nat.prime p)] 
 
 notation (name := prime_galois_field)
   `𝔽_[` p `]` := galois_field p 1
 
 /- The valued field `Fp(X)` with the valuation at `X`. -/
-def FpX_valued  : valued (ratfunc 𝔽_[p]) ℤₘ₀ :=
+instance FpX_valued  : valued (ratfunc 𝔽_[p]) ℤₘ₀ :=
 valued.mk' (ideal_X 𝔽_[p]).valuation
 
 lemma FqX_valued_def {x : ratfunc 𝔽_[p]} :
@@ -71,8 +70,14 @@ notation (name := FpX_int_completion)
 
 variable {p}
 
-instance : field 𝔽_[p]⟮⟮X⟯⟯ :=  --sorry
-is_dedekind_domain.height_one_spectrum.adic_completion.field (ratfunc 𝔽_[p]) (ideal_X 𝔽_[p])
+instance : field 𝔽_[p]⟮⟮X⟯⟯ := adic_completion.field (ratfunc 𝔽_[p]) (ideal_X 𝔽_[p])
+
+instance : valued 𝔽_[p]⟮⟮X⟯⟯ ℤₘ₀ := 
+height_one_spectrum.valued_adic_completion (ratfunc 𝔽_[p]) (ideal_X 𝔽_[p])
+
+lemma mem_FpX_int_completion {x : FpX_field_completion p} :
+  x ∈ FpX_int_completion p ↔ (valued.v x : ℤₘ₀) ≤ 1 :=
+iff.rfl
 
 instance : inhabited 𝔽_[p]⟮⟮X⟯⟯ := ⟨(0 : 𝔽_[p]⟮⟮X⟯⟯)⟩
 
@@ -109,6 +114,7 @@ instance to_int_algebra : algebra 𝔽_[p]⟦X⟧ K := algebra.comp 𝔽_[p]⟦X
 @[priority 10000] instance : is_scalar_tower 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K :=
 is_scalar_tower.comp 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K
 /- ⟨λ _ _ _, by simp only [algebra.smul_def, int_algebra_map_def, map_mul, ← mul_assoc]; refl⟩ -/
+
 
 @[priority 1000] instance int_is_scalar_tower [algebra K L] [is_scalar_tower 𝔽_[p]⟮⟮X⟯⟯ K L] :
   is_scalar_tower 𝔽_[p]⟦X⟧ K L :=
@@ -201,30 +207,51 @@ noncomputable! instance : is_fraction_ring (𝓞 p K) K :=
 instance : is_integral_closure (𝓞 p K) 𝔽_[p]⟦X⟧ K :=
 integral_closure.is_integral_closure _ _
 
+
 -- Very slow too (9.37s)
 --set_option profiler true
 -- Times out if the is_scalar_tower argument is implicit (without the priority fix) (TODO: check)
-noncomputable! instance : is_integrally_closed (𝓞 p K) :=
+noncomputable! instance is_integrally_closed : is_integrally_closed (𝓞 p K) :=
 @integral_closure.is_integrally_closed_of_finite_extension _ _ 𝔽_[p]⟮⟮X⟯⟯ _ _ _
   FpX_completion.is_fraction_ring _ _ _ _ _ _
 
+noncomputable! instance : algebra 𝔽_[p]⟦X⟧ (𝓞 p K) := infer_instance
+
+noncomputable! instance : is_scalar_tower 𝔽_[p]⟦X⟧ (𝓞 p K) K := 
+is_scalar_tower.subalgebra' ↥(FpX_int_completion p) K K (𝓞 p K)
+
 lemma is_integral_coe (x : 𝓞 p K) : is_integral 𝔽_[p]⟦X⟧ (x : K) := x.2
 
--- 2.81 s
+--set_option profiler true
+-- 2.81 s; 1s with explicit instances
 /-- The ring of integers of `K` is equivalent to any integral closure of `𝔽_[p]⟦X⟧` in `K` -/
 protected noncomputable! def equiv (R : Type*) [comm_ring R] [algebra 𝔽_[p]⟦X⟧ R] [algebra R K]
   [is_scalar_tower 𝔽_[p]⟦X⟧ R K] [is_integral_closure R 𝔽_[p]⟦X⟧ K] : 𝓞 p K ≃+* R :=
-sorry --(is_integral_closure.equiv 𝔽_[p]⟦X⟧ R K _).symm.to_ring_equiv
+--(is_integral_closure.equiv 𝔽_[p]⟦X⟧ R K (𝓞 p K)).symm.to_ring_equiv
+(@is_integral_closure.equiv 𝔽_[p]⟦X⟧ R K _ _ _ _ _ _ (𝓞 p K) _ _
+  (ring_of_integers.is_integral_closure p) _ (ring_of_integers.algebra p) _ 
+  (ring_of_integers.is_scalar_tower p) ).symm.to_ring_equiv
+
+/- (@is_integral_closure.equiv 𝔽_[p]⟦X⟧ R K _ _ _ _ _ _ _ _ _ _ _ _ 
+  (adic_algebra.int_is_scalar_tower p _ K ) _ ).symm.to_ring_equiv -/
+
+/- (@is_integral_closure.equiv 𝔽_[p]⟦X⟧ R K _ _ _ _ _ _ _ _ _ _ _ _
+(adic_algebra.int_is_scalar_tower _ K ) ).symm.to_ring_equiv -/
 
 . 
 
 variables (K)
 
-instance ratfunc.char_p : char_p (ratfunc 𝔽_[p]) p := sorry
+instance ratfunc.char_p : char_p (ratfunc 𝔽_[p]) p := 
+char_p_of_injective_algebra_map ((algebra_map 𝔽_[p] (ratfunc 𝔽_[p])).injective) p
 
-noncomputable! instance : algebra (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯ := sorry --`FAE` tried to remove after 
---  bump on 06.03.2023 but it still breaks
+instance : algebra (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯ := 
+height_one_spectrum.adic_completion.algebra _ (ratfunc 𝔽_[p]) _
 
+instance : has_coe (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯ := ⟨algebra_map (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯⟩
+
+lemma FpX_field_completion.algebra_map_eq_coe (f : ratfunc 𝔽_[p]) : 
+  algebra_map (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯ f = coe f := rfl
 
 instance FpX_field_completion.char_p : char_p 𝔽_[p]⟮⟮X⟯⟯ p := 
 char_p_of_injective_algebra_map
@@ -236,14 +263,33 @@ char_p_of_injective_algebra_map (algebra_map 𝔽_[p]⟮⟮X⟯⟯ K).injective 
 
 instance : char_p (𝓞 p K) p := char_p.subring' K p (𝓞 p K).to_subring --char_zero.of_module _ K
 
- -- ?
+ -- This doesn't need to be part of the definition of local field
 noncomputable! instance : is_separable 𝔽_[p]⟮⟮X⟯⟯ K := sorry
 
-noncomputable! instance : is_noetherian_ring ↥(FpX_int_completion p) := sorry
+noncomputable! instance FpX_int_completion.is_noetherian_ring :
+  is_noetherian_ring ↥(FpX_int_completion p) := sorry
 
---timeout
+/-- This can be proven using the argument from Serre's Local Fields II.2, which
+does not assume K/𝔽_[p]⟮⟮X⟯⟯ to be separable.  -/
 noncomputable! instance : is_noetherian 𝔽_[p]⟦X⟧ (𝓞 p K) :=
-sorry --@is_integral_closure.is_noetherian 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K (𝓞 p K)
+begin
+  haveI := classical.dec_eq K,
+  obtain ⟨s, b, hb_int⟩ := finite_dimensional.exists_is_basis_integral 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K,
+  --let b' := (algebra.trace_form 𝔽_[p]⟮⟮X⟯⟯ K).dual_basis (trace_form_nondegenerate 𝔽_[p]⟮⟮X⟯⟯ K),
+  --letI := is_noetherian_span_of_finite 𝔽_[p]⟦X⟧ (set.finite_range b'),
+  /- haveI := classical.dec_eq L,
+  obtain ⟨s, b, hb_int⟩ := finite_dimensional.exists_is_basis_integral A K L,
+  let b' := (trace_form K L).dual_basis (trace_form_nondegenerate K L) b,
+  letI := is_noetherian_span_of_finite A (set.finite_range b'),
+  let f : C →ₗ[A] submodule.span A (set.range b') :=
+    (submodule.of_le (is_integral_closure.range_le_span_dual_basis C b hb_int)).comp
+    ((algebra.linear_map C L).restrict_scalars A).range_restrict,
+  refine is_noetherian_of_ker_bot f _,
+  rw [linear_map.ker_comp, submodule.ker_of_le, submodule.comap_bot, linear_map.ker_cod_restrict],
+  exact linear_map.ker_eq_bot_of_injective (is_integral_closure.algebra_map_injective C A L)-/
+  sorry,
+end
+--@is_integral_closure.is_noetherian 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K (𝓞 p K)
 
 -- Same proof skeleton
 noncomputable! lemma algebra_map_injective :
@@ -258,13 +304,46 @@ begin
   exact hinj x hx, 
 end
 
+
+lemma X_mem_FpX_int_completion : 
+  algebra_map (ratfunc 𝔽_[p]) _ X ∈ FpX_int_completion p :=
+begin
+  rw [mem_FpX_int_completion, valued_adic_completion_def],
+  erw [FpX_field_completion.algebra_map_eq_coe p, valued.extension_extends, val_X_eq_one],
+  rw [← with_zero.coe_one, with_zero.coe_le_coe, ← of_add_zero, of_add_le],
+  linarith,
+end
+
+def FpX_int_completion.X : FpX_int_completion p :=
+⟨algebra_map (ratfunc 𝔽_[p]) _ X, X_mem_FpX_int_completion p⟩
+
+lemma FpX_int_completion.X_ne_dvd_one : ¬ FpX_int_completion.X p ∣ 1 := 
+begin
+  sorry -- This should be immediate once we have the isomorphism to power series
+end
+
+lemma FpX_int_completion.not_is_field : ¬is_field ↥(FpX_int_completion p) :=
+begin
+  rw ring.not_is_field_iff_exists_ideal_bot_lt_and_lt_top,
+  use ideal.span{FpX_int_completion.X p},
+  split,
+  { rw [bot_lt_iff_ne_bot, ne.def, ideal.span_singleton_eq_bot, ← subring.coe_eq_zero_iff,
+      FpX_int_completion.X , set_like.coe_mk, _root_.map_eq_zero],
+    exact ratfunc.X_ne_zero, },
+  { rw [lt_top_iff_ne_top, ne.def, ideal.eq_top_iff_one, ideal.mem_span_singleton],
+    exact FpX_int_completion.X_ne_dvd_one p, }
+end
+
 /-- The ring of integers of a mixed characteristic local field is not a field. -/
 lemma not_is_field : ¬ is_field (𝓞 p K) :=
-sorry -- TODO
-/- by simpa [← (is_integral_closure.is_integral_algebra 𝔽_[p]⟦X⟧ K).is_field_iff_is_field
-  (algebra_map_injective p K)] using (padic_int.not_is_field p) -/
+by simpa [← (is_integral_closure.is_integral_algebra 𝔽_[p]⟦X⟧ K).is_field_iff_is_field
+  (algebra_map_injective p K)] using (FpX_int_completion.not_is_field p)
 
-instance : is_dedekind_domain ↥(FpX_int_completion p) := sorry
+-- Do we have this for power series? I cannot find it
+instance : is_dedekind_domain ↥(FpX_int_completion p) := 
+{ is_noetherian_ring   := FpX_int_completion.is_noetherian_ring p,
+  dimension_le_one     := sorry,
+  is_integrally_closed := is_bezout.is_integrally_closed}
 
 noncomputable! instance : is_dedekind_domain (𝓞 p K) :=
 is_integral_closure.is_dedekind_domain 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K _
@@ -298,16 +377,23 @@ instance mixed_char_local_field (p : ℕ) [fact(nat.prime p)] :
   -- Show that these coincide:
   by convert (infer_instance : finite_dimensional 𝔽_[p]⟮⟮X⟯⟯ 𝔽_[p]⟮⟮X⟯⟯), }
 
+instance : is_integral_closure 𝔽_[p]⟦X⟧ 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ := is_integrally_closed.is_integral_closure
 
-instance asdf (p : ℕ) [fact(nat.prime p)] : is_scalar_tower 𝔽_[p]⟦X⟧ 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ := 
-infer_instance
 
-#exit
+
+/- instance asdf (p : ℕ) [fact(nat.prime p)] : is_scalar_tower 𝔽_[p]⟦X⟧ 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ := 
+sorry
+
+#check asdf 
+ -/
+--#exit
 
 /-- The ring of integers of `𝔽_[p]⟮⟮X⟯⟯` as a mixed characteristic local field is just `𝔽_[p]⟦X⟧`. -/
 noncomputable! def ring_of_integers_equiv (p : ℕ) [fact(nat.prime p)] :
-  ring_of_integers p 𝔽_[p]⟮⟮X⟯⟯ ≃+* 𝔽_[p]⟦X⟧ :=
-@ring_of_integers.equiv p _ 𝔽_[p]⟮⟮X⟯⟯ _ _ 𝔽_[p]⟦X⟧ _ _ _ _ (asdf p) _ --timeout
-
+  ring_of_integers p 𝔽_[p]⟮⟮X⟯⟯ ≃+* 𝔽_[p]⟦X⟧ := sorry
+/- --sorry 
+@ring_of_integers.equiv p _ 𝔽_[p]⟮⟮X⟯⟯ _ _ 𝔽_[p]⟦X⟧ _ _ (FpX_int_completion p).algebra (is_scalar_tower.left 𝔽_[p]⟦X⟧) 
+  is_integrally_closed.is_integral_closure --timeout
+ -/
 
 end FpX_completion
