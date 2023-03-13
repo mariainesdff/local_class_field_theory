@@ -301,6 +301,7 @@ begin
     rwa [hd_ps, part_enat.coe_get] at Hpol,
   },
   have Hps := @pow_dvd_iff_le_multiplicity (power_series K) _ _ power_series.X f,
+  sorry,
 --   }
 end
 
@@ -356,6 +357,61 @@ variable (K)
 --   sorry,
 -- end
 
+
+--Generalize from X to any irreducible el.
+lemma count_normalized_factors_eq_count_normalized_factors_span {f : polynomial K} (hf : f ≠ 0) : multiset.count polynomial.X (unique_factorization_monoid.normalized_factors f) = 
+  multiset.count (ideal.span {polynomial.X} : ideal (polynomial K)) (unique_factorization_monoid.normalized_factors (ideal.span {f} : ideal (polynomial K))) :=
+begin
+  have : (polynomial.X : polynomial K)= normalize polynomial.X,
+  {simp only [normalize_apply, coe_norm_unit, leading_coeff_X, norm_unit_one, units.coe_one,
+    map_one, mul_one],--can do better  
+  },
+  have two : (ideal.span {normalize polynomial.X} : ideal (polynomial K)) = normalize (ideal.span {polynomial.X}),
+  { simp only [normalize_apply, coe_norm_unit, leading_coeff_X, norm_unit_one, units.coe_one, map_one, mul_one, normalize_eq],
+  },
+  rw ← part_enat.coe_inj,
+  rw this,
+  rw ← @unique_factorization_monoid.multiplicity_eq_count_normalized_factors (polynomial K)
+    _ _ _ _ _ _ polynomial.X f (irreducible_X) hf,
+  rw two,
+  rw ← unique_factorization_monoid.multiplicity_eq_count_normalized_factors,
+  rw multiplicity_eq_multiplicity_span,
+  apply prime.irreducible,--make it into a lemma in polynomial.lean
+  {apply ideal.prime_of_is_prime,
+    {rw [ne.def, ideal.span_singleton_eq_bot],
+      exact polynomial.X_ne_zero,
+    },
+    {rw ideal.span_singleton_prime,
+      exact prime_X,
+      exact polynomial.X_ne_zero,
+    }},
+  { rwa [ne.def, ideal.zero_eq_bot, ideal.span_singleton_eq_bot] }
+end
+
+--GOLF IT!
+lemma count_normalized_factors_eq_associates_count {I J : ideal (polynomial K)} (hI : I ≠ 0) (hJ : J.is_prime ) (hJ₀ : J ≠ ⊥) : multiset.count J (unique_factorization_monoid.normalized_factors I) = 
+  (associates.mk J).count (associates.mk I).factors :=
+begin
+  replace hI : associates.mk I ≠ 0,
+  { apply associates.mk_ne_zero.mpr hI },
+  have hJ' : irreducible (associates.mk J),
+  { rw associates.irreducible_mk,
+    apply prime.irreducible,
+    apply ideal.prime_of_is_prime hJ₀ hJ },
+  apply ideal.count_normalized_factors_eq,
+  rw [← ideal.dvd_iff_le, ← associates.mk_dvd_mk, associates.mk_pow],
+  rw associates.dvd_eq_le,
+  rw associates.prime_pow_dvd_iff_le hI hJ',
+  { rw ← ideal.dvd_iff_le,
+    rw ← associates.mk_dvd_mk,
+    rw associates.mk_pow,
+    rw associates.dvd_eq_le,
+    rw associates.prime_pow_dvd_iff_le hI hJ',
+    linarith,
+  },
+end
+
+
 lemma fae_pol_ps_nat_order_val {f : polynomial K} (hf : f ≠ 0) :
   ↑(multiplicative.of_add 
   (-((↑f : power_series K).order).get (power_series.order_finite_iff_ne_zero.mpr
@@ -367,24 +423,46 @@ begin
   rw [int_valuation_def_if_neg],
   simp only [of_add_neg, ideal_X_span, inv_inj, with_zero.coe_inj, embedding_like.apply_eq_iff_eq,
     nat.cast_inj],--`[FAE]` From here on, it is "just" a matter of irreducible factors in `K[X]` 
-  { have := @unique_factorization_monoid.multiplicity_eq_count_normalized_factors (polynomial K)
+  { --simp,
+    --simp_rw ← multiplicity_eq_multiplicity_span,
+    
+    
+    --have temp
+    -- have := multiplicity_normalized_factors_equiv_span_normalized_factors_eq_multiplicity hf,
+    
+
+
+    have := @unique_factorization_monoid.multiplicity_eq_count_normalized_factors (polynomial K)
     _ _ _ _ _ _ polynomial.X f (irreducible_X) hf,
-    simp only [this, normalize_apply, coe_norm_unit, leading_coeff_X, norm_unit_one, units.coe_one,
-    map_one, mul_one, part_enat.get_coe'],
-    set S := associates.factors' (ideal.span {f} : ideal (polynomial K)) with hS,
-    have temp : irreducible (associates.mk (ideal.span {polynomial.X})), sorry,
-    have uff := @associates.count_some (ideal (polynomial K)) _ _ _ 
-      (associates.mk (ideal.span {polynomial.X})) temp S,
-    have ancora := @associates.factors_mk (ideal (polynomial K)) _ _ _ _ (ideal.span {f}) _,
-    have pure := @associates.map_subtype_coe_factors' (ideal (polynomial K)) _ _ _
-      (ideal.span {f} : ideal (polynomial K)),
-    rw [← hS] at pure,
+    -- rw ← multiplicity_eq_multiplicity_span at this,
+    simp_rw this,
+    simp only [normalize_apply, coe_norm_unit, leading_coeff_X, norm_unit_one, units.coe_one, map_one, mul_one, part_enat.get_coe'],
+    rw count_normalized_factors_eq_count_normalized_factors_span,
+    apply count_normalized_factors_eq_associates_count,
+    -- refl,
+    -- K _ (ideal.span {f}) (ideal.span {polynomial.X}) _ _,
+    -- rw ← multiplicity_eq_multiplicity_span,
+    -- simp at this,
+
+
+
+    -- simp only [this, normalize_apply, coe_norm_unit, leading_coeff_X, norm_unit_one, units.coe_one,
+    -- map_one, mul_one, part_enat.get_coe'],
+    -- set S := associates.factors' (ideal.span {f} : ideal (polynomial K)) with hS,
+    -- have temp : irreducible (associates.mk (ideal.span {polynomial.X})), sorry,
+    -- have uff := @associates.count_some (ideal (polynomial K)) _ _ _ 
+    --   (associates.mk (ideal.span {polynomial.X})) temp S,
+    -- have ancora := @associates.factors_mk (ideal (polynomial K)) _ _ _ _ (ideal.span {f}) _,
+    -- have pure := @associates.map_subtype_coe_factors' (ideal (polynomial K)) _ _ _
+    --   (ideal.span {f} : ideal (polynomial K)),
+    -- rw [← hS] at pure,
     sorry,
     sorry,
   },
   exact hf,
 end
 
+#exit
 
 lemma cruciale (f : polynomial K) :
   (hahn_series.of_power_series ℕ K (↑f : power_series K)) = (↑f : hahn_series ℕ K) :=
