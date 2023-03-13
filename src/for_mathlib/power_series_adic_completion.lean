@@ -100,7 +100,6 @@ begin
   rw zpow_coe_nat,
 end
 
-#check set.is_wf
 
 -- example (X Y : Type) [preorder X] [has_lt X] (S : set X) (hS : S.is_wf)
 
@@ -358,43 +357,27 @@ variable (K)
 -- end
 
 
-
-lemma count_normalized_factors_eq_count_normalized_factors_span' {R : Type*} [comm_ring R] [is_domain R] [is_dedekind_domain R] [normalization_monoid R][unique_factorization_monoid R] 
-    {r X : R} (hr : r ≠ 0) (hX₀ : X ≠ 0) (hX : prime X) : 
+--open unique_factorization_monoid
+lemma count_normalized_factors_eq_count_normalized_factors_span {R : Type*} [comm_ring R]
+  [is_domain R] [is_principal_ideal_ring R] [normalization_monoid R][unique_factorization_monoid R] 
+    {r X : R} (hr : r ≠ 0) (hX₀ : X ≠ 0) (hX₁ : norm_unit X = 1 )(hX : prime X) : 
   multiset.count X (unique_factorization_monoid.normalized_factors r) = 
-  multiset.count (ideal.span {X} : ideal R ) (unique_factorization_monoid.normalized_factors (ideal.span {r})) :=
+  multiset.count (ideal.span {X} : ideal R ) 
+    (unique_factorization_monoid.normalized_factors (ideal.span {r})) :=
 begin
-  sorry,
-end
-
---Generalize from X to any irreducible el.
-lemma count_normalized_factors_eq_count_normalized_factors_span {f : polynomial K} (hf : f ≠ 0) : multiset.count polynomial.X (unique_factorization_monoid.normalized_factors f) = 
-  multiset.count (ideal.span {polynomial.X} : ideal (polynomial K)) (unique_factorization_monoid.normalized_factors (ideal.span {f} : ideal (polynomial K))) :=
-begin
-  have : (polynomial.X : polynomial K)= normalize polynomial.X,
-  {simp only [normalize_apply, coe_norm_unit, leading_coeff_X, norm_unit_one, units.coe_one,
-    map_one, mul_one],--can do better  
-  },
-  have two : (ideal.span {normalize polynomial.X} : ideal (polynomial K)) = normalize (ideal.span {polynomial.X}),
-  { simp only [normalize_apply, coe_norm_unit, leading_coeff_X, norm_unit_one, units.coe_one, map_one, mul_one, normalize_eq],
-  },
-  rw ← part_enat.coe_inj,
-  rw this,
-  rw ← @unique_factorization_monoid.multiplicity_eq_count_normalized_factors (polynomial K)
-    _ _ _ _ _ _ polynomial.X f (irreducible_X) hf,
-  rw two,
-  rw ← unique_factorization_monoid.multiplicity_eq_count_normalized_factors,
-  rw multiplicity_eq_multiplicity_span,
-  apply prime.irreducible,--make it into a lemma in polynomial.lean
-  {apply ideal.prime_of_is_prime,
-    {rw [ne.def, ideal.span_singleton_eq_bot],
-      exact polynomial.X_ne_zero,
-    },
-    {rw ideal.span_singleton_prime,
-      exact prime_X,
-      exact polynomial.X_ne_zero,
-    }},
-  { rwa [ne.def, ideal.zero_eq_bot, ideal.span_singleton_eq_bot] }
+  replace hX₁ : X = normalize X, 
+  { simp only [normalize_apply, hX₁, units.coe_one, mul_one] },
+  have : (ideal.span {normalize X} : ideal  R) = normalize (ideal.span {X}),
+  { simp only [normalize_apply, normalize_eq],
+    apply ideal.span_singleton_mul_right_unit (units.is_unit _) },
+  rw [← part_enat.coe_inj, hX₁,
+    ← unique_factorization_monoid.multiplicity_eq_count_normalized_factors hX.irreducible hr, this, 
+    ← multiplicity_eq_multiplicity_span, 
+    ← unique_factorization_monoid.multiplicity_eq_count_normalized_factors],
+  refine prime.irreducible (ideal.prime_of_is_prime _ _),
+  {rwa [ne.def, ideal.span_singleton_eq_bot] },
+  {rwa ideal.span_singleton_prime hX₀ },
+  {rwa [ne.def, ideal.zero_eq_bot, ideal.span_singleton_eq_bot] },
 end
 
 --GOLF IT!
@@ -420,65 +403,30 @@ begin
   },
 end
 
-
-lemma fae_pol_ps_nat_order_val {f : polynomial K} (hf : f ≠ 0) :
+lemma order_as_power_series_eq_int_valuation {f : polynomial K} (hf : f ≠ 0) :
   ↑(multiplicative.of_add 
   (-((↑f : power_series K).order).get (power_series.order_finite_iff_ne_zero.mpr
     (polynomial.coe_ne_zero hf)) : ℤ)) = ((ideal_X K).int_valuation f) :=
 begin
-  rw [fae_pol_ps_nat_order_mul],
-  -- simp,
-  rw fae_int_valuation_apply,
-  rw [int_valuation_def_if_neg],
+  rw [fae_pol_ps_nat_order_mul, fae_int_valuation_apply, int_valuation_def_if_neg _ hf],
   simp only [of_add_neg, ideal_X_span, inv_inj, with_zero.coe_inj, embedding_like.apply_eq_iff_eq,
-    nat.cast_inj],--`[FAE]` From here on, it is "just" a matter of irreducible factors in `K[X]` 
-  { --simp,
-    --simp_rw ← multiplicity_eq_multiplicity_span,
-    
-    
-    --have temp
-    -- have := multiplicity_normalized_factors_equiv_span_normalized_factors_eq_multiplicity hf,
-    
-
-
-    have := @unique_factorization_monoid.multiplicity_eq_count_normalized_factors (polynomial K)
-    _ _ _ _ _ _ polynomial.X f (irreducible_X) hf,
-    -- rw ← multiplicity_eq_multiplicity_span at this,
-    simp_rw this,
-    simp only [normalize_apply, coe_norm_unit, leading_coeff_X, norm_unit_one, units.coe_one, map_one, mul_one, part_enat.get_coe'],
-    have new := @count_normalized_factors_eq_count_normalized_factors_span' (polynomial K)_ _ _ _ _ f polynomial.X hf (X_ne_zero) (prime_X),
-    rw new,
-    have span_zero : (ideal.span {f} : ideal (polynomial K)) ≠ 0,
-    { rw ideal.zero_eq_bot,sorry,
-
-    },
-    have span_X_prime : (ideal.span {polynomial.X}).is_prime, sorry,
-    have span_X_ne_bot : (ideal.span {polynomial.X}) ≠ ⊥, sorry,
-    convert @count_normalized_factors_eq_associates_count K _ (ideal.span {f}) (ideal.span {polynomial.X}) (span_zero) span_X_prime span_X_ne_bot,
-    
-    
-    -- convert count_normalized_factors_eq_associates_count K hf,
-    -- refl,
-
-
-
-    -- simp only [this, normalize_apply, coe_norm_unit, leading_coeff_X, norm_unit_one, units.coe_one,
-    -- map_one, mul_one, part_enat.get_coe'],
-    -- set S := associates.factors' (ideal.span {f} : ideal (polynomial K)) with hS,
-    -- have temp : irreducible (associates.mk (ideal.span {polynomial.X})), sorry,
-    -- have uff := @associates.count_some (ideal (polynomial K)) _ _ _ 
-    --   (associates.mk (ideal.span {polynomial.X})) temp S,
-    -- have ancora := @associates.factors_mk (ideal (polynomial K)) _ _ _ _ (ideal.span {f}) _,
-    -- have pure := @associates.map_subtype_coe_factors' (ideal (polynomial K)) _ _ _
-    --   (ideal.span {f} : ideal (polynomial K)),
-    -- rw [← hS] at pure,
-    -- sorry,
-    -- sorry,
-  },
-  exact hf,
+    nat.cast_inj],
+  simp_rw [@unique_factorization_monoid.multiplicity_eq_count_normalized_factors (polynomial K)
+    _ _ _ _ _ _ polynomial.X f (irreducible_X) hf],
+  simp only [normalize_apply, coe_norm_unit, leading_coeff_X, norm_unit_one, units.coe_one, map_one,
+    mul_one, part_enat.get_coe'],
+  rw count_normalized_factors_eq_count_normalized_factors_span hf X_ne_zero _ prime_X,
+  { have span_ne_zero : (ideal.span {f} : ideal (polynomial K)) ≠ 0 ∧
+    (ideal.span {polynomial.X} : ideal (polynomial K)) ≠ 0 := by simp only [ideal.zero_eq_bot,
+    ne.def, ideal.span_singleton_eq_bot, hf, polynomial.X_ne_zero, not_false_iff, and_self],
+    have span_X_prime : (ideal.span {polynomial.X} : ideal (polynomial K)).is_prime,
+    { apply (@ideal.span_singleton_prime (polynomial K) _ _ polynomial.X_ne_zero).mpr prime_X },
+    convert @count_normalized_factors_eq_associates_count K _ (ideal.span {f})
+    (ideal.span {polynomial.X}) span_ne_zero.1 ((@ideal.span_singleton_prime (polynomial K) _ _ 
+    polynomial.X_ne_zero).mpr prime_X) span_ne_zero.2 },
+  { simp only [← units.coe_eq_one, coe_norm_unit, leading_coeff_X, norm_unit_one,
+    units.coe_one, map_one] },
 end
-
-#exit
 
 lemma cruciale (f : polynomial K) :
   (hahn_series.of_power_series ℕ K (↑f : power_series K)) = (↑f : hahn_series ℕ K) :=
@@ -493,20 +441,20 @@ begin
 end
 
 
-lemma fae_pol_hs_order_eq_val {f : polynomial K} (hf : f ≠ 0) :
+lemma order_as_nat_hahn_series_eq_int_valuation {f : polynomial K} (hf : f ≠ 0) :
  ↑(multiplicative.of_add (- (↑f : (hahn_series ℕ K)).order : ℤ)) = ((ideal_X K).int_valuation f) :=
 begin
-  have := fae_pol_ps_nat_order_val K hf,
+  have := order_as_power_series_eq_int_valuation K hf,
   rw hahn_series.nat_order_eq_of_power_series at this,
   rw ← this,
   simpa only [of_add_neg, of_power_series_apply, inv_inj, with_zero.coe_inj, embedding_like.apply_eq_iff_eq, nat.cast_inj],
 end
 
 
-lemma fae_pol_order_eq_val {f : polynomial K} (hf : f ≠ 0) :
+lemma order_as_hahn_series_eq_int_valuation {f : polynomial K} (hf : f ≠ 0) :
  ↑(multiplicative.of_add (- (f : laurent_series K).order)) = ((ideal_X K).int_valuation f) :=
 begin
-  simp only [← fae_pol_hs_order_eq_val K hf, coe_coe, of_add_neg, inv_inj, with_zero.coe_inj, embedding_like.apply_eq_iff_eq],
+  simp only [← order_as_nat_hahn_series_eq_int_valuation K hf, coe_coe, of_add_neg, inv_inj, with_zero.coe_inj, embedding_like.apply_eq_iff_eq],
   convert (hahn_series.order_eq_of_power_series_Z (polynomial.coe_ne_zero hf)).symm,
   exact (hahn_series.nat_order_eq_of_power_series (polynomial.coe_ne_zero hf)).symm,
 end
@@ -532,8 +480,7 @@ lemma ratfunc.coe_ne_zero_iff {f : ratfunc K} : f ≠ 0 ↔ (↑f : laurent_seri
   λ h, by {apply (ratfunc.coe_injective.ne_iff).mp, simpa only [ratfunc.coe_zero]}⟩
 
 variable (K)
--- depends on  `fae_pol_order_eq_val`
-lemma fae_order_eq_val {f : ratfunc K} (hf : f ≠ 0) :
+lemma order_as_hahn_series_eq_valuation {f : ratfunc K} (hf : f ≠ 0) :
  ↑(multiplicative.of_add (- (f : laurent_series K).order)) = ((ideal_X K).valuation f) :=
 begin
   obtain ⟨P, ⟨Q, hQ, hfPQ⟩⟩ := @is_fraction_ring.div_surjective (polynomial K) _ _ (ratfunc K) _ _ _ f,
@@ -544,8 +491,8 @@ begin
   rw hfPQ at val_P_Q,
   rw val_P_Q,
   simp only [← subtype.val_eq_coe],
-  rw [← (fae_pol_order_eq_val _ hP)],
-  rw [← (fae_pol_order_eq_val _ hQ₀)],
+  rw [← (order_as_hahn_series_eq_int_valuation _ hP)],
+  rw [← (order_as_hahn_series_eq_int_valuation _ hQ₀)],
   rw ← with_zero.coe_div,
   rw with_zero.coe_inj,
   rw ← of_add_sub,
@@ -584,7 +531,7 @@ end
 lemma fae_order_eq_val' {f : ratfunc K} (hf : f ≠ 0) :
  ↑(multiplicative.of_add ((f : laurent_series K).order)) = ((ideal_X K).valuation f)⁻¹ :=
 begin
-  have := fae_order_eq_val K (neg_ne_zero.mpr hf),
+  have := order_as_hahn_series_eq_valuation K (neg_ne_zero.mpr hf),
   nth_rewrite 0 [← neg_neg f],
   rw ratfunc.coe_def,
   rw (ratfunc.coe_alg_hom K).map_neg,
@@ -606,15 +553,6 @@ def coeff (f : ratfunc K) (d : ℤ) : K := (f : laurent_series K).coeff d
 
 variable (K)
 def coeff_map (d : ℤ) : ratfunc K → K := λ x, coeff x d
-
--- transform into add_map ? The `def` below takes centuries to compile
--- def coeff_map_add (d : ℤ) : ratfunc K →+ K :=
--- begin
---   fconstructor,
---   { 
---   },
-
--- end
 
 end ratfunc
 
@@ -643,6 +581,24 @@ begin
     rw ← with_zero.coe_lt_coe,
     rw with_zero.coe_unzero triv,
     exact H },
+end
+
+lemma eq_coeff_of_mem_entourage' (d n : ℤ) (x y : ratfunc K) (H : (x, y) ∈ (entourage K d)) :
+ n ≤ d → x.coeff n = y.coeff n := sorry
+
+lemma bounded_coeff_of_mem_entourage (x : ratfunc K) (d : ℤ) : ∃ N : ℤ, ∀ y : ratfunc K, 
+  (x, y) ∈ (entourage K d) → ∀ n  < N, y.coeff n = 0 :=
+begin
+  by_cases hx : x = 0, 
+  sorry,
+  replace hx := ratfunc.coe_ne_zero_iff.mp hx,
+  use (x : laurent_series K).2.is_wf.min (hahn_series.support_nonempty_iff.mpr hx),
+  intros y hy n hn,
+  have hn' : n ≤ d, sorry,--not necessarily true, do a case distinction because it could be that d 
+  -- is so small that everything is 0 already
+  have : x.coeff n = 0, sorry,
+  rw ← this,
+  exact (eq_coeff_of_mem_entourage' K d n x y hy hn').symm,
 end
 
 lemma entourage_uniformity_mem (d : ℤ) : entourage K d ∈ 𝓤 (ratfunc K) :=
@@ -677,6 +633,11 @@ begin
   sorry
 end
 
+-- lemma coeff_support_pwo (f : ratfunc K) : f.coeff.support.is_pwo :=
+-- begin
+--   exact is_pwo_support ↑f,
+-- end
+
 
 def isom 
   {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) : 
@@ -691,9 +652,14 @@ def isom
   obtain ⟨ℱ, hℱ⟩ := (quot.exists_rep α).some,
   use (cauchy_discrete_is_constant h (ℱ.map (ratfunc.coeff_map K d))
     (hℱ.map (uniform_continuous_coeff_map K h d))),
-  have : set.is_pwo (⊤ : (set ℤ)),
   sorry,
-  exact set.is_pwo.mono this (set.subset_univ _),
+  -- have : set.is_pwo (⊤ : (set ℤ)),
+  -- apply set.is_wf.is_pwo,
+  -- apply set.is_wf_univ_iff.mpr,
+  -- refine well_founded.well_founded_iff_has_min.mpr _,
+
+
+  -- exact set.is_pwo.mono this (set.subset_univ _),
   end,
   inv_fun := sorry,
   left_inv := sorry,
