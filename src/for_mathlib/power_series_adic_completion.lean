@@ -358,6 +358,15 @@ variable (K)
 -- end
 
 
+
+lemma count_normalized_factors_eq_count_normalized_factors_span' {R : Type*} [comm_ring R] [is_domain R] [is_dedekind_domain R] [normalization_monoid R][unique_factorization_monoid R] 
+    {r X : R} (hr : r ≠ 0) (hX₀ : X ≠ 0) (hX : prime X) : 
+  multiset.count X (unique_factorization_monoid.normalized_factors r) = 
+  multiset.count (ideal.span {X} : ideal R ) (unique_factorization_monoid.normalized_factors (ideal.span {r})) :=
+begin
+  sorry,
+end
+
 --Generalize from X to any irreducible el.
 lemma count_normalized_factors_eq_count_normalized_factors_span {f : polynomial K} (hf : f ≠ 0) : multiset.count polynomial.X (unique_factorization_monoid.normalized_factors f) = 
   multiset.count (ideal.span {polynomial.X} : ideal (polynomial K)) (unique_factorization_monoid.normalized_factors (ideal.span {f} : ideal (polynomial K))) :=
@@ -437,12 +446,19 @@ begin
     -- rw ← multiplicity_eq_multiplicity_span at this,
     simp_rw this,
     simp only [normalize_apply, coe_norm_unit, leading_coeff_X, norm_unit_one, units.coe_one, map_one, mul_one, part_enat.get_coe'],
-    rw count_normalized_factors_eq_count_normalized_factors_span,
-    have := @count_normalized_factors_eq_associates_count K _ (ideal.span {polynomial.X}),
+    have new := @count_normalized_factors_eq_count_normalized_factors_span' (polynomial K)_ _ _ _ _ f polynomial.X hf (X_ne_zero) (prime_X),
+    rw new,
+    have span_zero : (ideal.span {f} : ideal (polynomial K)) ≠ 0,
+    { rw ideal.zero_eq_bot,sorry,
+
+    },
+    have span_X_prime : (ideal.span {polynomial.X}).is_prime, sorry,
+    have span_X_ne_bot : (ideal.span {polynomial.X}) ≠ ⊥, sorry,
+    convert @count_normalized_factors_eq_associates_count K _ (ideal.span {f}) (ideal.span {polynomial.X}) (span_zero) span_X_prime span_X_ne_bot,
+    
+    
+    -- convert count_normalized_factors_eq_associates_count K hf,
     -- refl,
-    -- K _ (ideal.span {f}) (ideal.span {polynomial.X}) _ _,
-    -- rw ← multiplicity_eq_multiplicity_span,
-    -- simp at this,
 
 
 
@@ -456,8 +472,8 @@ begin
     -- have pure := @associates.map_subtype_coe_factors' (ideal (polynomial K)) _ _ _
     --   (ideal.span {f} : ideal (polynomial K)),
     -- rw [← hS] at pure,
-    sorry,
-    sorry,
+    -- sorry,
+    -- sorry,
   },
   exact hf,
 end
