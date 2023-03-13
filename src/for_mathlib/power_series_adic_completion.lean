@@ -438,7 +438,7 @@ begin
     simp_rw this,
     simp only [normalize_apply, coe_norm_unit, leading_coeff_X, norm_unit_one, units.coe_one, map_one, mul_one, part_enat.get_coe'],
     rw count_normalized_factors_eq_count_normalized_factors_span,
-    apply count_normalized_factors_eq_associates_count,
+    have := @count_normalized_factors_eq_associates_count K _ (ideal.span {polynomial.X}),
     -- refl,
     -- K _ (ideal.span {f}) (ideal.span {polynomial.X}) _ _,
     -- rw ← multiplicity_eq_multiplicity_span,
