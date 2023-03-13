@@ -24,20 +24,26 @@ instance : field (completion_of_ratfunc K) := adic_completion.field (ratfunc K) 
 
 instance : algebra K (polynomial K) := infer_instance
 
-instance adic_uniformity_ratfunc : uniform_space (ratfunc K) :=
-  (@adic_valued (polynomial K) _ _ _ (ratfunc K) _ _ _ (ideal_X K)).to_uniform_space
+instance : valued (ratfunc K) ℤₘ₀ := 
+begin
+ use @adic_valued (polynomial K) _ _ _ (ratfunc K) _ _ _ (ideal_X K),
+end
 
-instance adic_uniformity_ratfunc_add_group : uniform_add_group (ratfunc K) := sorry
+-- instance : uniform_space (ratfunc K) :=
+--   (@adic_valued (polynomial K) _ _ _ (ratfunc K) _ _ _ (ideal_X K)).to_uniform_space
+
+
+
+-- example : valued (ratfunc K) ℤₘ₀ :=
+-- begin
+--   have := adic_valued (ideal_X K),
+-- end
   -- (@adic_valued (polynomial K) _ _ _ (ratfunc K) _ _ _ (ideal_X K)).to_uniform_space
 
-instance : valued (completion_of_ratfunc K) ℤₘ₀ :=
+instance already : valued (completion_of_ratfunc K) ℤₘ₀ :=
   @valued.valued_completion _ _ _ _ (ideal_X K).adic_valued
 
--- #where
--- instance uff : valued (ratfunc K) ℤₘ₀ :=
--- begin
-
--- end
+-- #exit
 
 instance : uniform_space (completion_of_ratfunc K) := infer_instance
 
@@ -603,34 +609,22 @@ begin
   exact (eq_coeff_of_mem_entourage K hy hn').symm,
 end
 
-example : valued (ratfunc K) ℤₘ₀ :=
-begin
-  apply_instance,
-end
 
 lemma entourage_uniformity_mem (d : ℤ) : entourage K d ∈ 𝓤 (ratfunc K) :=
 begin
-  have := @uniformity_eq_comap_nhds_zero (ratfunc K) (adic_uniformity_ratfunc K),
-  
   simp only [entourage, of_add_neg, with_zero.coe_inv, mem_comap,
     exists_prop],
   let T : set (ratfunc K) := {P | ((ideal_X K).valuation) P < (multiplicative.of_add d)⁻¹},
-  -- use {P | ((ideal_X K).valuation) P < (multiplicative.of_add d)⁻¹},
-  use T,
+  use {P | ((ideal_X K).valuation) P < (multiplicative.of_add d)⁻¹},
+  -- use T,
   split,
-  { --simp only,
-    -- haveI : valued (ratfunc K) ℤₘ₀,
-    -- -- apply_instance,
-    -- use (ideal_X K).valuation,
-    -- sorry,
-    haveI := @is_dedekind_domain.height_one_spectrum.adic_valued (polynomial K) _ _ _ (ratfunc K) 
-      _ _ _(ideal_X K),
-    have temp : ∃ (γ : ℤₘ₀ˣ), {y : ratfunc K | valued.v (y - 0) < ↑γ} ⊆ T, sorry,
-    have := (@valued.mem_nhds (ratfunc K) _ ℤₘ₀ _ _ T 0).mpr temp,
-    convert this,
-    -- refl,
-     
-
+  { let δ : ℤₘ₀ˣ := ⟨↑(multiplicative.of_add d)⁻¹, sorry, sorry, sorry⟩,
+    -- have temp : ∃ (γ : ℤₘ₀ˣ), {y : ratfunc K | valued.v (y - 0) < ↑γ} ⊆ T, sorry,
+    apply (@valued.mem_nhds_zero (ratfunc K) _ ℤₘ₀ _ _ T).mpr,
+    use δ,
+    simp only [units.coe_mk, with_zero.coe_inv, set.set_of_subset_set_of],
+    intros a ha,
+    exact ha,--golf!!!
   },
   { simp only [set.preimage_set_of_eq, set.set_of_subset_set_of, prod.forall],
     intros,
