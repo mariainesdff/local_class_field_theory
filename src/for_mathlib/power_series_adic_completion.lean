@@ -650,17 +650,35 @@ begin
 end
 
 --this `def` has nothing to do with (local) fields
-def cauchy_discrete_is_constant {K} {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) 
-  (α : filter K) (hα : cauchy α) : K :=
+def cauchy_discrete_is_constant {X : Type*} {uX : uniform_space X} (hX : uniformity X = 𝓟 id_rel) 
+  {α : filter X} (hα : cauchy α) : X :=
 begin
   sorry
 end
 
--- lemma coeff_support_pwo (f : ratfunc K) : f.coeff.support.is_pwo :=
--- begin
---   exact is_pwo_support ↑f,
--- end
+lemma cauchy_in_discrete_converges  {X : Type*} {uX : uniform_space X} (hX : uniformity X = 𝓟 id_rel) 
+  {α : filter X} (hα : cauchy α) : α ≤ 𝓟 {cauchy_discrete_is_constant hX hα} := 
+begin
+  sorry
+end
 
+lemma entually_constant {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel)
+  {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) (d : ℤ) :
+  ∀ᶠ x in ℱ, ratfunc.coeff x d = cauchy_discrete_is_constant h 
+    (hℱ.map (uniform_continuous_coeff_map K h d)) := 
+begin
+  sorry
+end
+
+lemma entually_neg_zero {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel)
+  {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) (d : ℤ) :
+  ∀ᶠ x in ℱ, ∀ᶠ d in (at_bot : filter ℤ), ratfunc.coeff x d = (0 : K) :=
+begin
+  sorry
+end
+  
+  -- ratfunc.coeff x d = cauchy_discrete_is_constant h 
+  --   (hℱ.map (uniform_continuous_coeff_map K h d)) := 
 
 def isom 
   {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) : 
@@ -673,7 +691,7 @@ def isom
   swap,
   intro d,
   obtain ⟨ℱ, hℱ⟩ := (quot.exists_rep α).some,
-  use (cauchy_discrete_is_constant h (ℱ.map (ratfunc.coeff_map K d))
+  use (cauchy_discrete_is_constant h --(ℱ.map (ratfunc.coeff_map K d))
     (hℱ.map (uniform_continuous_coeff_map K h d))),
   sorry,
   -- have : set.is_pwo (⊤ : (set ℤ)),
