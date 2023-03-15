@@ -50,18 +50,18 @@ instance : uniform_space (completion_of_ratfunc K) := infer_instance
 
 variable (F : completion_of_ratfunc K)
 
---*FAE* The one below is one I am trying on Mar14th at night
-def entourage (d : ℤ) : set (ratfunc K × ratfunc K) :=
-  {P | (ideal_X K).valuation (P.1 - P.2) < ↑(multiplicative.of_add d)}
+-- --*FAE* The one below is one I am trying on Mar14th at night
+-- def entourage (d : ℤ) : set (ratfunc K × ratfunc K) :=
+--   {P | (ideal_X K).valuation (P.1 - P.2) < ↑(multiplicative.of_add d)}
 
 --*FAE* The one below is the one that works perfectly but gives something crazy
-def entourage' (d : ℤ) : set (ratfunc K × ratfunc K) :=
+def entourage (d : ℤ) : set (ratfunc K × ratfunc K) :=
   {P | (ideal_X K).valuation (P.1 - P.2) < ↑(multiplicative.of_add (- d))}
 
 -- *FAE* This was the old definition, but I think I got the inequalities wrong, since I did not
 -- know yet how to play with `multiplicative.of_add`. It does not work
-def entourage_bad (d : ℤ) : set (ratfunc K × ratfunc K) :=
-  {P | ↑(multiplicative.of_add d) ≤ (ideal_X K).valuation (P.1 - P.2)}
+-- def entourage_bad (d : ℤ) : set (ratfunc K × ratfunc K) :=
+--   {P | ↑(multiplicative.of_add d) ≤ (ideal_X K).valuation (P.1 - P.2)}
 
 lemma fae_for_pol (f  : polynomial K) (d : ℕ) (hf : (ideal_X K).int_valuation f ≤ 
   ↑(multiplicative.of_add (- (d+(1 : ℕ)) : ℤ))) : f.coeff d = 0 :=
@@ -583,29 +583,17 @@ end ratfunc
 lemma entourage_uniformity_mem (d : ℤ) : entourage K d ∈ 𝓤 (ratfunc K) :=
 begin
   simp only [entourage, of_add_neg, with_zero.coe_inv, mem_comap, exists_prop],
-  let T : set (ratfunc K) := {P | ((ideal_X K).valuation) P < (multiplicative.of_add d)⁻¹},
   use {P | ((ideal_X K).valuation) P < (multiplicative.of_add d)⁻¹},
   split,
-  { apply (@valued.mem_nhds_zero (ratfunc K) _ ℤₘ₀ _ _ T).mpr,
+  { apply (@valued.mem_nhds_zero (ratfunc K) _ ℤₘ₀ _ _ _).mpr,
     use ⟨↑(multiplicative.of_add d)⁻¹, ↑(multiplicative.of_add d), by {simp only [with_zero.coe_inv,
       inv_mul_cancel, ne.def, with_zero.coe_ne_zero, not_false_iff]}, by {simp only
       [with_zero.coe_inv, _root_.mul_inv_cancel, ne.def, with_zero.coe_ne_zero, not_false_iff]}⟩,
     simp only [units.coe_mk, with_zero.coe_inv, set.set_of_subset_set_of],
-    exact λ _ ha, ha,
-  },
+    exact λ _ ha, ha },
   { simp only [set.preimage_set_of_eq, set.set_of_subset_set_of, prod.forall],
     intros _ _ h,
-    rw [← valuation.map_neg, neg_sub],
-    
-    apply lt_trans h,
-    rw ← with_zero.coe_inv,
-    rw with_zero.coe_lt_coe,
-    rw ← of_add_neg,
-    rw multiplicative.of_add_lt,
-    sorry,----PENSIAMOCI SU!
-    
-    
-    },
+    rwa [← valuation.map_neg, neg_sub] },
 end
 
 variable {K}
@@ -748,6 +736,7 @@ begin
   have H_st : (s,t) ∈ entourage K n, sorry,
   have due := eq_coeff_of_mem_entourage' H_st,
   rw filter.eventually,
+  sorry,
 end
 
 lemma coeff_entually_zero {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel)
