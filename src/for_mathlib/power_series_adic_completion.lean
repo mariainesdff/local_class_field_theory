@@ -248,10 +248,30 @@ lemma order_eq_of_power_series_Z {R : Type*} [semiring R] {φ : power_series R} 
 begin
   let ι : ℕ ↪o ℤ := ⟨⟨(nat.cast_add_monoid_hom ℤ).1, nat.strict_mono_cast.injective⟩, λ _ _, nat.cast_le⟩,
   have := @hahn_series.eq_order_of_emb_domain ℕ ℤ R _ _ _ _ _ (of_power_series ℕ R φ) ι nat.cast_zero,
-  have pufpuf : emb_domain ι (of_power_series ℕ R φ) = of_power_series ℤ R φ, sorry,
-  -- { simp,
+  have pufpuf : emb_domain ι (of_power_series ℕ R φ) = of_power_series ℤ R φ,
+  { ext n,
+    induction n with n m,
+    {have uno := @emb_domain_coeff ℕ R _ _ ℤ _ ι (of_power_series ℕ R φ) n,
+    erw uno,
+    have tre := @of_power_series_apply_coeff ℕ R _ _ φ n,
+    simp only [nat.cast_id] at tre,
+    rw tre,
+    have quattro := @of_power_series_apply_coeff ℤ R _ _ φ n,
+    exact quattro.symm},
+    have : (emb_domain ι ((of_power_series ℕ R) φ)).coeff -[1+ m] = 0,
+    { --apply @emb_domain_notin_image_support ℕ R _ _ ℤ _ ι (of_power_series ℕ R φ) -[1+m],
+    apply emb_domain_notin_range,
+    simp only [add_monoid_hom.to_fun_eq_coe, nat.coe_cast_add_monoid_hom, rel_embedding.coe_fn_mk, function.embedding.coe_fn_mk,
+  mem_range, not_exists],
+    rw int.neg_succ_of_nat_coe,
+    intro x,
+    rw int.coe_nat_add,
+    rw neg_add,
+    sorry,
+  },
+  sorry,
 
-  -- },
+  },
   rw pufpuf at this,
   rw nat_order_eq_of_power_series,
   symmetry,
@@ -516,7 +536,8 @@ begin
   rw ← with_zero.coe_div,
   rw with_zero.coe_inj,
   rw ← of_add_sub,
-  replace hQ₀ : (↑Q : ratfunc K) ≠ 0, sorry,--already done for `P` on the last `{---}` block of the proof below
+  replace hQ₀ : (↑Q : ratfunc K) ≠ 0,
+  { exact λ hneQ, hQ₀ ((@ratfunc.algebra_map_eq_zero_iff K _ _ Q).mp hneQ) },
   apply congr_arg,
   rw neg_eq_iff_neg_eq,
   rw neg_sub_neg,
@@ -541,8 +562,8 @@ begin
   simpa only [mk_eq_div, is_fraction_ring.mk'_eq_div, set_like.coe_mk],
   { intro hneP,
     have hinj := @_root_.polynomial.algebra_map_hahn_series_injective ℤ K _ _,
-    have := ((@injective_iff_map_eq_zero' _ _ _ _ _ _ (_ : (polynomial K) →+* (laurent_series K))).mp hinj P).mp hneP,
-    exact hP this,
+    exact hP ( ((@injective_iff_map_eq_zero' _ _ _ _ _ _ (_ : (polynomial K) →+*
+      (laurent_series K))).mp hinj P).mp hneP),
      },
   { rwa [fae_coe, ← ratfunc.coe_ne_zero_iff], },
 end
@@ -624,29 +645,30 @@ lemma eq_coeff_of_mem_entourage' {d : ℤ} {x y : ratfunc K} (H : (x, y) ∈ (en
  ∀ᶠ n in at_bot, x.coeff n = y.coeff n :=
 eventually_at_bot.mpr ⟨d, λ _ h, eq_coeff_of_mem_entourage H h⟩
 
-lemma bounded_supp_of_mem_entourage (x : ratfunc K) (d : ℤ) : ∃ N : ℤ, ∀ y : ratfunc K, 
-  (x, y) ∈ (entourage K d) → ∀ n < N, y.coeff n = 0 :=
-begin
-  by_cases hx : x = 0,
-  { use d,
-    intros _ hy _ hn,
-    rw [← eq_coeff_of_mem_entourage hy (le_of_lt hn), hx, ratfunc.coeff_zero] },
-  { replace hx := ratfunc.coe_ne_zero_iff.mp hx,
-    use min ((x : laurent_series K).2.is_wf.min (hahn_series.support_nonempty_iff.mpr hx)) d,
-    intros _ hy _ hn,
-    have hn' : x.coeff n = 0 := function.nmem_support.mp ( λ h, set.is_wf.not_lt_min
-      (x : laurent_series K).2.is_wf (support_nonempty_iff.mpr hx) h (lt_min_iff.mp hn).1),
-    rwa ← eq_coeff_of_mem_entourage hy (le_of_lt (lt_min_iff.mp hn).2) },
-end
+-- `[FAE] The lemmas below are true, but possibly useless
+-- lemma bounded_supp_of_mem_entourage (x : ratfunc K) (d : ℤ) : ∃ N : ℤ, ∀ y : ratfunc K, 
+--   (x, y) ∈ (entourage K d) → ∀ n < N, y.coeff n = 0 :=
+-- begin
+--   by_cases hx : x = 0,
+--   { use d,
+--     intros _ hy _ hn,
+--     rw [← eq_coeff_of_mem_entourage hy (le_of_lt hn), hx, ratfunc.coeff_zero] },
+--   { replace hx := ratfunc.coe_ne_zero_iff.mp hx,
+--     use min ((x : laurent_series K).2.is_wf.min (hahn_series.support_nonempty_iff.mpr hx)) d,
+--     intros _ hy _ hn,
+--     have hn' : x.coeff n = 0 := function.nmem_support.mp ( λ h, set.is_wf.not_lt_min
+--       (x : laurent_series K).2.is_wf (support_nonempty_iff.mpr hx) h (lt_min_iff.mp hn).1),
+--     rwa ← eq_coeff_of_mem_entourage hy (le_of_lt (lt_min_iff.mp hn).2) },
+-- end
 
-lemma bounded_supp_of_mem_entourage' (x : ratfunc K) (d : ℤ) : ∀ᶠ n in at_bot, ∀ y : ratfunc K, 
-  (x, y) ∈ (entourage K d) → y.coeff n = 0 :=
-begin
-  obtain ⟨N, hN⟩ := bounded_supp_of_mem_entourage x d,
-  apply eventually_at_bot.mpr ⟨N - 1, _⟩,
-  intros n hn y hy,
-  exact hN y hy n (int.lt_of_le_sub_one hn),
-end
+-- lemma bounded_supp_of_mem_entourage' (x : ratfunc K) (d : ℤ) : ∀ᶠ n in at_bot, ∀ y : ratfunc K, 
+--   (x, y) ∈ (entourage K d) → y.coeff n = 0 :=
+-- begin
+--   obtain ⟨N, hN⟩ := bounded_supp_of_mem_entourage x d,
+--   apply eventually_at_bot.mpr ⟨N - 1, _⟩,
+--   intros n hn y hy,
+--   exact hN y hy n (int.lt_of_le_sub_one hn),
+-- end
 
 lemma uniform_continuous_coeff_map {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) (d : ℤ)
 : uniform_continuous (ratfunc.coeff_map K d) :=
@@ -695,7 +717,7 @@ end
 end set
 
 open set
---this `def` has nothing to do with (local) fields
+
 lemma cauchy_discrete_le_principal {X : Type*} [nonempty X] {uX : uniform_space X}
 (hX : uniformity X = 𝓟 id_rel) {α : filter X} (hα : cauchy α) : ∃ x : X, α ≤ 𝓟 {x} :=
 begin
@@ -724,31 +746,39 @@ lemma cauchy_discrete_converges  {X : Type*} [nonempty X] {uX : uniform_space X}
 lemma eventually_constant {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel)
   {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) (n : ℤ) :
   ∀ᶠ x in ℱ, ratfunc.coeff x n = cauchy_discrete_is_constant h 
-    (hℱ.map (uniform_continuous_coeff_map h n)) := 
-begin
-  cases hℱ with ℱ_ne_bot ℱ_le,
-  rw [filter.le_def] at ℱ_le,
-  specialize ℱ_le _ (entourage_uniformity_mem K n),
-  obtain ⟨S, ⟨hS, ⟨T, ⟨hT, H⟩⟩⟩⟩ := filter.mem_prod_iff.mp ℱ_le,
-  have S_nempty : S.nonempty, sorry,
-  have T_nempty : T.nonempty, sorry,
-  rcases ⟨S_nempty, T_nempty⟩ with ⟨⟨s, hs⟩, ⟨t, ht⟩⟩, 
-  have H_st : (s,t) ∈ entourage K n, sorry,
-  have due := eq_coeff_of_mem_entourage' H_st,
-  rw filter.eventually,
-  sorry,
-end
+    (hℱ.map (uniform_continuous_coeff_map h n)) := by simpa only [comap_principal, le_principal_iff]
+    using tendsto.le_comap (cauchy_discrete_converges _ (hℱ.map (uniform_continuous_coeff_map _ _)))
+
 
 lemma coeff_entually_zero {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel)
-  {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) (d : ℤ) :
+  {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) :
   ∀ᶠ x in ℱ, ∀ᶠ d in (at_bot : filter ℤ), ratfunc.coeff x d = (0 : K) :=
 begin
-  sorry
+  simp only [eventually_at_bot],
+  apply eventually_of_forall,
+  intro x,
+  by_cases hx : x = 0,
+  { simp only [hx, ratfunc.coeff_zero, eq_self_iff_true, implies_true_iff, exists_const] },
+  { replace hx := ratfunc.coe_ne_zero_iff.mp hx, 
+    use ((x : laurent_series K).2.is_wf.min (hahn_series.support_nonempty_iff.mpr
+    hx)) - 1,
+    intros,
+    apply function.nmem_support.mp ( λ h, set.is_wf.not_lt_min
+      (x : laurent_series K).2.is_wf (support_nonempty_iff.mpr hx) h _),
+    linarith },
 end
-  
-  -- ratfunc.coeff x d = cauchy_discrete_is_constant h 
-  --   (hℱ.map (uniform_continuous_coeff_map K h d)) := 
 
+lemma aux_support {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel)
+  {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) : ∀ᶠ n in at_bot, cauchy_discrete_is_constant h 
+    (hℱ.map (uniform_continuous_coeff_map h n)) = ( 0 : K) := sorry
+  
+example : (univ : set ℕ).is_pwo :=
+begin
+  exact (nat.lt_wf.is_wf _).is_pwo,
+end
+
+
+-- `[FAE]`Use #18604! It says that a bounded-below set of integers is well-founded wrt to `<`
 def isom 
   {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) : 
   -- adic_completion.field (ratfunc K) (ideal_X K) ≃ ℤ := sorry
@@ -756,13 +786,29 @@ def isom
 { to_fun :=
   begin
   intro α,
+  obtain ⟨ℱ, hℱ⟩ := (quot.exists_rep α).some,
   apply hahn_series.mk,
   swap,
-  intro d,
-  obtain ⟨ℱ, hℱ⟩ := (quot.exists_rep α).some,
-  use (cauchy_discrete_is_constant h --(ℱ.map (ratfunc.coeff_map K d))
-    (hℱ.map (uniform_continuous_coeff_map h d))),
-  sorry,
+  { intro d,
+    use (cauchy_discrete_is_constant h --(ℱ.map (ratfunc.coeff_map K d))
+      (hℱ.map (uniform_continuous_coeff_map h d))) },
+      sorry,
+  -- have mah : function.support (λ (d : ℤ), cauchy_discrete_is_constant h _) = Ico -3,
+  -- apply set.is_wf.is_pwo,
+  -- rw is_pwo_iff_exists_monotone_subseq,
+  -- intros f hf,
+  -- have := aux_support h hℱ,
+  -- rw well_founded_on
+  -- have := nat.well_founded_lt,
+  -- rw is_wf_univ_iff,/
+  -- rw well_founded_on
+  -- rw well_founded.well_founded_iff_has_min',
+  -- apply is_pwo
+  -- simp [this],
+  -- rw set.is_wf,
+  -- have := coeff_entually_zero h hℱ,
+  -- simp [coeff_entually_zero],
+  -- sorry,
   -- have : set.is_pwo (⊤ : (set ℤ)),
   -- apply set.is_wf.is_pwo,
   -- apply set.is_wf_univ_iff.mpr,
