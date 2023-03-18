@@ -777,8 +777,9 @@ begin
   exact (nat.lt_wf.is_wf _).is_pwo,
 end
 
+-- `[FAE]` This is `#18604`
+lemma bdd_below.well_founded_on_lt : bdd_below s → s.well_founded_on (<) := sorry
 
--- `[FAE]`Use #18604! It says that a bounded-below set of integers is well-founded wrt to `<`
 def isom 
   {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) : 
   -- adic_completion.field (ratfunc K) (ideal_X K) ≃ ℤ := sorry
