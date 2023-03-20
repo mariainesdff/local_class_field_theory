@@ -759,28 +759,22 @@ def cauchy_discrete_is_constant {X : Type*} [nonempty X] {uX : uniform_space X}
   (hX : uniformity X = 𝓟 id_rel) {α : filter X} (hα : cauchy α) : X :=
 (cauchy_discrete_le_principal hX hα).some
 
-lemma cauchy_discrete_converges  {X : Type*} [nonempty X] {uX : uniform_space X} 
+lemma cauchy_discrete_le  {X : Type*} [nonempty X] {uX : uniform_space X} 
   (hX : uniformity X = 𝓟 id_rel) {α : filter X} (hα : cauchy α) : 
   α ≤ 𝓟 {cauchy_discrete_is_constant hX hα} := Exists.some_spec (cauchy_discrete_le_principal hX hα)
 
-lemma cauchy_discrete_unique {X : Type*} [nonempty X] {uX : uniform_space X}
-(hX : uniformity X = 𝓟 id_rel) {α : filter X} (hα : cauchy α) {x : X} (hx : α ≤ 𝓟 {x}) :
-  x = cauchy_discrete_is_constant hX hα :=
+lemma ne_bot_unique_principal {X : Type*} [uniform_space X] (hX : uniformity X = 𝓟 id_rel)
+  {α : filter X} (hα : α.ne_bot) {x y : X} (hx : α ≤ 𝓟 {x}) (hy : α ≤ 𝓟 {y}) : x = y :=
 begin
-  -- letI hTop : topological_space X := uX.to_topological_space,
-  -- letI hdisc := discrete_topology_bot X,
-  have discX := @discrete_topology_of_discrete_uniformity X uX hX,
-  have t2X := @discrete_topology.to_t2_space X uX.1 discX,
-  -- apply eq_of_nhds_ne_bot,
-  -- have uno := cauchy_discrete_converges hX hα,
-  have hx := (@discrete_topology_iff_nhds X _).mp discX x,
-  have hconst := (@discrete_topology_iff_nhds X _).mp discX (cauchy_discrete_is_constant hX hα),
-  -- rw uno,
-  have tre := @eq_of_nhds_ne_bot X _ t2X x (cauchy_discrete_is_constant hX hα),
-  -- have due := tendsto_nhds_unique' hα.1,
-  -- have := separable_space
+  have h_disc : discrete_topology X,
+  apply discrete_topology_of_discrete_uniformity hX,
+  have t2X := @discrete_topology.to_t2_space X _ h_disc,
+  apply @eq_of_nhds_ne_bot X _ t2X x y,
+  simp only [discrete_topology_iff_nhds.mp h_disc],
+  apply @ne_bot_of_le _ _ _ hα,
+  simp only [le_inf_iff, le_pure_iff],
+  exact ⟨le_principal_iff.mp hx, le_principal_iff.mp hy⟩,
 end
-
 
 /- The definition below avoids the assumption that `K` be endowed with the trivial uniformity,
   rather putting this in the proof.
@@ -791,6 +785,16 @@ begin
   have hK : uniformity K = filter.principal id_rel, refl,
   use λ d, (cauchy_discrete_is_constant hK (hℱ.map (uniform_continuous_coeff_map hK d))),
 end
+
+@[simp]
+lemma cauchy.coeff_map_le {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) (n : ℤ) : 
+  ℱ.map (ratfunc.coeff_map K n) ≤ 𝓟 {hℱ.coeff_map n} := 
+begin
+  letI : uniform_space K := ⊥,
+  have hK : uniformity K = filter.principal id_rel, refl,
+  exact cauchy_discrete_le _ _,
+end
+
 
 lemma coeff_eventually_zero_cauchy {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) : ∃ N, 
   ∀ᶠ y in ℱ, ∀ n ≤ N, ratfunc.coeff y n = (0 : K) :=
@@ -844,7 +848,8 @@ begin
   obtain ⟨N, hN⟩ := hℱ.coeff_map_zero_at_bot,
   use N,
   intros n hn,
-  exact (cauchy_discrete_unique hK (hℱ.map (uniform_continuous_coeff_map hK n)) (hN n hn)).symm,
+  exact ne_bot_unique_principal hK (hℱ.map (uniform_continuous_coeff_map hK n)).1
+    (hℱ.coeff_map_le n) (hN n hn),
 end
 
 lemma cauchy.coeff_map_support_bdd' {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) :
@@ -892,7 +897,7 @@ end
 lemma bdd_below.well_founded_on_lt {X : Type} [preorder X] {s : set X} : 
   bdd_below s → s.well_founded_on (<) := sorry
 
-def equiv :
+def laurent_series.equiv :
   (completion_of_ratfunc K) ≃ (laurent_series K) :=
 { to_fun :=
   begin
