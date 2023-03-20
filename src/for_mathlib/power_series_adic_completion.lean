@@ -660,21 +660,28 @@ lemma eq_coeff_of_mem_entourage' {d : ℤ} {x y : ratfunc K} (H : (x, y) ∈ (en
  ∀ᶠ n in at_bot, x.coeff n = y.coeff n :=
 eventually_at_bot.mpr ⟨d, λ _ h, eq_coeff_of_mem_entourage H h⟩
 
--- `[FAE] The lemmas below are true, but possibly useless
--- lemma bounded_supp_of_mem_entourage (x : ratfunc K) (d : ℤ) : ∃ N : ℤ, ∀ y : ratfunc K, 
---   (x, y) ∈ (entourage K d) → ∀ n < N, y.coeff n = 0 :=
+-- example (a b c : ℤ) (h : a ≤ c -1) (H : b ≤ c) : a ≤ b - 1 :=
 -- begin
---   by_cases hx : x = 0,
---   { use d,
---     intros _ hy _ hn,
---     rw [← eq_coeff_of_mem_entourage hy (le_of_lt hn), hx, ratfunc.coeff_zero] },
---   { replace hx := ratfunc.coe_ne_zero_iff.mp hx,
---     use min ((x : laurent_series K).2.is_wf.min (hahn_series.support_nonempty_iff.mpr hx)) d,
---     intros _ hy _ hn,
---     have hn' : x.coeff n = 0 := function.nmem_support.mp ( λ h, set.is_wf.not_lt_min
---       (x : laurent_series K).2.is_wf (support_nonempty_iff.mpr hx) h (lt_min_iff.mp hn).1),
---     rwa ← eq_coeff_of_mem_entourage hy (le_of_lt (lt_min_iff.mp hn).2) },
+--   apply h.trans,
 -- end
+
+-- `[FAE] The lemmas below are true, but possibly useless
+lemma bounded_supp_of_mem_entourage (x : ratfunc K) (d : ℤ) : ∃ N : ℤ, ∀ y : ratfunc K, 
+  (x, y) ∈ (entourage K d) → ∀ n ≤ N, y.coeff n = 0 :=
+begin
+  by_cases hx : x = 0,
+  { use d,
+    intros _ hy _ hn,
+    rw [← eq_coeff_of_mem_entourage hy hn, hx, ratfunc.coeff_zero] },
+  { replace hx := ratfunc.coe_ne_zero_iff.mp hx,
+    use min ((x : laurent_series K).2.is_wf.min (hahn_series.support_nonempty_iff.mpr hx)) d - 1,
+    intros _ hy _ hn,
+    have hn' : x.coeff n = 0 := function.nmem_support.mp ( λ h, set.is_wf.not_lt_min
+      (x : laurent_series K).2.is_wf (support_nonempty_iff.mpr hx) h _),--(lt_min_iff.mp hn).1),
+    rwa ← eq_coeff_of_mem_entourage hy _,
+    { exact hn.trans (le_of_lt (int.sub_one_lt_of_le (min_le_right _ _))) },
+    { exact int.lt_of_le_sub_one (hn.trans (sub_le_sub (min_le_left _ _) (le_of_eq (refl _)))) }},
+end
 
 -- lemma bounded_supp_of_mem_entourage' (x : ratfunc K) (d : ℤ) : ∀ᶠ n in at_bot, ∀ y : ratfunc K, 
 --   (x, y) ∈ (entourage K d) → y.coeff n = 0 :=
@@ -697,8 +704,8 @@ end
 
 namespace set
 
-lemma prod_subset_diag_singleton_left {X : Type*} [nonempty X] {S T : set X} (hS : S.nonempty) (hT : T.nonempty) 
-  (h_diag : S ×ˢ T ⊆ id_rel) : ∃ x, S = {x} :=
+lemma prod_subset_diag_singleton_left {X : Type*} [nonempty X] {S T : set X} (hS : S.nonempty)
+  (hT : T.nonempty) (h_diag : S ×ˢ T ⊆ id_rel) : ∃ x, S = {x} :=
 begin
   rcases ⟨hS, hT⟩ with ⟨⟨s, hs⟩, ⟨t, ht⟩⟩,
   refine ⟨s, (eq_singleton_iff_nonempty_unique_mem.mpr ⟨⟨s, hs⟩, _⟩)⟩,
@@ -741,7 +748,7 @@ begin
   specialize α_le id_rel,
   simp only [filter.le_def, hX, mem_principal, id_rel_subset, mem_id_rel, eq_self_iff_true,
     implies_true_iff, forall_true_left, filter.mem_prod_iff] at α_le,
-  obtain ⟨_, ⟨hS, ⟨_, ⟨hT, H⟩⟩⟩⟩ := α_le,  
+  obtain ⟨_, ⟨hS, ⟨_, ⟨hT, H⟩⟩⟩⟩ := α_le,
   obtain ⟨x, hx⟩ := prod_subset_diag_singleton_left (@filter.nonempty_of_mem X α α_ne_bot _ hS)
     (@filter.nonempty_of_mem _ _ α_ne_bot _ hT) H,
   use x,
@@ -752,38 +759,64 @@ def cauchy_discrete_is_constant {X : Type*} [nonempty X] {uX : uniform_space X}
   (hX : uniformity X = 𝓟 id_rel) {α : filter X} (hα : cauchy α) : X :=
 (cauchy_discrete_le_principal hX hα).some
 
-
 lemma cauchy_discrete_converges  {X : Type*} [nonempty X] {uX : uniform_space X} 
   (hX : uniformity X = 𝓟 id_rel) {α : filter X} (hα : cauchy α) : 
   α ≤ 𝓟 {cauchy_discrete_is_constant hX hα} := Exists.some_spec (cauchy_discrete_le_principal hX hα)
+
+lemma cauchy_discrete_unique {X : Type*} [nonempty X] {uX : uniform_space X}
+(hX : uniformity X = 𝓟 id_rel) {α : filter X} (hα : cauchy α) {x : X} (hx : α ≤ 𝓟 {x}) :
+  x = cauchy_discrete_is_constant hX hα :=
+begin
+  -- letI hTop : topological_space X := uX.to_topological_space,
+  -- letI hdisc := discrete_topology_bot X,
+  have discX := @discrete_topology_of_discrete_uniformity X uX hX,
+  have t2X := @discrete_topology.to_t2_space X uX.1 discX,
+  -- apply eq_of_nhds_ne_bot,
+  -- have uno := cauchy_discrete_converges hX hα,
+  have hx := (@discrete_topology_iff_nhds X _).mp discX x,
+  have hconst := (@discrete_topology_iff_nhds X _).mp discX (cauchy_discrete_is_constant hX hα),
+  -- rw uno,
+  have tre := @eq_of_nhds_ne_bot X _ t2X x (cauchy_discrete_is_constant hX hα),
+  -- have due := tendsto_nhds_unique' hα.1,
+  -- have := separable_space
+end
+
 
 /- The definition below avoids the assumption that `K` be endowed with the trivial uniformity,
   rather putting this in the proof.
 -/
 def cauchy.coeff_map {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) : ℤ → K :=
 begin
-  letI : uniform_space K := uniform_space.of_core _, swap,
-  fconstructor,
-  { use filter.principal id_rel },
-  { simp only [le_principal_iff, mem_principal] },
-  { simp only [tendsto_principal_principal, prod.forall, mem_id_rel, prod.swap_prod_mk],
-    exact λ _ _, eq.symm },
-  { rw filter.lift'_principal,
-    simp only [id_comp_rel, le_principal_iff, mem_principal],
-    intros _ _ h _ H,
-    exact comp_rel_mono h h H },
+  letI : uniform_space K :=  ⊥,
   have hK : uniformity K = filter.principal id_rel, refl,
   use λ d, (cauchy_discrete_is_constant hK (hℱ.map (uniform_continuous_coeff_map hK d))),
 end
 
-lemma coeff_eventually_eq_cauchy {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) : ∃ N, 
-  ∀ᶠ y in ℱ, ∀ n ≤ N, ratfunc.coeff y n = (0 : K) := sorry
+lemma coeff_eventually_zero_cauchy {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) : ∃ N, 
+  ∀ᶠ y in ℱ, ∀ n ≤ N, ratfunc.coeff y n = (0 : K) :=
+begin
+  obtain ⟨S, ⟨hS, ⟨T, ⟨hT, H⟩⟩⟩⟩ := filter.mem_prod_iff.mp (filter.le_def.mp hℱ.2 (entourage K 0)
+    (entourage_uniformity_mem _ _)),
+  obtain ⟨x, hx⟩ := filter.forall_mem_nonempty_iff_ne_bot.mpr hℱ.1 (S ∩ T)
+    (by {exact inter_mem_iff.mpr ⟨hS, hT⟩}),
+  obtain ⟨N, hN⟩ := bounded_supp_of_mem_entourage x 0,
+  use N,
+  rw filter.eventually,
+  apply mem_of_superset (inter_mem hS hT),
+  suffices : (S ∩ T) ×ˢ (S ∩ T) ⊆ entourage K 0,
+  { intros y hy,
+    have h_prod : (x, y) ∈ entourage K 0,
+    { refine this (mem_prod.mpr _),
+      exact ⟨hx, hy⟩ },
+    exact hN y h_prod },
+  exact (prod_mono (inter_subset_left S T) (inter_subset_right S T)).trans H,
+end
 
-lemma cauchy.coeff_map_converges_zero_at_bot {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) : ∃ N, 
+lemma cauchy.coeff_map_zero_at_bot {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) : ∃ N, 
   ∀ n ≤ N, ℱ.map (ratfunc.coeff_map K n) ≤ filter.principal {0} :=
 begin
   simp only [principal_singleton, pure_zero, nonpos_iff, mem_map],
-  obtain ⟨N, hN⟩ := coeff_eventually_eq_cauchy hℱ,
+  obtain ⟨N, hN⟩ := coeff_eventually_zero_cauchy hℱ,
   use  N,
   intros n hn,
   apply filter.mem_of_superset hN,
@@ -791,33 +824,64 @@ begin
   exact ha n hn,
 end
 
-lemma cauchy.coeff_map_support_bdd {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) :
-  bdd_below (hℱ.coeff_map.support) := sorry
+lemma cauchy.coeff_map_zero_at_bot' {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) : ∀ᶠ n in at_bot,
+  ℱ.map (ratfunc.coeff_map K n) ≤ filter.principal {0} :=
+eventually_at_bot.mpr (cauchy.coeff_map_zero_at_bot hℱ)
+  
+-- lemma cauchy.coeff_map_zero_at_bot'' {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) : ∀ᶠ n in at_bot,
+--   hℱ.coeff_map n = 0 :=
+-- begin
+--   have := hℱ.coeff_map_zero_at_bot,
+--   simp only [principal_singleton, pure_zero, nonpos_iff, mem_map] at this,
+--   -- simp,
+-- end
 
-lemma eventually_constant {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel)
-  {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) (n : ℤ) :
-  ∀ᶠ x in ℱ, ratfunc.coeff x n = cauchy_discrete_is_constant h 
-    (hℱ.map (uniform_continuous_coeff_map h n)) := by simpa only [comap_principal, le_principal_iff]
-    using tendsto.le_comap (cauchy_discrete_converges _ (hℱ.map (uniform_continuous_coeff_map _ _)))
-
-
-lemma coeff_entually_zero {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel)
-  {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) :
-  ∀ᶠ x in ℱ, ∀ᶠ d in (at_bot : filter ℤ), ratfunc.coeff x d = (0 : K) :=
+lemma cauchy.coeff_map_support_bdd {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) : ∃ N, ∀ n,
+  n ≤ N → (hℱ.coeff_map n) = 0 :=
 begin
-  simp only [eventually_at_bot],
-  apply eventually_of_forall,
-  intro x,
-  by_cases hx : x = 0,
-  { simp only [hx, ratfunc.coeff_zero, eq_self_iff_true, implies_true_iff, exists_const] },
-  { replace hx := ratfunc.coe_ne_zero_iff.mp hx, 
-    use ((x : laurent_series K).2.is_wf.min (hahn_series.support_nonempty_iff.mpr
-    hx)) - 1,
-    intros,
-    apply function.nmem_support.mp ( λ h, set.is_wf.not_lt_min
-      (x : laurent_series K).2.is_wf (support_nonempty_iff.mpr hx) h _),
-    linarith },
+  letI : uniform_space K := ⊥,
+  have hK : uniformity K = filter.principal id_rel, refl,
+  obtain ⟨N, hN⟩ := hℱ.coeff_map_zero_at_bot,
+  use N,
+  intros n hn,
+  exact (cauchy_discrete_unique hK (hℱ.map (uniform_continuous_coeff_map hK n)) (hN n hn)).symm,
 end
+
+lemma cauchy.coeff_map_support_bdd' {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) :
+  bdd_below (hℱ.coeff_map.support) :=
+begin
+  obtain ⟨N, hN⟩ := hℱ.coeff_map_support_bdd,
+  use N,
+  intros n hn,
+  rw function.mem_support at hn,
+  contrapose! hn,
+  exact hN _ (le_of_lt hn),
+end
+
+-- lemma eventually_constant {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel)
+--   {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) (n : ℤ) :
+--   ∀ᶠ x in ℱ, ratfunc.coeff x n = cauchy_discrete_is_constant h 
+--     (hℱ.map (uniform_continuous_coeff_map h n)) := by simpa only [comap_principal, le_principal_iff]
+--     using tendsto.le_comap (cauchy_discrete_converges _ (hℱ.map (uniform_continuous_coeff_map _ _)))
+
+
+-- lemma coeff_entually_zero {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel)
+--   {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) :
+--   ∀ᶠ x in ℱ, ∀ᶠ d in (at_bot : filter ℤ), ratfunc.coeff x d = (0 : K) :=
+-- begin
+--   simp only [eventually_at_bot],
+--   apply eventually_of_forall,
+--   intro x,
+--   by_cases hx : x = 0,
+--   { simp only [hx, ratfunc.coeff_zero, eq_self_iff_true, implies_true_iff, exists_const] },
+--   { replace hx := ratfunc.coe_ne_zero_iff.mp hx, 
+--     use ((x : laurent_series K).2.is_wf.min (hahn_series.support_nonempty_iff.mpr
+--     hx)) - 1,
+--     intros,
+--     apply function.nmem_support.mp ( λ h, set.is_wf.not_lt_min
+--       (x : laurent_series K).2.is_wf (support_nonempty_iff.mpr hx) h _),
+--     linarith },
+-- end
 
 -- lemma support_bdd_below {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel)
 --   {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) : support coeff_map := sorry
@@ -828,9 +892,7 @@ end
 lemma bdd_below.well_founded_on_lt {X : Type} [preorder X] {s : set X} : 
   bdd_below s → s.well_founded_on (<) := sorry
 
-def isom  :
-  -- {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) : 
-  -- adic_completion.field (ratfunc K) (ideal_X K) ≃ ℤ := sorry
+def equiv :
   (completion_of_ratfunc K) ≃ (laurent_series K) :=
 { to_fun :=
   begin
@@ -839,14 +901,7 @@ def isom  :
   apply hahn_series.mk,
   swap,
   use hℱ.coeff_map,
-  -- { intro d,
-  --   use (cauchy_discrete_is_constant h --(ℱ.map (ratfunc.coeff_map K d))
-      -- (hℱ.map (uniform_continuous_coeff_map h d))) },
-  { apply is_wf.is_pwo ,
-    apply bdd_below.well_founded_on_lt,
-    sorry,
-  
-   }
+  { exact is_wf.is_pwo ((hℱ.coeff_map_support_bdd').well_founded_on_lt) }
   end,
   inv_fun := sorry,
   left_inv := sorry,
