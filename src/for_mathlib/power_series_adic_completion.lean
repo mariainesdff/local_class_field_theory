@@ -242,37 +242,44 @@ lemma nat_order_eq_of_power_series {R : Type*} [semiring R] {φ : power_series R
     (hahn_series.of_power_series ℕ R φ).order :=
 by simp only [order_eq_of_power_series hφ, part_enat.get_coe']
 
-lemma order_eq_of_power_series_Z {R : Type*} [semiring R] {φ : power_series R} (hφ : φ ≠ 0) :
+
+-- lemma emb_domain_comp {R Γ : Type*} [strict_ordered_semiring Γ] [comm_semiring R] (ι : ℕ ↪o Γ)
+--   (φ : power_series R) : emb_domain ι (of_power_series ℕ R φ) = of_power_series Γ R φ := sorry
+
+-- `[FAE]` The proof is **disgusting**, need to isolate (at least) `emb_domain_comp`
+lemma order_eq_of_power_series_Z {R : Type*} [comm_semiring R] {φ : power_series R} (hφ : φ ≠ 0) :
   ((φ.order).get (power_series.order_finite_iff_ne_zero.mpr hφ) : ℤ) =
     (hahn_series.of_power_series ℤ R φ).order :=
 begin
   let ι : ℕ ↪o ℤ := ⟨⟨(nat.cast_add_monoid_hom ℤ).1, nat.strict_mono_cast.injective⟩, λ _ _, nat.cast_le⟩,
   have := @hahn_series.eq_order_of_emb_domain ℕ ℤ R _ _ _ _ _ (of_power_series ℕ R φ) ι nat.cast_zero,
-  have pufpuf : emb_domain ι (of_power_series ℕ R φ) = of_power_series ℤ R φ,
+  have emb_domain_comp' : emb_domain ι (of_power_series ℕ R φ) = of_power_series ℤ R φ,
   { ext n,
     induction n with n m,
-    {have uno := @emb_domain_coeff ℕ R _ _ ℤ _ ι (of_power_series ℕ R φ) n,
-    erw uno,
-    have tre := @of_power_series_apply_coeff ℕ R _ _ φ n,
-    simp only [nat.cast_id] at tre,
-    rw tre,
-    have quattro := @of_power_series_apply_coeff ℤ R _ _ φ n,
-    exact quattro.symm},
-    have : (emb_domain ι ((of_power_series ℕ R) φ)).coeff -[1+ m] = 0,
-    { --apply @emb_domain_notin_image_support ℕ R _ _ ℤ _ ι (of_power_series ℕ R φ) -[1+m],
-    apply emb_domain_notin_range,
-    simp only [add_monoid_hom.to_fun_eq_coe, nat.coe_cast_add_monoid_hom, rel_embedding.coe_fn_mk, function.embedding.coe_fn_mk,
-  mem_range, not_exists],
-    rw int.neg_succ_of_nat_coe,
-    intro x,
-    rw int.coe_nat_add,
-    rw neg_add,
-    sorry,
-  },
-  sorry,
-
-  },
-  rw pufpuf at this,
+    { have uno := @emb_domain_coeff ℕ R _ _ ℤ _ ι (of_power_series ℕ R φ) n,
+      erw uno,
+      have tre := @of_power_series_apply_coeff ℕ R _ _ φ n,
+      simp only [nat.cast_id] at tre,
+      rw tre,
+      have quattro := @of_power_series_apply_coeff ℤ R _ _ φ n,
+      exact quattro.symm},
+    { have : (emb_domain ι ((of_power_series ℕ R) φ)).coeff -[1+ m] = 0,
+      { apply emb_domain_notin_range,
+        simp only [add_monoid_hom.to_fun_eq_coe, nat.coe_cast_add_monoid_hom, rel_embedding.coe_fn_mk, function.embedding.coe_fn_mk,
+          mem_range, not_exists],
+        intros x H,
+        have hx : (0 : ℤ) ≤ x := x.cast_nonneg,
+        rw H at hx,
+        exact (le_not_le_of_lt (int.neg_succ_of_nat_lt_zero m)).2 hx},
+      rw this,
+      have h_dif := (@of_power_series_alg_apply_coeff ℤ R _ R _ _ _ φ -[1+m]).symm,
+      rwa dif_neg at h_dif,
+      simp only [not_exists, not_and],
+      rintros x - H,
+      have hx : (0 : ℤ) ≤ x := x.cast_nonneg,
+      rw H at hx,
+      exact (le_not_le_of_lt (int.neg_succ_of_nat_lt_zero m)).2 hx}, },
+  rw emb_domain_comp' at this,--use `emb_domain_comp` instead, once it is proved
   rw nat_order_eq_of_power_series,
   symmetry,
   exact this,
@@ -318,30 +325,33 @@ local attribute [instance] classical.prop_decidable
 
 open multiplicity
 
-lemma fae_pol_ps_order_mul {f : polynomial K} : --(hf : f ≠ 0) :
+lemma fae_pol_ps_order_mul {f : polynomial K} : 
   (↑f : power_series K).order = multiplicity polynomial.X f :=
 begin
--- sorry,
--- {
-  by_cases hf_pol : f = 0, sorry,
-  rw power_series.order_eq_multiplicity_X,
-  have hf_ps : finite (power_series.X : power_series K) ↑f, sorry,
-  set d_ps := (multiplicity power_series.X ↑f).get hf_ps with hd_ps,
-  replace hf_pol: finite polynomial.X f, sorry,
-  set d_pol := (multiplicity polynomial.X f).get hf_pol with hd_pol,
-  obtain ⟨P, hfP, h_nXP⟩ := exists_eq_pow_mul_and_not_dvd hf_pol,
-  rw ← hd_pol at hfP,
-  obtain ⟨φ, hfφ, h_nXφ⟩ := exists_eq_pow_mul_and_not_dvd hf_ps,
-  rw ← hd_ps at hfφ,
-  apply le_antisymm,
-  { have Hpol := @pow_dvd_iff_le_multiplicity (polynomial K) _ _ X f d_ps,
-    rw [X_pow_dvd_pol_iff_dvd_power_series] at Hpol,
-    replace Hpol := Hpol.mp (dvd_of_mul_right_eq _ hfφ.symm),
-    rwa [hd_ps, part_enat.coe_get] at Hpol,
-  },
-  have Hps := @pow_dvd_iff_le_multiplicity (power_series K) _ _ power_series.X f,
-  sorry,
---   }
+  by_cases hf_pol : f = 0,
+  { simp only [hf_pol, polynomial.coe_zero, power_series.order_zero, multiplicity.zero] },
+  { rw power_series.order_eq_multiplicity_X,
+    have hf_ps : finite (power_series.X : power_series K) ↑f,
+    { simpa only [X_pow_dvd_pol_iff_dvd_power_series, multiplicity.finite_def, map_zero, sub_zero]
+        using multiplicity_X_sub_C_finite 0 hf_pol },
+    set d_ps := (multiplicity power_series.X ↑f).get hf_ps with hd_ps,
+    replace hf_pol: finite polynomial.X f,
+    { simpa only [multiplicity.finite_def, map_zero, sub_zero]
+        using multiplicity_X_sub_C_finite 0 hf_pol },
+    set d_pol := (multiplicity polynomial.X f).get hf_pol with hd_pol,
+    obtain ⟨P, hfP, -⟩ := exists_eq_pow_mul_and_not_dvd hf_pol,
+    rw ← hd_pol at hfP,
+    obtain ⟨φ, hfφ, -⟩ := exists_eq_pow_mul_and_not_dvd hf_ps,
+    rw ← hd_ps at hfφ,
+    apply le_antisymm,
+    { have Hpol := @pow_dvd_iff_le_multiplicity (polynomial K) _ _ X f d_ps,
+      rw [X_pow_dvd_pol_iff_dvd_power_series] at Hpol,
+      replace Hpol := Hpol.mp (dvd_of_mul_right_eq _ hfφ.symm),
+      rwa [hd_ps, part_enat.coe_get] at Hpol },
+    { have Hps := @pow_dvd_iff_le_multiplicity (power_series K) _ _ power_series.X f d_pol,
+      rw [← X_pow_dvd_pol_iff_dvd_power_series] at Hps,
+      replace Hps := Hps.mp (dvd_of_mul_right_eq _ hfP.symm),
+      rwa [hd_pol, part_enat.coe_get] at Hps }}
 end
 
 variable {K}
@@ -487,16 +497,19 @@ begin
   have := order_as_power_series_eq_int_valuation K hf,
   rw hahn_series.nat_order_eq_of_power_series at this,
   rw ← this,
-  simpa only [of_add_neg, of_power_series_apply, inv_inj, with_zero.coe_inj, embedding_like.apply_eq_iff_eq, nat.cast_inj],
+  simpa only [of_add_neg, of_power_series_apply, inv_inj, with_zero.coe_inj,
+    embedding_like.apply_eq_iff_eq, nat.cast_inj],
 end
 
 
 lemma order_as_hahn_series_eq_int_valuation {f : polynomial K} (hf : f ≠ 0) :
  ↑(multiplicative.of_add (- (f : laurent_series K).order)) = ((ideal_X K).int_valuation f) :=
 begin
-  simp only [← order_as_nat_hahn_series_eq_int_valuation K hf, coe_coe, of_add_neg, inv_inj, with_zero.coe_inj, embedding_like.apply_eq_iff_eq],
-  convert (hahn_series.order_eq_of_power_series_Z (polynomial.coe_ne_zero hf)).symm,
-  exact (hahn_series.nat_order_eq_of_power_series (polynomial.coe_ne_zero hf)).symm,
+  simp only [← order_as_nat_hahn_series_eq_int_valuation K hf, coe_coe, of_add_neg, inv_inj,
+    with_zero.coe_inj, embedding_like.apply_eq_iff_eq],
+  replace hf := polynomial.coe_ne_zero hf,
+  erw [← hahn_series.order_eq_of_power_series_Z hf, hahn_series.nat_order_eq_of_power_series hf],
+  refl,
 end
 
 variable {K}
@@ -598,6 +611,8 @@ by {simp only [coeff, coe_zero], from hahn_series.zero_coeff}
 
 variable (K)
 def coeff_map (d : ℤ) : ratfunc K → K := λ x, coeff x d
+
+lemma coeff_map_apply (d : ℤ) (f : ratfunc K) : coeff_map K d f = coeff f d := refl _
 
 end ratfunc
 
@@ -742,6 +757,42 @@ lemma cauchy_discrete_converges  {X : Type*} [nonempty X] {uX : uniform_space X}
   (hX : uniformity X = 𝓟 id_rel) {α : filter X} (hα : cauchy α) : 
   α ≤ 𝓟 {cauchy_discrete_is_constant hX hα} := Exists.some_spec (cauchy_discrete_le_principal hX hα)
 
+/- The definition below avoids the assumption that `K` be endowed with the trivial uniformity,
+  rather putting this in the proof.
+-/
+def cauchy.coeff_map {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) : ℤ → K :=
+begin
+  letI : uniform_space K := uniform_space.of_core _, swap,
+  fconstructor,
+  { use filter.principal id_rel },
+  { simp only [le_principal_iff, mem_principal] },
+  { simp only [tendsto_principal_principal, prod.forall, mem_id_rel, prod.swap_prod_mk],
+    exact λ _ _, eq.symm },
+  { rw filter.lift'_principal,
+    simp only [id_comp_rel, le_principal_iff, mem_principal],
+    intros _ _ h _ H,
+    exact comp_rel_mono h h H },
+  have hK : uniformity K = filter.principal id_rel, refl,
+  use λ d, (cauchy_discrete_is_constant hK (hℱ.map (uniform_continuous_coeff_map hK d))),
+end
+
+lemma coeff_eventually_eq_cauchy {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) : ∃ N, 
+  ∀ᶠ y in ℱ, ∀ n ≤ N, ratfunc.coeff y n = (0 : K) := sorry
+
+lemma cauchy.coeff_map_converges_zero_at_bot {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) : ∃ N, 
+  ∀ n ≤ N, ℱ.map (ratfunc.coeff_map K n) ≤ filter.principal {0} :=
+begin
+  simp only [principal_singleton, pure_zero, nonpos_iff, mem_map],
+  obtain ⟨N, hN⟩ := coeff_eventually_eq_cauchy hℱ,
+  use  N,
+  intros n hn,
+  apply filter.mem_of_superset hN,
+  intros a ha,
+  exact ha n hn,
+end
+
+lemma cauchy.coeff_map_support_bdd {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) :
+  bdd_below (hℱ.coeff_map.support) := sorry
 
 lemma eventually_constant {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel)
   {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) (n : ℤ) :
@@ -768,20 +819,17 @@ begin
     linarith },
 end
 
-lemma aux_support {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel)
-  {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) : ∀ᶠ n in at_bot, cauchy_discrete_is_constant h 
-    (hℱ.map (uniform_continuous_coeff_map h n)) = ( 0 : K) := sorry
-  
-example : (univ : set ℕ).is_pwo :=
-begin
-  exact (nat.lt_wf.is_wf _).is_pwo,
-end
+-- lemma support_bdd_below {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel)
+--   {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) : support coeff_map := sorry
+
+-- #check λ d : ℤ, filter.map (ratfunc.coeff d)
 
 -- `[FAE]` This is `#18604`
-lemma bdd_below.well_founded_on_lt : bdd_below s → s.well_founded_on (<) := sorry
+lemma bdd_below.well_founded_on_lt {X : Type} [preorder X] {s : set X} : 
+  bdd_below s → s.well_founded_on (<) := sorry
 
-def isom 
-  {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) : 
+def isom  :
+  -- {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) : 
   -- adic_completion.field (ratfunc K) (ideal_X K) ≃ ℤ := sorry
   (completion_of_ratfunc K) ≃ (laurent_series K) :=
 { to_fun :=
@@ -790,33 +838,15 @@ def isom
   obtain ⟨ℱ, hℱ⟩ := (quot.exists_rep α).some,
   apply hahn_series.mk,
   swap,
-  { intro d,
-    use (cauchy_discrete_is_constant h --(ℱ.map (ratfunc.coeff_map K d))
-      (hℱ.map (uniform_continuous_coeff_map h d))) },
-      sorry,
-  -- have mah : function.support (λ (d : ℤ), cauchy_discrete_is_constant h _) = Ico -3,
-  -- apply set.is_wf.is_pwo,
-  -- rw is_pwo_iff_exists_monotone_subseq,
-  -- intros f hf,
-  -- have := aux_support h hℱ,
-  -- rw well_founded_on
-  -- have := nat.well_founded_lt,
-  -- rw is_wf_univ_iff,/
-  -- rw well_founded_on
-  -- rw well_founded.well_founded_iff_has_min',
-  -- apply is_pwo
-  -- simp [this],
-  -- rw set.is_wf,
-  -- have := coeff_entually_zero h hℱ,
-  -- simp [coeff_entually_zero],
-  -- sorry,
-  -- have : set.is_pwo (⊤ : (set ℤ)),
-  -- apply set.is_wf.is_pwo,
-  -- apply set.is_wf_univ_iff.mpr,
-  -- refine well_founded.well_founded_iff_has_min.mpr _,
-
-
-  -- exact set.is_pwo.mono this (set.subset_univ _),
+  use hℱ.coeff_map,
+  -- { intro d,
+  --   use (cauchy_discrete_is_constant h --(ℱ.map (ratfunc.coeff_map K d))
+      -- (hℱ.map (uniform_continuous_coeff_map h d))) },
+  { apply is_wf.is_pwo ,
+    apply bdd_below.well_founded_on_lt,
+    sorry,
+  
+   }
   end,
   inv_fun := sorry,
   left_inv := sorry,
