@@ -897,20 +897,23 @@ end
 lemma bdd_below.well_founded_on_lt {X : Type} [preorder X] {s : set X} : 
   bdd_below s → s.well_founded_on (<) := sorry
 
-def laurent_series.equiv :
-  (completion_of_ratfunc K) ≃ (laurent_series K) :=
+def laurent_series.equiv : (completion_of_ratfunc K) ≃ (laurent_series K) :=
 { to_fun :=
   begin
-  intro α,
-  obtain ⟨ℱ, hℱ⟩ := (quot.exists_rep α).some,
-  apply hahn_series.mk,
-  swap,
-  use hℱ.coeff_map,
-  { exact is_wf.is_pwo ((hℱ.coeff_map_support_bdd').well_founded_on_lt) }
+    intro α,
+    obtain ⟨ℱ, hℱ⟩ := (quot.exists_rep α).some,
+    apply hahn_series.mk,
+    exact is_wf.is_pwo ((hℱ.coeff_map_support_bdd').well_founded_on_lt),
   end,
-  inv_fun := sorry,
+  inv_fun :=
+  begin
+    intro f,
+    sorry,
+  end,
   left_inv := sorry,
   right_inv := sorry }
+
+-- def laurent_series.ring_equiv : ring_equiv (completion_of_ratfunc K) (laurent_series K) :=
 
 /- **OLD THINGS** 
 
