@@ -932,7 +932,12 @@ algebra.comp K (ratfunc K) (completion_of_ratfunc K)
 
 noncomputable! def laurent_series.alg_equiv : 
   alg_equiv K (completion_of_ratfunc K) (laurent_series K) :=
-sorry
+{ to_fun    := laurent_series.equiv.to_fun,
+  inv_fun   := laurent_series.equiv.inv_fun,
+  map_mul'  := sorry,
+  map_add'  := sorry,
+  commutes' := sorry,
+  ..(laurent_series.equiv) }
 
 /- **OLD THINGS** 
 
