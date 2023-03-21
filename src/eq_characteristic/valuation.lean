@@ -10,7 +10,8 @@ import number_theory.padics.padic_integers
 import ring_theory.dedekind_domain.adic_valuation
 import ring_theory.polynomial.basic -/
 import eq_characteristic.basic
-import for_mathlib.spectral_norm
+import from_mathlib.normed_valued
+import from_mathlib.spectral_norm_unique
 
 noncomputable theory
 
@@ -32,9 +33,17 @@ variables {K : Type*} [field K] [eq_char_local_field p K]
 
 namespace eq_char_local_field
 
+instance : valued 𝔽_[p]⟮⟮X⟯⟯ ℤₘ₀ := @with_zero.valued p _
+
+noncomputable! instance : is_rank_one (@with_zero.valued p _).v :=
+{ hom         := sorry,
+  strict_mono := sorry,
+  nontrivial  := sorry }
+
+instance : normed_field 𝔽_[p]⟮⟮X⟯⟯ := rank_one_valuation.valued_field.to_normed_field
 
 -- I will add all the spectral norm files later, hopefully that will solve this error
-def norm_on_K : K → ℝ := spectral_norm (algebra.is_algebraic_of_finite 𝔽_[p]⟮⟮X⟯⟯ K)
+def norm_on_K : K → ℝ := spectral_norm 𝔽_[p]⟮⟮X⟯⟯ K
 
 #exit
 

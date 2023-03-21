@@ -88,7 +88,6 @@ variable (p)
 noncomputable!
 def isom_laurent : 𝔽_[p]⟮⟮X⟯⟯  ≃+* (laurent_series 𝔽_[p]) := sorry -- F
 
-
 -- Upgrade to (ratfunc Fp)-algebra iso
 noncomputable! def isom_power_series : 𝔽_[p]⟦X⟧  ≃+* (power_series 𝔽_[p]) := sorry -- F
 
@@ -189,8 +188,6 @@ ring_hom.to_algebra
 namespace ring_of_integers
 
 variables {K}
-
-
 
 --set_option profiler true
 --set_option trace.class_instances true
