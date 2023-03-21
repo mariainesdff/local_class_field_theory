@@ -15,6 +15,8 @@ import ring_theory.laurent_series
 import algebra_comp
 import for_mathlib.polynomial
 
+import for_mathlib.power_series
+
 /-!
 --TODO: Fix comments
 # Mixed characteristic local fields fields
@@ -81,6 +83,7 @@ iff.rfl
 
 instance : inhabited 𝔽_[p]⟮⟮X⟯⟯ := ⟨(0 : 𝔽_[p]⟮⟮X⟯⟯)⟩
 
+variable (p)
 -- Upgrade to (ratfunc Fp)-algebra iso
 noncomputable!
 def isom_laurent : 𝔽_[p]⟮⟮X⟯⟯  ≃+* (laurent_series 𝔽_[p]) := sorry -- F
@@ -89,6 +92,8 @@ def isom_laurent : 𝔽_[p]⟮⟮X⟯⟯  ≃+* (laurent_series 𝔽_[p]) := sor
 -- Upgrade to (ratfunc Fp)-algebra iso
 noncomputable! def isom_power_series : 𝔽_[p]⟦X⟧  ≃+* (power_series 𝔽_[p]) := sorry -- F
 
+variable {p}
+
 instance : algebra 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ :=
 (by apply_instance : algebra ((ideal_X 𝔽_[p]).adic_completion_integers (ratfunc 𝔽_[p]))
   ((ideal_X 𝔽_[p]).adic_completion (ratfunc 𝔽_[p])))
@@ -96,8 +101,6 @@ instance : algebra 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ :=
 instance FpX_completion.is_fraction_ring : is_fraction_ring 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ :=
 (by apply_instance : is_fraction_ring ((ideal_X 𝔽_[p]).adic_completion_integers (ratfunc 𝔽_[p]))
   ((ideal_X 𝔽_[p]).adic_completion (ratfunc 𝔽_[p])))
-
-
 
 -- For instances and lemmas that only need `K` to be an `𝔽_[p]⟮⟮X⟯⟯`-algebra
 namespace adic_algebra
@@ -131,21 +134,17 @@ lemma algebra_map_injective {E : Type*} [field E] [algebra 𝔽_[p]⟦X⟧ E] [a
 algebra_map_injective' 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ E
 end adic_algebra
 
-
-
 /-- An equal characteristic local field is a field which is finite
 dimensional over `𝔽_p((X))`, for some prime `p`. -/
 class eq_char_local_field (p : out_param(ℕ)) [fact(nat.prime p)] (K : Type*) [field K] 
   extends algebra 𝔽_[p]⟮⟮X⟯⟯ K :=
 [to_finite_dimensional : finite_dimensional 𝔽_[p]⟮⟮X⟯⟯ K]
 
-
 attribute [priority 100, instance] eq_char_local_field.to_finite_dimensional
 
 namespace eq_char_local_field
 
 variables (p) (K L : Type*) [field K] [eq_char_local_field p K] [field L] [eq_char_local_field p L]
-
 
 -- We need to mark this one with high priority to avoid timeouts. (TODO: Check)
 --@[priority 100000] instance : is_scalar_tower 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K := sorry infer_instance
@@ -171,7 +170,6 @@ begin
   rw [← polynomial.aeval_def, ← subalgebra.coe_eq_zero, polynomial.aeval_subalgebra_coe,
     polynomial.aeval_def,  subtype.coe_mk, hP],
 end
-
 
 -- Same proof as in mixed char case
 /-- Given an algebra between two local fields over 𝔽_[p]⟮⟮X⟯⟯, create an algebra between their two
@@ -208,7 +206,7 @@ instance : is_integral_closure (𝓞 p K) 𝔽_[p]⟦X⟧ K :=
 integral_closure.is_integral_closure _ _
 
 
--- Very slow too (9.37s)
+-- Very slow too (9.37s)example
 --set_option profiler true
 -- Times out if the is_scalar_tower argument is implicit (without the priority fix) (TODO: check)
 noncomputable! instance is_integrally_closed : is_integrally_closed (𝓞 p K) :=
@@ -264,10 +262,15 @@ char_p_of_injective_algebra_map (algebra_map 𝔽_[p]⟮⟮X⟯⟯ K).injective 
 instance : char_p (𝓞 p K) p := char_p.subring' K p (𝓞 p K).to_subring --char_zero.of_module _ K
 
  -- This doesn't need to be part of the definition of local field
-noncomputable! instance : is_separable 𝔽_[p]⟮⟮X⟯⟯ K := sorry
+--noncomputable! instance : is_separable 𝔽_[p]⟮⟮X⟯⟯ K := sorry
 
-noncomputable! instance FpX_int_completion.is_noetherian_ring :
-  is_noetherian_ring ↥(FpX_int_completion p) := sorry
+
+
+instance FpX_int_completion.is_noetherian_ring :
+  is_noetherian_ring ↥(FpX_int_completion p) := 
+is_noetherian_ring_of_ring_equiv _ (isom_power_series p).symm
+
+
 
 /-- This can be proven using the argument from Serre's Local Fields II.2, which
 does not assume K/𝔽_[p]⟮⟮X⟯⟯ to be separable.  -/
@@ -304,7 +307,6 @@ begin
   exact hinj x hx, 
 end
 
-
 lemma X_mem_FpX_int_completion : 
   algebra_map (ratfunc 𝔽_[p]) _ X ∈ FpX_int_completion p :=
 begin
@@ -322,6 +324,8 @@ begin
   sorry -- This should be immediate once we have the isomorphism to power series
 end
 
+
+--Or use the isom to power series to conclude this
 lemma FpX_int_completion.not_is_field : ¬is_field ↥(FpX_int_completion p) :=
 begin
   rw ring.not_is_field_iff_exists_ideal_bot_lt_and_lt_top,
@@ -340,13 +344,16 @@ by simpa [← (is_integral_closure.is_integral_algebra 𝔽_[p]⟦X⟧ K).is_fie
   (algebra_map_injective p K)] using (FpX_int_completion.not_is_field p)
 
 -- Do we have this for power series? I cannot find it
-instance : is_dedekind_domain ↥(FpX_int_completion p) := 
+-- I wrote the power series version in for_mathlib/power_series
+instance : is_dedekind_domain ↥𝔽_[p]⟦X⟧ := 
 { is_noetherian_ring   := FpX_int_completion.is_noetherian_ring p,
   dimension_le_one     := sorry,
-  is_integrally_closed := is_bezout.is_integrally_closed}
+  is_integrally_closed := is_bezout.is_integrally_closed }
 
+/-- This can be proven using the argument from Serre's Local Fields II.2, which
+does not assume K/𝔽_[p]⟮⟮X⟯⟯ to be separable.  -/
 noncomputable! instance : is_dedekind_domain (𝓞 p K) :=
-is_integral_closure.is_dedekind_domain 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K _
+sorry
 
 -- TODO : ring of integers is local
 noncomputable!  instance : local_ring (𝓞 p K) :=
@@ -357,7 +364,6 @@ noncomputable!  instance : local_ring (𝓞 p K) :=
     { exact or.inl ha, },
     { right, sorry }
   end }
-
 
 end ring_of_integers
 
@@ -377,8 +383,8 @@ instance mixed_char_local_field (p : ℕ) [fact(nat.prime p)] :
   -- Show that these coincide:
   by convert (infer_instance : finite_dimensional 𝔽_[p]⟮⟮X⟯⟯ 𝔽_[p]⟮⟮X⟯⟯), }
 
-instance : is_integral_closure 𝔽_[p]⟦X⟧ 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ := is_integrally_closed.is_integral_closure
-
+instance : is_integral_closure 𝔽_[p]⟦X⟧ 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ := 
+is_integrally_closed.is_integral_closure
 
 
 /- instance asdf (p : ℕ) [fact(nat.prime p)] : is_scalar_tower 𝔽_[p]⟦X⟧ 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ := 
@@ -388,6 +394,7 @@ sorry
  -/
 --#exit
 
+--TODO: fix this timeout
 /-- The ring of integers of `𝔽_[p]⟮⟮X⟯⟯` as a mixed characteristic local field is just `𝔽_[p]⟦X⟧`. -/
 noncomputable! def ring_of_integers_equiv (p : ℕ) [fact(nat.prime p)] :
   ring_of_integers p 𝔽_[p]⟮⟮X⟯⟯ ≃+* 𝔽_[p]⟦X⟧ := sorry
