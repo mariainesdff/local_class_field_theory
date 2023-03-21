@@ -11,14 +11,21 @@ import ring_theory.dedekind_domain.adic_valuation
 import ring_theory.laurent_series
 import ring_theory.power_series.well_known
 
+import algebra_comp
 
-open polynomial is_dedekind_domain.height_one_spectrum topological_space ratfunc sequentially_complete filter
+
+open polynomial is_dedekind_domain.height_one_spectrum topological_space ratfunc
+  sequentially_complete filter
 open_locale big_operators discrete_valuation uniformity filter topology
 
 variables (K : Type*) [field K]
 
 noncomputable theory
-def completion_of_ratfunc  := adic_completion (ratfunc K) (ideal_X K)
+def completion_of_ratfunc := adic_completion (ratfunc K) (ideal_X K)
+
+/- noncomputable! lemma completion_of_ratfunc_def : 
+  completion_of_ratfunc K = adic_completion (ratfunc K) (polynomial.ideal_X K) := sorry -/
+
 
 instance : field (completion_of_ratfunc K) := adic_completion.field (ratfunc K) (ideal_X K)
 
@@ -913,7 +920,19 @@ def laurent_series.equiv : (completion_of_ratfunc K) ≃ (laurent_series K) :=
   left_inv := sorry,
   right_inv := sorry }
 
--- def laurent_series.ring_equiv : ring_equiv (completion_of_ratfunc K) (laurent_series K) :=
+noncomputable! def laurent_series.ring_equiv : 
+  ring_equiv (completion_of_ratfunc K) (laurent_series K) :=
+sorry
+
+instance : algebra (ratfunc K) (completion_of_ratfunc K) := 
+adic_completion.algebra (polynomial K) (ratfunc K) (ideal_X K)
+
+instance completion_of_ratfunc.K_algebra : algebra K (completion_of_ratfunc K) := 
+algebra.comp K (ratfunc K) (completion_of_ratfunc K)
+
+noncomputable! def laurent_series.alg_equiv : 
+  alg_equiv K (completion_of_ratfunc K) (laurent_series K) :=
+sorry
 
 /- **OLD THINGS** 
 
