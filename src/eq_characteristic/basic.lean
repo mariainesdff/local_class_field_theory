@@ -42,6 +42,8 @@ but are independent of that choice.
 number field, ring of integers
 -/
 
+
+--TODO: organize this file better
 noncomputable theory
 
 open_locale discrete_valuation
@@ -150,6 +152,7 @@ variables (p) (K L : Type*) [field K] [eq_char_local_field p K] [field L] [eq_ch
 
 protected lemma is_algebraic : algebra.is_algebraic 𝔽_[p]⟮⟮X⟯⟯ K := algebra.is_algebraic_of_finite _ _
 
+
 /-- The ring of integers of a mixed characteristic local field is the integral closure of ℤ_[p]
   in the local field. -/
 def ring_of_integers := integral_closure 𝔽_[p]⟦X⟧ K
@@ -230,7 +233,13 @@ protected noncomputable! def equiv (R : Type*) [comm_ring R] [algebra 𝔽_[p]�
 /- (@is_integral_closure.equiv 𝔽_[p]⟦X⟧ R K _ _ _ _ _ _ _ _ _ _ _ _ 
   (adic_algebra.int_is_scalar_tower p _ K ) _ ).symm.to_ring_equiv -/
 
-/- (@is_integral_closure.equiv 𝔽_[p]⟦X⟧ R K _ _ _ _ _ _ _ _ _ _ _ _
+/- (@is_integral_closulemma valuation_X :
+  valued.v ((algebra_map (ratfunc (galois_field p 1)) (FpX_field_completion p)) X) =
+    multiplicative.of_add (-1 : ℤ) :=
+begin
+  rw [valued_adic_completion_def],
+  erw [FpX_field_completion.algebra_map_eq_coe p, valued.extension_extends, val_X_eq_one],
+endre.equiv 𝔽_[p]⟦X⟧ R K _ _ _ _ _ _ _ _ _ _ _ _
 (adic_algebra.int_is_scalar_tower _ K ) ).symm.to_ring_equiv -/
 
 . 
@@ -242,6 +251,7 @@ char_p_of_injective_algebra_map ((algebra_map 𝔽_[p] (ratfunc 𝔽_[p])).injec
 
 instance : algebra (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯ := 
 height_one_spectrum.adic_completion.algebra _ (ratfunc 𝔽_[p]) _
+
 
 instance : has_coe (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯ := ⟨algebra_map (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯⟩
 
@@ -261,6 +271,13 @@ instance : char_p (𝓞 p K) p := char_p.subring' K p (𝓞 p K).to_subring --ch
  -- This doesn't need to be part of the definition of local field
 --noncomputable! instance : is_separable 𝔽_[p]⟮⟮X⟯⟯ K := sorry
 
+lemma valuation_X :
+  valued.v ((algebra_map (ratfunc (galois_field p 1)) (FpX_field_completion p)) X) =
+    multiplicative.of_add (-1 : ℤ) :=
+begin
+  rw [valued_adic_completion_def],
+  erw [FpX_field_completion.algebra_map_eq_coe p, valued.extension_extends, val_X_eq_one],
+end
 
 
 instance FpX_int_completion.is_noetherian_ring :
@@ -307,8 +324,7 @@ end
 lemma X_mem_FpX_int_completion : 
   algebra_map (ratfunc 𝔽_[p]) _ X ∈ FpX_int_completion p :=
 begin
-  rw [mem_FpX_int_completion, valued_adic_completion_def],
-  erw [FpX_field_completion.algebra_map_eq_coe p, valued.extension_extends, val_X_eq_one],
+  erw [mem_FpX_int_completion, valuation_X],
   rw [← with_zero.coe_one, with_zero.coe_le_coe, ← of_add_zero, of_add_le],
   linarith,
 end

@@ -10,7 +10,7 @@ import number_theory.padics.padic_integers
 import ring_theory.dedekind_domain.adic_valuation
 import ring_theory.polynomial.basic
 import mixed_characteristic.basic
-import for_mathlib.spectral_norm
+import from_mathlib.spectral_norm_unique
 
 noncomputable theory
 
@@ -32,13 +32,17 @@ variables {K : Type*} [field K] [mixed_char_local_field p K]
 
 namespace mixed_char_local_field
 
-def norm_on_K : K → ℝ := spectral_norm (algebra.is_algebraic_of_finite ℚ_[p] K)
+def norm_on_K : K → ℝ := spectral_norm ℚ_[p] K
+
+-- This causes a diamond with the p-adic norm on ℚ_p
+/- instance : normed_field K := spectral_norm_to_normed_field (algebra.is_algebraic_of_finite ℚ_[p] K)
+  padic_norm_e.nonarchimedean  -/
 
 lemma norm_on_padic : ((norm_on_K ) : ℚ_[p] → ℝ) = (norm : ℚ_[p] → ℝ) := 
-by { ext x, exact spectral_norm.extends _ _ }
+by { ext x, exact spectral_norm_extends _ }
 
 def nnnorm_on_K : K → ℝ≥0 :=
-λ x, ⟨@norm_on_K _ _ K  _ _ x, spectral_norm_nonneg (algebra.is_algebraic_of_finite ℚ_[p] K) x⟩
+λ x, ⟨@norm_on_K p _ K _ _ x, spectral_norm_nonneg x⟩
 
 @[simp]
 lemma coe_nnnorm {K : Type*} [field K] [mixed_char_local_field p K] 
@@ -61,11 +65,10 @@ begin
 end
 
 lemma norm_on_K_one {K : Type*} [field K] [mixed_char_local_field p K] : norm_on_K (1 : K) = 1 := 
-  sorry
+by rw [norm_on_K, spectral_norm_is_norm_one_class]
 
 variables (K)
 -- variables (p K)
-
 
 lemma norm_of_int_le_one (x : 𝓞 p K) : norm_on_K (x : K) ≤ 1 :=
 begin
@@ -76,7 +79,7 @@ begin
   have is_minpoly : min_Q = @minpoly ℚ_[p] K _ _ _ (x : K),
   exact (minpoly.is_integrally_closed_eq_field_fractions ℚ_[p] K (is_integral_closure.is_integral
     ℤ_[p] K x)).symm,
-  have : norm_on_K (x : K) = spectral_value h_Q_monic,
+  have : norm_on_K (x : K) = spectral_value min_Q,
   simp only [norm_on_K, spectral_norm, ← is_minpoly],
   rw [this],
   refine csupr_le _,
@@ -92,30 +95,39 @@ begin
   { exact zero_le_one },
 end
 
+lemma norm_on_K_p_lt_one (K : Type*) [field K] [mixed_char_local_field p K] :
+  norm_on_K (p : K) < 1 :=
+begin
+  have hp : (p : K) = algebra_map ℚ_[p] K (p : ℚ_[p]),
+  { simp only [subring_class.coe_nat_cast, map_nat_cast] },
+  rw [norm_on_K, hp, spectral_norm_extends (p : ℚ_[p])],
+  exact padic_norm_e.norm_p_lt_one,
+end
+
 def open_unit_ball : height_one_spectrum (𝓞 p K) :=
 { as_ideal := 
   { carrier   := { x : 𝓞 p K | norm_on_K (x : K) < 1},
     add_mem'  := λ x y hx hy,
     begin
       rw [set.mem_set_of_eq, norm_on_K] at hx hy ⊢,
-      exact lt_of_le_of_lt (spectral_norm.is_nonarchimedean _ padic_norm_e.nonarchimedean (x : K)
+      refine lt_of_le_of_lt (spectral_norm_is_nonarchimedean 
+        (algebra.is_algebraic_of_finite ℚ_[p] K) padic_norm_e.nonarchimedean (x : K)
         (y : K)) (max_lt_iff.mpr ⟨hx, hy⟩),
     end,  
     zero_mem' := 
     begin
-      rw [set.mem_set_of_eq, zero_mem_class.coe_zero, norm_on_K, spectral_norm_zero _],
+      rw [set.mem_set_of_eq, zero_mem_class.coe_zero, norm_on_K, spectral_norm_zero],
       exact zero_lt_one,
     end,
     smul_mem' := λ k x hx,
     begin
-      dsimp only [norm_on_K],
-      rw smul_eq_mul,
-      have := spectral_norm.mul (algebra.is_algebraic_of_finite ℚ_[p] K) (k : K) (x : K)
-        padic_norm_e.nonarchimedean,
-      convert_to spectral_norm (algebra.is_algebraic_of_finite ℚ_[p] K) ((k : K) * (x : K)) < 1,
-      rw this,
+      rw [norm_on_K, smul_eq_mul, set.mem_set_of_eq, mul_mem_class.coe_mul,
+        ← spectral_alg_norm_def (algebra.is_algebraic_of_finite ℚ_[p] K)
+          padic_norm_e.nonarchimedean,
+        spectral_norm_is_mul (algebra.is_algebraic_of_finite ℚ_[p] K)
+          padic_norm_e.nonarchimedean (k : K) (x : K)],
       exact mul_lt_one_of_nonneg_of_lt_one_right (norm_of_int_le_one K k)
-        (spectral_norm_nonneg _ _) hx,
+        (spectral_norm_nonneg _) hx,
     end },
   is_prime := 
   begin
@@ -126,37 +138,27 @@ def open_unit_ball : height_one_spectrum (𝓞 p K) :=
       exact le_of_eq (norm_on_K_one).symm, },
     { intros x y hxy,
       simp only [set.mem_set_of_eq, submodule.mem_mk, mul_mem_class.coe_mul] at hxy ⊢,
-      have := spectral_norm.mul (algebra.is_algebraic_of_finite ℚ_[p] K) (x : K) (y : K)
-        padic_norm_e.nonarchimedean,
-      rw [norm_on_K, this] at hxy,
+      rw [norm_on_K, ← spectral_alg_norm_def (algebra.is_algebraic_of_finite ℚ_[p] K) 
+        padic_norm_e.nonarchimedean, spectral_norm_is_mul (algebra.is_algebraic_of_finite ℚ_[p] K) 
+        padic_norm_e.nonarchimedean] at hxy, 
       contrapose! hxy,
-      rw norm_on_K at hxy,
-      exact one_le_mul_of_one_le_of_one_le hxy.1 hxy.2 }
+      exact one_le_mul_of_one_le_of_one_le hxy.1 hxy.2,  }
   end,
   ne_bot   := --TODO: golf
   begin
     apply ne_of_gt,
-    --apply lt_of_le_not_le,
     split,
-    { --exact bot_le, 
-      simp only [submodule.bot_coe, submodule.coe_set_mk, set.singleton_subset_iff,
-        set.mem_set_of_eq, zero_mem_class.coe_zero, norm_on_K, spectral_norm_zero _],
-      exact zero_lt_one, },
+    { simp only [submodule.bot_coe, submodule.coe_set_mk, set.singleton_subset_iff,
+        set.mem_set_of_eq, zero_mem_class.coe_zero, norm_on_K, spectral_norm_zero],
+      exact zero_lt_one, }, 
     { simp only [submodule.coe_set_mk, submodule.bot_coe, set.subset_singleton_iff,
         set.mem_set_of_eq, not_forall, exists_prop], 
       refine ⟨(p : 𝓞 p K), _, ne_zero.ne ↑p⟩,
-       --TODO : some coercions are needed, but it should work.
       have : ((p : 𝓞 p K) : K) = algebra_map ℚ_[p] K (p : ℚ_[p]) :=
         by {simp only [subring_class.coe_nat_cast, map_nat_cast]},
-      rw [norm_on_K, this, spectral_norm.extends (algebra.is_algebraic_of_finite ℚ_[p] K) p],
+      rw [norm_on_K, this, spectral_norm_extends (p : ℚ_[p])],
       exact padic_norm_e.norm_p_lt_one }
   end }
-
-lemma norm_on_K_p_lt_one (K : Type*) [field K] [mixed_char_local_field p K] :
-  norm_on_K (p : K) < 1 :=
-begin
-  sorry-- This is proved in `ne_bot` above, in case we really need it.
-end
 
 def normalized_valuation (K : Type*) [field K] [mixed_char_local_field p K] : valuation K ℤₘ₀ :=
   (open_unit_ball K).valuation
@@ -166,7 +168,6 @@ instance (K : Type*) [field K] [mixed_char_local_field p K] : valued K ℤₘ₀
 
 lemma normalized_valuation_p_ne_zero : (normalized_valuation K) (p : K) ≠ 0 :=
 by {simp only [ne.def, valuation.zero_iff, nat.cast_eq_zero], from nat.prime.ne_zero (fact.out _)}
--- end
 
 open multiplicative is_dedekind_domain.height_one_spectrum
 def ramification_index (K : Type*) [field K] [mixed_char_local_field p K] : ℤ := 
@@ -177,17 +178,20 @@ localized "notation (name := ramification_index)
 
 variable (p)
 
+lemma padic.mem_integers_iff (y : ℚ_[p]) : y ∈ 𝓞 p ℚ_[p] ↔ ‖ y ‖  ≤ 1 :=
+begin
+  rw [mem_ring_of_integers, is_integrally_closed.is_integral_iff],
+  refine ⟨λ h, _, λ h, ⟨⟨y, h⟩, rfl⟩⟩,
+  { obtain ⟨x, hx⟩ := h,
+    rw [← hx],
+    exact padic_int.norm_le_one _ }
+end
+
 -- Even compiling the statement is slow...
 noncomputable! lemma padic.open_unit_ball_def : 
   (open_unit_ball ℚ_[p]).as_ideal = ideal.span {(p : 𝓞 p ℚ_[p])} := 
 begin
-  have hiff : ∀ (y : ℚ_[p]), y ∈ 𝓞 p ℚ_[p] ↔ ‖ y ‖  ≤ 1, -- we should extract this to a lemma
-  { intro y, rw mem_ring_of_integers,
-    rw is_integrally_closed.is_integral_iff,
-    refine ⟨λ h, _, λ h, ⟨⟨y, h⟩, rfl⟩⟩,
-    { obtain ⟨x, hx⟩ := h,
-      rw [← hx],
-      exact padic_int.norm_le_one _, }},
+  have hiff : ∀ (y : ℚ_[p]), y ∈ 𝓞 p ℚ_[p] ↔ ‖ y ‖  ≤ 1 := padic.mem_integers_iff p,
   simp only [open_unit_ball],
   ext ⟨x, hx⟩,
   have hx' : x = (⟨x, (hiff x).mp hx⟩ : ℤ_[p]) := rfl,
