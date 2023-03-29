@@ -6,6 +6,8 @@ Authors: María Inés de Frutos-Fernández
 import from_mathlib.pow_mult_faithful
 import from_mathlib.seminorm_from_const
 import from_mathlib.spectral_norm
+import analysis.normed_space.finite_dimension
+import topology.algebra.module.finite_dimension
 
 /-!
 # Unique norm extension theorem
@@ -111,8 +113,8 @@ begin
   haveI hKx_fin : finite_dimensional K ↥K⟮x⟯ := intermediate_field.adjoin.finite_dimensional 
     (is_algebraic_iff_is_integral.mp (h_alg x)),
   haveI : finite_dimensional K E := hKx_fin,
-  set Id1 : K⟮x⟯ →L[K] E := ⟨id1, by sorry/- id1.continuous_of_finite_dimensional -/⟩ with hId1,
-  set Id2 : E →L[K] K⟮x⟯ := ⟨id2, by sorry/- id2.continuous_of_finite_dimensional -/⟩ with hId2,
+  set Id1 : K⟮x⟯ →L[K] E := ⟨id1, id1.continuous_of_finite_dimensional⟩ with hId1,
+  set Id2 : E →L[K] K⟮x⟯ := ⟨id2, id2.continuous_of_finite_dimensional⟩ with hId2,
   have hC1 : ∃ (C1 : ℝ), 0 < C1 ∧ ∀ (y : K⟮x⟯), ‖ id1 y ‖ ≤ C1 * ‖ y ‖ := 
   Id1.is_bounded_linear_map.bound,
   have hC2 : ∃ (C2 : ℝ), 0 < C2 ∧ ∀ (y : E), ‖ id2 y ‖ ≤ C2 * ‖ y ‖ := 
@@ -271,6 +273,5 @@ def us [complete_space K] (h : is_nonarchimedean (norm : K → ℝ)) :
 @[priority 100] instance spectral_norm_complete_space [complete_space K]
   (h : is_nonarchimedean (norm : K → ℝ)) [h_fin : finite_dimensional K L] :
   @complete_space L (us h_alg h) := 
-sorry
-/- @finite_dimensional.complete K _ L (spectral_norm_to_normed_add_comm_group h_alg h) 
-  (spectral_norm_to_normed_space h_alg h) _ h_fin -/
+@finite_dimensional.complete K _ L (spectral_norm_to_normed_add_comm_group h_alg h) 
+  (spectral_norm_to_normed_space h_alg h) _ h_fin 

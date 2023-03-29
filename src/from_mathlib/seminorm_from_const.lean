@@ -270,7 +270,8 @@ begin
       { simp only [seminorm_from_const_seq],
         rw [hx (c ^n), hpm _ (nat.one_le_iff_ne_zero.mpr hn), mul_div_assoc,
           div_self (pow_ne_zero n hc.symm), mul_one], }},
-    sorry/- simpa [hseq] using tendsto_const_nhds,  -/},
+    rw hseq,
+    exact tendsto_const_nhds },
   exact tendsto_nhds_unique (seminorm_from_const_is_limit hf1 hc hpm x) hlim,
 end
 
@@ -301,8 +302,9 @@ begin
       simp only [seminorm_from_const_seq],
       rw [← pow_succ, hpm _ le_add_self, pow_succ, mul_div_assoc, div_self (pow_ne_zero n hc.symm),
         mul_one], },
-    sorry/- simpa [hseq] using tendsto_const_nhds -/ },
-    exact tendsto_nhds_unique (seminorm_from_const_is_limit hf1 hc hpm c) hlim,
+    rw hseq,
+    exact tendsto_const_nhds },
+  exact tendsto_nhds_unique (seminorm_from_const_is_limit hf1 hc hpm c) hlim,
 end
 
 /-- For every `x : R`, `seminorm_from_const' hf1 hc hpm (c * x)` equals the product

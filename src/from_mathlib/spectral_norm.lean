@@ -64,8 +64,8 @@ lemma max_repeat {n : ℕ} (a : α) : foldr max a (repeat a n) = a :=
 begin
   induction n with n hn,
   { simp only [list.repeat, list.foldr_nil] },
-  { sorry/- simp only [list.foldr, list.repeat, list.repeat_succ, list.foldr_cons, max_eq_left_iff],
-    exact le_of_eq hn, -/ }
+  { simp only [foldr, repeat, foldr_cons, max_eq_left_iff],
+    exact le_of_eq hn, }
 end
 
 lemma le_max_of_exists_le {l : list α} {a x : α} (b : α) (hx : x ∈ l) (h : a ≤ x) : 

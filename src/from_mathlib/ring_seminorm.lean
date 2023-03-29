@@ -115,24 +115,25 @@ lemma is_nonarchimedean_add_eq_max_of_ne {F α : Type*} [ring α] [add_group_sem
   {f : F} (hna : is_nonarchimedean f) {x y : α} (hne : f y ≠ f x) :
   f (x + y) = max (f x) (f y) :=
 begin
-  sorry/- wlog hle := le_total (f y) (f x) using [x y],
-  have hlt : f y < f x, from lt_of_le_of_ne hle hne,
-  have : f x ≤ max (f (x + y)) (f y), from calc
-    f x = f (x + y + (-y)) : by rw [add_neg_cancel_right]
-               ... ≤ max (f (x + y)) (f (-y)) : hna _ _
-               ... = max (f (x + y)) (f y) : by rw map_neg_eq_map f y,
-  have hnge : f y ≤ f (x + y),
-  { apply le_of_not_gt,
-    intro hgt,
-    rw max_eq_right_of_lt hgt at this,
-    apply not_lt_of_ge this,
-    assumption },
-  have : f x ≤ f (x + y), by rwa [max_eq_left hnge] at this,
-  apply le_antisymm,
-  { exact hna _ _ },
-  { rw max_eq_left_of_lt hlt,
-    assumption },
-  rw [add_comm, max_comm], exact this (ne.symm hne), -/
+  wlog hle : f y ≤ f x generalizing y x with H,
+  { rw [add_comm, max_comm],
+    exact H hne.symm (le_of_lt (not_le.mp hle)), },
+  { have hlt : f y < f x, from lt_of_le_of_ne hle hne,
+    have : f x ≤ max (f (x + y)) (f y), from calc
+      f x = f (x + y + (-y)) : by rw [add_neg_cancel_right]
+                ... ≤ max (f (x + y)) (f (-y)) : hna _ _
+                ... = max (f (x + y)) (f y) : by rw map_neg_eq_map f y,
+    have hnge : f y ≤ f (x + y),
+    { apply le_of_not_gt,
+      intro hgt,
+      rw max_eq_right_of_lt hgt at this,
+      apply not_lt_of_ge this,
+      assumption },
+    have : f x ≤ f (x + y), by rwa [max_eq_left hnge] at this,
+    apply le_antisymm,
+    { exact hna _ _ },
+    { rw max_eq_left_of_lt hlt,
+      assumption }},
 end
 
 open_locale classical

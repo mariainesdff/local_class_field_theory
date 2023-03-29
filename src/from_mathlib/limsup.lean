@@ -146,8 +146,7 @@ begin
   intros b hb,
   apply le_infi_mul_infi hu_top hv_top,
   intros m n,
-  sorry
-  --exact le_trans (hb (max m n)) (mul_le_mul (hu (le_max_left _ _)) (hv (le_max_right _ _))),
+  exact le_trans (hb (max m n)) (mul_le_mul' (hu (le_max_left _ _)) (hv (le_max_right _ _)))
 end
 
 lemma supr_tail_seq (u : ℕ → ℝ≥0∞) (n : ℕ) : 
@@ -196,8 +195,7 @@ begin
     intros k,
     apply supr_le _,
     intros hk,
-    sorry
-    /- exact mul_le_mul (le_supr_prop u hk) (le_supr_prop v hk), -/ },
+    exact mul_le_mul' (le_supr_prop u hk) (le_supr_prop v hk), },
   simp only [filter.limsup_eq_infi_supr_of_nat, ge_iff_le, pi.mul_apply],
   exact le_trans h_le (infi_mul_le_mul_infi (supr_le_top_of_bdd_above hu) antitone.supr
     (supr_le_top_of_bdd_above hv) antitone.supr),
