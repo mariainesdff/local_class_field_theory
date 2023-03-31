@@ -31,10 +31,11 @@ instance : field (completion_of_ratfunc K) := adic_completion.field (ratfunc K) 
 
 instance : algebra K (polynomial K) := infer_instance
 
-instance : valued (ratfunc K) ℤₘ₀ := 
+--Now in the polynomial file
+/- instance : valued (ratfunc K) ℤₘ₀ := 
 begin
  use @adic_valued (polynomial K) _ _ _ (ratfunc K) _ _ _ (ideal_X K),
-end
+end -/
 
 -- instance : uniform_space (ratfunc K) :=
 --   (@adic_valued (polynomial K) _ _ _ (ratfunc K) _ _ _ (ideal_X K)).to_uniform_space

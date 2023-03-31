@@ -46,3 +46,14 @@ begin
 end
 
 end polynomial
+
+namespace ratfunc
+
+open polynomial
+
+instance : valued (ratfunc K) ℤₘ₀ := valued.mk' (ideal_X K).valuation
+
+lemma with_zero.valued_def {x : ratfunc K} :
+  @valued.v (ratfunc K) _ _ _ (ratfunc.with_zero.valued K) x =(ideal_X K).valuation x := rfl 
+
+end ratfunc
