@@ -1,4 +1,4 @@
-import eq_characteristic_local_field.basic
+import eq_characteristic.basic
 import for_mathlib.residue_ring_def
 import mixed_characteristic.valuation
 
@@ -21,12 +21,10 @@ end mixed_char_local_field
 
 namespace eq_char_local_field
 
--- TODO: make p explicit in eq_char_local_field
-instance (p : ℕ) [fact(nat.prime p)] (K : Type*) [field K] [@eq_char_local_field p _ K _] :
+instance (p : ℕ) [fact(nat.prime p)] (K : Type*) [field K] [eq_char_local_field p K] :
   local_field K := sorry
 
 --#check eq_char_local_field.local_field
-
 
 end eq_char_local_field
 

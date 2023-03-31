@@ -29,27 +29,38 @@ open is_dedekind_domain nnreal polynomial ratfunc
 open_locale eq_char_local_field nnreal discrete_valuation
 
 variables {p : ℕ} [fact (p.prime)] 
-variables {K : Type*} [field K] [eq_char_local_field p K]
 
-namespace eq_char_local_field
 
-instance FpX_field_completion.with_zero.valued : valued 𝔽_[p]⟮⟮X⟯⟯ ℤₘ₀ := @with_zero.valued p _
+namespace FpX_field_completion
 
-noncomputable! instance : is_rank_one (@with_zero.valued p _).v :=
+noncomputable! instance : is_rank_one (@FpX_field_completion.with_zero.valued p _).v :=
 { hom         := sorry,
   strict_mono := sorry,
   nontrivial  := begin
     use algebra_map (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯ X,
-    rw ring_of_integers.valuation_X, -- wrong namespace (fix in basic file)
+    rw FpX_field_completion.valuation_X, -- wrong namespace (fix in basic file)
     split,
     { exact with_zero.coe_ne_zero,},
     { rw [← with_zero.coe_one, ne.def, with_zero.coe_inj, of_add_eq_one, neg_eq_zero],
       exact one_ne_zero }
   end }
 
-
 instance : normed_field 𝔽_[p]⟮⟮X⟯⟯ := rank_one_valuation.valued_field.to_normed_field
 
+end FpX_field_completion
+
+namespace FpX_int_completion
+--`[FAE]` The following `instance` will probably be PR'd soon in greater generality for all
+-- integrally closed domains: see 
+-- [https://leanprover.zulipchat.com/#narrow/stream/116395-maths/topic/.E2.9C.94.20gcd_monoid]
+noncomputable! instance  : normalized_gcd_monoid 𝔽_[p]⟦X⟧  :=
+sorry
+
+end FpX_int_completion
+
+variables {K : Type*} [field K] [eq_char_local_field p K]
+
+namespace eq_char_local_field
 
 def norm_on_K : K → ℝ := spectral_norm 𝔽_[p]⟮⟮X⟯⟯ K
 
@@ -63,12 +74,6 @@ rfl
 @[ext] lemma nnnorm_ext_norm {K : Type*} [field K] [eq_char_local_field p K] (x y : K) : 
   (nnnorm_on_K x) = (nnnorm_on_K y) ↔ norm_on_K x = norm_on_K y :=
 subtype.ext_iff
-
---`[FAE]` The following `instance` will probably be PR'd soon in greater generality for all
--- integrally closed domains: see 
--- [https://leanprover.zulipchat.com/#narrow/stream/116395-maths/topic/.E2.9C.94.20gcd_monoid]
-noncomputable! instance  : normalized_gcd_monoid 𝔽_[p]⟦X⟧  :=
-sorry
 
 --same proof as in mixed char case
 lemma norm_on_K_one {K : Type*} [field K] [eq_char_local_field p K] : norm_on_K (1 : K) = 1 := 
@@ -159,13 +164,10 @@ noncomputable! def open_unit_ball : height_one_spectrum (𝓞 p K) :=
       exact padic_norm_e.norm_p_lt_one -/ }
   end }
 
-
-
 def normalized_valuation (K : Type*) [field K] [eq_char_local_field p K] : valuation K ℤₘ₀ :=
   (open_unit_ball K).valuation
 
--- Do we still want this?
- instance (K : Type*) [field K] [eq_char_local_field p K] : valued K ℤₘ₀ :=
+instance (K : Type*) [field K] [eq_char_local_field p K] : valued K ℤₘ₀ :=
   valued.mk' (normalized_valuation K) 
 
 --Failed to find algebra `(ratfunc (galois_field p 1)) K` instance
@@ -182,14 +184,17 @@ open multiplicative is_dedekind_domain.height_one_spectrum
 localized "notation (name := ramification_index)
   `e` := eq_char_local_field.ramification_index" in eq_char_local_field -/
 
+end eq_char_local_field
+
+namespace FpX_field_completion
+
+open eq_char_local_field
 variable (p)
 
-
 -- Even compiling the statement is slow...
-noncomputable! lemma padic.open_unit_ball_def : 
+noncomputable! lemma open_unit_ball_def : 
   (open_unit_ball 𝔽_[p]⟮⟮X⟯⟯).as_ideal =
-  ideal.span {(FpX_completion.ring_of_integers_equiv p).symm
-    (ring_of_integers.FpX_int_completion.X p)} := 
+  ideal.span {(FpX_field_completion.ring_of_integers_equiv p).symm (FpX_int_completion.X p)} := 
 begin
  sorry
   /- have hiff : ∀ (y : ℚ_[p]), y ∈ 𝓞 p ℚ_[p] ↔ ‖ y ‖  ≤ 1, -- we should extract this to a lemma
@@ -239,4 +244,5 @@ begin
  
 end
  -/
-end eq_char_local_field
+
+end FpX_field_completion

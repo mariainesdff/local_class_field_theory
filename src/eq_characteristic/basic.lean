@@ -53,14 +53,16 @@ variables (p : ℕ) [fact(nat.prime p)]
 notation (name := prime_galois_field)
   `𝔽_[` p `]` := galois_field p 1
 
+-- Now in the polynomial file
 /- The valued field `Fp(X)` with the valuation at `X`. -/
-instance FpX_valued  : valued (ratfunc 𝔽_[p]) ℤₘ₀ :=
-valued.mk' (ideal_X 𝔽_[p]).valuation
+/- instance FpX_valued  : valued (ratfunc 𝔽_[p]) ℤₘ₀ :=
+valued.mk' (ideal_X 𝔽_[p]).valuation 
 
 lemma FqX_valued_def {x : ratfunc 𝔽_[p]} :
-  @valued.v (ratfunc 𝔽_[p]) _ _ _ (FpX_valued p) x = (ideal_X 𝔽_[p]).valuation x := rfl 
+  @valued.v (ratfunc 𝔽_[p]) _ _ _ (ratfunc.with_zero.valued 𝔽_[p]) x =
+    (ideal_X 𝔽_[p]).valuation x := rfl -/
 
-def FpX_field_completion  :=
+def FpX_field_completion :=
  (ideal_X 𝔽_[p]).adic_completion (ratfunc 𝔽_[p])
 
 notation (name := FpX_field_completion)
@@ -72,12 +74,38 @@ def FpX_int_completion  :=
 notation (name := FpX_int_completion)
   `𝔽_[` p `]⟦` X `⟧` := FpX_int_completion p
 
+
+instance ratfunc.char_p : char_p (ratfunc 𝔽_[p]) p := 
+char_p_of_injective_algebra_map ((algebra_map 𝔽_[p] (ratfunc 𝔽_[p])).injective) p
+
+namespace FpX_field_completion
+
 variable {p}
 
 instance : field 𝔽_[p]⟮⟮X⟯⟯ := adic_completion.field (ratfunc 𝔽_[p]) (ideal_X 𝔽_[p])
 
+instance : algebra (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯ := 
+height_one_spectrum.adic_completion.algebra _ (ratfunc 𝔽_[p]) _
+
+instance : has_coe (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯ := ⟨algebra_map (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯⟩
+
+lemma algebra_map_eq_coe (f : ratfunc 𝔽_[p]) : 
+  algebra_map (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯ f = coe f := rfl
+
+instance FpX_field_completion.char_p : char_p 𝔽_[p]⟮⟮X⟯⟯ p := 
+char_p_of_injective_algebra_map
+  ((algebra_map (ratfunc (galois_field p 1)) (FpX_field_completion p)).injective) p 
+
 instance : valued 𝔽_[p]⟮⟮X⟯⟯ ℤₘ₀ := 
 height_one_spectrum.valued_adic_completion (ratfunc 𝔽_[p]) (ideal_X 𝔽_[p])
+
+lemma valuation_X :
+  valued.v ((algebra_map (ratfunc (galois_field p 1)) (FpX_field_completion p)) X) =
+    multiplicative.of_add (-1 : ℤ) :=
+begin
+  rw [valued_adic_completion_def],
+  erw [FpX_field_completion.algebra_map_eq_coe, valued.extension_extends, val_X_eq_one],
+end
 
 lemma mem_FpX_int_completion {x : FpX_field_completion p} :
   x ∈ FpX_int_completion p ↔ (valued.v x : ℤₘ₀) ≤ 1 :=
@@ -85,29 +113,72 @@ iff.rfl
 
 instance : inhabited 𝔽_[p]⟮⟮X⟯⟯ := ⟨(0 : 𝔽_[p]⟮⟮X⟯⟯)⟩
 
+lemma X_mem_FpX_int_completion : 
+  algebra_map (ratfunc 𝔽_[p]) _ X ∈ FpX_int_completion p :=
+begin
+  erw [FpX_field_completion.mem_FpX_int_completion, FpX_field_completion.valuation_X],
+  rw [← with_zero.coe_one, with_zero.coe_le_coe, ← of_add_zero, of_add_le],
+  linarith,
+end
+
 variable (p)
 -- Upgrade to (ratfunc Fp)-algebra iso
 noncomputable!
 def isom_laurent : 𝔽_[p]⟮⟮X⟯⟯  ≃+* (laurent_series 𝔽_[p]) := sorry -- F
+
+end FpX_field_completion
+
+namespace FpX_int_completion
 
 -- Upgrade to (ratfunc Fp)-algebra iso
 noncomputable! def isom_power_series : 𝔽_[p]⟦X⟧  ≃+* (power_series 𝔽_[p]) := sorry -- F
 
 variable {p}
 
+instance is_noetherian_ring :
+  is_noetherian_ring ↥(FpX_int_completion p) := 
+is_noetherian_ring_of_ring_equiv _ (FpX_int_completion.isom_power_series p).symm
+
 instance : algebra 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ :=
 (by apply_instance : algebra ((ideal_X 𝔽_[p]).adic_completion_integers (ratfunc 𝔽_[p]))
   ((ideal_X 𝔽_[p]).adic_completion (ratfunc 𝔽_[p])))
 
-instance FpX_completion.is_fraction_ring : is_fraction_ring 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ :=
+instance is_fraction_ring : is_fraction_ring 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ :=
 (by apply_instance : is_fraction_ring ((ideal_X 𝔽_[p]).adic_completion_integers (ratfunc 𝔽_[p]))
   ((ideal_X 𝔽_[p]).adic_completion (ratfunc 𝔽_[p])))
+
+instance : is_integral_closure 𝔽_[p]⟦X⟧ 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ := 
+is_integrally_closed.is_integral_closure
+
+variable (p)
+
+def X : FpX_int_completion p :=
+⟨algebra_map (ratfunc 𝔽_[p]) _ X, FpX_field_completion.X_mem_FpX_int_completion⟩
+
+lemma X_ne_dvd_one : ¬ FpX_int_completion.X p ∣ 1 := 
+begin
+  sorry -- This should be immediate once we have the isomorphism to power series
+end
+
+--Or use the isom to power series to conclude this
+lemma not_is_field : ¬is_field ↥(FpX_int_completion p) :=
+begin
+  rw ring.not_is_field_iff_exists_ideal_bot_lt_and_lt_top,
+  use ideal.span{FpX_int_completion.X p},
+  split,
+  { rw [bot_lt_iff_ne_bot, ne.def, ideal.span_singleton_eq_bot, ← subring.coe_eq_zero_iff,
+      X , set_like.coe_mk, _root_.map_eq_zero],
+    exact ratfunc.X_ne_zero, },
+  { rw [lt_top_iff_ne_top, ne.def, ideal.eq_top_iff_one, ideal.mem_span_singleton],
+    exact X_ne_dvd_one p, }
+end
+
+end FpX_int_completion
 
 -- For instances and lemmas that only need `K` to be an `𝔽_[p]⟮⟮X⟯⟯`-algebra
 namespace adic_algebra
 
-variables (K L : Type*) [field K] [algebra 𝔽_[p]⟮⟮X⟯⟯ K] [field L]
-  [algebra 𝔽_[p]⟮⟮X⟯⟯ L]
+variables {p} (K L : Type*) [field K] [algebra 𝔽_[p]⟮⟮X⟯⟯ K] [field L] [algebra 𝔽_[p]⟮⟮X⟯⟯ L]
 
 instance to_int_algebra : algebra 𝔽_[p]⟦X⟧ K := algebra.comp 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K
 --(ring_hom.comp (algebra_map 𝔽_[p]⟮⟮X⟯⟯ K) (algebra_map 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯)).to_algebra
@@ -119,11 +190,9 @@ instance to_int_algebra : algebra 𝔽_[p]⟦X⟧ K := algebra.comp 𝔽_[p]⟦X
 is_scalar_tower.comp 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K
 /- ⟨λ _ _ _, by simp only [algebra.smul_def, int_algebra_map_def, map_mul, ← mul_assoc]; refl⟩ -/
 
-
 @[priority 1000] instance int_is_scalar_tower [algebra K L] [is_scalar_tower 𝔽_[p]⟮⟮X⟯⟯ K L] :
   is_scalar_tower 𝔽_[p]⟦X⟧ K L :=
 is_scalar_tower.comp' 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K L
-
 /- { smul_assoc := λ x y z,
   begin
     nth_rewrite 0 [← one_smul 𝔽_[p]⟮⟮X⟯⟯ y],
@@ -133,8 +202,10 @@ is_scalar_tower.comp' 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K L
 lemma algebra_map_injective {E : Type*} [field E] [algebra 𝔽_[p]⟦X⟧ E] [algebra 𝔽_[p]⟮⟮X⟯⟯ E]
   [is_scalar_tower 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ E] : function.injective ⇑(algebra_map 𝔽_[p]⟦X⟧ E) :=
 algebra_map_injective' 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ E
+
 end adic_algebra
 
+variable (p)
 /-- An equal characteristic local field is a field which is finite
 dimensional over `𝔽_p((X))`, for some prime `p`. -/
 class eq_char_local_field (p : out_param(ℕ)) [fact(nat.prime p)] (K : Type*) [field K] 
@@ -152,11 +223,12 @@ variables (p) (K L : Type*) [field K] [eq_char_local_field p K] [field L] [eq_ch
 
 protected lemma is_algebraic : algebra.is_algebraic 𝔽_[p]⟮⟮X⟯⟯ K := algebra.is_algebraic_of_finite _ _
 
+instance char_p : char_p K p := 
+char_p_of_injective_algebra_map (algebra_map 𝔽_[p]⟮⟮X⟯⟯ K).injective p
 
 /-- The ring of integers of a mixed characteristic local field is the integral closure of ℤ_[p]
   in the local field. -/
 def ring_of_integers := integral_closure 𝔽_[p]⟦X⟧ K
-
 
 localized "notation (name := ring_of_integers)
   `𝓞` := eq_char_local_field.ring_of_integers" in eq_char_local_field
@@ -187,7 +259,6 @@ ring_hom.to_algebra
   map_add'  := λ x y, subtype.ext $ by simp only [map_add, subalgebra.coe_add, subtype.coe_mk],
   map_mul'  := λ x y, subtype.ext $ by simp only [subalgebra.coe_mul, map_mul, subtype.coe_mk] }
 
-
 namespace ring_of_integers
 
 variables {K}
@@ -198,20 +269,18 @@ variables {K}
 -- Otherwise it times out if the is_scalar_tower argument is implicit (TODO: check)
 noncomputable! instance : is_fraction_ring (𝓞 p K) K := 
 @integral_closure.is_fraction_ring_of_finite_extension 
-  𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ _ _ K _ _ _ FpX_completion.is_fraction_ring _ _ _ _
+  𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ _ _ K _ _ _ FpX_int_completion.is_fraction_ring _ _ _ _
 --This takes about 7s, I think it should be faster...
-
 
 instance : is_integral_closure (𝓞 p K) 𝔽_[p]⟦X⟧ K :=
 integral_closure.is_integral_closure _ _
-
 
 -- Very slow too (9.37s)example
 --set_option profiler true
 -- Times out if the is_scalar_tower argument is implicit (without the priority fix) (TODO: check)
 noncomputable! instance is_integrally_closed : is_integrally_closed (𝓞 p K) :=
 @integral_closure.is_integrally_closed_of_finite_extension _ _ 𝔽_[p]⟮⟮X⟯⟯ _ _ _
-  FpX_completion.is_fraction_ring _ _ _ _ _ _
+  FpX_int_completion.is_fraction_ring _ _ _ _ _ _
 
 noncomputable! instance : algebra 𝔽_[p]⟦X⟧ (𝓞 p K) := infer_instance
 
@@ -237,7 +306,36 @@ protected noncomputable! def equiv (R : Type*) [comm_ring R] [algebra 𝔽_[p]�
   valued.v ((algebra_map (ratfunc (galois_field p 1)) (FpX_field_completion p)) X) =
     multiplicative.of_add (-1 : ℤ) :=
 begin
-  rw [valued_adic_completion_def],
+  rw [valued_alemma X_mem_FpX_int_completion : 
+  algebra_map (ratfunc 𝔽_[p]) _ X ∈ FpX_int_completion p :=
+begin
+  erw [FpX_field_completion.mem_FpX_int_completion, FpX_field_completion.valuation_X],
+  rw [← with_zero.coe_one, with_zero.coe_le_coe, ← of_add_zero, of_add_le],
+  linarith,
+end
+
+def FpX_int_completion.X : FpX_int_completion p :=
+⟨algebra_map (ratfunc 𝔽_[p]) _ X, X_mem_FpX_int_completion p⟩
+
+lemma FpX_int_completion.X_ne_dvd_one : ¬ FpX_int_completion.X p ∣ 1 := 
+begin
+  sorry -- This should be immediate once we have the isomorphism to power series
+end
+
+
+--Or use the isom to power series to conclude this
+lemma FpX_int_completion.not_is_field : ¬is_field ↥(FpX_int_completion p) :=
+begin
+  rw ring.not_is_field_iff_exists_ideal_bot_lt_and_lt_top,
+  use ideal.span{FpX_int_completion.X p},
+  split,
+  { rw [bot_lt_iff_ne_bot, ne.def, ideal.span_singleton_eq_bot, ← subring.coe_eq_zero_iff,
+      FpX_int_completion.X , set_like.coe_mk, _root_.map_eq_zero],
+    exact ratfunc.X_ne_zero, },
+  { rw [lt_top_iff_ne_top, ne.def, ideal.eq_top_iff_one, ideal.mem_span_singleton],
+    exact FpX_int_completion.X_ne_dvd_one p, }
+end
+dic_completion_def],
   erw [FpX_field_completion.algebra_map_eq_coe p, valued.extension_extends, val_X_eq_one],
 endre.equiv 𝔽_[p]⟦X⟧ R K _ _ _ _ _ _ _ _ _ _ _ _
 (adic_algebra.int_is_scalar_tower _ K ) ).symm.to_ring_equiv -/
@@ -246,44 +344,10 @@ endre.equiv 𝔽_[p]⟦X⟧ R K _ _ _ _ _ _ _ _ _ _ _ _
 
 variables (K)
 
-instance ratfunc.char_p : char_p (ratfunc 𝔽_[p]) p := 
-char_p_of_injective_algebra_map ((algebra_map 𝔽_[p] (ratfunc 𝔽_[p])).injective) p
-
-instance : algebra (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯ := 
-height_one_spectrum.adic_completion.algebra _ (ratfunc 𝔽_[p]) _
-
-
-instance : has_coe (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯ := ⟨algebra_map (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯⟩
-
-lemma FpX_field_completion.algebra_map_eq_coe (f : ratfunc 𝔽_[p]) : 
-  algebra_map (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯ f = coe f := rfl
-
-instance FpX_field_completion.char_p : char_p 𝔽_[p]⟮⟮X⟯⟯ p := 
-char_p_of_injective_algebra_map
-  ((algebra_map (ratfunc (galois_field p 1)) (FpX_field_completion p)).injective) p
-
-
-instance eq_char_local_field.char_p : char_p K p := 
-char_p_of_injective_algebra_map (algebra_map 𝔽_[p]⟮⟮X⟯⟯ K).injective p
-
 instance : char_p (𝓞 p K) p := char_p.subring' K p (𝓞 p K).to_subring --char_zero.of_module _ K
 
  -- This doesn't need to be part of the definition of local field
 --noncomputable! instance : is_separable 𝔽_[p]⟮⟮X⟯⟯ K := sorry
-
-lemma valuation_X :
-  valued.v ((algebra_map (ratfunc (galois_field p 1)) (FpX_field_completion p)) X) =
-    multiplicative.of_add (-1 : ℤ) :=
-begin
-  rw [valued_adic_completion_def],
-  erw [FpX_field_completion.algebra_map_eq_coe p, valued.extension_extends, val_X_eq_one],
-end
-
-
-instance FpX_int_completion.is_noetherian_ring :
-  is_noetherian_ring ↥(FpX_int_completion p) := 
-is_noetherian_ring_of_ring_equiv _ (isom_power_series p).symm
-
 
 
 /-- This can be proven using the argument from Serre's Local Fields II.2, which
@@ -321,36 +385,6 @@ begin
   exact hinj x hx, 
 end
 
-lemma X_mem_FpX_int_completion : 
-  algebra_map (ratfunc 𝔽_[p]) _ X ∈ FpX_int_completion p :=
-begin
-  erw [mem_FpX_int_completion, valuation_X],
-  rw [← with_zero.coe_one, with_zero.coe_le_coe, ← of_add_zero, of_add_le],
-  linarith,
-end
-
-def FpX_int_completion.X : FpX_int_completion p :=
-⟨algebra_map (ratfunc 𝔽_[p]) _ X, X_mem_FpX_int_completion p⟩
-
-lemma FpX_int_completion.X_ne_dvd_one : ¬ FpX_int_completion.X p ∣ 1 := 
-begin
-  sorry -- This should be immediate once we have the isomorphism to power series
-end
-
-
---Or use the isom to power series to conclude this
-lemma FpX_int_completion.not_is_field : ¬is_field ↥(FpX_int_completion p) :=
-begin
-  rw ring.not_is_field_iff_exists_ideal_bot_lt_and_lt_top,
-  use ideal.span{FpX_int_completion.X p},
-  split,
-  { rw [bot_lt_iff_ne_bot, ne.def, ideal.span_singleton_eq_bot, ← subring.coe_eq_zero_iff,
-      FpX_int_completion.X , set_like.coe_mk, _root_.map_eq_zero],
-    exact ratfunc.X_ne_zero, },
-  { rw [lt_top_iff_ne_top, ne.def, ideal.eq_top_iff_one, ideal.mem_span_singleton],
-    exact FpX_int_completion.X_ne_dvd_one p, }
-end
-
 /-- The ring of integers of a mixed characteristic local field is not a field. -/
 lemma not_is_field : ¬ is_field (𝓞 p K) :=
 by simpa [← (is_integral_closure.is_integral_algebra 𝔽_[p]⟦X⟧ K).is_field_iff_is_field
@@ -359,7 +393,7 @@ by simpa [← (is_integral_closure.is_integral_algebra 𝔽_[p]⟦X⟧ K).is_fie
 -- Do we have this for power series? I cannot find it
 -- I wrote the power series version in for_mathlib/power_series
 instance : is_dedekind_domain ↥𝔽_[p]⟦X⟧ := 
-{ is_noetherian_ring   := FpX_int_completion.is_noetherian_ring p,
+{ is_noetherian_ring   := FpX_int_completion.is_noetherian_ring,
   dimension_le_one     := sorry,
   is_integrally_closed := is_bezout.is_integrally_closed }
 
@@ -382,7 +416,7 @@ end ring_of_integers
 
 end eq_char_local_field
 
-namespace FpX_completion
+namespace FpX_field_completion
 
 open eq_char_local_field
 
@@ -395,9 +429,6 @@ instance mixed_char_local_field (p : ℕ) [fact(nat.prime p)] :
   -- all char 0 fields have a canonical embedding of `ℚ` (used in `mixed_char_local_field`).
   -- Show that these coincide:
   by convert (infer_instance : finite_dimensional 𝔽_[p]⟮⟮X⟯⟯ 𝔽_[p]⟮⟮X⟯⟯), }
-
-instance : is_integral_closure 𝔽_[p]⟦X⟧ 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ := 
-is_integrally_closed.is_integral_closure
 
 
 /- instance asdf (p : ℕ) [fact(nat.prime p)] : is_scalar_tower 𝔽_[p]⟦X⟧ 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ := 
@@ -416,4 +447,4 @@ noncomputable! def ring_of_integers_equiv (p : ℕ) [fact(nat.prime p)] :
   is_integrally_closed.is_integral_closure --timeout
  -/
 
-end FpX_completion
+end FpX_field_completion
