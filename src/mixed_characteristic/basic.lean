@@ -10,7 +10,7 @@ import padic
 
 /-!
 --TODO: Fix comments
-# Mixed characteristic local fields fields
+# Mixed characteristic local fields
 This file defines a number field, the ring of integers corresponding to it and includes some
 basic facts about the embeddings into an algebraic closed field.
 ## Main definitions
