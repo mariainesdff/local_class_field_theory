@@ -1,8 +1,8 @@
 import algebra_comp
 import blueprint_tests
 import padic
-import eq_characteristic_local_field.basic
+import eq_characteristic.basic
 import for_mathlib.power_series_adic_completion
-import for_mathlib.spectral_norm
+import from_mathlib.spectral_norm_unique
 import mixed_characteristic.basic
 import mixed_characteristic.valuation
