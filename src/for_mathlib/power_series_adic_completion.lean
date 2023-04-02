@@ -910,11 +910,12 @@ end
 
 open discrete_valuation_ring
 
-def divide_X_pow_order {f : power_series K} (hf : f ≠ 0) : (power_series K) := 
-begin
-  use (exists_eq_mul_right_of_dvd 
-    (power_series.X_pow_order_dvd (power_series.order_finite_iff_ne_zero.mpr hf))).some,
-end
+/- Given a non-zero power series, this is the power series obtained by dividing out the largest
+  power of X-/
+def divide_X_pow_order {f : power_series K} (hf : f ≠ 0) : (power_series K) :=
+(exists_eq_mul_right_of_dvd (power_series.X_pow_order_dvd
+  (power_series.order_finite_iff_ne_zero.mpr hf))).some
+-- end
 
 lemma divide_X_pow_order_mul {f : power_series K} (hf : f ≠ 0) : f =
   (power_series.X)^(f.order.get (power_series.order_finite_iff_ne_zero.mpr hf)) * divide_X_pow_order hf :=
@@ -923,6 +924,7 @@ begin
   exact (exists_eq_mul_right_of_dvd dvd).some_spec,
 end
 
+/-Given a non-zero power series, the power series obtained in `divide_X_pow_order` is invertible-/
 lemma is_invertible_divide_X_pow_order {f : power_series K} (hf : f ≠ 0) :
   invertible (divide_X_pow_order hf) :=
 begin
@@ -932,13 +934,10 @@ begin
   let const : Kˣ, 
   { haveI : invertible (power_series.constant_coeff K (divide_X_pow_order hf)),
     { apply invertible_of_nonzero,
-      have := power_series.coeff_X_pow_mul ((exists_eq_mul_right_of_dvd dvd).some) d 0,
-      rw zero_add at this,
       convert f_const,
-      convert this.symm,
-      rw divide_X_pow_order,
-      simp only [power_series.coeff_zero_eq_constant_coeff],
-      apply divide_X_pow_order_mul},
+      rw [← power_series.coeff_zero_eq_constant_coeff, ← zero_add d],
+      convert (power_series.coeff_X_pow_mul ((exists_eq_mul_right_of_dvd dvd).some) d 0).symm,
+      apply divide_X_pow_order_mul,},
     use unit_of_invertible (power_series.constant_coeff K (divide_X_pow_order hf)),
       },
   apply invertible.mk (power_series.inv_of_unit ((divide_X_pow_order hf)) const),
@@ -946,6 +945,7 @@ begin
   all_goals {exact power_series.mul_inv_of_unit (divide_X_pow_order hf) const rfl},
 end
 
+/-Given a non-zero power series, the power series obtained in `divide_X_pow_order` is a unit-/
 def divide_X_pow_order_is_unit {f : power_series K} (hf : f ≠ 0) : (power_series K)ˣ := 
 begin
   set d := f.order.get (power_series.order_finite_iff_ne_zero.mpr hf) with hd,
@@ -973,6 +973,7 @@ begin
   refl},
 end
 
+/-Given a non-zero power series, the unit obtained in `divide_X_pow_order_is_unit`-/
 def unit_of_divide_X_pow_order {f : power_series K} (hf : f ≠ 0) : (power_series K)ˣ :=
 divide_X_pow_order_is_unit hf
 
