@@ -405,33 +405,21 @@ by simpa only [fae_pol_ps_order_mul]
 
 
 variable (K)
--- lemma fae_pol_ps_order_val {f : polynomial K} (hf : f ≠ 0) :
---  ↑(multiplicative.of_add (- (power_series.nat_order (polynomial.coe_ne_zero hf )) : ℤ)) = 
---     ((ideal_X K).int_valuation f) :=
--- begin 
---   have := fae_pol_ps_order_mul,
---   have := power_series.nat_order_eq_order (polynomial.coe_ne_zero hf),
---   sorry,
--- end
 
-
---open unique_factorization_monoid
+open unique_factorization_monoid
 lemma count_normalized_factors_eq_count_normalized_factors_span {R : Type*} [comm_ring R]
-  [is_domain R] [is_principal_ideal_ring R] [normalization_monoid R][unique_factorization_monoid R] 
+  [is_domain R] [is_principal_ideal_ring R] [normalization_monoid R] [unique_factorization_monoid R] 
     {r X : R} (hr : r ≠ 0) (hX₀ : X ≠ 0) (hX₁ : norm_unit X = 1 )(hX : prime X) : 
-  multiset.count X (unique_factorization_monoid.normalized_factors r) = 
-  multiset.count (ideal.span {X} : ideal R ) 
-    (unique_factorization_monoid.normalized_factors (ideal.span {r})) :=
+  multiset.count X (normalized_factors r) =
+    multiset.count (ideal.span {X} : ideal R ) (normalized_factors (ideal.span {r})) :=
 begin
   replace hX₁ : X = normalize X, 
   { simp only [normalize_apply, hX₁, units.coe_one, mul_one] },
   have : (ideal.span {normalize X} : ideal  R) = normalize (ideal.span {X}),
   { simp only [normalize_apply, normalize_eq],
     apply ideal.span_singleton_mul_right_unit (units.is_unit _) },
-  rw [← part_enat.coe_inj, hX₁,
-    ← unique_factorization_monoid.multiplicity_eq_count_normalized_factors hX.irreducible hr, this, 
-    ← multiplicity_eq_multiplicity_span, 
-    ← unique_factorization_monoid.multiplicity_eq_count_normalized_factors],
+  rw [← part_enat.coe_inj, hX₁, ← multiplicity_eq_count_normalized_factors hX.irreducible hr, this, 
+    ← multiplicity_eq_multiplicity_span, ← multiplicity_eq_count_normalized_factors],
   refine prime.irreducible (ideal.prime_of_is_prime _ _),
   {rwa [ne.def, ideal.span_singleton_eq_bot] },
   {rwa ideal.span_singleton_prime hX₀ },
@@ -439,8 +427,9 @@ begin
 end
 
 --GOLF IT!
-lemma count_normalized_factors_eq_associates_count {I J : ideal (polynomial K)} (hI : I ≠ 0) (hJ : J.is_prime ) (hJ₀ : J ≠ ⊥) : multiset.count J (unique_factorization_monoid.normalized_factors I) = 
-  (associates.mk J).count (associates.mk I).factors :=
+lemma count_normalized_factors_eq_associates_count {I J : ideal (polynomial K)} (hI : I ≠ 0)
+  (hJ : J.is_prime ) (hJ₀ : J ≠ ⊥) :
+  multiset.count J (normalized_factors I) = (associates.mk J).count (associates.mk I).factors :=
 begin
   replace hI : associates.mk I ≠ 0,
   { apply associates.mk_ne_zero.mpr hI },
@@ -469,7 +458,7 @@ begin
   rw [fae_pol_ps_nat_order_mul, fae_int_valuation_apply, int_valuation_def_if_neg _ hf],
   simp only [of_add_neg, ideal_X_span, inv_inj, with_zero.coe_inj, embedding_like.apply_eq_iff_eq,
     nat.cast_inj],
-  simp_rw [@unique_factorization_monoid.multiplicity_eq_count_normalized_factors (polynomial K)
+  simp_rw [@multiplicity_eq_count_normalized_factors (polynomial K)
     _ _ _ _ _ _ polynomial.X f (irreducible_X) hf],
   simp only [normalize_apply, coe_norm_unit, leading_coeff_X, norm_unit_one, units.coe_one, map_one,
     mul_one, part_enat.get_coe'],
@@ -545,7 +534,8 @@ lemma order_as_hahn_series_eq_valuation {f : ratfunc K} (hf : f ≠ 0) :
  ↑(multiplicative.of_add (- (f : laurent_series K).order)) = ((ideal_X K).valuation f) :=
 begin
   obtain ⟨P, ⟨Q, hQ, hfPQ⟩⟩ := @is_fraction_ring.div_surjective (polynomial K) _ _ (ratfunc K) _ _ _ f,
-  replace hfPQ : is_localization.mk' (ratfunc K) P ⟨Q, hQ⟩ = f := by simp only [hfPQ, is_fraction_ring.mk'_eq_div, set_like.coe_mk],
+  replace hfPQ : is_localization.mk' (ratfunc K) P ⟨Q, hQ⟩ = f :=
+    by simp only [hfPQ, is_fraction_ring.mk'_eq_div, set_like.coe_mk],
   have hP : P ≠ 0 :=  by {rw ← hfPQ at hf, exact is_localization.ne_zero_of_mk'_ne_zero hf},
   have hQ₀ : Q ≠ 0 := by rwa [← mem_non_zero_divisors_iff_ne_zero],
   have val_P_Q := @valuation_of_mk' (polynomial K) _ _ _ (ratfunc K) _ _ _ (ideal_X K) P ⟨Q, hQ⟩,
@@ -904,6 +894,136 @@ end
 -- `[FAE]` This is `#18604`
 lemma bdd_below.well_founded_on_lt {X : Type} [preorder X] {s : set X} : 
   bdd_below s → s.well_founded_on (<) := sorry
+
+section away
+open away
+
+lemma power_series.irreducible_X : irreducible (power_series.X : (power_series K)) :=
+begin
+  sorry
+end
+
+-- lemma pippo : local_ring (power_series K) :=
+-- begin
+--   apply mv_power_series.local_ring,
+-- end
+
+open discrete_valuation_ring
+
+def divide_X_pow_order {f : power_series K} (hf : f ≠ 0) : (power_series K) := 
+begin
+  use (exists_eq_mul_right_of_dvd 
+    (power_series.X_pow_order_dvd (power_series.order_finite_iff_ne_zero.mpr hf))).some,
+end
+
+lemma divide_X_pow_order_mul {f : power_series K} (hf : f ≠ 0) : f =
+  (power_series.X)^(f.order.get (power_series.order_finite_iff_ne_zero.mpr hf)) * divide_X_pow_order hf :=
+begin
+  have dvd := power_series.X_pow_order_dvd (power_series.order_finite_iff_ne_zero.mpr hf),
+  exact (exists_eq_mul_right_of_dvd dvd).some_spec,
+end
+
+lemma is_invertible_divide_X_pow_order {f : power_series K} (hf : f ≠ 0) :
+  invertible (divide_X_pow_order hf) :=
+begin
+  set d := f.order.get (power_series.order_finite_iff_ne_zero.mpr hf) with hd,
+  have f_const : power_series.coeff K d f ≠ 0 := by apply power_series.coeff_order,
+  have dvd := power_series.X_pow_order_dvd (power_series.order_finite_iff_ne_zero.mpr hf),
+  let const : Kˣ, 
+  { haveI : invertible (power_series.constant_coeff K (divide_X_pow_order hf)),
+    { apply invertible_of_nonzero,
+      have := power_series.coeff_X_pow_mul ((exists_eq_mul_right_of_dvd dvd).some) d 0,
+      rw zero_add at this,
+      convert f_const,
+      convert this.symm,
+      rw divide_X_pow_order,
+      simp only [power_series.coeff_zero_eq_constant_coeff],
+      apply divide_X_pow_order_mul},
+    use unit_of_invertible (power_series.constant_coeff K (divide_X_pow_order hf)),
+      },
+  apply invertible.mk (power_series.inv_of_unit ((divide_X_pow_order hf)) const),
+  rw mul_comm,
+  all_goals {exact power_series.mul_inv_of_unit (divide_X_pow_order hf) const rfl},
+end
+
+def divide_X_pow_order_is_unit {f : power_series K} (hf : f ≠ 0) : (power_series K)ˣ := 
+begin
+  set d := f.order.get (power_series.order_finite_iff_ne_zero.mpr hf) with hd,
+  have dvd := power_series.X_pow_order_dvd (power_series.order_finite_iff_ne_zero.mpr hf),
+  set g := (exists_eq_mul_right_of_dvd dvd).some with hg_def,
+  have hg := (exists_eq_mul_right_of_dvd dvd).some_spec,
+  simp_rw ← hd at hg,
+  let g_const : Kˣ,
+  { haveI : invertible (power_series.constant_coeff K g), 
+    have f_const : power_series.coeff K d f ≠ 0 := by apply power_series.coeff_order,
+    apply invertible_of_nonzero,
+    have := power_series.coeff_X_pow_mul ((exists_eq_mul_right_of_dvd dvd).some) d 0,
+    rw zero_add at this,
+    rw ← hg at this,
+    convert f_const,
+    convert this.symm,
+    rw hg_def,
+    simp only [power_series.coeff_zero_eq_constant_coeff],
+    use unit_of_invertible (power_series.constant_coeff K g),
+    },
+  use g,
+  use (power_series.inv_of_unit g g_const), swap,
+  rw mul_comm,
+  all_goals {apply power_series.mul_inv_of_unit,
+  refl},
+end
+
+def unit_of_divide_X_pow_order {f : power_series K} (hf : f ≠ 0) : (power_series K)ˣ :=
+divide_X_pow_order_is_unit hf
+
+lemma power_series.has_unit_mul_pow_irreducible_factorization : 
+  has_unit_mul_pow_irreducible_factorization (power_series K) :=
+begin
+  fconstructor,
+  use power_series.X,
+  split,
+  apply power_series.irreducible_X,
+  intros f hf,
+  have ord_f := power_series.order_finite_iff_ne_zero.mpr hf,
+  use f.order.get ord_f,
+  use unit_of_divide_X_pow_order hf,
+  exact (divide_X_pow_order_mul hf).symm,
+end
+
+instance : unique_factorization_monoid (power_series K) :=
+begin
+  apply power_series.has_unit_mul_pow_irreducible_factorization.to_unique_factorization_monoid,
+end
+
+instance : discrete_valuation_ring (power_series K) :=
+begin
+ apply of_has_unit_mul_pow_irreducible_factorization
+  power_series.has_unit_mul_pow_irreducible_factorization,
+end
+
+instance : is_principal_ideal_ring (power_series K) := infer_instance
+
+def laurent_series.trunc (f : laurent_series K) (d : ℕ) : ratfunc K :=
+begin
+  by_cases hf : f = 0,
+  use 0,
+  have trivX : irreducible (power_series.X), sorry,
+  haveI : normalization_monoid (power_series K), sorry,
+  let F := (exists_reduced_fraction (power_series.X : (power_series K)) (laurent_series K)
+    trivX f hf).some,
+  let n := (exists_reduced_fraction (power_series.X : (power_series K)) (laurent_series K)
+    trivX f hf).some_spec.some,
+  use (ratfunc.X : (ratfunc K))^n * ↑(F.trunc d),
+end
+
+@[simp]
+lemma laurent_series.trunc_zero (d : ℕ) : (0 : laurent_series K).trunc d = 0 :=
+by simp only [laurent_series.trunc, dif_pos]
+
+lemma laurent_series_trunc_eq_power_series (f : power_series K) (d : ℕ) : 
+  (f : laurent_series K).trunc d = ↑(f.trunc d) := sorry
+
+end away
 
 def laurent_series.equiv : (completion_of_ratfunc K) ≃ (laurent_series K) :=
 { to_fun :=

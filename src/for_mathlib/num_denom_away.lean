@@ -22,7 +22,7 @@ import ring_theory.unique_factorization_domain
 -- variables {R : Type*} [comm_ring R] (M : submonoid R) {S : Type*} [comm_ring S]
 -- variables [algebra R S] {P : Type*} [comm_ring P]
 
--- namespace is_fraction_ring
+namespace away
 
 -- open is_localization
 
