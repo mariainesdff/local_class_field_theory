@@ -10,6 +10,8 @@ import field_theory.finite.galois_field
 import ring_theory.dedekind_domain.adic_valuation
 import ring_theory.dedekind_domain.integral_closure
 
+import for_mathlib.power_series_adic_completion
+
 import ring_theory.laurent_series
 
 import algebra_comp
@@ -390,12 +392,11 @@ lemma not_is_field : ¬ is_field (𝓞 p K) :=
 by simpa [← (is_integral_closure.is_integral_algebra 𝔽_[p]⟦X⟧ K).is_field_iff_is_field
   (algebra_map_injective p K)] using (FpX_int_completion.not_is_field p)
 
--- Do we have this for power series? I cannot find it
--- I wrote the power series version in for_mathlib/power_series
-instance : is_dedekind_domain ↥𝔽_[p]⟦X⟧ := 
-{ is_noetherian_ring   := FpX_int_completion.is_noetherian_ring,
-  dimension_le_one     := sorry,
-  is_integrally_closed := is_bezout.is_integrally_closed }
+instance : is_principal_ideal_ring ↥𝔽_[p]⟦X⟧ := 
+is_principal_ideal_ring.of_surjective (@power_series.ring_equiv 𝔽_[p] _).symm.to_ring_hom
+  (ring_equiv.surjective _)
+
+instance : is_dedekind_domain ↥𝔽_[p]⟦X⟧ := infer_instance
 
 /-- This can be proven using the argument from Serre's Local Fields II.2, which
 does not assume K/𝔽_[p]⟮⟮X⟯⟯ to be separable.  -/
@@ -442,9 +443,8 @@ sorry
 /-- The ring of integers of `𝔽_[p]⟮⟮X⟯⟯` as a mixed characteristic local field is just `𝔽_[p]⟦X⟧`. -/
 noncomputable! def ring_of_integers_equiv (p : ℕ) [fact(nat.prime p)] :
   ring_of_integers p 𝔽_[p]⟮⟮X⟯⟯ ≃+* 𝔽_[p]⟦X⟧ := sorry
-/- --sorry 
-@ring_of_integers.equiv p _ 𝔽_[p]⟮⟮X⟯⟯ _ _ 𝔽_[p]⟦X⟧ _ _ (FpX_int_completion p).algebra (is_scalar_tower.left 𝔽_[p]⟦X⟧) 
-  is_integrally_closed.is_integral_closure --timeout
- -/
+/- @ring_of_integers.equiv p _ 𝔽_[p]⟮⟮X⟯⟯ _ _ 𝔽_[p]⟦X⟧ _ _ (FpX_int_completion p).algebra (is_scalar_tower.left 𝔽_[p]⟦X⟧) 
+  is_integrally_closed.is_integral_closure --timeout -/
+
 
 end FpX_field_completion

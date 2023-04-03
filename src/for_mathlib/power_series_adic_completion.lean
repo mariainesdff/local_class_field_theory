@@ -7,11 +7,16 @@ import algebra.order.hom.monoid
 -- import algebra.hom.group
 import for_mathlib.num_denom_away
 import for_mathlib.polynomial
+import for_mathlib.power_series
 import ring_theory.dedekind_domain.adic_valuation
 import ring_theory.laurent_series
 import ring_theory.power_series.well_known
 
 import algebra_comp
+
+/-
+invalid definition, a declaration named 'power_series.irreducible_X' has already been declared
+-/
 
 
 open polynomial is_dedekind_domain.height_one_spectrum topological_space ratfunc
@@ -898,73 +903,6 @@ lemma bdd_below.well_founded_on_lt {X : Type} [preorder X] {s : set X} :
 section away
 open away
 
-lemma power_series.irreducible_X : irreducible (power_series.X : (power_series K)) :=
-prime.irreducible power_series.X_prime
-
-
-open discrete_valuation_ring
-
-/- Given a non-zero power series, this is the power series obtained by dividing out the largest
-  power of X-/
-def divide_X_pow_order {f : power_series K} (hf : f ≠ 0) : (power_series K) :=
-(exists_eq_mul_right_of_dvd (power_series.X_pow_order_dvd
-  (power_series.order_finite_iff_ne_zero.mpr hf))).some
-
-lemma divide_X_pow_order_mul {f : power_series K} (hf : f ≠ 0) : f =
-  (power_series.X)^(f.order.get (power_series.order_finite_iff_ne_zero.mpr hf)) *
-    divide_X_pow_order hf :=
-begin
-  have dvd := power_series.X_pow_order_dvd (power_series.order_finite_iff_ne_zero.mpr hf),
-  exact (exists_eq_mul_right_of_dvd dvd).some_spec,
-end
-
-/-Given a non-zero power series, the power series obtained in `divide_X_pow_order` is invertible-/
-lemma is_invertible_divide_X_pow_order {f : power_series K} (hf : f ≠ 0) :
-  invertible (divide_X_pow_order hf) :=
-begin
-  set d := f.order.get (power_series.order_finite_iff_ne_zero.mpr hf) with hd,
-  have f_const : power_series.coeff K d f ≠ 0 := by apply power_series.coeff_order,
-  have dvd := power_series.X_pow_order_dvd (power_series.order_finite_iff_ne_zero.mpr hf),
-  let const : Kˣ,
-  { haveI : invertible (power_series.constant_coeff K (divide_X_pow_order hf)),
-    { apply invertible_of_nonzero,
-      convert f_const,
-      rw [← power_series.coeff_zero_eq_constant_coeff, ← zero_add d],
-      convert (power_series.coeff_X_pow_mul ((exists_eq_mul_right_of_dvd
-        (power_series.X_pow_order_dvd (power_series.order_finite_iff_ne_zero.mpr hf))).some) 
-          d 0).symm,
-      apply divide_X_pow_order_mul},
-    use unit_of_invertible (power_series.constant_coeff K (divide_X_pow_order hf)) },
-  apply invertible.mk (power_series.inv_of_unit ((divide_X_pow_order hf)) const),
-  rw mul_comm,
-  all_goals {exact power_series.mul_inv_of_unit (divide_X_pow_order hf) const rfl},
-end
-
-
-/-Given a non-zero power series, the unit obtained in `divide_X_pow_order_is_unit`-/
-def unit_of_divide_X_pow_order {f : power_series K} (hf : f ≠ 0) : (power_series K)ˣ :=
-@unit_of_invertible _ _ (divide_X_pow_order hf) (is_invertible_divide_X_pow_order hf)
-
-
-lemma power_series.has_unit_mul_pow_irreducible_factorization : 
-  has_unit_mul_pow_irreducible_factorization (power_series K) :=
-⟨power_series.X, and.intro power_series.irreducible_X 
-  begin
-    intros f hf,
-    use f.order.get (power_series.order_finite_iff_ne_zero.mpr hf),
-    use unit_of_divide_X_pow_order hf,
-    exact (divide_X_pow_order_mul hf).symm,
-  end⟩
-
-instance : unique_factorization_monoid (power_series K) :=
-power_series.has_unit_mul_pow_irreducible_factorization.to_unique_factorization_monoid
-
-instance : discrete_valuation_ring (power_series K) :=
-of_has_unit_mul_pow_irreducible_factorization
-  power_series.has_unit_mul_pow_irreducible_factorization
-
-instance : is_principal_ideal_ring (power_series K) := infer_instance
-
 def laurent_series.trunc (f : laurent_series K) (d : ℕ) : ratfunc K :=
 begin
   by_cases hf : f = 0,
@@ -1002,8 +940,15 @@ def laurent_series.equiv : (completion_of_ratfunc K) ≃ (laurent_series K) :=
   left_inv := sorry,
   right_inv := sorry }
 
+.
+
 noncomputable! def laurent_series.ring_equiv : 
   ring_equiv (completion_of_ratfunc K) (laurent_series K) :=
+sorry
+
+#where
+noncomputable! def power_series.ring_equiv : ring_equiv (adic_completion_integers (ratfunc K) 
+  (ideal_X K : is_dedekind_domain.height_one_spectrum (polynomial K))) (power_series K) :=
 sorry
 
 instance : algebra (ratfunc K) (completion_of_ratfunc K) := 

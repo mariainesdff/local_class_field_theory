@@ -170,19 +170,20 @@ def normalized_valuation (K : Type*) [field K] [eq_char_local_field p K] : valua
 instance (K : Type*) [field K] [eq_char_local_field p K] : valued K ℤₘ₀ :=
   valued.mk' (normalized_valuation K) 
 
---Failed to find algebra `(ratfunc (galois_field p 1)) K` instance
-/- lemma normalized_valuation_X_ne_zero [eq_char_local_field p K] :
+instance : algebra (ratfunc 𝔽_[p]) K := algebra.comp (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯ K
+
+lemma normalized_valuation_X_ne_zero [eq_char_local_field p K] :
   (normalized_valuation K) (algebra_map (ratfunc 𝔽_[p]) _ X) ≠ 0 :=
-by {simp only [ne.def, valuation.zero_iff, nat.cast_eq_zero], from nat.prime.ne_zero (fact.out _)}  -/
+by {simp only [ne.def, valuation.zero_iff, nat.cast_eq_zero], apply sorry/-  nat.prime.ne_zero (fact.out _) -/}  
 
 
 
 open multiplicative is_dedekind_domain.height_one_spectrum
-/- def ramification_index (K : Type*) [field K] [eq_char_local_field p K] : ℤ := 
+def ramification_index (K : Type*) [field K] [eq_char_local_field p K] : ℤ := 
   -(with_zero.unzero (normalized_valuation_X_ne_zero K)).to_add
 
 localized "notation (name := ramification_index)
-  `e` := eq_char_local_field.ramification_index" in eq_char_local_field -/
+  `e` := eq_char_local_field.ramification_index" in eq_char_local_field 
 
 end eq_char_local_field
 
