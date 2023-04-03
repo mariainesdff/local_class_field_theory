@@ -899,14 +899,8 @@ section away
 open away
 
 lemma power_series.irreducible_X : irreducible (power_series.X : (power_series K)) :=
-begin
-  sorry
-end
+prime.irreducible power_series.X_prime
 
--- lemma pippo : local_ring (power_series K) :=
--- begin
---   apply mv_power_series.local_ring,
--- end
 
 open discrete_valuation_ring
 
@@ -915,10 +909,10 @@ open discrete_valuation_ring
 def divide_X_pow_order {f : power_series K} (hf : f ≠ 0) : (power_series K) :=
 (exists_eq_mul_right_of_dvd (power_series.X_pow_order_dvd
   (power_series.order_finite_iff_ne_zero.mpr hf))).some
--- end
 
 lemma divide_X_pow_order_mul {f : power_series K} (hf : f ≠ 0) : f =
-  (power_series.X)^(f.order.get (power_series.order_finite_iff_ne_zero.mpr hf)) * divide_X_pow_order hf :=
+  (power_series.X)^(f.order.get (power_series.order_finite_iff_ne_zero.mpr hf)) *
+    divide_X_pow_order hf :=
 begin
   have dvd := power_series.X_pow_order_dvd (power_series.order_finite_iff_ne_zero.mpr hf),
   exact (exists_eq_mul_right_of_dvd dvd).some_spec,
@@ -931,90 +925,56 @@ begin
   set d := f.order.get (power_series.order_finite_iff_ne_zero.mpr hf) with hd,
   have f_const : power_series.coeff K d f ≠ 0 := by apply power_series.coeff_order,
   have dvd := power_series.X_pow_order_dvd (power_series.order_finite_iff_ne_zero.mpr hf),
-  let const : Kˣ, 
+  let const : Kˣ,
   { haveI : invertible (power_series.constant_coeff K (divide_X_pow_order hf)),
     { apply invertible_of_nonzero,
       convert f_const,
       rw [← power_series.coeff_zero_eq_constant_coeff, ← zero_add d],
-      convert (power_series.coeff_X_pow_mul ((exists_eq_mul_right_of_dvd dvd).some) d 0).symm,
-      apply divide_X_pow_order_mul,},
-    use unit_of_invertible (power_series.constant_coeff K (divide_X_pow_order hf)),
-      },
+      convert (power_series.coeff_X_pow_mul ((exists_eq_mul_right_of_dvd
+        (power_series.X_pow_order_dvd (power_series.order_finite_iff_ne_zero.mpr hf))).some) 
+          d 0).symm,
+      apply divide_X_pow_order_mul},
+    use unit_of_invertible (power_series.constant_coeff K (divide_X_pow_order hf)) },
   apply invertible.mk (power_series.inv_of_unit ((divide_X_pow_order hf)) const),
   rw mul_comm,
   all_goals {exact power_series.mul_inv_of_unit (divide_X_pow_order hf) const rfl},
 end
 
-/-Given a non-zero power series, the power series obtained in `divide_X_pow_order` is a unit-/
-def divide_X_pow_order_is_unit {f : power_series K} (hf : f ≠ 0) : (power_series K)ˣ := 
-begin
-  set d := f.order.get (power_series.order_finite_iff_ne_zero.mpr hf) with hd,
-  have dvd := power_series.X_pow_order_dvd (power_series.order_finite_iff_ne_zero.mpr hf),
-  set g := (exists_eq_mul_right_of_dvd dvd).some with hg_def,
-  have hg := (exists_eq_mul_right_of_dvd dvd).some_spec,
-  simp_rw ← hd at hg,
-  let g_const : Kˣ,
-  { haveI : invertible (power_series.constant_coeff K g), 
-    have f_const : power_series.coeff K d f ≠ 0 := by apply power_series.coeff_order,
-    apply invertible_of_nonzero,
-    have := power_series.coeff_X_pow_mul ((exists_eq_mul_right_of_dvd dvd).some) d 0,
-    rw zero_add at this,
-    rw ← hg at this,
-    convert f_const,
-    convert this.symm,
-    rw hg_def,
-    simp only [power_series.coeff_zero_eq_constant_coeff],
-    use unit_of_invertible (power_series.constant_coeff K g),
-    },
-  use g,
-  use (power_series.inv_of_unit g g_const), swap,
-  rw mul_comm,
-  all_goals {apply power_series.mul_inv_of_unit,
-  refl},
-end
 
 /-Given a non-zero power series, the unit obtained in `divide_X_pow_order_is_unit`-/
 def unit_of_divide_X_pow_order {f : power_series K} (hf : f ≠ 0) : (power_series K)ˣ :=
-divide_X_pow_order_is_unit hf
+@unit_of_invertible _ _ (divide_X_pow_order hf) (is_invertible_divide_X_pow_order hf)
+
 
 lemma power_series.has_unit_mul_pow_irreducible_factorization : 
   has_unit_mul_pow_irreducible_factorization (power_series K) :=
-begin
-  fconstructor,
-  use power_series.X,
-  split,
-  apply power_series.irreducible_X,
-  intros f hf,
-  have ord_f := power_series.order_finite_iff_ne_zero.mpr hf,
-  use f.order.get ord_f,
-  use unit_of_divide_X_pow_order hf,
-  exact (divide_X_pow_order_mul hf).symm,
-end
+⟨power_series.X, and.intro power_series.irreducible_X 
+  begin
+    intros f hf,
+    use f.order.get (power_series.order_finite_iff_ne_zero.mpr hf),
+    use unit_of_divide_X_pow_order hf,
+    exact (divide_X_pow_order_mul hf).symm,
+  end⟩
 
 instance : unique_factorization_monoid (power_series K) :=
-begin
-  apply power_series.has_unit_mul_pow_irreducible_factorization.to_unique_factorization_monoid,
-end
+power_series.has_unit_mul_pow_irreducible_factorization.to_unique_factorization_monoid
 
 instance : discrete_valuation_ring (power_series K) :=
-begin
- apply of_has_unit_mul_pow_irreducible_factorization
-  power_series.has_unit_mul_pow_irreducible_factorization,
-end
+of_has_unit_mul_pow_irreducible_factorization
+  power_series.has_unit_mul_pow_irreducible_factorization
 
 instance : is_principal_ideal_ring (power_series K) := infer_instance
 
 def laurent_series.trunc (f : laurent_series K) (d : ℕ) : ratfunc K :=
 begin
   by_cases hf : f = 0,
-  use 0,
-  have trivX : irreducible (power_series.X), sorry,
-  haveI : normalization_monoid (power_series K), sorry,
-  let F := (exists_reduced_fraction (power_series.X : (power_series K)) (laurent_series K)
-    trivX f hf).some,
-  let n := (exists_reduced_fraction (power_series.X : (power_series K)) (laurent_series K)
-    trivX f hf).some_spec.some,
-  use (ratfunc.X : (ratfunc K))^n * ↑(F.trunc d),
+  { use 0 },
+  { haveI : normalization_monoid (power_series K), sorry,
+    let F := (exists_reduced_fraction (power_series.X : (power_series K)) (laurent_series K)
+      power_series.irreducible_X f hf).some,
+    let n := (exists_reduced_fraction (power_series.X : (power_series K)) (laurent_series K)
+      power_series.irreducible_X f hf).some_spec.some,
+    use (ratfunc.X : (ratfunc K))^n * ↑(F.trunc d) },
 end
 
 @[simp]
