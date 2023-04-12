@@ -43,7 +43,7 @@ variables [function_field Fq F] [is_separable (ratfunc Fq) F]
 --variables [function_field Fq L] [is_separable (ratfunc Fq) L]
 
 variables (L : Type) [field L] [algebra 𝔽_[p][X] L]  [algebra (ratfunc 𝔽_[p]) L] 
-noncomputable example : is_scalar_tower (𝔽_[p][X]) (ratfunc 𝔽_[p]) L := sorry
+noncomputable example : is_scalar_tower 𝔽_[p][X] (ratfunc 𝔽_[p]) L := sorry
 
 
 
