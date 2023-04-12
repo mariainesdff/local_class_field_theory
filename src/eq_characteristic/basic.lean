@@ -225,7 +225,7 @@ variables (p) (K L : Type*) [field K] [eq_char_local_field p K] [field L] [eq_ch
 
 protected lemma is_algebraic : algebra.is_algebraic 𝔽_[p]⟮⟮X⟯⟯ K := algebra.is_algebraic_of_finite _ _
 
-instance char_p : char_p K p := 
+@[priority 100] instance char_p : char_p K p := 
 char_p_of_injective_algebra_map (algebra_map 𝔽_[p]⟮⟮X⟯⟯ K).injective p
 
 /-- The ring of integers of a mixed characteristic local field is the integral closure of ℤ_[p]
@@ -422,7 +422,7 @@ namespace FpX_field_completion
 open eq_char_local_field
 
 -- TODO: change comment
-instance mixed_char_local_field (p : ℕ) [fact(nat.prime p)] : 
+instance eq_char_local_field (p : ℕ) [fact(nat.prime p)] : 
   eq_char_local_field p 𝔽_[p]⟮⟮X⟯⟯ :=
 { to_finite_dimensional :=
   -- The vector space structure of `ℚ` over itself can arise in multiple ways:
@@ -448,3 +448,6 @@ noncomputable! def ring_of_integers_equiv (p : ℕ) [fact(nat.prime p)] :
 
 
 end FpX_field_completion
+
+
+#lint

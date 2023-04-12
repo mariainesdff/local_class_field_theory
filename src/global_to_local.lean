@@ -31,16 +31,19 @@ namespace function_field
 
 open_locale polynomial
 
---variables (p : ℕ) [fact (nat.prime p)]
-variables (Fq F : Type) [field Fq] [fintype Fq] [field F]
+variables (p : ℕ) [fact (nat.prime p)]
+/- variables (Fq F : Type) [field Fq] [fintype Fq] [field F]
 variables [algebra Fq[X] F] [algebra (ratfunc Fq) F]
 variables [is_scalar_tower Fq[X] (ratfunc Fq) F]
 variables [function_field Fq F] [is_separable (ratfunc Fq) F]
-noncomputable example : is_scalar_tower (Fq[X]) (ratfunc Fq) L := sorry
 
-variables [function_field Fq L] [is_separable (ratfunc Fq) L]
+#exit -/
+--noncomputable example : is_scalar_tower (Fq[X]) (ratfunc Fq) L := sorry
 
---variables (L : Type) [field L] [algebra 𝔽_[p][X] L]  [algebra (ratfunc 𝔽_[p]) L] 
+--variables [function_field Fq L] [is_separable (ratfunc Fq) L]
+
+variables (L : Type) [field L] [algebra 𝔽_[p][X] L]  [algebra (ratfunc 𝔽_[p]) L] 
+noncomputable example : is_scalar_tower (𝔽_[p][X]) (ratfunc 𝔽_[p]) L := sorry
 
 
 

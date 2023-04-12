@@ -167,7 +167,7 @@ noncomputable! def open_unit_ball : height_one_spectrum (𝓞 p K) :=
 def normalized_valuation (K : Type*) [field K] [eq_char_local_field p K] : valuation K ℤₘ₀ :=
   (open_unit_ball K).valuation
 
-instance (K : Type*) [field K] [eq_char_local_field p K] : valued K ℤₘ₀ :=
+@[priority 100] instance (K : Type*) [field K] [eq_char_local_field p K] : valued K ℤₘ₀ :=
   valued.mk' (normalized_valuation K) 
 
 instance : algebra (ratfunc 𝔽_[p]) K := algebra.comp (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯ K
@@ -247,3 +247,5 @@ end
  -/
 
 end FpX_field_completion
+
+#lint
