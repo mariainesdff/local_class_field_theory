@@ -112,7 +112,7 @@ universes u v
 
 -- -- end away
 
-section away
+-- section away
 
 open multiplicity unique_factorization_monoid is_localization
 
