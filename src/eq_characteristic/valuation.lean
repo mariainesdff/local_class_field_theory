@@ -13,6 +13,8 @@ import eq_characteristic.basic
 import from_mathlib.normed_valued
 import from_mathlib.spectral_norm_unique
 
+import from_mathlib.normed_valued
+
 noncomputable theory
 
 -- /- 
@@ -104,6 +106,119 @@ begin
     exact (le_of_lt hn) },
   { exact zero_le_one }, -/
 end
+
+
+section poly
+
+open_locale polynomial
+
+variables {S : Type*} [semi_normed_ring S]
+
+. 
+
+lemma bar (P : S[X]) /- (hP : monic P) -/ : 
+  spectral_value P ≤ 1 ↔ ∀ n : ℕ , ‖P.coeff n‖ ≤ 1 :=
+begin
+  rw spectral_value,
+  simp only [spectral_value_terms],
+
+  split; intro h,
+  { sorry },
+  { apply csupr_le,
+    intros n,
+    split_ifs with hn,
+    { apply real.rpow_le_one (norm_nonneg _) (h n),
+      rw [one_div_nonneg,sub_nonneg, nat.cast_le],
+      exact le_of_lt hn, },
+    { exact zero_le_one }},
+end
+
+#exit
+
+variables (R : Type*) [comm_ring R] [is_domain R] [is_dedekind_domain R] (L : Type*) [field L]
+  [algebra R L] [is_fraction_ring R L] (v : height_one_spectrum R)
+  [hv : is_rank_one  (@valued.v (is_dedekind_domain.height_one_spectrum.adic_completion L v) _ 
+    ℤₘ₀ _ _)]
+
+include hv
+
+instance : normed_field (is_dedekind_domain.height_one_spectrum.adic_completion L v) :=
+by apply @rank_one_valuation.valued_field.to_normed_field
+  (is_dedekind_domain.height_one_spectrum.adic_completion L v) _ ℤₘ₀ _ _ hv
+
+.
+
+lemma norm_le_one_iff_val_le_one (x : is_dedekind_domain.height_one_spectrum.adic_completion L v) :
+  ‖x‖ ≤ 1 ↔ valued.v x ≤ (1 : ℤₘ₀) :=
+begin
+  have hx : ‖x‖ = hv.hom (valued.v x) := rfl,
+  rw [hx, ← nnreal.coe_one, nnreal.coe_le_coe, ← map_one  (is_rank_one.hom
+      (@valued.v (is_dedekind_domain.height_one_spectrum.adic_completion L v) _ ℤₘ₀ _ _)),
+    strict_mono.le_iff_le],
+  exact is_rank_one.strict_mono,
+end
+
+def int_polynomial {P : (is_dedekind_domain.height_one_spectrum.adic_completion L v)[X]}
+  (hP : ∀ n : ℕ , ‖P.coeff n‖ ≤ 1) :
+  (is_dedekind_domain.height_one_spectrum.adic_completion_integers L v)[X] := 
+{ to_finsupp := 
+  { support := P.support,
+    to_fun := λ n, ⟨P.coeff n, (height_one_spectrum.mem_adic_completion_integers R L v).mp
+       ((norm_le_one_iff_val_le_one R L v _).mp (hP n))⟩,
+    mem_support_to_fun := λ n, by rw [mem_support_iff, ne.def, not_iff_not, subtype.ext_iff,
+      subring.coe_zero, subtype.coe_mk] }}
+
+lemma int_polynomial_coeff_eq 
+  {P : (is_dedekind_domain.height_one_spectrum.adic_completion L v)[X]}
+  (hP : ∀ n : ℕ , ‖P.coeff n‖ ≤ 1) (n : ℕ) :
+  ↑((int_polynomial R L v hP).coeff n) = P.coeff n :=
+rfl
+
+lemma int_polynomial_leading_coeff_eq 
+  {P : (is_dedekind_domain.height_one_spectrum.adic_completion L v)[X]}
+  (hP : ∀ n : ℕ , ‖P.coeff n‖ ≤ 1) :
+  ↑((int_polynomial R L v hP).leading_coeff) = P.leading_coeff :=
+rfl
+
+lemma int_polynomial_nat_degree 
+  {P : (is_dedekind_domain.height_one_spectrum.adic_completion L v)[X]}
+  (hP : ∀ n : ℕ , ‖P.coeff n‖ ≤ 1) :
+  (int_polynomial R L v hP).nat_degree = P.nat_degree :=
+rfl
+
+end poly
+.
+
+lemma mem_FpX_int_completion' {x : FpX_field_completion p} :
+  x ∈ FpX_int_completion p ↔ ‖ x ‖  ≤ 1 :=
+by rw [FpX_field_completion.mem_FpX_int_completion, norm_le_one_iff_val_le_one]
+
+lemma foo (x : K) : x ∈ 𝓞 p K ↔ norm_on_K (x : K) ≤ 1 :=
+begin
+  refine ⟨λ hx, by apply norm_of_int_le_one ⟨x, hx⟩, _⟩,
+  { intro hx,
+    rw [norm_on_K, spectral_norm, bar] at hx,
+    set P : polynomial ((FpX_int_completion p)) := 
+    int_polynomial (polynomial 𝔽_[p]) (ratfunc 𝔽_[p]) (ideal_X 𝔽_[p]) hx with hP,
+
+    rw [mem_ring_of_integers, is_integral, adic_algebra.int_algebra_map_def,
+      ring_hom.is_integral_elem],
+    use P,
+    split,
+    --TODO: extract general lemmas for int_polynomial
+    { rw [monic, subtype.ext_iff, subring.coe_one, int_polynomial_leading_coeff_eq],
+      apply minpoly.monic (is_algebraic_iff_is_integral.mp 
+        (algebra.is_algebraic_of_finite 𝔽_[p]⟮⟮X⟯⟯ K x)) },
+    { have h : (eval₂ algebra.to_ring_hom x P) = aeval x (minpoly (FpX_field_completion p) x),
+      { rw [aeval_eq_sum_range, eval₂_eq_sum_range],
+        apply finset.sum_congr rfl,
+        intros n hn,
+        rw algebra.smul_def,
+        refl, },
+      rw [h, minpoly.aeval] }}
+end
+
+#exit
 
 variables (K)
 
@@ -247,5 +362,11 @@ end
  -/
 
 end FpX_field_completion
+
+section ring_of_integers
+
+lemma mem_ring_of_integers_iff (x : K) : false := sorry
+
+end ring_of_integers
 
 #lint
