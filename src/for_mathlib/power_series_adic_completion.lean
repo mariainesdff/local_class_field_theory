@@ -903,6 +903,15 @@ lemma bdd_below.well_founded_on_lt {X : Type} [preorder X] {s : set X} :
 section away
 open away
 
+def laurent_series.X_pow (f : laurent_series K) (hf : f ≠ 0) : ℤ := 
+begin
+  haveI : normalization_monoid (power_series K), sorry,
+  use (exists_reduced_fraction (power_series.X : (power_series K)) (laurent_series K)
+      power_series.irreducible_X f hf).some_spec.some,
+end
+
+-- #check laurent_series.X_pow
+
 def laurent_series.trunc (f : laurent_series K) (d : ℕ) : ratfunc K :=
 begin
   by_cases hf : f = 0,
@@ -910,10 +919,16 @@ begin
   { haveI : normalization_monoid (power_series K), sorry,
     let F := (exists_reduced_fraction (power_series.X : (power_series K)) (laurent_series K)
       power_series.irreducible_X f hf).some,
-    let n := (exists_reduced_fraction (power_series.X : (power_series K)) (laurent_series K)
-      power_series.irreducible_X f hf).some_spec.some,
-    use (ratfunc.X : (ratfunc K))^n * ↑(F.trunc d) },
+    -- let n := (exists_reduced_fraction (power_series.X : (power_series K)) (laurent_series K)
+    --   power_series.irreducible_X f hf).some_spec.some,
+    use (ratfunc.X : (ratfunc K))^(f.X_pow hf) * ↑(F.trunc d) },
 end
+
+-- lemma trunc_same_denom (f : laurent_series K) (d₁ d₂ : ℕ) :
+--   (f.trunc d₁).denom = (f.trunc d₂).denom :=
+-- begin
+--   sorry
+-- end
 
 @[simp]
 lemma laurent_series.trunc_zero (d : ℕ) : (0 : laurent_series K).trunc d = 0 :=
@@ -923,6 +938,16 @@ lemma laurent_series_trunc_eq_power_series (f : power_series K) (d : ℕ) :
   (f : laurent_series K).trunc d = ↑(f.trunc d) := sorry
 
 end away
+
+theorem trunc_is_cauchy (f : laurent_series K) : cauchy_seq (λ d, f.trunc d) :=
+begin
+  have h := valued.has_basis_uniformity (ratfunc K) ℤₘ₀,
+  rw has_basis.cauchy_seq_iff h,-- :
+  -- (𝓤 R).has_basis (λ _, true) (λ (γ : Γ₀ˣ), { p : R × R | v (p.2 - p.1) < (γ : Γ₀) }) :=
+  intros i hi,
+  simp only [ge_iff_le, mem_set_of_eq],
+
+end
 
 def laurent_series.equiv : (completion_of_ratfunc K) ≃ (laurent_series K) :=
 { to_fun :=
