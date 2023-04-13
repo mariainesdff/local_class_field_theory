@@ -14,7 +14,8 @@ lemma is_scalar_tower.comp (R A B : Type*) [comm_semiring R] [comm_semiring A] [
     simp only [algebra.smul_def, map_mul, mul_assoc], refl, 
   end }
 
-@[priority 1000] instance is_scalar_tower.comp' (R A B S : Type*) [comm_semiring R] [comm_semiring A] 
+lemma is_scalar_tower.comp' (R A B S : Type*) [comm_semiring R]
+  [comm_semiring A] 
   [comm_semiring B] [comm_semiring S] [algebra R A] [algebra A B] [algebra A S] [algebra B S] 
   [is_scalar_tower A B S] : 
     @is_scalar_tower R B S (algebra.comp R A B).to_has_smul _ (algebra.comp R A S).to_has_smul:=
