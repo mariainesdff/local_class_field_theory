@@ -425,19 +425,7 @@ instance eq_char_local_field (p : ℕ) [fact(nat.prime p)] :
   -- Show that these coincide:
   by convert (infer_instance : finite_dimensional 𝔽_[p]⟮⟮X⟯⟯ 𝔽_[p]⟮⟮X⟯⟯), }
 
-
-/- instance asdf (p : ℕ) [fact(nat.prime p)] : is_scalar_tower 𝔽_[p]⟦X⟧ 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ := 
-sorry
-
-#check asdf 
- -/
---#exit
-
 . 
-
---TODO: fix this timeout
-
-set_option profiler true
 /-- The ring of integers of `𝔽_[p]⟮⟮X⟯⟯` as a mixed characteristic local field is just `𝔽_[p]⟦X⟧`. -/
 noncomputable! def ring_of_integers_equiv (p : ℕ) [fact(nat.prime p)] :
   ring_of_integers p 𝔽_[p]⟮⟮X⟯⟯ ≃+* 𝔽_[p]⟦X⟧ := 
