@@ -910,8 +910,6 @@ begin
       power_series.irreducible_X f hf).some_spec.some,
 end
 
--- #check laurent_series.X_pow
-
 def laurent_series.trunc (f : laurent_series K) (d : ℕ) : ratfunc K :=
 begin
   by_cases hf : f = 0,
@@ -924,15 +922,23 @@ begin
     use (ratfunc.X : (ratfunc K))^(f.X_pow hf) * ↑(F.trunc d) },
 end
 
--- lemma trunc_same_denom (f : laurent_series K) (d₁ d₂ : ℕ) :
---   (f.trunc d₁).denom = (f.trunc d₂).denom :=
--- begin
---   sorry
--- end
-
 @[simp]
 lemma laurent_series.trunc_zero (d : ℕ) : (0 : laurent_series K).trunc d = 0 :=
 by simp only [laurent_series.trunc, dif_pos]
+
+lemma trunc_same_denom (f : laurent_series K) (d₁ d₂ : ℕ) :
+  (f.trunc d₁).denom = (f.trunc d₂).denom :=
+begin
+  sorry,
+end
+
+lemma no_denom_if_Xpow_nonneg : (f : laurent_series K) (hf : f ≠ 0) (hX : 0 ≤ f.X_pow) (d : ℕ)
+  (f.trunc d).denom = 1 :=
+begin
+  sorry
+end
+
+-- lemma sub_trunc (f : laurent_series K) (d₁ d₂ : ℕ) : f.trunc d₁ - f.trunc d₂ = ∑ a_iX^i...
 
 lemma laurent_series_trunc_eq_power_series (f : power_series K) (d : ℕ) : 
   (f : laurent_series K).trunc d = ↑(f.trunc d) := sorry
