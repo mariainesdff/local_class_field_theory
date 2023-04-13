@@ -14,12 +14,6 @@ import for_mathlib.power_series_adic_completion
 
 import ring_theory.laurent_series
 
-
--- These are imported by for_mathlib.power_series_adic_completion
---import algebra_comp
---import for_mathlib.polynomial
---import for_mathlib.power_series
-
 /-!
 --TODO: Fix comments
 # Mixed characteristic local fields fields
