@@ -24,73 +24,36 @@ open_locale classical
 
 /- Given a non-zero power series `f`, this is the power series obtained by dividing out the largest
   power of X that divides `f`-/
-def fae_order {f : power_series K} (hf : f ≠ 0) : ℕ := 0
+def divided_by_X_pow {f : power_series K} (hf : f ≠ 0) : (power_series K) :=
+(exists_eq_mul_right_of_dvd (power_series.X_pow_order_dvd
+  (order_finite_iff_ne_zero.mpr hf))).some
 
-def divided_by_X_pow {f : power_series K} (hf : f ≠ 0) : (power_series K) := f
--- (exists_eq_mul_right_of_dvd (power_series.X_pow_order_dvd
---   (order_finite_iff_ne_zero.mpr hf))).some
-
-lemma eq_X_pow_mul_divided_by_X_pow {f : power_series K} (hf : f ≠ 0) : f =
-  (power_series.X)^(fae_order hf) *
-  -- (power_series.X)^(f.order.get (order_finite_iff_ne_zero.mpr hf)) *
-    (divided_by_X_pow hf) :=
+lemma eq_X_pow_mul_divided_by_X_pow {f : power_series K} (hf : f ≠ 0) :
+  X^(f.order.get (order_finite_iff_ne_zero.mpr hf)) * (divided_by_X_pow hf) = f :=
 begin
-  rw [fae_order, pow_zero, one_mul, divided_by_X_pow],
-
-  -- sorry,
-  -- have dvd := power_series.X_pow_order_dvd (order_finite_iff_ne_zero.mpr hf),
-  -- exact (exists_eq_mul_right_of_dvd dvd).some_spec,
+  have dvd := power_series.X_pow_order_dvd (order_finite_iff_ne_zero.mpr hf),
+  exact (exists_eq_mul_right_of_dvd dvd).some_spec.symm,
 end
 
 lemma divided_by_X_pow_mul {f g : power_series K} (hf : f ≠ 0) (hg : g ≠ 0) :
   (divided_by_X_pow hf) * (divided_by_X_pow hg) = (divided_by_X_pow (mul_ne_zero hf hg)) :=
 begin
-  have hfg := (mul_ne_zero hf hg),
-  -- have hfg₁ := order_finite_iff_ne_zero.mpr hfg,
-  -- have hf₁ := (X_pow_order_dvd (order_finite_iff_ne_zero.mpr hf)),
-  -- have hg₁ := (X_pow_order_dvd
-  -- (power_series.order_finite_iff_ne_zero.mpr hg)),
-  have hf₂ := (order_finite_iff_ne_zero.mpr hf),
-  have hg₂ := (order_finite_iff_ne_zero.mpr hg),
-  have hfg₂ := (order_finite_iff_ne_zero.mpr hfg),
-  -- have h_div := mul_dvd_mul hf₁ hg₁,
-  -- have h4 := order_mul f g,
-  -- have Hd : (f.order + g.order).dom,
-  -- {rw ← h4,
-  -- use hfg₁},
-  -- have h5 := part_enat.get_add Hd,
-  -- rw [← pow_add, ← h5] at h_div,
-  have h6 := eq_X_pow_mul_divided_by_X_pow hf,
-  have h62 : f * g = ((power_series.X ^ (fae_order hf)) * (divided_by_X_pow hf)) * g,
-  -- have h62 : f * g = power_series.X ^ (f.order.get hf₂) * (divided_by_X_pow hf) * g,
-  rw h6,
-  have h7 := eq_X_pow_mul_divided_by_X_pow hg,
-  have h8 := eq_X_pow_mul_divided_by_X_pow hfg,
-  have final : f * g = power_series.X ^ ((f * g).order.get hfg₂) * (divided_by_X_pow hf)
-    * (divided_by_X_pow hg),
-  calc f * g = power_series.X ^ (f.order.get hf₂) *
-                (divided_by_X_pow hf) * g : by sorry
-         ... = power_series.X ^ (f.order.get hf₂) * (divided_by_X_pow hf) * 
-                power_series.X ^ (g.order.get hg₂) * (divided_by_X_pow hg) : by sorry
-         ... = power_series.X ^ ((f.order.get hf₂) + (g.order.get hg₂)) * (divided_by_X_pow hf) 
-                  * (divided_by_X_pow hg) : by sorry
-         ... = power_series.X ^ ((f * g).order.get hfg₂) * (divided_by_X_pow hf)
-    * (divided_by_X_pow hg) : by sorry,
-  have h9 : X ^ ((f * g).order.get hfg₂) * divided_by_X_pow hfg =
-    X ^ (f * g).order.get hfg₂ * divided_by_X_pow hf,
-  -- rw final,
-  -- simp_rw final,
-
-  
-
-
-  
-  
-  rw divided_by_X_pow,
-  rw divided_by_X_pow,
-  rw divided_by_X_pow,
-  simp_rw this,
-  sorry,
+  let df := f.order.get (order_finite_iff_ne_zero.mpr hf),
+  let dg := g.order.get (order_finite_iff_ne_zero.mpr hg),
+  let dfg := (f * g).order.get (order_finite_iff_ne_zero.mpr (mul_ne_zero hf hg)),
+  have H_add_d : df + dg = dfg := by simp only [dfg, df, dg, order_mul f g, part_enat.get_add],
+  have H := eq_X_pow_mul_divided_by_X_pow (mul_ne_zero hf hg),
+  have : f * g = X ^ (dfg) * ((divided_by_X_pow hf) * (divided_by_X_pow hg)),
+  { calc f * g = X^df * (divided_by_X_pow hf) * (X^dg *
+                  (divided_by_X_pow hg)) : by {simp only [eq_X_pow_mul_divided_by_X_pow]}
+           ... = X^df * X^dg * (divided_by_X_pow hf) * 
+                  (divided_by_X_pow hg) : by ring
+           ... = X^(df + dg)*(divided_by_X_pow hf) * (divided_by_X_pow hg) : by {rw [pow_add]}
+           ... = X^dfg * (divided_by_X_pow hf) * (divided_by_X_pow hg) : by {rw [H_add_d]}
+           ... = X^dfg * ((divided_by_X_pow hf) * (divided_by_X_pow hg)) : by {rw [mul_assoc]}, },
+    simp_rw [← dfg, this] at H,
+    convert (is_domain.mul_left_cancel_of_ne_zero _ H).symm,
+    exact pow_ne_zero dfg X_ne_zero,
 end
 
 
@@ -109,7 +72,7 @@ begin
       convert (power_series.coeff_X_pow_mul ((exists_eq_mul_right_of_dvd
         (power_series.X_pow_order_dvd (power_series.order_finite_iff_ne_zero.mpr hf))).some) 
           d 0).symm,
-      apply eq_X_pow_mul_divided_by_X_pow},
+      exact (eq_X_pow_mul_divided_by_X_pow hf).symm },
     use unit_of_invertible (power_series.constant_coeff K (divided_by_X_pow hf)) },
   apply invertible.mk (power_series.inv_of_unit ((divided_by_X_pow hf)) const),
   rw mul_comm,
@@ -140,7 +103,7 @@ lemma power_series.has_unit_mul_pow_irreducible_factorization :
     use f.order.get (power_series.order_finite_iff_ne_zero.mpr hf),
     use unit_of_divided_by_X_pow f,
     simp only [unit_of_divide_X_pow_order_nonzero hf],
-    exact (eq_X_pow_mul_divided_by_X_pow hf).symm,
+    exact eq_X_pow_mul_divided_by_X_pow hf,
   end⟩
 
 instance : unique_factorization_monoid (power_series K) :=
@@ -202,7 +165,23 @@ instance power_series.is_dedekind_domain [field K] :
 is_principal_ideal_ring.is_dedekind_domain (power_series K)
 
 instance : normalization_monoid (power_series K) :=
-{ norm_unit := _,
-  norm_unit_zero := _,
-  norm_unit_mul := _,
-  norm_unit_coe_units := _ }
+{ norm_unit :=
+begin
+  intro f,
+  use unit_of_divided_by_X_pow f,
+end,
+  norm_unit_zero :=
+begin
+  simp,
+end,
+  norm_unit_mul :=
+begin
+  intros f g hf hg,
+  simp only [unit_of_divide_X_pow_order_nonzero (mul_ne_zero hf hg), unit_of_divide_X_pow_order_nonzero hf, unit_of_divide_X_pow_order_nonzero hg,
+    units.ext_iff, coe_unit_of_invertible,
+    units.coe_mul, divided_by_X_pow_mul],
+end,
+  norm_unit_coe_units :=
+begin
+  intro u,
+end }
