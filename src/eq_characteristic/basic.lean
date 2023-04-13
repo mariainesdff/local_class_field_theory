@@ -144,10 +144,9 @@ instance is_fraction_ring : is_fraction_ring 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯�
 (by apply_instance : is_fraction_ring ((ideal_X 𝔽_[p]).adic_completion_integers (ratfunc 𝔽_[p]))
   ((ideal_X 𝔽_[p]).adic_completion (ratfunc 𝔽_[p])))
 
+variable (p)
 instance : is_integral_closure 𝔽_[p]⟦X⟧ 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ := 
 is_integrally_closed.is_integral_closure
-
-variable (p)
 
 def X : FpX_int_completion p :=
 ⟨algebra_map (ratfunc 𝔽_[p]) _ X, FpX_field_completion.X_mem_FpX_int_completion⟩
@@ -434,15 +433,30 @@ sorry
  -/
 --#exit
 
+. 
+
 --TODO: fix this timeout
+
+set_option profiler true
 /-- The ring of integers of `𝔽_[p]⟮⟮X⟯⟯` as a mixed characteristic local field is just `𝔽_[p]⟦X⟧`. -/
 noncomputable! def ring_of_integers_equiv (p : ℕ) [fact(nat.prime p)] :
-  ring_of_integers p 𝔽_[p]⟮⟮X⟯⟯ ≃+* 𝔽_[p]⟦X⟧ := sorry
-/- @ring_of_integers.equiv p _ 𝔽_[p]⟮⟮X⟯⟯ _ _ 𝔽_[p]⟦X⟧ _ _ (FpX_int_completion p).algebra (is_scalar_tower.left 𝔽_[p]⟦X⟧) 
-  is_integrally_closed.is_integral_closure --timeout -/
+  ring_of_integers p 𝔽_[p]⟮⟮X⟯⟯ ≃+* 𝔽_[p]⟦X⟧ := 
+begin  --1.59s
+  have h := @ring_of_integers.equiv p _ 𝔽_[p]⟮⟮X⟯⟯ _ _ 𝔽_[p]⟦X⟧ _ _ (FpX_int_completion p).algebra
+    (is_scalar_tower.left 𝔽_[p]⟦X⟧), 
+  have h1 := FpX_int_completion.FpX_field_completion.is_integral_closure p,
+  exact @h h1,
+end
+/- 
+-- deterministic timeout
+@ring_of_integers.equiv p _ 𝔽_[p]⟮⟮X⟯⟯ _ _ 𝔽_[p]⟦X⟧ _ _ (FpX_int_completion p).algebra
+    (is_scalar_tower.left 𝔽_[p]⟦X⟧) (FpX_int_completion.FpX_field_completion.is_integral_closure p) -/
+
+--by apply ring_of_integers.equiv  --21.7s
+
 
 
 end FpX_field_completion
 
 
-#lint
+--#lint
