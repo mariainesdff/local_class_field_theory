@@ -15,6 +15,8 @@ import from_mathlib.spectral_norm_unique
 
 import from_mathlib.normed_valued
 
+--import algebra.group.type_tags
+
 noncomputable theory
 
 -- /- 
@@ -47,7 +49,7 @@ noncomputable! instance : is_rank_one (@FpX_field_completion.with_zero.valued p 
       exact one_ne_zero }
   end }
 
-instance : normed_field 𝔽_[p]⟮⟮X⟯⟯ := rank_one_valuation.valued_field.to_normed_field
+instance : normed_field 𝔽_[p]⟮⟮X⟯⟯ := rank_one_valuation.valued_field.to_normed_field _ _
 
 end FpX_field_completion
 
@@ -81,50 +83,43 @@ subtype.ext_iff
 lemma norm_on_K_one {K : Type*} [field K] [eq_char_local_field p K] : norm_on_K (1 : K) = 1 := 
 by rw [norm_on_K, spectral_norm_is_norm_one_class]
 
-lemma norm_of_int_le_one (x : 𝓞 p K) : norm_on_K (x : K) ≤ 1 :=
-begin
-  sorry
-  /- let min_Z := minpoly ℤ_[p] x,
-  have h_Z_monic := minpoly.monic (is_integral_closure.is_integral ℤ_[p] K x),
-  let min_Q : polynomial ℚ_[p] := polynomial.map padic_int.coe.ring_hom min_Z,
-  have h_Q_monic : monic min_Q := polynomial.monic.map padic_int.coe.ring_hom h_Z_monic,
-  have is_minpoly : min_Q = @minpoly ℚ_[p] K _ _ _ (x : K),
-  exact (minpoly.is_integrally_closed_eq_field_fractions ℚ_[p] K (is_integral_closure.is_integral
-    ℤ_[p] K x)).symm,
-  have : norm_on_K (x : K) = spectral_value h_Q_monic,
-  simp only [norm_on_K, spectral_norm, ← is_minpoly],
-  rw [this],
-  refine csupr_le _,
-  intro n,
-  simp only [spectral_value_terms],
-  split_ifs with hn,
-  { have coeff_coe : ∀ n : ℕ, min_Q.coeff n = min_Z.coeff n :=
-    λ n, by {simpa only [polynomial.coeff_map]},
-    rw [coeff_coe n, padic_int.padic_norm_e_of_padic_int],
-    apply real.rpow_le_one (norm_nonneg _) (polynomial.coeff min_Z n).norm_le_one,
-    simp only [one_div, inv_nonneg, sub_nonneg, nat.cast_le],
-    exact (le_of_lt hn) },
-  { exact zero_le_one }, -/
-end
+
 
 
 section poly
 
 open_locale polynomial
 
-variables {S : Type*} [semi_normed_ring S]
+variables {S : Type*} [normed_division_ring S]
 
 . 
 
-lemma bar (P : S[X]) /- (hP : monic P) -/ : 
+lemma bar {P : S[X]} (hP : monic P) : 
   spectral_value P ≤ 1 ↔ ∀ n : ℕ , ‖P.coeff n‖ ≤ 1 :=
 begin
   rw spectral_value,
-  simp only [spectral_value_terms],
-
   split; intro h,
-  { sorry },
-  { apply csupr_le,
+  { intros n,
+    by_contradiction hn,
+    rw not_le at hn,
+    have hsupr : 1 < supr (spectral_value_terms P),
+    { have hn' : 1 < spectral_value_terms P n,--‖P.coeff n‖ ^ (1 / (↑(P.nat_degree) - (n : ℝ))),
+      { simp only [spectral_value_terms],
+        split_ifs with hPn,
+        { apply real.one_lt_rpow hn,
+          simp only [one_div, inv_pos, sub_pos, nat.cast_lt],
+          exact hPn },
+        { rw [not_lt, le_iff_lt_or_eq] at hPn,
+          cases hPn with hlt heq,
+          { rw [coeff_eq_zero_of_nat_degree_lt hlt, norm_zero] at hn,
+            exfalso, linarith, },
+          { rw [monic, leading_coeff, heq] at hP,
+            rw [hP, norm_one] at hn,
+            linarith, }}},
+      exact lt_csupr_of_lt (spectral_value_terms_bdd_above P) n hn', },
+    linarith, },
+  { simp only [spectral_value_terms],
+    apply csupr_le,
     intros n,
     split_ifs with hn,
     { apply real.rpow_le_one (norm_nonneg _) (h n),
@@ -133,20 +128,108 @@ begin
     { exact zero_le_one }},
 end
 
-#exit
-
 variables (R : Type*) [comm_ring R] [is_domain R] [is_dedekind_domain R] (L : Type*) [field L]
   [algebra R L] [is_fraction_ring R L] (v : height_one_spectrum R)
-  [hv : is_rank_one  (@valued.v (is_dedekind_domain.height_one_spectrum.adic_completion L v) _ 
-    ℤₘ₀ _ _)]
 
-include hv
+open_locale classical
 
-instance : normed_field (is_dedekind_domain.height_one_spectrum.adic_completion L v) :=
-by apply @rank_one_valuation.valued_field.to_normed_field
-  (is_dedekind_domain.height_one_spectrum.adic_completion L v) _ ℤₘ₀ _ _ hv
 
-.
+def with_zero_mult_int_to_nnreal_def (e : nnreal)  : ℤₘ₀ → ℝ≥0 := 
+λ x, if hx : x = 0 then 0 else e^(multiplicative.to_add (with_zero.unzero hx))
+
+open with_zero
+
+def with_zero_mult_int_to_nnreal {e : nnreal} (he : e ≠ 0)  : ℤₘ₀ →*₀ ℝ≥0 := 
+{ to_fun    := with_zero_mult_int_to_nnreal_def e,
+  map_zero' := by { simp only [with_zero_mult_int_to_nnreal_def], rw dif_pos, refl },
+  map_one'  := begin
+    simp only [with_zero_mult_int_to_nnreal_def], rw dif_neg,
+    { simp only [unzero_coe, to_add_one, zpow_zero] },
+    { exact ne_zero.ne 1 },
+  end,
+  map_mul'  := λ x y, begin
+    simp only [with_zero_mult_int_to_nnreal_def],
+    by_cases hxy : x * y = 0,
+    { cases (zero_eq_mul.mp (eq.symm hxy)) with hx hy, --either x = 0 or y = 0
+      { rw [dif_pos hxy, dif_pos hx, zero_mul] },
+      { rw [dif_pos hxy, dif_pos hy, mul_zero] },},
+    { cases (mul_ne_zero_iff.mp hxy) with hx hy, --  x ≠ 0 and y ≠ 0
+      rw [dif_neg hxy, dif_neg hx, dif_neg hy, ← zpow_add' (or.inl he)], 
+      apply congr_arg,
+      rw ← to_add_mul,
+      apply congr_arg,
+      rw [← with_zero.coe_inj, with_zero.coe_mul, coe_unzero hx,coe_unzero hy, coe_unzero hxy] },
+  end }
+
+lemma  with_zero_mult_int_to_nnreal_strict_mono {e : nnreal} (he : 1 < e) : 
+  strict_mono (with_zero_mult_int_to_nnreal (ne_zero_of_lt he))  := 
+begin
+  intros x y hxy,
+  simp only [with_zero_mult_int_to_nnreal, with_zero_mult_int_to_nnreal_def, 
+    monoid_with_zero_hom.coe_mk],
+  split_ifs with hx hy hy,
+  { simp only [hy, not_lt_zero'] at hxy, exfalso, exact hxy },
+  { apply zpow_pos (ne_zero_of_lt he) },
+  { simp only [hy, not_lt_zero'] at hxy, exfalso, exact hxy },
+  { rw [zpow_lt_iff_lt he, multiplicative.to_add_lt, ← with_zero.coe_lt_coe,
+      with_zero.coe_unzero hx, with_zero.coe_unzero hy],
+    exact hxy }
+end 
+
+def valuation_base (R : Type*) [comm_ring R] [is_domain R] [is_dedekind_domain R] (L : Type*)
+  [field L] [algebra R L] [is_fraction_ring R L] (v : height_one_spectrum R) : ℝ≥0 := 
+if 1 < nat.card
+    (local_ring.residue_field (is_dedekind_domain.height_one_spectrum.adic_completion_integers L v))
+  then nat.card
+    (local_ring.residue_field (is_dedekind_domain.height_one_spectrum.adic_completion_integers L v))
+  else 2
+
+lemma one_lt_valuation_base (R : Type*) [comm_ring R] [is_domain R] [is_dedekind_domain R]
+  (L : Type*) [field L] [algebra R L] [is_fraction_ring R L] (v : height_one_spectrum R) : 
+  1 < valuation_base R L v :=
+begin
+  rw valuation_base,
+  split_ifs with hlt hge,
+  { rw [nat.one_lt_cast], exact hlt },
+  { exact one_lt_two }
+end
+
+lemma valuation_base_ne_zero (R : Type*) [comm_ring R] [is_domain R] [is_dedekind_domain R]
+  (L : Type*) [field L] [algebra R L] [is_fraction_ring R L] (v : height_one_spectrum R) : 
+  valuation_base R L v ≠ 0:=
+ne_zero_of_lt (one_lt_valuation_base R L v)
+
+open is_dedekind_domain is_dedekind_domain.height_one_spectrum
+
+lemma is_dedekind_domain.height_one_spectrum.adic_completion_is_rank_one (hR : ¬ is_field R) :
+  is_rank_one  (@valued.v (is_dedekind_domain.height_one_spectrum.adic_completion L v) _ ℤₘ₀ _ _) := 
+{ hom         := with_zero_mult_int_to_nnreal (valuation_base_ne_zero R L v),
+  strict_mono := with_zero_mult_int_to_nnreal_strict_mono (one_lt_valuation_base R L v),
+  nontrivial  := begin
+    obtain ⟨x, hxv, hx0⟩ := submodule.exists_mem_ne_zero_of_ne_bot v.ne_bot,
+    use algebra_map L _ (algebra_map R L x),
+    split,
+    { rw [ne.def, valuation.zero_iff, _root_.map_eq_zero, ← map_zero (algebra_map R L), ←ne.def, 
+        function.injective.ne_iff (no_zero_smul_divisors.algebra_map_injective R L)],
+      exact hx0 },
+    { letI : valued L ℤₘ₀ := is_dedekind_domain.height_one_spectrum.adic_valued v,
+      rw [height_one_spectrum.valued_adic_completion_def,
+        is_dedekind_domain.height_one_spectrum.algebra_map_adic_completion,
+        valued.extension_extends],
+      apply ne_of_lt,
+      erw is_dedekind_domain.height_one_spectrum.valuation_lt_one_iff_dvd,
+      rw [ideal.dvd_span_singleton],
+      exact hxv }
+  end }
+
+variables [hv: is_rank_one 
+  (@valued.v (is_dedekind_domain.height_one_spectrum.adic_completion L v) _ ℤₘ₀ _ _)]
+include hv 
+
+instance : 
+  normed_field (is_dedekind_domain.height_one_spectrum.adic_completion L v) :=
+by apply rank_one_valuation.valued_field.to_normed_field
+  (is_dedekind_domain.height_one_spectrum.adic_completion L v) ℤₘ₀ 
 
 lemma norm_le_one_iff_val_le_one (x : is_dedekind_domain.height_one_spectrum.adic_completion L v) :
   ‖x‖ ≤ 1 ↔ valued.v x ≤ (1 : ℤₘ₀) :=
@@ -193,30 +276,67 @@ lemma mem_FpX_int_completion' {x : FpX_field_completion p} :
   x ∈ FpX_int_completion p ↔ ‖ x ‖  ≤ 1 :=
 by rw [FpX_field_completion.mem_FpX_int_completion, norm_le_one_iff_val_le_one]
 
+
+lemma norm_on_K_of_int (x : 𝓞 p K) : norm_on_K (x : K) =
+  spectral_value (polynomial.map (algebra_map 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯) (minpoly 𝔽_[p]⟦X⟧ x)) :=
+begin
+  have is_minpoly :  @minpoly 𝔽_[p]⟮⟮X⟯⟯ K _ _ _ (x : K) =
+    polynomial.map (algebra_map _ _) (minpoly 𝔽_[p]⟦X⟧ x),
+  { apply (minpoly.is_integrally_closed_eq_field_fractions 𝔽_[p]⟮⟮X⟯⟯ K
+      (is_integral_closure.is_integral 𝔽_[p]⟦X⟧ K x)) },
+  simp only [norm_on_K, spectral_norm, ← is_minpoly],
+end
+
+.
+
+-- Really slow, I had to create the previous lemma to avoid a timeout.
+lemma norm_of_int_le_one (x : 𝓞 p K) : norm_on_K (x : K) ≤ 1 :=
+begin
+  let min_int := minpoly 𝔽_[p]⟦X⟧ x,
+  let min_x : polynomial 𝔽_[p]⟮⟮X⟯⟯ := polynomial.map (algebra_map _ _) min_int,
+  rw norm_on_K_of_int x,
+  refine csupr_le _,
+  intro n,
+  simp only [spectral_value_terms],
+  split_ifs with hn,
+  { have coeff_coe : ∀ n : ℕ, min_x.coeff n = (min_int.coeff n) :=
+    λ n, by { simp only [polynomial.coeff_map, FpX_int_completion.algebra_map_eq_coe] },
+    rw [coeff_coe n],
+    apply real.rpow_le_one (norm_nonneg _),
+    apply mem_FpX_int_completion'.mp (min_int.coeff n).property,
+    simp only [one_div, inv_nonneg, sub_nonneg, nat.cast_le],
+    exact (le_of_lt hn) },
+  { exact zero_le_one }, 
+end
+
+
 lemma foo (x : K) : x ∈ 𝓞 p K ↔ norm_on_K (x : K) ≤ 1 :=
 begin
   refine ⟨λ hx, by apply norm_of_int_le_one ⟨x, hx⟩, _⟩,
   { intro hx,
-    rw [norm_on_K, spectral_norm, bar] at hx,
+    have hmonic := minpoly.monic (is_algebraic_iff_is_integral.mp 
+        (algebra.is_algebraic_of_finite 𝔽_[p]⟮⟮X⟯⟯ K x)),
+    rw [norm_on_K, spectral_norm, bar hmonic] at hx,
     set P : polynomial ((FpX_int_completion p)) := 
     int_polynomial (polynomial 𝔽_[p]) (ratfunc 𝔽_[p]) (ideal_X 𝔽_[p]) hx with hP,
-
     rw [mem_ring_of_integers, is_integral, adic_algebra.int_algebra_map_def,
       ring_hom.is_integral_elem],
     use P,
     split,
     --TODO: extract general lemmas for int_polynomial
     { rw [monic, subtype.ext_iff, subring.coe_one, int_polynomial_leading_coeff_eq],
-      apply minpoly.monic (is_algebraic_iff_is_integral.mp 
-        (algebra.is_algebraic_of_finite 𝔽_[p]⟮⟮X⟯⟯ K x)) },
+      apply hmonic },
     { have h : (eval₂ algebra.to_ring_hom x P) = aeval x (minpoly (FpX_field_completion p) x),
       { rw [aeval_eq_sum_range, eval₂_eq_sum_range],
         apply finset.sum_congr rfl,
         intros n hn,
         rw algebra.smul_def,
         refl, },
-      rw [h, minpoly.aeval] }}
+      rw [h, minpoly.aeval] }},
 end
+
+.
+
 
 #exit
 

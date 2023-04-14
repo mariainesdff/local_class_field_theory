@@ -121,6 +121,9 @@ end
 lemma norm_def_eq_zero {x : L} (hx : norm_def x = 0) : x = 0 :=
 by simpa [norm_def, nnreal.coe_eq_zero, is_rank_one_hom_eq_zero_iff, valuation.zero_iff] using hx
 
+
+variables (L) (Γ₀)
+
 /-- The normed field structure determined by a rank one valuation. -/
 def valued_field.to_normed_field : normed_field L := 
 { norm               := norm_def,
