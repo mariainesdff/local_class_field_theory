@@ -288,41 +288,18 @@ instance power_series.is_dedekind_domain [field K] :
   is_dedekind_domain (power_series K) := 
 is_principal_ideal_ring.is_dedekind_domain (power_series K)
 
-example (a b : (ratfunc K)ˣ) : a = b ↔ (a : ratfunc K) = b :=
-begin
-  exact units.ext_iff
-end
-
 instance : normalization_monoid (power_series K) :=
-{ norm_unit :=
-begin
-  intro f,
-  use (unit_of_divided_by_X_pow f)⁻¹,
-end,
-  norm_unit_zero :=
-begin
-  simp [unit_of_divided_by_X_pow_zero],
-end,
-  norm_unit_mul :=
-begin
-  intros f g hf hg,
-  rw [← mul_inv],
-  congr,
-  simp only [unit_of_divided_by_X_pow_nonzero (mul_ne_zero hf hg),
+{ norm_unit := λ f, (unit_of_divided_by_X_pow f)⁻¹,
+  norm_unit_zero := by squeeze_simp [unit_of_divided_by_X_pow_zero],
+  norm_unit_mul := λ f g hf hg, by { simp only [← mul_inv, inv_inj],
+    simp only [unit_of_divided_by_X_pow_nonzero (mul_ne_zero hf hg), 
     unit_of_divided_by_X_pow_nonzero hf, unit_of_divided_by_X_pow_nonzero hg, units.ext_iff,
-    coe_unit_of_invertible, units.coe_mul, divided_by_X_pow_mul],
-end,
+    coe_unit_of_invertible, units.coe_mul, divided_by_X_pow_mul] },
   norm_unit_coe_units :=
 begin
   intro u,
   set u₀ := u.1 with hu,
-  rw units.val_eq_coe at hu,
-  have h₀ : is_unit u₀,
-  {use u, exact hu.symm },--HORRIBLE!!!
-  have h1 := (eq_divided_by_X_iff_unit h₀.ne_zero).mpr h₀,
-  simp only [inv_inj],
-  rw units.ext_iff,
-  rw ← hu,
-  rw [unit_of_divided_by_X_pow_nonzero h₀.ne_zero],
-  exact h1.symm,
+  have h₀ : is_unit u₀ := ⟨u, hu.symm⟩,
+  rw [inv_inj, units.ext_iff, ← u.val_eq_coe, ← hu, unit_of_divided_by_X_pow_nonzero h₀.ne_zero],
+  exact ((eq_divided_by_X_iff_unit h₀.ne_zero).mpr h₀).symm,
 end }
