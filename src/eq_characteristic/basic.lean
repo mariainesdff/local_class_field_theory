@@ -140,6 +140,10 @@ instance : algebra 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ :=
 (by apply_instance : algebra ((ideal_X 𝔽_[p]).adic_completion_integers (ratfunc 𝔽_[p]))
   ((ideal_X 𝔽_[p]).adic_completion (ratfunc 𝔽_[p])))
 
+instance : has_coe 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ := ⟨algebra_map _ _⟩
+
+lemma algebra_map_eq_coe (x : 𝔽_[p]⟦X⟧) : algebra_map 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ x = x := rfl
+
 instance is_fraction_ring : is_fraction_ring 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ :=
 (by apply_instance : is_fraction_ring ((ideal_X 𝔽_[p]).adic_completion_integers (ratfunc 𝔽_[p]))
   ((ideal_X 𝔽_[p]).adic_completion (ratfunc 𝔽_[p])))
