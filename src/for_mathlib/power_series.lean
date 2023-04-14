@@ -13,8 +13,15 @@ lemma power_series.coeff_zero_eq_eval {K : Type*} [semiring K] (f : power_series
 by simp only [power_series.coeff, mv_power_series.coeff, linear_map.coe_proj,
   function.eval_apply, finsupp.single_zero]
 
-lemma order_zero_of_invertible {K : Type*} [semiring K] {f : power_series K} :
-  is_unit f → f.order = 0 := sorry
+lemma order_zero_of_unit {R : Type*} [semiring R] [nontrivial R] {f : power_series R} :
+  is_unit f → f.order = 0 :=
+begin
+  rintros ⟨⟨u, v, hu, hv⟩, hf⟩,
+  simp only [units.coe_mk] at hf,--inutile!
+  apply and.left,
+  rw [← add_eq_zero_iff, ← hf, ← nonpos_iff_eq_zero, ← @power_series.order_one R _ _, ← hu],
+  exact power_series.order_mul_ge _ _,
+end
 
 variables {K : Type*} [field K]
 
@@ -58,11 +65,9 @@ begin
     exact pow_ne_zero dfg X_ne_zero,
 end
 
-/-Given a non-zero power series, the power series obtained in `divided_by_X_pow` is invertible-/
-lemma is_invertible_divided_by_X_pow {f : power_series K} (hf : f ≠ 0) :
-  invertible (divided_by_X_pow hf) :=
+def divided_by_X_pow_inv {f : power_series K} (hf : f ≠ 0) : power_series K :=
 begin
-  set d := f.order.get (power_series.order_finite_iff_ne_zero.mpr hf) with hd,
+set d := f.order.get (power_series.order_finite_iff_ne_zero.mpr hf) with hd,
   have f_const : power_series.coeff K d f ≠ 0 := by apply power_series.coeff_order,
   have dvd := power_series.X_pow_order_dvd (power_series.order_finite_iff_ne_zero.mpr hf),
   let const : Kˣ,
@@ -74,40 +79,135 @@ begin
         (power_series.X_pow_order_dvd (power_series.order_finite_iff_ne_zero.mpr hf))).some) 
           d 0).symm,
       exact (self_eq_X_pow_mul_divided_by_X_pow hf).symm },
-    use unit_of_invertible (power_series.constant_coeff K (divided_by_X_pow hf)) },
-  apply invertible.mk (power_series.inv_of_unit ((divided_by_X_pow hf)) const),
-  rw mul_comm,
-  all_goals {exact power_series.mul_inv_of_unit (divided_by_X_pow hf) const rfl},
+      use unit_of_invertible (power_series.constant_coeff K (divided_by_X_pow hf)) },
+  -- use ⟨divided_by_X_pow hf, 
+  use power_series.inv_of_unit ((divided_by_X_pow hf)) const,
+    -- mul_inv_of_unit (divided_by_X_pow hf) const rfl, by {rw mul_comm, exact mul_inv_of_unit
+    -- (divided_by_X_pow hf) const rfl}⟩,
 end
+
+lemma divided_by_X_pow_inv_right_inv {f : power_series K} (hf : f ≠ 0) :
+  (divided_by_X_pow hf) * (divided_by_X_pow_inv hf) = 1 := sorry
+
+lemma divided_by_X_pow_inv_left_inv {f : power_series K} (hf : f ≠ 0) :
+   (divided_by_X_pow_inv hf) * (divided_by_X_pow hf) = 1 := sorry
+
+def unit_of_divided_by_X_pow' (f : power_series K) : (power_series K)ˣ :=
+if hf : f = 0 then 1 else 
+{ val := (divided_by_X_pow hf),
+  inv := divided_by_X_pow_inv hf,
+  val_inv := divided_by_X_pow_inv_right_inv hf,
+  inv_val := divided_by_X_pow_inv_left_inv hf }
+-- begin
+--   set d := f.order.get (power_series.order_finite_iff_ne_zero.mpr hf) with hd,
+--   have f_const : power_series.coeff K d f ≠ 0 := by apply power_series.coeff_order,
+--   have dvd := power_series.X_pow_order_dvd (power_series.order_finite_iff_ne_zero.mpr hf),
+--   let const : Kˣ,
+--   { haveI : invertible (power_series.constant_coeff K (divided_by_X_pow hf)),
+--     { apply invertible_of_nonzero,
+--       convert f_const,
+--       rw [← power_series.coeff_zero_eq_constant_coeff, ← zero_add d],
+--       convert (power_series.coeff_X_pow_mul ((exists_eq_mul_right_of_dvd
+--         (power_series.X_pow_order_dvd (power_series.order_finite_iff_ne_zero.mpr hf))).some) 
+--           d 0).symm,
+--       exact (self_eq_X_pow_mul_divided_by_X_pow hf).symm },
+--       use unit_of_invertible (power_series.constant_coeff K (divided_by_X_pow hf)) },
+--   use ⟨divided_by_X_pow hf, power_series.inv_of_unit ((divided_by_X_pow hf)) const,
+--     mul_inv_of_unit (divided_by_X_pow hf) const rfl, by {rw mul_comm, exact mul_inv_of_unit
+--     (divided_by_X_pow hf) const rfl}⟩,
+-- end
+
+/-Given a non-zero power series, the power series obtained in `divided_by_X_pow` is a unit-/
+-- lemma is_unit_divided_by_X_pow {f : power_series K} (hf : f ≠ 0) :
+--   is_unit (divided_by_X_pow hf) :=
+-- begin
+--   set d := f.order.get (power_series.order_finite_iff_ne_zero.mpr hf) with hd,
+--   have f_const : power_series.coeff K d f ≠ 0 := by apply power_series.coeff_order,
+--   have dvd := power_series.X_pow_order_dvd (power_series.order_finite_iff_ne_zero.mpr hf),
+--   let const : Kˣ,
+--   { haveI : invertible (power_series.constant_coeff K (divided_by_X_pow hf)),
+--     { apply invertible_of_nonzero,
+--       convert f_const,
+--       rw [← power_series.coeff_zero_eq_constant_coeff, ← zero_add d],
+--       convert (power_series.coeff_X_pow_mul ((exists_eq_mul_right_of_dvd
+--         (power_series.X_pow_order_dvd (power_series.order_finite_iff_ne_zero.mpr hf))).some) 
+--           d 0).symm,
+--       exact (self_eq_X_pow_mul_divided_by_X_pow hf).symm },
+--       use unit_of_invertible (power_series.constant_coeff K (divided_by_X_pow hf)) },
+--   exact ⟨⟨divided_by_X_pow hf, power_series.inv_of_unit ((divided_by_X_pow hf)) const,
+--     mul_inv_of_unit (divided_by_X_pow hf) const rfl, by {rw mul_comm, exact mul_inv_of_unit
+--     (divided_by_X_pow hf) const rfl}⟩, rfl⟩,
+-- end
+
+-- /-Given a non-zero power series, the power series obtained in `divided_by_X_pow` is invertible-/
+-- lemma is_invertible_divided_by_X_pow {f : power_series K} (hf : f ≠ 0) :
+--   invertible (divided_by_X_pow hf) :=
+-- begin
+--   set d := f.order.get (power_series.order_finite_iff_ne_zero.mpr hf) with hd,
+--   have f_const : power_series.coeff K d f ≠ 0 := by apply power_series.coeff_order,
+--   have dvd := power_series.X_pow_order_dvd (power_series.order_finite_iff_ne_zero.mpr hf),
+--   let const : Kˣ,
+--   { haveI : invertible (power_series.constant_coeff K (divided_by_X_pow hf)),
+--     { apply invertible_of_nonzero,
+--       convert f_const,
+--       rw [← power_series.coeff_zero_eq_constant_coeff, ← zero_add d],
+--       convert (power_series.coeff_X_pow_mul ((exists_eq_mul_right_of_dvd
+--         (power_series.X_pow_order_dvd (power_series.order_finite_iff_ne_zero.mpr hf))).some) 
+--           d 0).symm,
+--       exact (self_eq_X_pow_mul_divided_by_X_pow hf).symm },
+--     use unit_of_invertible (power_series.constant_coeff K (divided_by_X_pow hf)) },
+--   apply invertible.mk (power_series.inv_of_unit ((divided_by_X_pow hf)) const),
+--   rw mul_comm,
+--   all_goals {exact power_series.mul_inv_of_unit (divided_by_X_pow hf) const rfl},
+-- end
 
 
 /-Given a non-zero power series, the unit obtained in `divide_X_pow_order_is_unit`-/
 -- noncomputable
-def unit_of_divided_by_X_pow (f : power_series K) : (power_series K)ˣ :=
-if hf : f = 0 then 1 else 
-  @unit_of_invertible _ _ (divided_by_X_pow hf) (is_invertible_divided_by_X_pow hf)
+-- def unit_of_divided_by_X_pow (f : power_series K) : (power_series K)ˣ :=
+-- if hf : f = 0 then 1 else 
+-- -- begin
+--   -- @unit_of_invertible _ _ (divided_by_X_pow hf) (is_invertible_divided_by_X_pow hf)
+--   (is_unit_divided_by_X_pow hf).some
+-- end
 
-lemma unit_of_divided_by_X_pow_nonzero {f : power_series K} (hf : f ≠ 0) :
-  unit_of_divided_by_X_pow f = @unit_of_invertible _ _ (divided_by_X_pow hf)
-    (is_invertible_divided_by_X_pow hf) := by simp only [unit_of_divided_by_X_pow, dif_neg hf]
+-- lemma unit_of_divided_by_X_pow_nonzero {f : power_series K} (hf : f ≠ 0) :
+--   unit_of_divided_by_X_pow f = f 
+--   unit_of_divided_by_X_pow f = @unit_of_invertible _ _ (divided_by_X_pow hf)
+--     (is_invertible_divided_by_X_pow hf) := by simp only [unit_of_divided_by_X_pow, dif_neg hf]
 
-lemma unit_of_divided_by_X_pow_zero : unit_of_divided_by_X_pow (0 : power_series K) = 1 :=
-by simp only [unit_of_divided_by_X_pow, dif_pos]
+lemma is_unit_divided_by_X_pow {f : power_series K} (hf : f ≠ 0): is_unit (divided_by_X_pow hf) :=
+begin
+  use unit_of_divided_by_X_pow' f,
+  simp [unit_of_divided_by_X_pow'],
+  rw [dif_neg hf],
+  simp only [units.coe_mk],
+end
+
+lemma unit_of_divided_by_X_pow_zero : unit_of_divided_by_X_pow' (0 : power_series K) = 1 :=
+by simp only [unit_of_divided_by_X_pow', dif_pos]
 
 lemma eq_divided_by_X_iff_unit {f : power_series K} (hf : f ≠ 0) :
   f = divided_by_X_pow hf ↔ (is_unit f) :=
 begin
   split,
   { intro hf₁,
-    set u := unit_of_divided_by_X_pow f with hu,
-    use u,
-    simp [hu, unit_of_divided_by_X_pow_nonzero hf, coe_unit_of_invertible],
-    convert hf₁.symm },
-  { intro hf₁,
-    have : f.order.get (order_finite_iff_ne_zero.mpr hf) = 0 :=
-      by simp only [order_zero_of_invertible hf₁, part_enat.get_zero],
-    convert (self_eq_X_pow_mul_divided_by_X_pow hf).symm,
-    simp only [this, pow_zero, one_mul] }
+    rw hf₁,
+    exact is_unit_divided_by_X_pow hf,
+    -- set u := unit_of_divided_by_X_pow' f with hu,
+    -- use u,
+    -- simp [hu, coe_unit_of_invertible],
+    -- rw hf₁,
+    -- simp,
+  --   simp [hu, unit_of_divided_by_X_pow_nonzero hf, coe_unit_of_invertible],
+    -- convert hf₁.symm, },
+  },
+  -- { intro hf₁,
+  --   have : f.order.get (order_finite_iff_ne_zero.mpr hf) = 0 :=
+  --     by simp only [order_zero_of_unit hf₁, part_enat.get_zero],
+  --   convert (self_eq_X_pow_mul_divided_by_X_pow hf).symm,
+  --   simp only [this, pow_zero, one_mul] }
+
 end
 
 lemma power_series.has_unit_mul_pow_irreducible_factorization : 
@@ -200,11 +300,50 @@ end,
   norm_unit_coe_units :=
 begin
   rintros ⟨u, v, h1, h2⟩,
-  have hu₁ : u ≠ 0, sorry,
-  have hu₂ : is_unit u, sorry,
-  have := (eq_divided_by_X_iff_unit hu₁).mpr hu₂,
-  simp [unit_of_divided_by_X_pow_nonzero hu₁],
-  sorry,
+  -- let u := v.1,
+  have hu : is_unit u := sorry,--⟨v, rfl⟩,
+  have h : v = u⁻¹, sorry,
+  -- have h1 : u ≠ 0,
+  -- exact h2.ne_zero,
+  simp only [inv_inj],
+  have uff' := (eq_divided_by_X_iff_unit hu.ne_zero).mpr hu,
+  have uff : u⁻¹ = (divided_by_X_pow hu.ne_zero)⁻¹,
+  congr,
+  exact uff',
+  -- replace this := 
+  have H := unit_of_divided_by_X_pow_nonzero hu.ne_zero,
+  -- simp [H, this],/
+  -- convert_to unit_of_divided_by_X_pow u = v,
+  convert H,
+  rw h,
+  -- rw inv_eq_one_divp,
+  convert uff,
+  refine (cast_inj _).mp _,
+  -- simp [this],
+  -- rw inv_eq
+  -- simp,
+  -- convert this,
+  -- rw coe_unit_of_invertible,
+  -- simp [this],
+  -- change
+  -- convert this using 0,
+  -- simp_rw this at H,
+  -- simp [unit_of_divided_by_X_pow_nonzero h1] at this,
+  -- rw units.coe
+
+  -- simp [this],
+  -- have v : (power_series K)
+  -- have hu : is_unit u,
+  -- rintros ⟨u, v, h1, h2⟩,
+  -- have hu₁ : u ≠ 0, sorry,
+  -- have hu₂ : is_unit u, sorry,
+  -- have := (eq_divided_by_X_iff_unit hu₁).mpr hu₂,
+  -- simp [unit_of_divided_by_X_pow_nonzero hu₁],
+  -- have H : u⁻¹ = v, sorry,
+  -- have falso : unit_of_invertible (divided_by_X_pow hu₁) = (divided_by_X_pow hu₁),sorry,
+  -- rw this at H,
+  -- convert [H],
+  -- sorry,
   -- simp_rw [← this],
   -- simp [← coe_unit_of_invertible],
   -- ext,
