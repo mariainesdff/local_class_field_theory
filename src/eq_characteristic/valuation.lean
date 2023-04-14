@@ -14,6 +14,7 @@ import from_mathlib.normed_valued
 import from_mathlib.spectral_norm_unique
 
 import from_mathlib.normed_valued
+import for_mathlib.rank_one_valuation
 
 --import algebra.group.type_tags
 
@@ -51,6 +52,19 @@ noncomputable! instance : is_rank_one (@FpX_field_completion.with_zero.valued p 
 
 instance : normed_field 𝔽_[p]⟮⟮X⟯⟯ := rank_one_valuation.valued_field.to_normed_field _ _
 
+instance : nontrivially_normed_field 𝔽_[p]⟮⟮X⟯⟯ :=
+{ non_trivial := begin
+  use (algebra_map _ _ (FpX_int_completion.X p))⁻¹,
+  simp only [adic_algebra.int_algebra_map_def, norm_inv],
+  apply one_lt_inv,
+  sorry,
+  sorry
+  end,
+  ..(by apply_instance: normed_field 𝔽_[p]⟮⟮X⟯⟯) }
+
+lemma norm_is_nonarchimedean : is_nonarchimedean (norm : 𝔽_[p]⟮⟮X⟯⟯ → ℝ) := 
+rank_one_valuation.norm_def_is_nonarchimedean _ _
+
 end FpX_field_completion
 
 namespace FpX_int_completion
@@ -83,9 +97,6 @@ subtype.ext_iff
 lemma norm_on_K_one {K : Type*} [field K] [eq_char_local_field p K] : norm_on_K (1 : K) = 1 := 
 by rw [norm_on_K, spectral_norm_is_norm_one_class]
 
-
-
-
 section poly
 
 open_locale polynomial
@@ -94,7 +105,7 @@ variables {S : Type*} [normed_division_ring S]
 
 . 
 
-lemma bar {P : S[X]} (hP : monic P) : 
+lemma spectral_value_le_one_iff {P : S[X]} (hP : monic P) : 
   spectral_value P ≤ 1 ↔ ∀ n : ℕ , ‖P.coeff n‖ ≤ 1 :=
 begin
   rw spectral_value,
@@ -103,7 +114,7 @@ begin
     by_contradiction hn,
     rw not_le at hn,
     have hsupr : 1 < supr (spectral_value_terms P),
-    { have hn' : 1 < spectral_value_terms P n,--‖P.coeff n‖ ^ (1 / (↑(P.nat_degree) - (n : ℝ))),
+    { have hn' : 1 < spectral_value_terms P n,
       { simp only [spectral_value_terms],
         split_ifs with hPn,
         { apply real.one_lt_rpow hn,
@@ -201,8 +212,8 @@ ne_zero_of_lt (one_lt_valuation_base R L v)
 
 open is_dedekind_domain is_dedekind_domain.height_one_spectrum
 
-lemma is_dedekind_domain.height_one_spectrum.adic_completion_is_rank_one (hR : ¬ is_field R) :
-  is_rank_one  (@valued.v (is_dedekind_domain.height_one_spectrum.adic_completion L v) _ ℤₘ₀ _ _) := 
+def is_dedekind_domain.height_one_spectrum.valuation_is_rank_one (hR : ¬ is_field R) :
+  is_rank_one  (@valued.v L _ ℤₘ₀ _ v.adic_valued) := 
 { hom         := with_zero_mult_int_to_nnreal (valuation_base_ne_zero R L v),
   strict_mono := with_zero_mult_int_to_nnreal_strict_mono (one_lt_valuation_base R L v),
   nontrivial  := begin
@@ -212,17 +223,36 @@ lemma is_dedekind_domain.height_one_spectrum.adic_completion_is_rank_one (hR : �
     { rw [ne.def, valuation.zero_iff, _root_.map_eq_zero, ← map_zero (algebra_map R L), ←ne.def, 
         function.injective.ne_iff (no_zero_smul_divisors.algebra_map_injective R L)],
       exact hx0 },
-    { letI : valued L ℤₘ₀ := is_dedekind_domain.height_one_spectrum.adic_valued v,
-      rw [height_one_spectrum.valued_adic_completion_def,
-        is_dedekind_domain.height_one_spectrum.algebra_map_adic_completion,
-        valued.extension_extends],
-      apply ne_of_lt,
+    { apply ne_of_lt,
       erw is_dedekind_domain.height_one_spectrum.valuation_lt_one_iff_dvd,
       rw [ideal.dvd_span_singleton],
       exact hxv }
   end }
 
-variables [hv: is_rank_one 
+lemma is_dedekind_domain.height_one_spectrum.valuation_is_rank_one_hom_def
+  (hR : ¬ is_field R) :
+  (@is_rank_one.hom L _ ℤₘ₀ _ (@valued.v L _ ℤₘ₀ _ v.adic_valued) 
+    (is_dedekind_domain.height_one_spectrum.valuation_is_rank_one R L v hR)) =
+  with_zero_mult_int_to_nnreal (valuation_base_ne_zero R L v) :=
+rfl
+
+
+def is_dedekind_domain.height_one_spectrum.valuation_completion_is_rank_one
+  [hL : is_rank_one  (@valued.v L _ ℤₘ₀ _ v.adic_valued)] :
+  is_rank_one  (@valued.v (is_dedekind_domain.height_one_spectrum.adic_completion L v) _ ℤₘ₀ _ _) := 
+{ hom         := with_zero_mult_int_to_nnreal (valuation_base_ne_zero R L v),
+  strict_mono := with_zero_mult_int_to_nnreal_strict_mono (one_lt_valuation_base R L v),
+  nontrivial  := begin
+    obtain ⟨x, hx0, hx1⟩ := hL.nontrivial,
+    use algebra_map L _ x,
+    split;
+    rw [height_one_spectrum.valued_adic_completion_def,
+        is_dedekind_domain.height_one_spectrum.algebra_map_adic_completion,
+        valued.extension_extends],
+    exacts [hx0, hx1],
+  end }
+
+variables [hv : is_rank_one 
   (@valued.v (is_dedekind_domain.height_one_spectrum.adic_completion L v) _ ℤₘ₀ _ _)]
 include hv 
 
@@ -233,13 +263,7 @@ by apply rank_one_valuation.valued_field.to_normed_field
 
 lemma norm_le_one_iff_val_le_one (x : is_dedekind_domain.height_one_spectrum.adic_completion L v) :
   ‖x‖ ≤ 1 ↔ valued.v x ≤ (1 : ℤₘ₀) :=
-begin
-  have hx : ‖x‖ = hv.hom (valued.v x) := rfl,
-  rw [hx, ← nnreal.coe_one, nnreal.coe_le_coe, ← map_one  (is_rank_one.hom
-      (@valued.v (is_dedekind_domain.height_one_spectrum.adic_completion L v) _ ℤₘ₀ _ _)),
-    strict_mono.le_iff_le],
-  exact is_rank_one.strict_mono,
-end
+is_dedekind_domain.height_one_spectrum.norm_le_one_iff_val_le_one x
 
 def int_polynomial {P : (is_dedekind_domain.height_one_spectrum.adic_completion L v)[X]}
   (hP : ∀ n : ℕ , ‖P.coeff n‖ ≤ 1) :
@@ -310,13 +334,13 @@ begin
 end
 
 
-lemma foo (x : K) : x ∈ 𝓞 p K ↔ norm_on_K (x : K) ≤ 1 :=
+lemma mem_ring_of_integers_iff_norm_le_one (x : K) : x ∈ 𝓞 p K ↔ norm_on_K (x : K) ≤ 1 :=
 begin
   refine ⟨λ hx, by apply norm_of_int_le_one ⟨x, hx⟩, _⟩,
   { intro hx,
     have hmonic := minpoly.monic (is_algebraic_iff_is_integral.mp 
         (algebra.is_algebraic_of_finite 𝔽_[p]⟮⟮X⟯⟯ K x)),
-    rw [norm_on_K, spectral_norm, bar hmonic] at hx,
+    rw [norm_on_K, spectral_norm, spectral_value_le_one_iff hmonic] at hx,
     set P : polynomial ((FpX_int_completion p)) := 
     int_polynomial (polynomial 𝔽_[p]) (ratfunc 𝔽_[p]) (ideal_X 𝔽_[p]) hx with hP,
     rw [mem_ring_of_integers, is_integral, adic_algebra.int_algebra_map_def,
@@ -335,10 +359,6 @@ begin
       rw [h, minpoly.aeval] }},
 end
 
-.
-
-
-#exit
 
 variables (K)
 
@@ -347,11 +367,11 @@ noncomputable! def open_unit_ball : height_one_spectrum (𝓞 p K) :=
   { carrier   := { x : 𝓞 p K | norm_on_K (x : K) < 1},
     add_mem'  := λ x y hx hy,
     begin
-      sorry
-      /- rw [set.mem_set_of_eq, norm_on_K] at hx hy ⊢,
+      rw [set.mem_set_of_eq, norm_on_K] at hx hy ⊢,
       refine lt_of_le_of_lt (spectral_norm_is_nonarchimedean 
-        (algebra.is_algebraic_of_finite ℚ_[p] K) padic_norm_e.nonarchimedean (x : K)
-        (y : K)) (max_lt_iff.mpr ⟨hx, hy⟩), -/
+        (algebra.is_algebraic_of_finite _ K) _ (x : K)
+        (y : K)) (max_lt_iff.mpr ⟨hx, hy⟩),
+        exact FpX_field_completion.norm_is_nonarchimedean,
     end,  
     zero_mem' := 
     begin
@@ -403,14 +423,14 @@ def normalized_valuation (K : Type*) [field K] [eq_char_local_field p K] : valua
   (open_unit_ball K).valuation
 
 @[priority 100] instance (K : Type*) [field K] [eq_char_local_field p K] : valued K ℤₘ₀ :=
-  valued.mk' (normalized_valuation K) 
+  valued.mk' (normalized_valuation K)
+
 
 instance : algebra (ratfunc 𝔽_[p]) K := algebra.comp (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯ K
 
 lemma normalized_valuation_X_ne_zero [eq_char_local_field p K] :
   (normalized_valuation K) (algebra_map (ratfunc 𝔽_[p]) _ X) ≠ 0 :=
 by {simp only [ne.def, valuation.zero_iff, nat.cast_eq_zero], apply sorry/-  nat.prime.ne_zero (fact.out _) -/}  
-
 
 
 open multiplicative is_dedekind_domain.height_one_spectrum
@@ -485,8 +505,64 @@ end FpX_field_completion
 
 section ring_of_integers
 
-lemma mem_ring_of_integers_iff (x : K) : false := sorry
+. 
+
+open eq_char_local_field
+
+--instance [eq_char_local_field p K] : valued K ℤₘ₀ := infer_instance
+
+instance : is_rank_one (@eq_char_local_field.with_zero.valued p _ K _ _).v  := 
+is_dedekind_domain.height_one_spectrum.valuation_is_rank_one (𝓞 p K) K _
+  (ring_of_integers.not_is_field p K)
+
+lemma eq_char_local_field.is_rank_one_hom_def :
+  (is_rank_one.hom (@valued.v K _ ℤₘ₀ _ _)) =
+  with_zero_mult_int_to_nnreal (valuation_base_ne_zero (𝓞 p K) K (open_unit_ball K)) :=
+rfl
+
+.
+
+instance : complete_space 𝔽_[p]⟮⟮X⟯⟯ := sorry
+
+lemma function_extends_norm [eq_char_local_field p K] : 
+  function_extends (norm : 𝔽_[p]⟮⟮X⟯⟯ → ℝ) (rank_one_valuation.mul_ring_norm_def K ℤₘ₀) :=
+begin
+  rw function_extends,
+  intros x,
+  simp only [rank_one_valuation.mul_ring_norm_def, rank_one_valuation.norm_def],
+  change (((is_rank_one.hom valued.v) (valued.v ((algebra_map (FpX_field_completion p) K) x))) : ℝ)
+    = ‖ x ‖,
+  rw ←_root_.coe_nnnorm,
+  rw nnreal.coe_eq,
+  rw eq_char_local_field.is_rank_one_hom_def,
+  simp only [with_zero_mult_int_to_nnreal, with_zero_mult_int_to_nnreal_def, 
+    monoid_with_zero_hom.coe_mk],
+  by_cases hx : x = 0,
+  { simp only [hx, map_zero, dif_pos, nnnorm_zero] },
+  { rw dif_neg,
+    sorry,
+    sorry }
+end
+
+lemma ring_of_integers_eq_adic_completion_integers' [eq_char_local_field p K] :
+  (𝓞 p K).to_subring = (@valued.v K _ ℤₘ₀ _ _).valuation_subring.to_subring :=
+begin
+  ext x,
+  rw [subalgebra.mem_to_subring],
+  rw eq_char_local_field.mem_ring_of_integers_iff_norm_le_one,
+  simp only [valuation_subring.mem_to_subring, valuation.mem_valuation_subring_iff],
+  rw ← is_dedekind_domain.height_one_spectrum.norm_le_one_iff_val_le_one,
+  have hx : rank_one_valuation.norm_def x = norm_on_K x,
+  { set N : mul_ring_norm K := rank_one_valuation.mul_ring_norm_def K ℤₘ₀ with hN,
+    have hrfl: rank_one_valuation.norm_def x = N x := rfl,
+    rw [hrfl, norm_on_K],
+    apply spectral_norm_unique_field_norm_ext
+      (algebra.is_algebraic_of_finite (FpX_field_completion p) K) function_extends_norm
+      FpX_field_completion.norm_is_nonarchimedean },
+  rw hx,
+end
+
 
 end ring_of_integers
 
-#lint
+--#lint
