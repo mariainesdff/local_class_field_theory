@@ -14,11 +14,6 @@ import ring_theory.power_series.well_known
 
 import algebra_comp
 
-/-
-invalid definition, a declaration named 'power_series.irreducible_X' has already been declared
--/
-
-
 open polynomial is_dedekind_domain.height_one_spectrum topological_space ratfunc
   sequentially_complete filter
 open_locale big_operators discrete_valuation uniformity filter topology
@@ -28,53 +23,21 @@ variables (K : Type*) [field K]
 noncomputable theory
 def completion_of_ratfunc := adic_completion (ratfunc K) (ideal_X K)
 
-/- noncomputable! lemma completion_of_ratfunc_def : 
-  completion_of_ratfunc K = adic_completion (ratfunc K) (polynomial.ideal_X K) := sorry -/
-
 
 instance : field (completion_of_ratfunc K) := adic_completion.field (ratfunc K) (ideal_X K)
 
 instance : algebra K (polynomial K) := infer_instance
 
---Now in the polynomial file
-/- instance : valued (ratfunc K) ℤₘ₀ := 
-begin
- use @adic_valued (polynomial K) _ _ _ (ratfunc K) _ _ _ (ideal_X K),
-end -/
-
--- instance : uniform_space (ratfunc K) :=
---   (@adic_valued (polynomial K) _ _ _ (ratfunc K) _ _ _ (ideal_X K)).to_uniform_space
-
-
-
--- example : valued (ratfunc K) ℤₘ₀ :=
--- begin
---   have := adic_valued (ideal_X K),
--- end
-  -- (@adic_valued (polynomial K) _ _ _ (ratfunc K) _ _ _ (ideal_X K)).to_uniform_space
-
 instance already : valued (completion_of_ratfunc K) ℤₘ₀ :=
   @valued.valued_completion _ _ _ _ (ideal_X K).adic_valued
-
--- #exit
 
 instance : uniform_space (completion_of_ratfunc K) := infer_instance
 
 
 variable (F : completion_of_ratfunc K)
 
--- --*FAE* The one below is one I am trying on Mar14th at night
--- def entourage (d : ℤ) : set (ratfunc K × ratfunc K) :=
---   {P | (ideal_X K).valuation (P.1 - P.2) < ↑(multiplicative.of_add d)}
-
---*FAE* The one below is the one that works perfectly but gives something crazy
 def entourage (d : ℤ) : set (ratfunc K × ratfunc K) :=
   {P | (ideal_X K).valuation (P.1 - P.2) < ↑(multiplicative.of_add (- d))}
-
--- *FAE* This was the old definition, but I think I got the inequalities wrong, since I did not
--- know yet how to play with `multiplicative.of_add`. It does not work
--- def entourage_bad (d : ℤ) : set (ratfunc K × ratfunc K) :=
---   {P | ↑(multiplicative.of_add d) ≤ (ideal_X K).valuation (P.1 - P.2)}
 
 lemma fae_for_pol (f  : polynomial K) (d : ℕ) (hf : (ideal_X K).int_valuation f ≤ 
   ↑(multiplicative.of_add (- (d+(1 : ℕ)) : ℤ))) : f.coeff d = 0 :=
@@ -134,51 +97,14 @@ begin
 end
 
 
--- example (X Y : Type) [preorder X] [has_lt X] (S : set X) (hS : S.is_wf)
-
--- lemma uno {X Y : Type} [preorder X] [preorder Y] {S : set X} (hS : S.is_pwo)
---   (f : X ↪o Y) : set.is_wf (f '' S) :=
--- begin
---   apply set.is_pwo.is_wf,
---   apply set.is_pwo.image_of_monotone hS f.monotone,
--- end
-
--- lemma due {X Y : Type} [preorder X] [preorder Y] {S : set X} (hS : S.is_pwo) (H : S.nonempty)
---   (f : X ↪o Y) : f (set.is_wf.min (hS.is_wf) H) = 
---     set.is_wf.min (uno hS f) (set.nonempty_image_iff.2 H) := 
--- begin
---   sorry,
--- end
-
-
--- namespace function
-
--- variables {Γ Γ' : Type} [linear_ordered_cancel_add_comm_monoid Γ] 
---   [linear_ordered_cancel_add_comm_monoid Γ'] {ι : Γ →+o Γ'}
-
--- @[simps]
--- def injective.order_embedding (hι : function.injective ι) : Γ ↪o Γ' := 
---   order_embedding.of_strict_mono _ ((order_hom_class.mono ι).strict_mono_of_injective hι)
-
--- end function
-
--- lemma order_emb_domain {R Γ Γ' : Type} [comm_ring R] [is_domain R]
--- [linear_ordered_cancel_add_comm_monoid Γ]
--- [linear_ordered_cancel_add_comm_monoid Γ'] 
--- (ι : Γ →+o Γ') (hι : function.injective ι) (φ : hahn_series Γ R) :
---   (with_top.map (↑ι : _ →+ _)) (hahn_series.add_val Γ R φ) = hahn_series.add_val Γ' R
---   (emb_domain hι.order_embedding φ) :=
--- begin
---   sorry,
--- end
-
 namespace hahn_series
 open set
 variables {Γ Γ' R : Type*}  
 
 
-lemma eq_order_of_emb_domain [has_zero R] [linear_order Γ] [linear_order Γ'] [has_zero Γ] [has_zero Γ'] (φ : hahn_series Γ R) {ι : Γ ↪o Γ'}  (hι : ι 0 = 0) :
-  (emb_domain ι φ).order = ι φ.order :=
+lemma eq_order_of_emb_domain [has_zero R] [linear_order Γ] [linear_order Γ'] [has_zero Γ]
+    [has_zero Γ'] (φ : hahn_series Γ R) {ι : Γ ↪o Γ'}  (hι : ι 0 = 0) : 
+    (emb_domain ι φ).order = ι φ.order :=
 begin
   by_cases h : φ = 0,
   { simp [h, hι] },
@@ -454,6 +380,14 @@ begin
     linarith,
   },
 end
+
+
+-- lemma multiplicity_X_eq_int_valuation {f : polynomial K} (hf : f ≠ 0 ) :
+-- -- ↑(multiplicative.of_add 
+-- --   (-((↑f : power_series K).order).get (power_series.order_finite_iff_ne_zero.mpr
+-- --     (polynomial.coe_ne_zero hf)) : ℤ)) 
+--    (multiplicity polynomial.X f).get (multiplicity_finite_iff_ne_zero.mpr hf)
+--     = ((ideal_X K).int_valuation f) :=
 
 lemma order_as_power_series_eq_int_valuation {f : polynomial K} (hf : f ≠ 0) :
   ↑(multiplicative.of_add 
@@ -904,44 +838,99 @@ section away
 open away
 
 def laurent_series.X_pow (f : laurent_series K) (hf : f ≠ 0) : ℤ := 
+(exists_reduced_fraction (power_series.X : (power_series K)) (laurent_series K)
+  power_series.irreducible_X f hf).some_spec.some
+
+-- def laurent_series.power_series_part (f : laurent_series K) (hf : f ≠ 0) : ℤ := 
+-- (exists_reduced_fraction (power_series.X : (power_series K)) (laurent_series K)
+--   power_series.irreducible_X f hf).some_spec.some
+
+def laurent_series.trunc' (f : laurent_series K) (d : ℕ) : ratfunc K :=
+if hf : f = 0 then 0 else
 begin
-  haveI : normalization_monoid (power_series K), sorry,
-  use (exists_reduced_fraction (power_series.X : (power_series K)) (laurent_series K)
-      power_series.irreducible_X f hf).some_spec.some,
+  let F := (exists_reduced_fraction (power_series.X : (power_series K)) (laurent_series K)
+    power_series.irreducible_X f hf).some,
+  use (ratfunc.X : (ratfunc K))^(f.X_pow hf) * ↑(F.trunc d),
 end
 
 def laurent_series.trunc (f : laurent_series K) (d : ℕ) : ratfunc K :=
+if hf : f = 0 then 0 else ratfunc.X^(f.order) * ↑((power_series_part f).trunc d)
+
+lemma power_series_part_trunc_coeff (f : laurent_series K) {d n: ℕ} (h : n < d) :
+  ((power_series_part f).trunc d).coeff n = 0 := sorry
+
+--sorry's below are trivial
+lemma foo (f : laurent_series K) (d₁ d₂ : ℕ) (hd : d₁ ≤ d₂) :
+  (ideal_X K).int_valuation ((power_series_part f).trunc d₂ - (power_series_part f).trunc d₁)
+    ≤ ↑(multiplicative.of_add (- (d₁ : ℤ))) :=
 begin
-  by_cases hf : f = 0,
-  { use 0 },
-  { haveI : normalization_monoid (power_series K), sorry,
-    let F := (exists_reduced_fraction (power_series.X : (power_series K)) (laurent_series K)
-      power_series.irreducible_X f hf).some,
-    -- let n := (exists_reduced_fraction (power_series.X : (power_series K)) (laurent_series K)
-    --   power_series.irreducible_X f hf).some_spec.some,
-    use (ratfunc.X : (ratfunc K))^(f.X_pow hf) * ↑(F.trunc d) },
+  set g := (power_series_part f).trunc d₂ - (power_series_part f).trunc d₁ with hg,
+  have H : g ≠ 0, sorry,
+  have h_coeff : ∀ n < d₁, g.coeff n = 0,
+  { intros n hn,
+    have hn' : n < d₂, sorry,
+    rw coeff_sub,
+    rw [power_series_part_trunc_coeff f hn, power_series_part_trunc_coeff f hn', zero_sub_zero]}, 
+    rw ← polynomial.X_pow_dvd_iff at h_coeff,
+    rw [← hg, fae_int_valuation_apply],
+    rw int_valuation_le_pow_iff_dvd,
+    simp only [ideal_X_span, ideal.dvd_span_singleton],
+    sorry
 end
 
-@[simp]
-lemma laurent_series.trunc_zero (d : ℕ) : (0 : laurent_series K).trunc d = 0 :=
-by simp only [laurent_series.trunc, dif_pos]
-
-lemma trunc_same_denom (f : laurent_series K) (d₁ d₂ : ℕ) :
-  (f.trunc d₁).denom = (f.trunc d₂).denom :=
+lemma bar (f : laurent_series K) (hf : f ≠ 0) (d₁ d₂ : ℕ) (hd : d₁ ≤ d₂) :
+  (ideal_X K).valuation ((f.trunc d₂ - f.trunc d₁))
+    ≤ ↑(multiplicative.of_add (- f.order - d₁ : ℤ)) :=
 begin
+  rw [laurent_series.trunc, dif_neg hf],
+  rw [laurent_series.trunc, dif_neg hf],
+  rw ← mul_sub,
+  rw valuation.map_mul,
+  simp only [map_zpow₀, of_add_sub, with_zero.coe_div],
+  -- simp only [map_zpow₀, neg_add_rev, of_add_add, of_add_neg, with_zero.coe_mul, with_zero.coe_inv],
+  -- rw [with_zero.coe_le_coe],
+  rw val_X_eq_one,
+  -- rw [of_add_neg],
+  rw ← with_zero.coe_zpow,
+  -- rw inv_zpow,
+  rw ← of_add_zsmul,
+  rw zsmul_neg,
+  rw zsmul_one,
+  simp only [int.cast_id],
+  
+  --  of_add_neg, with_zero.coe_inv],
+
   sorry,
+  -- rw of_add_neg
+  -- rw of_add
+  -- simp only [of_add_neg, inv_zpow', zpow_neg],
 end
 
-lemma no_denom_if_Xpow_nonneg : (f : laurent_series K) (hf : f ≠ 0) (hX : 0 ≤ f.X_pow) (d : ℕ)
-  (f.trunc d).denom = 1 :=
-begin
-  sorry
-end
+-- @[simp]
+-- lemma laurent_series.trunc_zero (d : ℕ) : (0 : laurent_series K).trunc d = 0 :=
+-- by simp only [laurent_series.trunc, dif_pos]
 
--- lemma sub_trunc (f : laurent_series K) (d₁ d₂ : ℕ) : f.trunc d₁ - f.trunc d₂ = ∑ a_iX^i...
+-- lemma trunc_same_denom (f : laurent_series K) (d₁ d₂ : ℕ) :
+--   (f.trunc d₁).denom = (f.trunc d₂).denom :=
+-- begin
+--   sorry,
+-- end
 
-lemma laurent_series_trunc_eq_power_series (f : power_series K) (d : ℕ) : 
-  (f : laurent_series K).trunc d = ↑(f.trunc d) := sorry
+-- lemma no_denom_if_Xpow_nonneg (f : laurent_series K) (hf : f ≠ 0) (hX : 0 ≤ (f.X_pow hf)) (d : ℕ) : 
+--   (f.trunc d).denom = 1 :=
+-- begin
+--   sorry
+-- end
+
+-- lemma sub_trunc (f : laurent_series K) (d₁ d₂ : ℕ) (hd : d₁ ≤ d₂) : 
+--   polynomial.X^d₁ ∣ (f.trunc d₁ - f.trunc d₂).num := sorry
+
+-- lemma laurent_series_trunc_eq_power_series (f : power_series K) (d : ℕ) : 
+--   (f : laurent_series K).trunc d = ↑(f.trunc d) := sorry
+
+--Just a small example to check that once I write a laurent_series `f` as `g/X^d`, its 
+-- multiplicative valuation is ` -(val(g)-d)=d-val(g)`.
+-- 
 
 end away
 
