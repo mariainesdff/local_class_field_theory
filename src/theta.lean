@@ -17,7 +17,7 @@ noncomputable theory
 open_locale discrete_valuation
 open_locale classical filter topology nnreal
 
-open ideal nnreal
+open ideal nnreal ideal ideal.quotient
 
 --there might be a problem with [uniform_space V]
 variables (p : ℕ) [fact (nat.prime p)]
@@ -47,8 +47,27 @@ local notation ` ℰ ` := ring.perfection (V ⧸ pV) p
 
 instance foo : char_p (V ⧸ pV) p := sorry
 
-lemma val_and_mem (x y : V) (h : x - y ∈ pV) : valued.v (x - y) ≤ (1 / (p : ℝ≥0)) := sorry
+#check @valued.v V _ _ _ _
 
+lemma val_and_mem (hV : valuation.integer (@valued.v V _ _ _ _) = ⊤)
+  (hp : valued.v (↑p : V) = (1/(p : ℝ≥0))) {x : V} :
+  x ∈ pV ↔ valued.v x ≤ (1 / (p : ℝ≥0)) :=
+begin
+  split,
+  { intro hx,
+    obtain ⟨y, hy⟩ := mem_span_singleton'.mp hx,
+    rw [← hy, valuation.map_mul],
+    apply mul_le_mul,
+    rw nnreal.coe_le_coe,
+    { let y' : valued.v.integer,
+      use y,
+      rw hV,
+      apply set.mem_univ y,
+      use y'.2 },
+    all_goals{simp [hp, zero_le]}, },
+  intro hx,
+  rw mem_span_singleton,
+end
 
 lemma star_board (hp : valued.v (↑p : V) = (1/(p : ℝ≥0))) (x : ℕ → V) (hx : ∀ n, (x (n+1))^p - (x n) ∈ pV) (n k : ℕ) : 
   valued.v ((x (n+k))^(p^k) - (x n)) < (1 : ℝ≥0) :=
@@ -64,7 +83,7 @@ begin
     rw nat.succ_eq_add_one,
     suffices mem_pV : x (n + (k + 1)) ^ p ^ (k + 1) - x (n + k) ^ p ^ k ∈ pV,
     have : valued.v (x (n + (k + 1)) ^ p ^ (k + 1) - x (n + k) ^ p ^ k) ≤ (1 / (p : ℝ≥0)),
-    apply val_and_mem p V _ _ mem_pV,
+    apply val_and_mem p V mem_pV,
     sorry,
     convert_to (x (n + k + 1) ^ p - x (n + k))^(p^k) ∈ pV using 0,
     { rw eq_iff_iff,--useless?
@@ -81,6 +100,63 @@ begin
    refine pow_mem_of_mem pV hx (p^k) (pow_pos (nat.prime.pos (fact.out _)) _),
   },
 end
+
+-- lemma cross_board_one (x y : V) (k : ℕ) (h : valued.v (x - y) ≤ 1/(p^k : ℝ≥0)) :
+--   valued.v (x^p - y^p) ≤ 1/(p^(k+1) : ℝ≥0) :=
+-- begin
+--   induction k with k hk,
+--   { 
+    
+
+--   },
+  -- rw 
+  -- obtain ⟨z, hz⟩ : ∃ z, (x ^ p - y ^ p) = (x -y )^p + p * z, sorry,
+  -- rw hz,
+  -- apply (valuation.map_add _ _ _).trans,
+
+-- end
+
+lemma cross_board_n (x y : V) (h : valued.v (x - y) ≤ 1/(p : ℝ≥0)) (n : ℕ) :
+  valued.v (x^(p^n) - y^(p^n)) ≤ 1/(p^(n+1) : ℝ≥0) :=
+begin
+  induction n with n hn,
+  {simpa using h},
+  { rw [pow_succ', pow_mul, pow_mul, ← geom_sum₂_mul, pow_succ, valuation.map_mul,
+    ← one_div_mul_one_div, nat.succ_eq_add_one],
+    apply mul_le_mul _ hn (zero_le _) (zero_le _),
+    suffices : ↑p ∣ (finset.range p).sum (λ (i : ℕ), (x ^ p ^ n) ^ i * (y ^ p ^ n) ^ (p - 1 - i)),
+    { obtain ⟨z, hz⟩ := this,
+      replace hz : (finset.range p).sum (λ (i : ℕ), (x ^ p ^ n) ^ i * (y ^ p ^ n) ^ (p - 1 - i)) ∈ pV,
+      { rw hz,
+      rw mem_span_singleton',
+      use z,
+      rwa mul_comm},
+      apply val_and_mem p V hz,
+      },
+    -- refine mul_dvd_mul _ ih,
+  -- let I : ideal R := span {p},
+  let f : V →+* V ⧸ pV := mk pV,
+  have hp : (p : V ⧸ pV) = 0,
+  { rw [← map_nat_cast f, eq_zero_iff_mem, mem_span_singleton], },
+  rw [← mem_span_singleton, ← ideal.quotient.eq] at h,
+  rw [← mem_span_singleton, ← eq_zero_iff_mem, ring_hom.map_geom_sum₂,
+      ring_hom.map_pow, ring_hom.map_pow, h, geom_sum₂_self, hp, zero_mul],
+    
+
+
+
+  }
+  -- { rw nat.succ_eq_add_one,
+  --   rw pow_add,
+  --   rw pow_one,
+  --   rw pow_mul,
+  --   rw pow_mul,
+  --   apply cross_board_one,
+  --   exact hn },
+end
+
+
+
 
 lemma is_cauchy
   -- (H : filter.has_basis (@nhds V (@uniform_space.to_topological_space V _) (0 : V)) (λ n : ℕ, true)
