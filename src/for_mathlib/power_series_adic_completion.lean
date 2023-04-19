@@ -837,21 +837,21 @@ lemma bdd_below.well_founded_on_lt {X : Type} [preorder X] {s : set X} :
 section truncation
 open ideal
 
-def laurent_series.X_pow (f : laurent_series K) (hf : f ≠ 0) : ℤ := 
-(exists_reduced_fraction (power_series.X : (power_series K)) (laurent_series K)
-  power_series.irreducible_X f hf).some_spec.some
+-- def laurent_series.X_pow (f : laurent_series K) (hf : f ≠ 0) : ℤ := 
+-- (away.exists_reduced_fraction (power_series.X : (power_series K)) (laurent_series K)
+--   power_series.irreducible_X f hf).some_spec.some
 
 -- def laurent_series.power_series_part (f : laurent_series K) (hf : f ≠ 0) : ℤ := 
 -- (exists_reduced_fraction (power_series.X : (power_series K)) (laurent_series K)
 --   power_series.irreducible_X f hf).some_spec.some
 
-def laurent_series.trunc' (f : laurent_series K) (d : ℕ) : ratfunc K :=
-if hf : f = 0 then 0 else
-begin
-  let F := (exists_reduced_fraction (power_series.X : (power_series K)) (laurent_series K)
-    power_series.irreducible_X f hf).some,
-  use (ratfunc.X : (ratfunc K))^(f.X_pow hf) * ↑(F.trunc d),
-end
+-- def laurent_series.trunc' (f : laurent_series K) (d : ℕ) : ratfunc K :=
+-- if hf : f = 0 then 0 else
+-- begin
+--   let F := (away.exists_reduced_fraction (power_series.X : (power_series K)) (laurent_series K)
+--     power_series.irreducible_X f hf).some,
+--   use (ratfunc.X : (ratfunc K))^(f.X_pow hf) * ↑(F.trunc d),
+-- end
 
 def laurent_series.trunc (f : laurent_series K) (d : ℕ) : ratfunc K :=
 if hf : f = 0 then 0 else ratfunc.X^(f.order) * ↑((power_series_part f).trunc d)
@@ -859,22 +859,20 @@ if hf : f = 0 then 0 else ratfunc.X^(f.order) * ↑((power_series_part f).trunc 
 lemma power_series_part_trunc_coeff (f : laurent_series K) {d n: ℕ} (h : n < d) :
   ((power_series_part f).trunc d).coeff n = 0 := sorry
 
---sorry's below are trivial
 lemma int_valuation_trunc_sub (f : laurent_series K) {d₁ d₂ : ℕ} (hd : d₁ ≤ d₂) :
   (ideal_X K).int_valuation ((power_series_part f).trunc d₂ - (power_series_part f).trunc d₁)
     ≤ ↑(multiplicative.of_add (- (d₁ : ℤ))) :=
 begin
   set g := (power_series_part f).trunc d₂ - (power_series_part f).trunc d₁ with hg,
-  have H : g ≠ 0, sorry,
-  have h_coeff : ∀ n < d₁, g.coeff n = 0,
-  { intros n hn,
-    have hn' : n < d₂, sorry,
-    rw coeff_sub,
-    rw [power_series_part_trunc_coeff f hn, power_series_part_trunc_coeff f hn', zero_sub_zero]}, 
-    rw ← polynomial.X_pow_dvd_iff at h_coeff,
-    rw [← hg, fae_int_valuation_apply],
-    rw int_valuation_le_pow_iff_dvd,
-    rwa [ideal_X_span, dvd_span_singleton, span_singleton_pow, mem_span_singleton],
+  by_cases H : g ≠ 0,
+  { have h_coeff : polynomial.X ^ d₁ ∣ g,
+    { rw polynomial.X_pow_dvd_iff,
+      intros m hm,
+      rw [coeff_sub, power_series_part_trunc_coeff f hm, power_series_part_trunc_coeff f
+        (lt_of_lt_of_le hm hd), zero_sub_zero]},
+  rwa [← hg, fae_int_valuation_apply, int_valuation_le_pow_iff_dvd, ideal_X_span,
+    dvd_span_singleton, span_singleton_pow, mem_span_singleton] },
+  { simp only [← hg, not_not.mp H, valuation.map_zero, zero_le'] }
 end
 
 lemma valuation_trunc_sub {f : laurent_series K} (hf : f ≠ 0) {d₁ d₂ : ℕ} (hd : d₁ ≤ d₂) :
