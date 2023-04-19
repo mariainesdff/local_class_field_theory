@@ -283,6 +283,7 @@ noncomputable! instance is_integrally_closed : is_integrally_closed (𝓞 p K) :
   FpX_int_completion.is_fraction_ring _ _ _ _ _ _
 
 noncomputable! instance : algebra 𝔽_[p]⟦X⟧ (𝓞 p K) := infer_instance
+--exact (𝓞 p K).algebra
 
 noncomputable! instance : is_scalar_tower 𝔽_[p]⟦X⟧ (𝓞 p K) K := 
 is_scalar_tower.subalgebra' ↥(FpX_int_completion p) K K (𝓞 p K)
