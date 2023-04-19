@@ -984,19 +984,17 @@ def laurent_series.equiv : (completion_of_ratfunc K) ≃ (laurent_series K) :=
     apply hahn_series.mk,
     exact is_wf.is_pwo ((hℱ.coeff_map_support_bdd').well_founded_on_lt),
   end,
-  inv_fun :=
+  inv_fun := -- apply cau_seq.completion.mk_add-- there are a lot of things like this, only useful for
+    -- valued fields, but the proofs are probably exactly what I need
+    λ f, @quotient.mk (Cauchy (ratfunc K)) (uniform_space.separation_setoid _)
+      ⟨at_top.map (truncation_seq f), truncation_cauchy_seq f⟩,
+  left_inv := 
   begin
     intro f,
-    -- set Sf := filter.map (truncation_seq f) filter.at_top with hSf,
-    -- let Cf := truncation_cauchy_seq f,
-    -- rw [cauchy_seq, ← hSf] at Cf,
-    -- let := cau_seq.completion.mk Cf,
-    -- sorry,
-    
-    -- have := cauchy_seq.tendsto_uniformity (truncation_cauchy_seq f),
+    simp only,
     sorry,
   end,
-  left_inv := sorry,
+  -- sorry,
   right_inv := sorry }
 
 
