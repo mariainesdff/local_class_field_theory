@@ -302,7 +302,8 @@ by rw [norm_X, one_div]; exact inv_lt_one (nat.one_lt_cast.mpr (_inst_1.out).one
 
 lemma X_mem_int_completion : X p ∈ FpX_int_completion p :=
 begin
-  sorry
+  rw [mem_FpX_int_completion, ← norm_le_one_iff_val_le_one],
+  exact le_of_lt norm_X_lt_one, 
 end
 
 instance : nontrivially_normed_field 𝔽_[p]⟮⟮X⟯⟯ :=
@@ -726,9 +727,17 @@ variable (p)
 lemma FpX_int_completion.norm_lt_one_iff_dvd (f : 𝔽_[p]⟦X⟧) :
   ‖(f : 𝔽_[p]⟮⟮X⟯⟯)‖ < 1 ↔ ((FpX_int_completion.X p) ∣ f) :=
 begin
+  have hf : ‖(f : 𝔽_[p]⟮⟮X⟯⟯)‖ = rank_one_valuation.norm_def (f : 𝔽_[p]⟮⟮X⟯⟯) := rfl,
+  rw [hf, height_one_spectrum.norm_lt_one_iff_val_lt_one],
+  rw height_one_spectrum.valued_adic_completion_def,
+
+  rw ← ideal.mem_span_singleton,
+
+  --rw ← height_one_spectrum.valuation_lt_one_iff_dvd, --not for completion
   sorry
 end
 
+#exit
 . 
 
 --set_option profiler true --7.26s

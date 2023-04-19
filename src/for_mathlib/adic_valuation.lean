@@ -1,0 +1,201 @@
+import ring_theory.dedekind_domain.adic_valuation
+import ring_theory.discrete_valuation_ring
+
+--import from_mathlib.ring_seminorm
+
+open is_dedekind_domain
+open_locale discrete_valuation
+
+noncomputable theory
+
+namespace is_dedekind_domain.height_one_spectrum
+variables (R : Type*) [comm_ring R] [is_domain R] [is_dedekind_domain R]
+  (K : Type*) [field K] [algebra R K] [is_fraction_ring R K]
+  (v : height_one_spectrum R)
+
+local notation `R_v` := is_dedekind_domain.height_one_spectrum.adic_completion_integers K v 
+local notation `K_v` := is_dedekind_domain.height_one_spectrum.adic_completion K v
+
+instance asdf : is_noetherian_ring R_v :=
+{ noetherian := sorry }
+
+section
+
+lemma valued.add_eq_max_of_ne {S Γ₀ : Type*} [comm_ring S]
+  [linear_ordered_comm_group_with_zero Γ₀] [valued S Γ₀] {a b : S} (hne : valued.v a ≠ valued.v b) :
+  valued.v (a + b) = max (valued.v a) (valued.v b) :=
+begin
+  wlog hle : valued.v b ≤ valued.v a generalizing b a with H,
+  { rw [add_comm, max_comm],
+    exact H hne.symm (le_of_lt (not_le.mp hle)), },
+  { have hlt : valued.v b  < valued.v a, from lt_of_le_of_ne hle hne.symm,
+    have : valued.v a  ≤ max (valued.v (a + b)) (valued.v b), from calc
+      valued.v a = valued.v (a + b + (-b)) : by rw [add_neg_cancel_right]
+                ... ≤ max (valued.v (a + b)) (valued.v (-b)) : valuation.map_add _ _ _
+                ... = max (valued.v (a + b)) (valued.v b ) : by rw valuation.map_neg _ _,
+    have hnge : valued.v b  ≤ valued.v (a + b),
+    { apply le_of_not_gt,
+      intro hgt,
+      rw max_eq_right_of_lt hgt at this,
+      apply not_lt_of_ge this,
+      assumption },
+    have : valued.v a ≤ valued.v (a + b), by rwa [max_eq_left hnge] at this,
+    apply le_antisymm,
+    { exact valuation.map_add _ _ _, },
+    { rw max_eq_left_of_lt hlt,
+      assumption }},
+end
+
+end
+
+lemma valuation_eq_one_of_is_unit {a : ↥(height_one_spectrum.adic_completion_integers K v)}
+  (ha : is_unit a) : valued.v (a : K_v) = (1 : ℤₘ₀) :=
+begin
+  rw is_unit_iff_exists_inv at ha,
+  obtain ⟨b, hab⟩ := ha,
+  have hab' : valued.v (a * b : K_v) = (1 : ℤₘ₀),
+  { rw [← subring.coe_mul, hab, subring.coe_one, map_one] },
+  rw map_mul at hab',
+  exact eq_one_of_one_le_mul_left a.2 b.2 (le_of_eq hab'.symm),
+end
+
+lemma is_unit_iff_valuation_eq_one (a : ↥(height_one_spectrum.adic_completion_integers K v)) :
+  is_unit a ↔ valued.v (a : K_v) =  (1 : ℤₘ₀) :=
+begin
+  refine ⟨λ ha, valuation_eq_one_of_is_unit R K v ha, λ ha, _⟩,
+  have ha0 : (a : K_v) ≠ 0,
+  { by_contra h0,
+    rw [h0, map_zero] at ha,
+    exact zero_ne_one ha, }, 
+  have ha' : valued.v (a : K_v)⁻¹ = 
+        (1 : ℤₘ₀),
+  { rw [map_inv₀, inv_eq_one], exact ha, },
+  rw is_unit_iff_exists_inv,
+  use (a : K_v)⁻¹,
+  { rw mem_adic_completion_integers,
+    exact le_of_eq ha' },
+  { ext, rw [subring.coe_mul, set_like.coe_mk, algebra_map.coe_one, mul_inv_cancel ha0] },
+end
+
+lemma not_is_unit_iff_valuation_lt_one (a : ↥(height_one_spectrum.adic_completion_integers K v)) :
+  ¬ is_unit a ↔ valued.v (a : K_v) < (1 : ℤₘ₀) :=
+begin
+  rw [← not_le, not_iff_not, is_unit_iff_valuation_eq_one, le_antisymm_iff],
+  exact and_iff_right a.2,
+end
+
+instance : local_ring R_v :=
+{ exists_pair_ne := ⟨0, 1, zero_ne_one⟩,
+  is_unit_or_is_unit_of_add_one := λ a b hab, 
+  begin
+    by_cases ha : is_unit a,
+    { exact or.inl ha },
+    { right,
+      have hab' : valued.v (a + b : K_v) = 
+        (1 : ℤₘ₀),
+      { rw [← subring.coe_add, hab, subring.coe_one, map_one] },
+      by_contra hb,
+      rw not_is_unit_iff_valuation_lt_one at ha hb,
+      have hab'' : valued.v (a + b : K_v) < (1 : ℤₘ₀),
+      { apply lt_of_le_of_lt (valuation.map_add _ _ _),
+        apply max_lt ha hb, /- diamond on ℤₘ₀ linear order (!) -/},
+      exact (ne_of_lt hab'') hab' },
+
+  end }
+
+noncomputable! def completion_max_ideal_def : ideal R_v :=
+local_ring.maximal_ideal R_v 
+
+instance : discrete_valuation_ring R_v :=
+sorry
+/- { principal := sorry,
+  exists_pair_ne := ⟨0, 1, zero_ne_one⟩,
+  is_unit_or_is_unit_of_add_one := sorry,
+  not_a_field' := sorry } -/
+
+--TODO: clean up
+lemma is_dedekind_domain.height_one_spectrum.valuation_completion_integers_exists_uniformizer : 
+  ∃ (π : R_v), valued.v (π : K_v) = (multiplicative.of_add ((-1 : ℤ))) :=
+begin 
+  obtain ⟨x, hx⟩ := is_dedekind_domain.height_one_spectrum.int_valuation_exists_uniformizer v,
+  have h : algebra_map R_v K_v (↑x) = (↑((↑x) : K) : K_v) := rfl,
+  use ⟨algebra_map R_v K_v (↑x),
+    by simp only [valuation_subring.algebra_map_apply, set_like.coe_mem]⟩,
+  simp_rw h,
+  --simp only [valuation_subring.algebra_map_apply, set_like.eta],
+  rw ← hx, 
+  simp only [set_like.coe_mk],/- , valued.valued_completion_apply] -/
+  rw valued_adic_completion_def,
+  rw valued.extension_extends,
+  have h1 : (↑x : K) = algebra_map R K x := rfl,
+  rw h1,
+  have h2 : v.int_valuation_def x = v.int_valuation x := rfl,
+  rw h2,
+  rw ← @valuation_of_algebra_map R _ _ _ K _ _ _ v x,
+  refl,
+end
+
+lemma is_dedekind_domain.height_one_spectrum.valuation_completion_exists_uniformizer : 
+  ∃ (π : K_v), valued.v π = (multiplicative.of_add ((-1 : ℤ))) :=
+begin
+  obtain ⟨x, hx⟩ := is_dedekind_domain.height_one_spectrum.valuation_exists_uniformizer K v,
+  use ↑x,
+  rw [valued_adic_completion_def, ← hx, valued.extension_extends],
+  refl,
+end
+
+lemma bar : ((multiplicative.of_add ((-1 : ℤ))) : ℤₘ₀) < (1 : ℤₘ₀) := 
+begin
+  rw [← with_zero.coe_one, with_zero.coe_lt_coe, ← of_add_zero],
+  exact neg_one_lt_zero,
+end
+
+lemma adic_completion_integers_not_is_field :
+  ¬ is_field ↥(height_one_spectrum.adic_completion_integers K v) :=
+begin
+  rw ring.not_is_field_iff_exists_ideal_bot_lt_and_lt_top,
+  use completion_max_ideal_def R K v,
+  split,
+  { rw [bot_lt_iff_ne_bot, ne.def],
+    by_contra h,
+    obtain ⟨π, hπ⟩ :=
+    is_dedekind_domain.height_one_spectrum.valuation_completion_integers_exists_uniformizer R K v,
+    have h1 : π ∈ completion_max_ideal_def R K v,
+    { rw [completion_max_ideal_def, local_ring.mem_maximal_ideal, mem_nonunits_iff,
+        not_is_unit_iff_valuation_lt_one, hπ],
+      exact bar },
+    rw [h, ideal.mem_bot] at h1,
+    simp only [h1, algebra_map.coe_zero, valuation.map_zero, with_zero.zero_ne_coe] at hπ,
+    exact hπ },
+  { simp only [lt_top_iff_ne_top, ne.def, ideal.eq_top_iff_one, completion_max_ideal_def,
+      local_ring.mem_maximal_ideal, one_not_mem_nonunits, not_false_iff] }
+end
+
+noncomputable! def completion_max_ideal : height_one_spectrum R_v :=
+{ as_ideal := completion_max_ideal_def R K v,
+  is_prime := ideal.is_maximal.is_prime (local_ring.maximal_ideal.is_maximal R_v),
+  ne_bot   := begin
+    rw [ne.def, completion_max_ideal_def, ← local_ring.is_field_iff_maximal_ideal_eq],
+    exact adic_completion_integers_not_is_field R K v,
+  end }
+
+noncomputable def val' : _root_.valuation R_v ℤₘ₀ :=
+(completion_max_ideal R K v).int_valuation
+
+noncomputable def val : _root_.valuation K_v ℤₘ₀ :=
+(completion_max_ideal R K v).valuation
+
+--set_option pp.implicit true
+lemma valuations_eq (x : K_v) : val R K v x = valued.v x :=
+begin
+  letI : valued K ℤₘ₀ := v.adic_valued,
+  apply uniform_space.completion.induction_on x,
+  { simp only, --(?)
+    sorry },
+  intros a,
+  sorry
+end
+
+
+end is_dedekind_domain.height_one_spectrum
+
