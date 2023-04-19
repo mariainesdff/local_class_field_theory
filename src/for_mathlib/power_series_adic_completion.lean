@@ -834,8 +834,8 @@ end
 lemma bdd_below.well_founded_on_lt {X : Type} [preorder X] {s : set X} : 
   bdd_below s → s.well_founded_on (<) := sorry
 
-section away
-open away
+section truncation
+open ideal
 
 def laurent_series.X_pow (f : laurent_series K) (hf : f ≠ 0) : ℤ := 
 (exists_reduced_fraction (power_series.X : (power_series K)) (laurent_series K)
@@ -860,7 +860,7 @@ lemma power_series_part_trunc_coeff (f : laurent_series K) {d n: ℕ} (h : n < d
   ((power_series_part f).trunc d).coeff n = 0 := sorry
 
 --sorry's below are trivial
-lemma foo (f : laurent_series K) (d₁ d₂ : ℕ) (hd : d₁ ≤ d₂) :
+lemma int_valuation_trunc_sub (f : laurent_series K) {d₁ d₂ : ℕ} (hd : d₁ ≤ d₂) :
   (ideal_X K).int_valuation ((power_series_part f).trunc d₂ - (power_series_part f).trunc d₁)
     ≤ ↑(multiplicative.of_add (- (d₁ : ℤ))) :=
 begin
@@ -874,41 +874,26 @@ begin
     rw ← polynomial.X_pow_dvd_iff at h_coeff,
     rw [← hg, fae_int_valuation_apply],
     rw int_valuation_le_pow_iff_dvd,
-    simp only [ideal_X_span, ideal.dvd_span_singleton],
-    sorry
+    rwa [ideal_X_span, dvd_span_singleton, span_singleton_pow, mem_span_singleton],
 end
 
-lemma bar (f : laurent_series K) (hf : f ≠ 0) (d₁ d₂ : ℕ) (hd : d₁ ≤ d₂) :
+lemma valuation_trunc_sub {f : laurent_series K} (hf : f ≠ 0) {d₁ d₂ : ℕ} (hd : d₁ ≤ d₂) :
   (ideal_X K).valuation ((f.trunc d₂ - f.trunc d₁))
     ≤ ↑(multiplicative.of_add (- f.order - d₁ : ℤ)) :=
 begin
-  rw [laurent_series.trunc, dif_neg hf],
-  rw [laurent_series.trunc, dif_neg hf],
-  rw ← mul_sub,
-  rw valuation.map_mul,
-  simp only [map_zpow₀, of_add_sub, with_zero.coe_div],
-  -- simp only [map_zpow₀, neg_add_rev, of_add_add, of_add_neg, with_zero.coe_mul, with_zero.coe_inv],
-  -- rw [with_zero.coe_le_coe],
-  rw val_X_eq_one,
-  -- rw [of_add_neg],
-  rw ← with_zero.coe_zpow,
-  -- rw inv_zpow,
-  rw ← of_add_zsmul,
-  rw zsmul_neg,
-  rw zsmul_one,
-  simp only [int.cast_id],
-  
-  --  of_add_neg, with_zero.coe_inv],
-
-  sorry,
-  -- rw of_add_neg
-  -- rw of_add
-  -- simp only [of_add_neg, inv_zpow', zpow_neg],
+  simp only [laurent_series.trunc, dif_neg hf, ← mul_sub, valuation.map_mul, map_zpow₀, of_add_sub,
+    with_zero.coe_div, val_X_eq_one, ← with_zero.coe_zpow, ← of_add_zsmul, zsmul_neg, zsmul_one,
+    int.cast_id, div_eq_mul_inv, ← with_zero.coe_inv, ← of_add_neg],
+  simp only [sub_eq_add_neg, ← algebra_map.coe_neg, ← algebra_map.coe_add],
+  convert (mul_le_mul_left₀ _).mpr (int_valuation_trunc_sub f hd),
+  convert @valuation_of_algebra_map (polynomial K) _ _ _ (ratfunc K) _ _ _ (ideal_X K)
+   (power_series.trunc d₂ f.power_series_part - power_series.trunc d₁ f.power_series_part),
+  apply with_zero.coe_ne_zero,
 end
 
 -- @[simp]
--- lemma laurent_series.trunc_zero (d : ℕ) : (0 : laurent_series K).trunc d = 0 :=
--- by simp only [laurent_series.trunc, dif_pos]
+lemma trunc_zero {d : ℕ} : (0 : laurent_series K).trunc d = 0 :=
+by simp only [laurent_series.trunc, dif_pos]
 
 -- lemma trunc_same_denom (f : laurent_series K) (d₁ d₂ : ℕ) :
 --   (f.trunc d₁).denom = (f.trunc d₂).denom :=
@@ -928,20 +913,33 @@ end
 -- lemma laurent_series_trunc_eq_power_series (f : power_series K) (d : ℕ) : 
 --   (f : laurent_series K).trunc d = ↑(f.trunc d) := sorry
 
---Just a small example to check that once I write a laurent_series `f` as `g/X^d`, its 
--- multiplicative valuation is ` -(val(g)-d)=d-val(g)`.
--- 
 
-end away
+end truncation
 
-theorem trunc_is_cauchy (f : laurent_series K) : cauchy_seq (λ d, f.trunc d) :=
+
+theorem truncation_is_cauchy (f : laurent_series K) : cauchy_seq (λ d, f.trunc d) :=
 begin
-  have h := valued.has_basis_uniformity (ratfunc K) ℤₘ₀,
-  rw has_basis.cauchy_seq_iff h,-- :
-  -- (𝓤 R).has_basis (λ _, true) (λ (γ : Γ₀ˣ), { p : R × R | v (p.2 - p.1) < (γ : Γ₀) }) :=
-  intros i hi,
-  simp only [ge_iff_le, mem_set_of_eq],
-
+  by_cases hf : f = 0,
+  { convert @cauchy_seq_const _ ℕ _ _ _ (0 : ratfunc K),
+    funext,
+    rw [hf, trunc_zero] },
+  { simp_rw has_basis.cauchy_seq_iff (valued.has_basis_uniformity (ratfunc K) ℤₘ₀),
+    rintros i -,
+    obtain ⟨j, hj⟩ := with_zero.ne_zero_iff_exists.mp (units.ne_zero i),
+    simp only [ge_iff_le, mem_set_of_eq],
+    use int.nat_abs (-f.order - j) + 1,
+    intros m hm n hn,
+    wlog hmn : m ≤ n with Hsymm,
+    { convert Hsymm f hf i j hj _ hn _ hm (le_of_not_ge hmn) using 1,
+      suffices : f.trunc n - f.trunc m = - (f.trunc m - f.trunc n),
+      rw [this, valuation.map_neg],
+      ring },
+    { replace hm : - f.order - j < m,
+      { refine lt_of_le_of_lt int.le_nat_abs (nat.cast_lt.mpr (nat.lt_of_succ_le (le_trans _ hm))),
+        rw nat.succ_eq_add_one},
+      apply lt_of_le_of_lt (valuation_trunc_sub hf hmn),
+      rw [← hj, with_zero.coe_lt_coe],
+      exact sub_lt_comm.mp hm }},
 end
 
 def laurent_series.equiv : (completion_of_ratfunc K) ≃ (laurent_series K) :=
