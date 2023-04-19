@@ -19,8 +19,16 @@ lemma norm_le_one_iff_val_le_one (x : L) :
 begin
   have hx : rank_one_valuation.norm_def x  = hv.hom (valued.v x) := rfl,
   rw [hx, ← nnreal.coe_one, nnreal.coe_le_coe, ← map_one  (is_rank_one.hom
-      (@valued.v L _ ℤₘ₀ _ _)),
-    strict_mono.le_iff_le],
+      (@valued.v L _ ℤₘ₀ _ _)), strict_mono.le_iff_le],
+  exact is_rank_one.strict_mono,
+end
+
+lemma norm_lt_one_iff_val_lt_one (x : L) :
+  rank_one_valuation.norm_def x < 1 ↔ valued.v x < (1 : ℤₘ₀) :=
+begin
+  have hx : rank_one_valuation.norm_def x  = hv.hom (valued.v x) := rfl,
+  rw [hx, ← nnreal.coe_one, nnreal.coe_lt_coe, ← map_one  (is_rank_one.hom
+      (@valued.v L _ ℤₘ₀ _ _)), strict_mono.lt_iff_lt],
   exact is_rank_one.strict_mono,
 end
 
