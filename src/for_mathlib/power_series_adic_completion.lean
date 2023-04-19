@@ -718,9 +718,18 @@ end
 -/
 def cauchy.coeff_map {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) : ℤ → K :=
 begin
-  letI : uniform_space K :=  ⊥,
-  have hK : uniformity K = filter.principal id_rel, refl,
-  use λ d, (cauchy_discrete_is_constant hK (hℱ.map (uniform_continuous_coeff_map hK d))),
+  have hK : @uniformity K ⊥ = filter.principal id_rel := rfl,
+  let try := @cauchy_discrete_is_constant K _ ⊥ hK,
+  
+  let g := @uniform_continuous_coeff_map K _ ⊥ hK,
+  -- let d : ℤ, sorry,
+  -- let gg := g d,
+  use λ d, try (@cauchy.map _ K _ ⊥ ℱ _ hℱ (g d)),
+
+  -- use λ d, try (hℱ.map (g d)),
+  -- let also := (hℱ.map (uniform_continuous_coeff_map hK d)),
+
+  -- use λ d, (cauchy_discrete_is_constant hK (hℱ.map (uniform_continuous_coeff_map hK d))),
 end
 
 @[simp]
@@ -730,6 +739,32 @@ begin
   letI : uniform_space K := ⊥,
   have hK : uniformity K = filter.principal id_rel, refl,
   exact cauchy_discrete_le _ _,
+end
+
+example : uniform_continuous₂ (λ f g : (ratfunc K), f + g ) :=
+begin
+  rw uniform_continuous₂_def,
+  apply uniform_continuous_add,
+end
+
+example {ℱ ℱ' : filter (ratfunc K)} (hℱ : cauchy ℱ) (hℱ' : cauchy ℱ') :
+  cauchy ((ℱ.prod ℱ').map (+).uncurry) := 
+begin
+  exact (hℱ.prod hℱ').map (uniform_continuous_add),
+end
+
+lemma coeff_map_add {ℱ ℱ' : filter (ratfunc K)} (hℱ : cauchy ℱ) (hℱ' : cauchy ℱ') :
+  ((hℱ.prod hℱ').map (uniform_continuous_add)).coeff_map = hℱ.coeff_map + hℱ'.coeff_map :=
+begin
+  ext n,
+  -- have fine : ((ℱ.prod ℱ').map (+).uncurry).coeff_map n ≤ 𝓝 ( (hℱ.coeff_map n) + (hℱ'.coeff_map n)),
+  -- letI : uniform_space K := ⊥,
+  
+  rw cauchy.coeff_map,
+  rw cauchy.coeff_map,
+  rw cauchy.coeff_map,
+  simp,
+  sorry
 end
 
 
@@ -914,8 +949,9 @@ by simp only [laurent_series.trunc, dif_pos]
 
 end truncation
 
+definition truncation_seq (f : laurent_series K) : ℕ → ratfunc K := λ d, f.trunc d
 
-theorem truncation_is_cauchy (f : laurent_series K) : cauchy_seq (λ d, f.trunc d) :=
+theorem truncation_cauchy_seq (f : laurent_series K) : cauchy_seq (truncation_seq f) :=
 begin
   by_cases hf : f = 0,
   { convert @cauchy_seq_const _ ℕ _ _ _ (0 : ratfunc K),
@@ -951,16 +987,24 @@ def laurent_series.equiv : (completion_of_ratfunc K) ≃ (laurent_series K) :=
   inv_fun :=
   begin
     intro f,
+    -- set Sf := filter.map (truncation_seq f) filter.at_top with hSf,
+    -- let Cf := truncation_cauchy_seq f,
+    -- rw [cauchy_seq, ← hSf] at Cf,
+    -- let := cau_seq.completion.mk Cf,
+    -- sorry,
+    
+    -- have := cauchy_seq.tendsto_uniformity (truncation_cauchy_seq f),
     sorry,
   end,
   left_inv := sorry,
   right_inv := sorry }
 
-.
 
 noncomputable! def laurent_series.ring_equiv : 
   ring_equiv (completion_of_ratfunc K) (laurent_series K) :=
-sorry
+{ map_mul' := sorry,
+  map_add' := sorry,
+  .. laurent_series.equiv }
 
 #where
 noncomputable! def power_series.ring_equiv : ring_equiv (adic_completion_integers (ratfunc K) 
