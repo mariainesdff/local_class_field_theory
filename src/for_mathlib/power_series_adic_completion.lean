@@ -489,14 +489,14 @@ begin
   replace hQ₀ : (↑Q : ratfunc K) ≠ 0,
   { exact λ hneQ, hQ₀ ((@ratfunc.algebra_map_eq_zero_iff K _ _ Q).mp hneQ) },
   apply congr_arg,
-  rw neg_eq_iff_neg_eq,
+  rw neg_eq_iff_eq_neg,
   rw neg_sub_neg,
   rw neg_sub,
   rw ← fae_order_div,
   rw ← hfPQ,
   apply congr_arg,
-  convert_to ((↑P : ratfunc K) : laurent_series K)/ (↑Q : ratfunc K) =
-    ↑(is_localization.mk' (ratfunc K) P ⟨Q, hQ⟩),
+  convert_to ↑(is_localization.mk' (ratfunc K) P ⟨Q, hQ⟩) =
+  ((↑P : ratfunc K) : laurent_series K)/ (↑Q : ratfunc K) ,
   { have := ratfunc.coe_div (↑P : ratfunc K) (↑Q : ratfunc K),
     rw ← this,
     rw div_eq_iff,
