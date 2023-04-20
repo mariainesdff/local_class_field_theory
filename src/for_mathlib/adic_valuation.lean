@@ -187,23 +187,45 @@ noncomputable def val' : _root_.valuation R_v ℤₘ₀ :=
 noncomputable def val : _root_.valuation K_v ℤₘ₀ :=
 (completion_max_ideal R K v).valuation
 
+
+/- example : has_zero ℤₘ₀ := with_zero.has_zero
+
+lemma test : false :=
+begin
+  let a := (@with_zero.has_zero (multiplicative ℤ)).zero,
+  let b := (@mul_zero_class.to_has_zero ℤₘ₀ _).zero,
+  have : a = b,
+  refl,
+end -/
+
+open_locale with_zero_topology
+
+
 lemma a (x : K_v) : true :=
 begin
-haveI : topological_space ℤₘ₀ := linear_ordered_comm_group_with_zero.topological_space,
-haveI : valued K ℤₘ₀ := valued.mk' v.valuation,
-have h1 := @valued.continuous_valuation K_v _ ℤₘ₀ _ _,
-have h2 := @valued.continuous_extension K _ ℤₘ₀ _ _,
+--letI top : topological_space ℤₘ₀ := with_zero_topology.topological_space,
+--letI : valued K ℤₘ₀ := valued.mk' v.valuation,
+--have h1 := @valued.continuous_valuation K_v _ ℤₘ₀ _ _,
+--have h2 := @valued.continuous_extension K _ ℤₘ₀ _ _,
 have h3 : continuous (val R K v),
 { --exact valued.continuous_valuation,
   rw continuous_iff_continuous_at,
   intros x,
   rcases eq_or_ne x 0 with rfl|h,
-  { have h := with_zero_topology.tendsto_zero,
-    rw [continuous_at, map_zero],
-    rw [with_zero_topology.tendsto_zero],
+  { rw [continuous_at, map_zero, with_zero_topology.tendsto_zero],
     intros γ hγ,
     rw [filter.eventually, valued.mem_nhds_zero],
-    use [units.mk0 γ hγ, subset.rfl] },
+    refine ⟨units.mk0 γ hγ, _⟩,
+    intros z hz,
+    simp only [set.mem_set_of_eq, units.coe_mk0] at hz ⊢,
+    
+     },
+  /- { have h := @with_zero_topology.tendsto_zero K_v ℤₘ₀ _ (nhds 0)(val R K v),
+    rw [continuous_at, map_zero],
+    rw h,
+    intros γ hγ,
+    rw [filter.eventually, valued.mem_nhds_zero],
+    use [units.mk0 γ hγ, subset.rfl] }, -/
   /- rcases eq_or_ne x 0 with rfl|h,
   { rw [continuous_at, map_zero, with_zero_topology.tendsto_zero],
     intros γ hγ,
