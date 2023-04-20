@@ -6,7 +6,6 @@ import local_field
 import padic
 import eq_characteristic.valuation
 import eq_characteristic.basic
---import for_mathlib.old_spectral_norm
 import for_mathlib.rank_one_valuation
 import for_mathlib.normed_valued
 import for_mathlib.adic_valuation
