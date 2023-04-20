@@ -4,6 +4,8 @@ import http.server
 import socketserver
 from invoke import run, task
 
+from mathlibtools.lib import LeanProject
+
 ROOT = Path(__file__).parent
 
 @task

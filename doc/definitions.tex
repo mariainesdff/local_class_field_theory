@@ -1,5 +1,36 @@
-\section{Introduction}
+\section{Generalities}
+Fix a field $K$.
+\begin{definition}
+\label{def:discrete_val}
+\lean{is_discrete}
+\leanok
+A valuation $v\colon K \to \ZZ$ on $K$ is discrete if it is non-archimedean and surjective.
+\end{definition}
+We have the
 
+\begin{proposition}[{\cite[Chap I,\S1, Proposition 1]{Se2}}]
+\label{prop:unit_ball_dvr}
+\lean{discrete_valuation.integer.discrete_valuation_ring}
+If $K$ is complete with respect to a discrete valuation $v$, then its unit ball $\unitball{K}$ is a discrete valuation ring.
+\end{proposition}
+
+\begin{lemma}[{\cite[Chap II,\S2, last part of Proposition 3]{Se2}}] 
+\label{lemma:val_L}
+\lean{discrete_valuation.hw}
+\lean{discrete_valuation.complete_of_finite}
+\lean{discrete_valuation.is_discrete_of_finite}
+If $K$ is complete with respect to a discrete valuation $v$ and if $L/K$ is a finite extension, then $L$ has a discrete valuation $w\colon L \twoheadrightarrow \ZZ$ inducing $v$ and $L$ is complete with respect to $w$.
+\end{lemma}
+
+Moreover,
+\begin{proposition}[{\cite[Chap II,\S2, Proposition 3]{Se2}}]
+\label{prop:unitball_L}
+\lean{discrete_valuation.integral_closure_eq_integer}
+\lean{discrete_valuation.integral_closure.discrete_valuation_ring}
+\lean{discrete_valuation.integral_closure_finrank}
+If $K$ is complete with respect to a discrete valuation $v$ and if $L/K$ is a finite extension, then the integral closure of $\unitball{K}$ inside $L$ coincides $\unitball{L}$ and so, in particular, it is a discrete valuation ring by~\ref{prop:unit_ball_dvr}. Moreover, $\unitball{L}$ is a finite, free $\unitball{K}$-module of rank $n=[L:K]$.
+\end{proposition}
+\section{Local Fields}
 \begin{definition}
 \label{local_field}
 \lean{local_field}
@@ -13,7 +44,7 @@ valuation and with finite residue field.
 \lean{mixed_char_local_field}
 \leanok
 A \textit{mixed characteristic local field} is a finite field extension of the field 
-$\mathbb{Q}_p$ of $p$-adic numbers, for some prime $p$.
+$\Qp$ of $p$-adic numbers, for some prime $p$.
 \end{definition}
 
 \begin{definition}
@@ -21,7 +52,7 @@ $\mathbb{Q}_p$ of $p$-adic numbers, for some prime $p$.
 \lean{eq_char_local_field}
 \leanok
 An \textit{equal characteristic local field} is a finite field extension of the field 
-$\mathbb{F}_p((X))$, for some prime $p$.
+$\laurentseries$, for some prime $p$.
 \end{definition}
 
 \begin{lemma}
@@ -37,15 +68,16 @@ A mixed characteristic local field is a local field.
 \uses{local_field, eq_char_local_field}
 An equal characteristic local field is a local field.
 \end{lemma}
+\subsection{Ramification Index}
+\section{Global to Local}
+\begin{proposition}
+\label{prop:number_field_localization}
+\lean{number_field.adic_completion.mixed_char_local_field}
+Let $F$ be a number field and let $v$ be a finite place of residue characteristic $p$. Then $F_v$ is a mixed characteristic local field with residue characteristic $p$.
+\end{proposition}
 
-\begin{definition}
-\label{def_local_field}
-\lean{blueprint.first_test}
-A local field is a field
-\end{definition}
-
-
-\begin{proof}
-\leanok
-Omitted, but it uses \cite{SerCF} and also \cite{Se2}.
-\end{proof}
+\begin{proposition}
+\label{prop:function_field_localization}
+\lean{function_field.adic_completion.eq_char_local_field}
+Let $F$ be a function field and let $v$ be any place. Then $F_v$ is an equal characteristic local field with residue characteristic $p$.
+\end{proposition}
