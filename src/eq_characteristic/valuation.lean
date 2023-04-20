@@ -736,8 +736,6 @@ begin
   --rw ← height_one_spectrum.valuation_lt_one_iff_dvd, --not for completion
   sorry
 end
-
-#exit
 . 
 
 --set_option profiler true --7.26s
@@ -776,9 +774,10 @@ begin
     exact hcx },
 end 
 
-#exit
-
 variable {p}
+
+.
+
 
 --set_option profiler true
 /- lemma is_unramified_ℚ_p : e ℚ_[p] = 1 :=

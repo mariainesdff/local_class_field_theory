@@ -1,5 +1,7 @@
 import ring_theory.dedekind_domain.adic_valuation
 import ring_theory.discrete_valuation_ring
+import topology.algebra.valued_field
+import topology.algebra.with_zero_topology
 
 --import from_mathlib.ring_seminorm
 
@@ -60,7 +62,7 @@ begin
 end
 
 lemma is_unit_iff_valuation_eq_one (a : ↥(height_one_spectrum.adic_completion_integers K v)) :
-  is_unit a ↔ valued.v (a : K_v) =  (1 : ℤₘ₀) :=
+  is_unit a ↔ valued.v (a : K_v) = (1 : ℤₘ₀) :=
 begin
   refine ⟨λ ha, valuation_eq_one_of_is_unit R K v ha, λ ha, _⟩,
   have ha0 : (a : K_v) ≠ 0,
@@ -97,7 +99,7 @@ instance : local_ring R_v :=
       by_contra hb,
       rw not_is_unit_iff_valuation_lt_one at ha hb,
       have hab'' : valued.v (a + b : K_v) < (1 : ℤₘ₀),
-      { apply lt_of_le_of_lt (valuation.map_add _ _ _),
+      { apply lt_of_le_of_lt (valuation.map_add _ _ _), -- (max_lt ha hb),
         apply max_lt ha hb, /- diamond on ℤₘ₀ linear order (!) -/},
       exact (ne_of_lt hab'') hab' },
 
@@ -184,6 +186,34 @@ noncomputable def val' : _root_.valuation R_v ℤₘ₀ :=
 
 noncomputable def val : _root_.valuation K_v ℤₘ₀ :=
 (completion_max_ideal R K v).valuation
+
+lemma a (x : K_v) : true :=
+begin
+haveI : topological_space ℤₘ₀ := linear_ordered_comm_group_with_zero.topological_space,
+haveI : valued K ℤₘ₀ := valued.mk' v.valuation,
+have h1 := @valued.continuous_valuation K_v _ ℤₘ₀ _ _,
+have h2 := @valued.continuous_extension K _ ℤₘ₀ _ _,
+have h3 : continuous (val R K v),
+{ --exact valued.continuous_valuation,
+  rw continuous_iff_continuous_at,
+  intros x,
+  rcases eq_or_ne x 0 with rfl|h,
+  { have h := with_zero_topology.tendsto_zero,
+    rw [continuous_at, map_zero],
+    rw [with_zero_topology.tendsto_zero],
+    intros γ hγ,
+    rw [filter.eventually, valued.mem_nhds_zero],
+    use [units.mk0 γ hγ, subset.rfl] },
+  /- rcases eq_or_ne x 0 with rfl|h,
+  { rw [continuous_at, map_zero, with_zero_topology.tendsto_zero],
+    intros γ hγ,
+    rw [filter.eventually, valued.mem_nhds_zero],
+    use [units.mk0 γ hγ, subset.rfl] },
+  { have v_ne : (v x : Γ₀) ≠ 0, from (valuation.ne_zero_iff _).mpr h,
+    rw [continuous_at, with_zero_topology.tendsto_of_ne_zero v_ne],
+    apply valued.loc_const v_ne },-/ }
+--continuous (@valued.v K_v _ ℤₘ₀ _ _)
+end
 
 --set_option pp.implicit true
 lemma valuations_eq (x : K_v) : val R K v x = valued.v x :=
