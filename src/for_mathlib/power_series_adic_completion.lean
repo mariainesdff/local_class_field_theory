@@ -532,7 +532,7 @@ begin
   rw [← with_zero.coe_unzero $((ideal_X K).valuation).ne_zero_iff.mpr hf],
   rw ← with_zero.coe_inv,
   rw with_zero.coe_inj,
-  rw eq_inv_iff_eq_inv,
+  rw ← inv_eq_iff_eq_inv,
   rw ← with_zero.coe_inj,
   simp only [this, with_zero.coe_unzero, valuation.map_neg],
 end
@@ -924,9 +924,12 @@ begin
   apply with_zero.coe_ne_zero,
 end
 
--- @[simp]
-lemma trunc_zero {d : ℕ} : (0 : laurent_series K).trunc d = 0 :=
-by simp only [laurent_series.trunc, dif_pos]
+definition truncation_seq (f : laurent_series K) : ℕ → ratfunc K := λ d, f.trunc d
+
+@[simp]
+lemma truncation_zero : truncation_seq (0 : (laurent_series K)) = 0 :=
+  by simp only [truncation_seq, laurent_series.trunc, dif_pos, function.const_eq_zero]
+
 
 -- lemma trunc_same_denom (f : laurent_series K) (d₁ d₂ : ℕ) :
 --   (f.trunc d₁).denom = (f.trunc d₂).denom :=
@@ -949,18 +952,18 @@ by simp only [laurent_series.trunc, dif_pos]
 
 end truncation
 
-definition truncation_seq (f : laurent_series K) : ℕ → ratfunc K := λ d, f.trunc d
+
 
 theorem truncation_cauchy_seq (f : laurent_series K) : cauchy_seq (truncation_seq f) :=
 begin
-  by_cases hf : f = 0,
+  by_cases hf : f = 0,  
   { convert @cauchy_seq_const _ ℕ _ _ _ (0 : ratfunc K),
     funext,
-    rw [hf, trunc_zero] },
+    simp only [hf, truncation_zero, pi.zero_apply], },
   { simp_rw has_basis.cauchy_seq_iff (valued.has_basis_uniformity (ratfunc K) ℤₘ₀),
     rintros i -,
     obtain ⟨j, hj⟩ := with_zero.ne_zero_iff_exists.mp (units.ne_zero i),
-    simp only [ge_iff_le, mem_set_of_eq],
+    simp only [ge_iff_le, mem_set_of_eq, truncation_seq],
     use int.nat_abs (-f.order - j) + 1,
     intros m hm n hn,
     wlog hmn : m ≤ n with Hsymm,
