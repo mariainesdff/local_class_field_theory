@@ -3,10 +3,50 @@ import ring_theory.discrete_valuation_ring
 import topology.algebra.valued_field
 import topology.algebra.with_zero_topology
 
+
+import from_mathlib.rank_one_valuation
 --import from_mathlib.ring_seminorm
 
 open is_dedekind_domain
 open_locale discrete_valuation
+
+
+
+namespace discrete_valuation
+
+variables {K : Type*} [field K] [hv : valued K ℤₘ₀] [complete_space K] [is_discrete hv.v]
+
+include hv 
+
+-- Chapter I, Section 1, Proposition 1 in Serre's Local Fields
+instance integer.discrete_valuation_ring : discrete_valuation_ring (hv.v.integer) := sorry
+
+variables {L : Type*} [field L] [algebra K L] [finite_dimensional K L]
+
+--instance normed_L : normed_field L := sorry
+
+instance hw : valued L ℤₘ₀ := sorry -- May be a bit hard
+
+instance is_complete_of_finite : complete_space L := sorry
+
+instance is_discrete_of_finite : is_discrete (@valued.v L _ ℤₘ₀ _ _) := sorry
+
+lemma integral_closure_eq_integer :
+  (integral_closure hv.v.integer L).to_subring = (@valued.v L _ ℤₘ₀ _ _).integer :=
+sorry
+
+--Chapter 2, Section 2, Proposition 3 in Serre's Local Fields
+instance : discrete_valuation_ring (integral_closure hv.v.integer L) := sorry
+
+lemma integral_closure_finrank :
+  finite_dimensional.finrank hv.v.integer (integral_closure hv.v.integer L) =
+  finite_dimensional.finrank K L :=
+sorry
+
+
+end discrete_valuation
+
+#exit
 
 noncomputable theory
 
@@ -17,6 +57,11 @@ variables (R : Type*) [comm_ring R] [is_domain R] [is_dedekind_domain R]
 
 local notation `R_v` := is_dedekind_domain.height_one_spectrum.adic_completion_integers K v 
 local notation `K_v` := is_dedekind_domain.height_one_spectrum.adic_completion K v
+
+instance : is_discrete (@valued.v K_v _ ℤₘ₀ _ _) := 
+{ hom := sorry,
+  strict_mono := sorry,
+  nontrivial := sorry }
 
 instance asdf : is_noetherian_ring R_v :=
 { noetherian := sorry }
@@ -108,7 +153,7 @@ instance : local_ring R_v :=
 noncomputable! def completion_max_ideal_def : ideal R_v :=
 local_ring.maximal_ideal R_v 
 
-instance : discrete_valuation_ring R_v :=
+instance /- (hv : ideal.principal ) -/ : discrete_valuation_ring R_v :=
 sorry
 /- { principal := sorry,
   exists_pair_ne := ⟨0, 1, zero_ne_one⟩,

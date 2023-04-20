@@ -169,6 +169,7 @@ instance (K : Type*) [field K] [mixed_char_local_field p K] : valued K ℤₘ₀
 lemma normalized_valuation_p_ne_zero : (normalized_valuation K) (p : K) ≠ 0 :=
 by {simp only [ne.def, valuation.zero_iff, nat.cast_eq_zero], from nat.prime.ne_zero (fact.out _)}
 
+--TODO: turn into lemma
 open multiplicative is_dedekind_domain.height_one_spectrum
 def ramification_index (K : Type*) [field K] [mixed_char_local_field p K] : ℤ := 
   -(with_zero.unzero (normalized_valuation_p_ne_zero K)).to_add

@@ -18,8 +18,9 @@ def residue_char (v : is_dedekind_domain.height_one_spectrum (ring_of_integers L
 instance : fact (nat.prime (residue_char L v)) :=
 sorry
 
-noncomputable! instance : mixed_char_local_field (residue_char L v)
-  (is_dedekind_domain.height_one_spectrum.adic_completion L v) := sorry
+noncomputable! instance adic_completion.mixed_char_local_field : 
+  mixed_char_local_field (residue_char L v)
+    (is_dedekind_domain.height_one_spectrum.adic_completion L v) := sorry
 
 end number_field 
 
@@ -43,7 +44,8 @@ def residue_char (v : is_dedekind_domain.height_one_spectrum
 instance : fact (nat.prime (residue_char p L v)) :=
 sorry
 
-noncomputable! instance : eq_char_local_field (residue_char p L v)
-  (is_dedekind_domain.height_one_spectrum.adic_completion L v) := sorry
+noncomputable! instance adic_completion.eq_char_local_field : 
+  eq_char_local_field (residue_char p L v)
+    (is_dedekind_domain.height_one_spectrum.adic_completion L v) := sorry
 
 end function_field

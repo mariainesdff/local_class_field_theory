@@ -73,10 +73,15 @@ end
 
 /-- A valuation is discrete if it is nontrivial and its image is contained in
   `with_zero (multiplicative ℤ)`. -/
-class is_discrete (v : valuation R Γ₀) :=
+class is_discrete' (v : valuation R Γ₀) :=
 (hom : Γ₀ →*₀ with_zero (multiplicative ℤ)) 
 (strict_mono : strict_mono hom) 
 (nontrivial : ∃ r : R, v r ≠ 0 ∧ v r ≠ 1)
+
+open_locale discrete_valuation
+
+class is_discrete (v : valuation R ℤₘ₀) :=
+(surj : surjective v)
 
 end is_rank_one
 
