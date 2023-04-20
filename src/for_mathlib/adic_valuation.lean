@@ -218,8 +218,9 @@ have h3 : continuous (val R K v),
     refine ⟨units.mk0 γ hγ, _⟩,
     intros z hz,
     simp only [set.mem_set_of_eq, units.coe_mk0] at hz ⊢,
-    
+    sorry,
      },
+  sorry,
   /- { have h := @with_zero_topology.tendsto_zero K_v ℤₘ₀ _ (nhds 0)(val R K v),
     rw [continuous_at, map_zero],
     rw h,
@@ -233,19 +234,44 @@ have h3 : continuous (val R K v),
     use [units.mk0 γ hγ, subset.rfl] },
   { have v_ne : (v x : Γ₀) ≠ 0, from (valuation.ne_zero_iff _).mpr h,
     rw [continuous_at, with_zero_topology.tendsto_of_ne_zero v_ne],
-    apply valued.loc_const v_ne },-/ }
+    apply valued.loc_const v_ne },-/ },
+  triv,
 --continuous (@valued.v K_v _ ℤₘ₀ _ _)
+end
+
+lemma l1 (x : K) : (val R K v) ↑x = ((valued.mk' v.valuation)).v x :=
+begin
+  rw val,
+  sorry
+end
+
+lemma l2 : continuous (val R K v).to_monoid_with_zero_hom.to_fun :=
+begin
+  sorry
 end
 
 --set_option pp.implicit true
 lemma valuations_eq (x : K_v) : val R K v x = valued.v x :=
 begin
-  letI : valued K ℤₘ₀ := v.adic_valued,
+  have : (val R K v).to_fun = valued.v,
+  { letI : valued K ℤₘ₀ := valued.mk' v.valuation,
+    apply uniform_space.completion.ext,
+    sorry,
+    exact valued.continuous_extension,
+    intros x,
+    rw valued_adic_completion_def,
+    rw valued.extension_extends,
+    
+
+    sorry },
+  rw ← this,
+  refl,
+  /- letI : valued K ℤₘ₀ := v.adic_valued,
   apply uniform_space.completion.induction_on x,
   { simp only, --(?)
     sorry },
   intros a,
-  sorry
+  sorry -/
 end
 
 

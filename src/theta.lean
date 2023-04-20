@@ -47,7 +47,7 @@ local notation ` ℰ ` := ring.perfection (V ⧸ pV) p
 
 instance foo : char_p (V ⧸ pV) p := sorry
 
-#check @valued.v V _ _ _ _
+--#check @valued.v V _ _ _ _
 
 lemma val_and_mem (hV : valuation.integer (@valued.v V _ _ _ _) = ⊤)
   (hp : valued.v (↑p : V) = (1/(p : ℝ≥0))) {x : V} :
@@ -65,8 +65,9 @@ begin
       apply set.mem_univ y,
       use y'.2 },
     all_goals{simp [hp, zero_le]}, },
-  intro hx,
-  rw mem_span_singleton,
+  { intro hx,
+    rw mem_span_singleton,
+    sorry },
 end
 
 lemma star_board (hp : valued.v (↑p : V) = (1/(p : ℝ≥0))) (x : ℕ → V) (hx : ∀ n, (x (n+1))^p - (x n) ∈ pV) (n k : ℕ) : 
@@ -83,7 +84,7 @@ begin
     rw nat.succ_eq_add_one,
     suffices mem_pV : x (n + (k + 1)) ^ p ^ (k + 1) - x (n + k) ^ p ^ k ∈ pV,
     have : valued.v (x (n + (k + 1)) ^ p ^ (k + 1) - x (n + k) ^ p ^ k) ≤ (1 / (p : ℝ≥0)),
-    apply val_and_mem p V mem_pV,
+    --apply val_and_mem p V mem_pV,
     sorry,
     convert_to (x (n + k + 1) ^ p - x (n + k))^(p^k) ∈ pV using 0,
     { rw eq_iff_iff,--useless?
@@ -93,11 +94,13 @@ begin
       sorry },
       obtain ⟨y, hy⟩ := Exy,
       rw hy,
-      refine (ideal.add_mem_iff_left pV _).symm,
+      sorry
+     /-  refine (ideal.add_mem_iff_left pV _).symm,
       apply mem_span_singleton'.mpr,
       rw mul_comm,
-      use y },
+      use y -/ },
    refine pow_mem_of_mem pV hx (p^k) (pow_pos (nat.prime.pos (fact.out _)) _),
+   sorry,
   },
 end
 
@@ -131,17 +134,18 @@ begin
       rw mem_span_singleton',
       use z,
       rwa mul_comm},
-      apply val_and_mem p V hz,
+      sorry
+      --apply val_and_mem p V hz,
       },
     -- refine mul_dvd_mul _ ih,
   -- let I : ideal R := span {p},
   let f : V →+* V ⧸ pV := mk pV,
   have hp : (p : V ⧸ pV) = 0,
   { rw [← map_nat_cast f, eq_zero_iff_mem, mem_span_singleton], },
-  rw [← mem_span_singleton, ← ideal.quotient.eq] at h,
+  /- rw [← mem_span_singleton, ← ideal.quotient.eq] at h,
   rw [← mem_span_singleton, ← eq_zero_iff_mem, ring_hom.map_geom_sum₂,
-      ring_hom.map_pow, ring_hom.map_pow, h, geom_sum₂_self, hp, zero_mul],
-    
+      ring_hom.map_pow, ring_hom.map_pow, h, geom_sum₂_self, hp, zero_mul], -/
+    sorry
 
 
 
@@ -163,7 +167,8 @@ lemma is_cauchy
     -- (λ n, ((pV^n : ideal V) : set V)))
   (x : ℕ → V) (hx : ∀ n, (x (n+1))^p - (x n) ∈ pV) : cauchy_seq (λ n, (x n)^(p^n)) :=
 begin
-  have := filter.has_basis.cauchy_seq_iff,
+  sorry
+  --have := filter.has_basis.cauchy_seq_iff,
 end
 -- include p
 -- lemma bar : topological_space V :=
@@ -174,12 +179,12 @@ end
 
 -- lemma foo : ideal.adic_topology pV := sorry
 
-def φ (e : ℰ) (m : ℕ) : V :=
+noncomputable! def φ (e : ℰ) (m : ℕ) : V :=
 begin
   let r : ℕ → V := λ n, ((quotient.mk_surjective (perfection.coeff (V ⧸ pV) p (n+m) e)).some)^(p^n),
   have : cauchy_seq r,
   sorry,
-  use (cauchy_seq_tendsto_of_complete this).some,
+  sorry, --use (cauchy_seq_tendsto_of_complete this).some,
 end
 
 lemma frob (e : ℰ) (m : ℕ) : (φ p V e (m+1))^p = φ p V e m := sorry

@@ -226,10 +226,9 @@ begin
     rw [int_valuation_def_if_neg _ hp0, ← padic.open_unit_ball_def, associates.count_self],
     refl,
     { exact associates_irreducible (open_unit_ball ℚ_[p]), }}, -- so slow!
-  rw [ramification_index, neg_eq_iff_neg_eq, ← to_add_of_add (-1 : ℤ)],
+  rw [ramification_index, neg_eq_iff_eq_neg, ← to_add_of_add (-1 : ℤ)],
   apply congr_arg,
   rw [← with_zero.coe_inj, ← hp, with_zero.coe_unzero],
- 
 end
 
 end mixed_char_local_field

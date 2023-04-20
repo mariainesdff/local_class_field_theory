@@ -152,7 +152,7 @@ instance : is_rank_one (padic_complex.valued_field p).v :=
 
 /-- `ℂ_[p]` is a normed field, where the norm corresponds to the extension of the `p`-adic 
   valuation.-/
-instance : normed_field ℂ_[p] := valued_field.to_normed_field
+instance : normed_field ℂ_[p] := valued_field.to_normed_field _ _
 
 /-- The norm on `ℂ_[p]` agrees with the valuation. -/
 lemma norm_def : (norm : ℂ_[p] → ℝ) = rank_one_valuation.norm_def := rfl

@@ -13,7 +13,6 @@ import eq_characteristic.basic
 import from_mathlib.normed_valued
 import from_mathlib.spectral_norm_unique
 
-import from_mathlib.normed_valued
 import for_mathlib.rank_one_valuation
 
 --import algebra.group.type_tags
@@ -811,7 +810,7 @@ open eq_char_local_field
 
 instance : is_rank_one (@eq_char_local_field.with_zero.valued p _ K _ _).v  := 
 is_dedekind_domain.height_one_spectrum.valuation_is_rank_one (𝓞 p K) K _
-  (ring_of_integers.not_is_field p K)
+
 
 lemma eq_char_local_field.is_rank_one_hom_def :
   (is_rank_one.hom (@valued.v K _ ℤₘ₀ _ _)) =
