@@ -4,9 +4,10 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
 import ring_theory.dedekind_domain.integral_closure
+import ring_theory.discrete_valuation_ring
+import number_theory.padics.padic_integers
 
 import algebra_comp
-import padic
 
 /-!
 --TODO: Fix comments
@@ -183,7 +184,7 @@ end
 /-- The ring of integers of a mixed characteristic local field is not a field. -/
 lemma not_is_field : ¬ is_field (𝓞 p K) :=
 by simpa [← (is_integral_closure.is_integral_algebra ℤ_[p] K).is_field_iff_is_field
-  (algebra_map_injective p K)] using (padic_int.not_is_field p)
+  (algebra_map_injective p K)] using (discrete_valuation_ring.not_is_field ℤ_[p])
 
 noncomputable! instance : is_dedekind_domain (𝓞 p K) :=
 is_integral_closure.is_dedekind_domain ℤ_[p] ℚ_[p] K _

@@ -1,25 +1,188 @@
 import ring_theory.dedekind_domain.adic_valuation
 import ring_theory.discrete_valuation_ring
+import ring_theory.valuation.tfae
 import topology.algebra.valued_field
 import topology.algebra.with_zero_topology
-
-
 import from_mathlib.rank_one_valuation
---import from_mathlib.ring_seminorm
 
-open is_dedekind_domain
+namespace with_zero
+
 open_locale discrete_valuation
 
+lemma of_add_neg_one_le_one : ((multiplicative.of_add ((-1 : ℤ))) : ℤₘ₀) < (1 : ℤₘ₀) := 
+begin
+  rw [← with_zero.coe_one, with_zero.coe_lt_coe, ← of_add_zero],
+  exact neg_one_lt_zero,
+end
 
+end with_zero
+
+namespace valuation
+
+open is_dedekind_domain function
+open_locale discrete_valuation
+
+variables {A : Type*} [comm_ring A] 
+
+lemma add_eq_max_of_ne {Γ₀ : Type*} [linear_ordered_comm_group_with_zero Γ₀]
+  {v : valuation A Γ₀} {a b : A} (hne : v a ≠ v b) : v (a + b) = max (v a) (v b) :=
+begin
+  wlog hle : v b ≤ v a generalizing b a with H,
+  { rw [add_comm, max_comm],
+    exact H hne.symm (le_of_lt (not_le.mp hle)), },
+  { have hlt : v b  < v a, from lt_of_le_of_ne hle hne.symm,
+    have : v a  ≤ max (v (a + b)) (v b), from calc
+      v a = v (a + b + (-b)) : by rw [add_neg_cancel_right]
+                ... ≤ max (v (a + b)) (v (-b)) : valuation.map_add _ _ _
+                ... = max (v (a + b)) (v b ) : by rw valuation.map_neg _ _,
+    have hnge : v b  ≤ v (a + b),
+    { apply le_of_not_gt,
+      intro hgt,
+      rw max_eq_right_of_lt hgt at this,
+      apply not_lt_of_ge this,
+      assumption },
+    have : v a ≤ v (a + b), by rwa [max_eq_left hnge] at this,
+    apply le_antisymm,
+    { exact valuation.map_add _ _ _, },
+    { rw max_eq_left_of_lt hlt,
+      assumption }},
+end
+
+lemma mem_integer {Γ₀ : Type*} [linear_ordered_comm_group_with_zero Γ₀] (v : valuation A Γ₀)
+  (a : A) : a ∈ v.integer ↔ v a ≤ 1 := iff.rfl
+
+/- We insist that `v` takes values in ℤₘ₀ in order to define uniformizers as the elements in `K`
+whose valuation is exactly `with_zero.multiplicative (- 1) : ℤₘ₀`-/
+class is_discrete (v : valuation A ℤₘ₀) :=
+(surj : surjective v)
 
 namespace discrete_valuation
 
+open valuation ideal
+open_locale discrete_valuation
+
 variables {K : Type*} [field K] [hv : valued K ℤₘ₀] [complete_space K] [is_discrete hv.v]
 
-include hv 
+local notation `K₀` := hv.v.integer
+
+include hv
+
+definition is_uniformizer (π : hv.v.integer) : Prop := 
+  hv.v π = (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)
+
+variable (K)
+lemma exists_uniformizer : ∃ π : K₀, is_uniformizer π := 
+begin
+  letI surj_v : is_discrete hv.v, apply_instance,
+  use (surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some,
+  rw mem_integer,
+  rw (surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some_spec,
+  exact (le_of_lt with_zero.of_add_neg_one_le_one),
+  exact (surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some_spec,
+end
+
+lemma uniformizer_ne_zero {π : K₀} : is_uniformizer π → π ≠ 0 := sorry
+
+lemma uniformizer_ne_unit {π : K₀} : is_uniformizer π → ¬ is_unit π := sorry
+
+variables (π : K₀) (hπ : is_uniformizer π)
+
+variable {K}
+lemma pow_uniformizer (r : K₀) (hr : r ≠ 0) : ∃ n : ℕ, ∃ u : K₀ˣ, r = π^n * u :=
+begin
+  have hr₀ : hv.v r ≠ 0, sorry,
+  set m := - (with_zero.unzero hr₀).to_add with hm,
+  have hm₀ : 0 ≤ m, sorry,
+  obtain ⟨n, hn⟩ := int.eq_coe_of_zero_le hm₀,
+  use n,
+  set x := π.1^(-m) * r with hx,
+  have hx₀ : hv.v x = 1, sorry,
+  let a : K₀ := ⟨x, by apply le_of_eq hx₀⟩,
+  have ha₀ : (↑a : K) ≠ 0, sorry,
+  have h_unit_a : is_unit a,
+  exact integers.is_unit_of_one (integer.integers hv.v) ((is_unit_iff_ne_zero).mpr ha₀) hx₀,
+  use is_unit.unit h_unit_a,
+  ext,
+  sorry,
+end
+
+lemma ideal_is_principal (I : ideal K₀) : I.is_principal:=
+begin
+  classical,
+  obtain ⟨π, hπ⟩ := exists_uniformizer K,
+  by_cases hI : I = ⊥,
+  {rw hI, exact bot_is_principal},
+  { rw ← ne.def at hI,
+    obtain ⟨x, ⟨hx_mem, hx₀⟩⟩ := submodule.exists_mem_ne_zero_of_ne_bot hI,
+    let P : ℕ → Prop := λ n, π^n ∈ I,
+    have H : ∃ n, P n,
+    { obtain ⟨n, ⟨u, hu⟩⟩ := pow_uniformizer π x hx₀,
+      use n,
+      simp_rw P,
+      rwa [← mul_unit_mem_iff_mem I u.is_unit, ← hu] },
+    let N := nat.find H,
+    use π^N,
+    ext r,
+    split,
+    { intro hr,
+      by_cases hr₀ : r = 0,
+      { rw hr₀, exact zero_mem _ },
+      { obtain ⟨m, ⟨u, hu⟩⟩ := pow_uniformizer π r hr₀,
+        rw submodule_span_eq,
+        rw mem_span_singleton',
+        use u * π^(m - N),
+        rw [mul_assoc, ← pow_add, nat.sub_add_cancel, mul_comm, hu],
+        apply nat.find_min',
+        simp_rw P,
+        rwa [← mul_unit_mem_iff_mem I u.is_unit, ← hu] } },
+    { intro hr,    
+      rw submodule_span_eq at hr,
+      rw mem_span_singleton' at hr,
+      sorry }},
+end
+
+lemma not_is_field : ¬ is_field K₀ :=
+begin
+  obtain ⟨π, hπ⟩ := exists_uniformizer K,
+  rintros ⟨-, -, h⟩,
+  specialize h (uniformizer_ne_zero K hπ),
+  rw ← is_unit_iff_exists_inv at h,
+  exact uniformizer_ne_unit K hπ h,
+end
+
+instance is_principal_ideal_ring : is_principal_ideal_ring (hv.v.integer) := 
+  ⟨λ I, ideal_is_principal I⟩
+
+-- noncomputable!
+instance : local_ring K₀ :=
+{ exists_pair_ne := ⟨0, 1, zero_ne_one⟩,
+  is_unit_or_is_unit_of_add_one := λ a b hab, 
+  begin
+    by_cases ha : is_unit a,
+    { exact or.inl ha },
+    { right,
+      have hab' : valued.v (a + b : K) = 
+        (1 : ℤₘ₀),
+      { rw [← subring.coe_add, hab, subring.coe_one, map_one] },
+      have hb : (↑b : K) ≠ 0, sorry,
+      apply @integers.is_unit_of_one K _ _ _ hv.v K₀ _ _ (integer.integers hv.v) b
+        ((is_unit_iff_ne_zero).mpr hb) _,
+      have hab'' : hv.v a < (1 : ℤₘ₀),
+      { apply lt_of_le_of_ne,
+        apply a.2,
+        sorry },
+      change hv.v ↑b = 1,
+      replace hab'' : hv.v (-a) < hv.v (a + b), sorry,
+      rw [← add_sub_cancel' (↑a : K) ↑b],
+      rw sub_eq_add_neg,
+      rw [add_comm (↑a + ↑b) _],
+      rw add_eq_max_of_ne (ne_of_lt hab''),
+      sorry },
+  end }
 
 -- Chapter I, Section 1, Proposition 1 in Serre's Local Fields
-instance integer.discrete_valuation_ring : discrete_valuation_ring (hv.v.integer) := sorry
+instance discrete_valuation_ring : discrete_valuation_ring (hv.v.integer) := 
+  ((discrete_valuation_ring.tfae K₀ not_is_field).out 0 4).mpr $ ideal_is_principal _
 
 variables {L : Type*} [field L] [algebra K L] [finite_dimensional K L]
 
@@ -94,7 +257,7 @@ begin
 end
 
 end
-
+--already done above?
 lemma valuation_eq_one_of_is_unit {a : ↥(height_one_spectrum.adic_completion_integers K v)}
   (ha : is_unit a) : valued.v (a : K_v) = (1 : ℤₘ₀) :=
 begin
@@ -106,6 +269,7 @@ begin
   exact eq_one_of_one_le_mul_left a.2 b.2 (le_of_eq hab'.symm),
 end
 
+--already done above?
 lemma is_unit_iff_valuation_eq_one (a : ↥(height_one_spectrum.adic_completion_integers K v)) :
   is_unit a ↔ valued.v (a : K_v) = (1 : ℤₘ₀) :=
 begin
@@ -189,12 +353,6 @@ begin
   use ↑x,
   rw [valued_adic_completion_def, ← hx, valued.extension_extends],
   refl,
-end
-
-lemma bar : ((multiplicative.of_add ((-1 : ℤ))) : ℤₘ₀) < (1 : ℤₘ₀) := 
-begin
-  rw [← with_zero.coe_one, with_zero.coe_lt_coe, ← of_add_zero],
-  exact neg_one_lt_zero,
 end
 
 lemma adic_completion_integers_not_is_field :

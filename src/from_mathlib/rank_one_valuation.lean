@@ -78,11 +78,6 @@ class is_discrete' (v : valuation R Γ₀) :=
 (strict_mono : strict_mono hom) 
 (nontrivial : ∃ r : R, v r ≠ 0 ∧ v r ≠ 1)
 
-open_locale discrete_valuation
-
-class is_discrete (v : valuation R ℤₘ₀) :=
-(surj : surjective v)
-
 end is_rank_one
 
 -- In this section, we develop some API for `with_zero`, to be PR'd to mathlib. 
