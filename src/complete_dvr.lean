@@ -64,7 +64,7 @@ open_locale discrete_valuation
 
 section basic
 
-variables {K : Type*} [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v]
+variables {K : Type*} [field K] [hv : valued K ℤₘ₀]
 
 local notation `K₀` := hv.v.integer
 
@@ -78,6 +78,23 @@ variable (K)
 structure uniformizer :=
 (val : hv.v.integer)
 (valuation_eq_neg_one : hv.v val = (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀))
+
+noncomputable
+lemma discrete_of_exists_uniformizer (π : uniformizer K) : is_discrete hv.v :=
+begin
+  fconstructor,
+  intro x,
+  apply with_zero.cases_on x,
+  {use 0,
+    simp only [map_zero]},
+  { intro m,
+    use π.1^(- multiplicative.to_add m),
+    simp only [/- zpow_neg, map_inv₀,  -/map_zpow₀],
+    rw [π.2, ← with_zero.coe_zpow, with_zero.coe_inj, ← of_add_zsmul, ← zsmul_neg', neg_neg,
+      zsmul_one, int.cast_id, of_add_to_add],}
+end
+
+variable [is_discrete hv.v]
 
 lemma exists_uniformizer : ∃ π : K₀, is_uniformizer π := 
 begin
@@ -217,9 +234,9 @@ instance discrete_valuation_ring : discrete_valuation_ring (hv.v.integer) :=
 
 end basic
 
-variables (K : out_param(Type*)) [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v]
+variables (K : Type*) [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v]
 
-variables (L : Type*) [field L] [algebra K L] [finite_dimensional K L]
+variables (L : Type*) [field L] [algebra K L] [is_noetherian K L]
 
 include hv
 --instance normed_L : normed_field L := sorry
@@ -227,6 +244,8 @@ definition hw : valued L ℤₘ₀ := sorry -- May be a bit hard
 
 --is it reasonable to first have the `def` and then this `instance`?
 instance : valued L ℤₘ₀ := hw K L
+
+#lint
 
 instance is_complete_of_finite [complete_space K] : complete_space L := sorry
 
