@@ -61,7 +61,7 @@ namespace discrete_valuation
 open valuation ideal
 open_locale discrete_valuation
 
-variables {K : Type*} [field K] [hv : valued K ℤₘ₀] [complete_space K] [is_discrete hv.v]
+variables {K : Type*} [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v]
 
 local notation `K₀` := hv.v.integer
 
@@ -71,6 +71,10 @@ definition is_uniformizer (π : hv.v.integer) : Prop :=
   hv.v π = (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)
 
 variable (K)
+structure uniformizer :=
+(val : hv.v.integer)
+(valuation_eq_neg_one : hv.v val = (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀))
+
 lemma exists_uniformizer : ∃ π : K₀, is_uniformizer π := 
 begin
   letI surj_v : is_discrete hv.v, apply_instance,
@@ -80,6 +84,11 @@ begin
   exact (le_of_lt with_zero.of_add_neg_one_le_one),
   exact (surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some_spec,
 end
+
+instance : nonempty (uniformizer K) := 
+  ⟨⟨(exists_uniformizer K).some, (exists_uniformizer K).some_spec⟩⟩
+   
+#lint
 
 lemma uniformizer_ne_zero {π : K₀} : is_uniformizer π → π ≠ 0 := sorry
 
@@ -190,7 +199,7 @@ variables {L : Type*} [field L] [algebra K L] [finite_dimensional K L]
 
 instance hw : valued L ℤₘ₀ := sorry -- May be a bit hard
 
-instance is_complete_of_finite : complete_space L := sorry
+instance is_complete_of_finite [complete_space K] : complete_space L := sorry
 
 instance is_discrete_of_finite : is_discrete (@valued.v L _ ℤₘ₀ _ _) := sorry
 
