@@ -81,9 +81,24 @@ begin
   exact (surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some_spec,
 end
 
-lemma uniformizer_ne_zero {π : K₀} : is_uniformizer π → π ≠ 0 := sorry
 
-lemma uniformizer_ne_unit {π : K₀} : is_uniformizer π → ¬ is_unit π := sorry
+
+lemma uniformizer_ne_zero {π : K₀} (hπ : is_uniformizer π) : π ≠ 0 := 
+begin
+  intro h0,
+  rw [h0, is_uniformizer, algebra_map.coe_zero, map_zero] at hπ,
+  exact with_zero.zero_ne_coe hπ,
+end
+
+lemma uniformizer_not_is_unit {π : K₀}  (hπ : is_uniformizer π) : ¬ is_unit π := 
+begin
+  intro h,
+  have h1 := @valuation.integers.one_of_is_unit K ℤₘ₀ _ _ hv.v hv.v.integer _ _ 
+   (valuation.integer.integers hv.v) π h,
+  erw [is_uniformizer, h1] at hπ,
+  exact ne_of_gt with_zero.of_add_neg_one_le_one hπ,
+end
+
 
 variables (π : K₀) (hπ : is_uniformizer π)
 
@@ -147,7 +162,7 @@ begin
   rintros ⟨-, -, h⟩,
   specialize h (uniformizer_ne_zero K hπ),
   rw ← is_unit_iff_exists_inv at h,
-  exact uniformizer_ne_unit K hπ h,
+  exact uniformizer_not_is_unit K hπ h,
 end
 
 instance is_principal_ideal_ring : is_principal_ideal_ring (hv.v.integer) := 
