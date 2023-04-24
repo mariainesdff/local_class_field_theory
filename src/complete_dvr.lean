@@ -241,8 +241,7 @@ sorry
 instance : algebra K₀ (hw K L).v.integer :=
 begin
   rw ← integral_closure_eq_integer,
-  apply_instance,
-  -- sorry,
+  exact (integral_closure ↥(valued.v.integer) L).algebra,
 end
 
 -- local notation `e` := ideal.ramification_idx (algebra_map : K₀ →+* (hw.v.integer))
