@@ -80,19 +80,18 @@ structure uniformizer :=
 (valuation_eq_neg_one : hv.v val = (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀))
 
 noncomputable
-lemma discrete_of_exists_uniformizer (π : uniformizer K) : is_discrete hv.v :=
-begin
-  fconstructor,
+lemma discrete_of_exists_uniformizer {π : K₀} (hπ : is_uniformizer π) : is_discrete hv.v :=
+⟨begin
   intro x,
   apply with_zero.cases_on x,
   {use 0,
     simp only [map_zero]},
-  { intro m,
-    use π.1^(- multiplicative.to_add m),
-    simp only [/- zpow_neg, map_inv₀,  -/map_zpow₀],
-    rw [π.2, ← with_zero.coe_zpow, with_zero.coe_inj, ← of_add_zsmul, ← zsmul_neg', neg_neg,
-      zsmul_one, int.cast_id, of_add_to_add],}
-end
+  { rw is_uniformizer at hπ,
+    intro m,
+    use π^(- multiplicative.to_add m),
+    rw[map_zpow₀, hπ, ← with_zero.coe_zpow, with_zero.coe_inj, ← of_add_zsmul, ← zsmul_neg', 
+      neg_neg,zsmul_one, int.cast_id, of_add_to_add] }
+end⟩
 
 variable [is_discrete hv.v]
 
@@ -124,7 +123,7 @@ begin
   exact with_zero.zero_ne_coe this,
 end
 
-lemma uniformizer_not_is_unit {π : K₀}  (hπ : is_uniformizer π) : ¬ is_unit π := 
+lemma uniformizer_not_is_unit {π : K₀} (hπ : is_uniformizer π) : ¬ is_unit π := 
 begin
   intro h,
   have h1 := @valuation.integers.one_of_is_unit K ℤₘ₀ _ _ hv.v hv.v.integer _ _ 
@@ -255,8 +254,18 @@ begin
   refl,
 end
 
-noncomputable! instance : is_discrete (@valued.v K_v _ ℤₘ₀ _ _) := 
-sorry
+lemma valuation_completion_integers_exists_uniformizer : 
+  ∃ (π : R_v), valued.v (π : K_v) = (multiplicative.of_add ((-1 : ℤ))) :=
+begin 
+  obtain ⟨x, hx⟩ := valuation_completion_exists_uniformizer R K v,
+  refine ⟨⟨x, _⟩, hx⟩,
+  rw [height_one_spectrum.mem_adic_completion_integers, hx],
+  exact le_of_lt (with_zero.of_add_neg_one_le_one)
+end
+
+noncomputable instance : is_discrete (@valued.v K_v _ ℤₘ₀ _ _) := 
+discrete_of_exists_uniformizer _
+  (valuation_completion_integers_exists_uniformizer R K v).some_spec
 
 end is_dedekind_domain.height_one_spectrum
 
