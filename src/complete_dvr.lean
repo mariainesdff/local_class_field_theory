@@ -71,6 +71,7 @@ definition is_uniformizer (π : hv.v.integer) : Prop :=
   hv.v π = (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)
 
 variable (K)
+@[ext]
 structure uniformizer :=
 (val : hv.v.integer)
 (valuation_eq_neg_one : hv.v val = (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀))
@@ -95,6 +96,14 @@ begin
   exact with_zero.zero_ne_coe hπ,
 end
 
+lemma uniformizer_ne_zero' (π : uniformizer K) : π.1 ≠ 0 := 
+begin
+  intro h0,
+  have := π.2,
+  rw [h0, algebra_map.coe_zero, map_zero] at this,
+  exact with_zero.zero_ne_coe this,
+end
+
 lemma uniformizer_not_is_unit {π : K₀}  (hπ : is_uniformizer π) : ¬ is_unit π := 
 begin
   intro h,
@@ -103,7 +112,6 @@ begin
   erw [is_uniformizer, h1] at hπ,
   exact ne_of_gt with_zero.of_add_neg_one_le_one hπ,
 end
-
 
 variables (π : K₀) (hπ : is_uniformizer π)
 
