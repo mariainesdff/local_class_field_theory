@@ -57,45 +57,60 @@ whose valuation is exactly `with_zero.multiplicative (- 1) : ℤₘ₀`-/
 class is_discrete (v : valuation A ℤₘ₀) :=
 (surj : surjective v)
 
-namespace discrete_valuation
+end valuation
 
-open valuation ideal
 open_locale discrete_valuation
 
+open valuation ideal
+namespace discrete_valuation
+
+variables {D : Type*} [comm_ring D] [is_domain D] [discrete_valuation_ring D]
+
+instance : valued (fraction_ring D) ℤₘ₀ := sorry
+
+instance : is_discrete (@valued.v (fraction_ring D) _ ℤₘ₀ _ _) := sorry
+
+
 section basic
+
+variables {R : Type*} [comm_ring R] [hR : valued R ℤₘ₀]
+
+/- definition is_uniformizer' (π : hR.v.integer) : Prop := 
+  hR.v π = (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀) -/
+
+definition is_uniformizer (π : R) : Prop := 
+  hR.v π = (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)
 
 variables {K : Type*} [field K] [hv : valued K ℤₘ₀]
 
 local notation `K₀` := hv.v.integer
 
 include hv
-
-definition is_uniformizer (π : hv.v.integer) : Prop := 
-  hv.v π = (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)
-
 variable (K)
 @[ext]
 structure uniformizer :=
 (val : hv.v.integer)
 (valuation_eq_neg_one : hv.v val = (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀))
 
+--instance t : valued K₀ ℤₘ₀ := sorry
+
 noncomputable
-lemma discrete_of_exists_uniformizer {π : K₀} (hπ : is_uniformizer π) : is_discrete hv.v :=
+lemma discrete_of_exists_uniformizer {π : K₀} (hπ : is_uniformizer (π : K)) : is_discrete hv.v :=
 ⟨begin
   intro x,
   apply with_zero.cases_on x,
   {use 0,
-    simp only [map_zero]},
+    simp only [valuation.map_zero]} ,
   { rw is_uniformizer at hπ,
     intro m,
     use π^(- multiplicative.to_add m),
-    rw[map_zpow₀, hπ, ← with_zero.coe_zpow, with_zero.coe_inj, ← of_add_zsmul, ← zsmul_neg', 
+    rw [map_zpow₀, hπ, ← with_zero.coe_zpow, with_zero.coe_inj, ← of_add_zsmul, ← zsmul_neg', 
       neg_neg,zsmul_one, int.cast_id, of_add_to_add] }
 end⟩
 
 variable [is_discrete hv.v]
 
-lemma exists_uniformizer : ∃ π : K₀, is_uniformizer π := 
+lemma exists_uniformizer : ∃ π : K₀, is_uniformizer (π : K) := 
 begin
   letI surj_v : is_discrete hv.v, apply_instance,
   use (surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some,
@@ -108,10 +123,10 @@ end
 instance : nonempty (uniformizer K) := 
   ⟨⟨(exists_uniformizer K).some, (exists_uniformizer K).some_spec⟩⟩
    
-lemma uniformizer_ne_zero {π : K₀} (hπ : is_uniformizer π) : π ≠ 0 := 
+lemma uniformizer_ne_zero {π : K₀} (hπ : is_uniformizer (π : K)) : π ≠ 0 := 
 begin
   intro h0,
-  rw [h0, is_uniformizer, algebra_map.coe_zero, map_zero] at hπ,
+  rw [h0, is_uniformizer, algebra_map.coe_zero, valuation.map_zero] at hπ,
   exact with_zero.zero_ne_coe hπ,
 end
 
@@ -119,11 +134,11 @@ lemma uniformizer_ne_zero' (π : uniformizer K) : π.1 ≠ 0 :=
 begin
   intro h0,
   have := π.2,
-  rw [h0, algebra_map.coe_zero, map_zero] at this,
+  rw [h0, algebra_map.coe_zero, valuation.map_zero] at this,
   exact with_zero.zero_ne_coe this,
 end
 
-lemma uniformizer_not_is_unit {π : K₀} (hπ : is_uniformizer π) : ¬ is_unit π := 
+lemma uniformizer_not_is_unit {π : K₀} (hπ : is_uniformizer (π : K)) : ¬ is_unit π := 
 begin
   intro h,
   have h1 := @valuation.integers.one_of_is_unit K ℤₘ₀ _ _ hv.v hv.v.integer _ _ 
@@ -132,7 +147,7 @@ begin
   exact ne_of_gt with_zero.of_add_neg_one_le_one hπ,
 end
 
-variables (π : K₀) (hπ : is_uniformizer π)
+variables (π : K₀) (hπ : is_uniformizer (π : K))
 
 variable {K}
 lemma pow_uniformizer (r : K₀) (hr : r ≠ 0) : ∃ n : ℕ, ∃ u : K₀ˣ, r = π^n * u :=
@@ -210,7 +225,7 @@ instance : local_ring K₀ :=
     { right,
       have hab' : valued.v (a + b : K) = 
         (1 : ℤₘ₀),
-      { rw [← subring.coe_add, hab, subring.coe_one, map_one] },
+      { rw [← subring.coe_add, hab, subring.coe_one, valuation.map_one] },
       have hb : (↑b : K) ≠ 0, sorry,
       apply @integers.is_unit_of_one K _ _ _ hv.v K₀ _ _ (integer.integers hv.v) b
         ((is_unit_iff_ne_zero).mpr hb) _,
@@ -276,14 +291,13 @@ end
 
 end is_dedekind_domain.height_one_spectrum
 
+section complete
 
-#exit
-
-variables (K : out_param(Type*)) [field K]  [hv : valued K ℤₘ₀] [is_discrete hv.v]
+variables (K : Type*) [field K]  [hv : valued K ℤₘ₀] [is_discrete hv.v]
  -- [hu : uniform_space K]
 
 -- Without finite_dimensional, the fails_quickly does not complain
-variables (L : Type*) [field L] [algebra K L] [finite_dimensional K L]
+variables (L : Type*) [field L] [algebra K L] -- [finite_dimensional K L]
 
 include hv
 
@@ -292,9 +306,12 @@ include hv
 def hw : valued L ℤₘ₀ := sorry -- May be a bit hard
 
 --is it reasonable to first have the `def` and then this `instance`?
-instance : valued L ℤₘ₀ := hw K L
+--instance : valued L ℤₘ₀ := hw K L
 
-#lint
+--#lint
+
+--TODO: fix
+--instance : complete_space L := sorry
 
 --instance is_discrete_of_finite : is_discrete (@valued.v L _ ℤₘ₀ _ _) := sorry
 instance is_discrete_of_finite : is_discrete (hw K L).v := sorry
@@ -314,21 +331,72 @@ lemma integral_closure_finrank :
   finite_dimensional.finrank K L :=
 sorry
 
-/- postfix `₀`:1025:= valued.v.integer
-
-#check K₀ -/
-
 local notation `K₀` := hv.v.integer
 
 local notation `L₀` := (hw K L).v.integer
 
-instance : algebra K₀ L₀ :=
+def integer.algebra : algebra K₀ L₀ :=
 by rw ← integral_closure_eq_integer; exact (integral_closure ↥(valued.v.integer) L).algebra
 
-local notation `e(` K`,`L`)` := ideal.ramification_idx (algebra_map K₀ L₀)
-  (local_ring.maximal_ideal K₀) (local_ring.maximal_ideal L₀)
+end complete
 
-#check e(K, L)
+section extension
+
+lemma is_domain_of_irreducible {A : Type*} [comm_ring A] [is_domain A]
+  [discrete_valuation_ring A] {f : polynomial A} 
+  (hf : irreducible (polynomial.map (algebra_map A (local_ring.residue_field A)) f)) :
+  is_domain (adjoin_root f) :=
+sorry
+
+-- Ch. I, Section 6, Prop. 15 of Serre's "Local Fields"
+lemma is_dvr_of_irreducible {A : Type*} [comm_ring A] [is_domain A] 
+  [discrete_valuation_ring A] {f : polynomial A} 
+  (hf : irreducible (polynomial.map (algebra_map A (local_ring.residue_field A)) f)) :
+  @discrete_valuation_ring (adjoin_root f) _ (is_domain_of_irreducible hf) :=
+sorry
+
+-- Ch. I, Section 6, Cor. 1 of Serre's "Local Fields"
+lemma is_dvr_of_irreducible' {A : Type*} [comm_ring A] [is_domain A] 
+  [discrete_valuation_ring A] {f : polynomial A} 
+  (hf : irreducible (polynomial.map (algebra_map A (local_ring.residue_field A)) f)) :
+  is_integral_closure (adjoin_root f) A (fraction_ring (adjoin_root f)) :=
+sorry
+
+/- variables (K : Type*) [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v]
+variables (L : Type*) [field L] [hw : valued L ℤₘ₀] [is_discrete hw.v]
+variables [algebra K L] [finite_dimensional K L]
+
+include hv hw
+/- postfix `₀`:1025:= valued.v.integer
+
+#check K₀ -/
+local notation `K₀` := hv.v.integer
+
+local notation `L₀` := hw.v.integer -/
+
+--variable (hmax : algebra_map )
+
+-- We need to indicate in the doctring that h_alg is not an instance so when we apply it with local fields...
+variables {A B : Type*} [comm_ring A] [is_domain A] [discrete_valuation_ring A]
+[comm_ring B] [is_domain B] [discrete_valuation_ring B] (h_alg : algebra A B)
+
+-- [is_scalar_tower K₀ L₀ L]
+
+
+--#check h_alg.to_ring_hom
+
+local notation `e(` B`,`A`)` := ideal.ramification_idx h_alg.to_ring_hom/- (algebra_map K₀ L₀) -/
+  (local_ring.maximal_ideal A) (local_ring.maximal_ideal B)
+
+lemma uniformizer_iff_unramified {a : A} (ha : is_uniformizer ↑a) :
+  is_uniformizer (h_alg.to_ring_hom x.val) ↔ e(B,A) = 1 :=
+sorry
+
+end extension
+
+#exit
+
+--#check e(K, L)
 
 #lint
 
