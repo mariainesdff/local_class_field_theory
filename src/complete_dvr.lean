@@ -267,6 +267,13 @@ noncomputable instance : is_discrete (@valued.v K_v _ ℤₘ₀ _ _) :=
 discrete_of_exists_uniformizer _
   (valuation_completion_integers_exists_uniformizer R K v).some_spec
 
+instance : discrete_valuation_ring R_v := 
+begin
+  convert discrete_valuation.discrete_valuation_ring,
+  apply_instance,
+end
+
+
 end is_dedekind_domain.height_one_spectrum
 
 
