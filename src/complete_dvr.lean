@@ -62,6 +62,8 @@ namespace discrete_valuation
 open valuation ideal
 open_locale discrete_valuation
 
+section basic
+
 variables {K : Type*} [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v]
 
 local notation `K₀` := hv.v.integer
@@ -213,10 +215,14 @@ instance : local_ring K₀ :=
 instance discrete_valuation_ring : discrete_valuation_ring (hv.v.integer) := 
   ((discrete_valuation_ring.tfae K₀ not_is_field).out 0 4).mpr $ ideal_is_principal _
 
-variables {L : Type*} [field L] [algebra K L] [finite_dimensional K L]
+end basic
 
+variables (K : out_param(Type*)) [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v]
+
+variables (L : Type*) [field L] [algebra K L] [finite_dimensional K L]
+
+include hv
 --instance normed_L : normed_field L := sorry
-variables (K L)
 definition hw : valued L ℤₘ₀ := sorry -- May be a bit hard
 
 --is it reasonable to first have the `def` and then this `instance`?
@@ -238,14 +244,23 @@ lemma integral_closure_finrank :
   finite_dimensional.finrank K L :=
 sorry
 
-instance : algebra K₀ (hw K L).v.integer :=
-begin
-  rw ← integral_closure_eq_integer,
-  exact (integral_closure ↥(valued.v.integer) L).algebra,
-end
+/- postfix `₀`:1025:= valued.v.integer
 
--- local notation `e` := ideal.ramification_idx (algebra_map : K₀ →+* (hw.v.integer))
---   (local_ring.maximal_ideal K₀) (local_ring.maximal_ideal hw.v.integer)
+#check K₀ -/
+
+local notation `K₀` := hv.v.integer
+
+local notation `L₀` := (hw K L).v.integer
+
+instance : algebra K₀ L₀ :=
+by rw ← integral_closure_eq_integer; exact (integral_closure ↥(valued.v.integer) L).algebra
+
+local notation `e(` K`,`L`)` := ideal.ramification_idx (algebra_map K₀ L₀)
+  (local_ring.maximal_ideal K₀) (local_ring.maximal_ideal L₀)
+
+#check e(K, L)
+
+#lint
 
 -- #check ideal.ramification_idx (algebra_map : K₀ →+* (hw.v.integer))
 --   (local_ring.maximal_ideal K₀) (local_ring.maximal_ideal hw.v.integer)
