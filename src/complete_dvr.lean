@@ -1,3 +1,4 @@
+import number_theory.ramification_inertia
 import ring_theory.dedekind_domain.adic_valuation
 import ring_theory.discrete_valuation_ring
 import ring_theory.valuation.tfae
@@ -215,8 +216,11 @@ instance discrete_valuation_ring : discrete_valuation_ring (hv.v.integer) :=
 variables {L : Type*} [field L] [algebra K L] [finite_dimensional K L]
 
 --instance normed_L : normed_field L := sorry
+variables (K L)
+definition hw : valued L ℤₘ₀ := sorry -- May be a bit hard
 
-instance hw : valued L ℤₘ₀ := sorry -- May be a bit hard
+--is it reasonable to first have the `def` and then this `instance`?
+instance : valued L ℤₘ₀ := hw K L
 
 instance is_complete_of_finite [complete_space K] : complete_space L := sorry
 
@@ -234,6 +238,18 @@ lemma integral_closure_finrank :
   finite_dimensional.finrank K L :=
 sorry
 
+instance : algebra K₀ (hw K L).v.integer :=
+begin
+  rw ← integral_closure_eq_integer,
+  apply_instance,
+  -- sorry,
+end
+
+-- local notation `e` := ideal.ramification_idx (algebra_map : K₀ →+* (hw.v.integer))
+--   (local_ring.maximal_ideal K₀) (local_ring.maximal_ideal hw.v.integer)
+
+-- #check ideal.ramification_idx (algebra_map : K₀ →+* (hw.v.integer))
+--   (local_ring.maximal_ideal K₀) (local_ring.maximal_ideal hw.v.integer)
 
 end discrete_valuation
 
