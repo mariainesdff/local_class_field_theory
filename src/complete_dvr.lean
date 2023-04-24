@@ -217,23 +217,69 @@ instance discrete_valuation_ring : discrete_valuation_ring (hv.v.integer) :=
 
 end basic
 
-variables (K : out_param(Type*)) [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v]
+namespace is_dedekind_domain.height_one_spectrum
 
+open is_dedekind_domain is_dedekind_domain.height_one_spectrum
+
+variables (R : Type*) [comm_ring R] [is_domain R] [is_dedekind_domain R]
+  (K : Type*) [field K] [algebra R K] [is_fraction_ring R K]
+  (v : height_one_spectrum R)
+
+local notation `R_v` := is_dedekind_domain.height_one_spectrum.adic_completion_integers K v 
+local notation `K_v` := is_dedekind_domain.height_one_spectrum.adic_completion K v
+
+lemma valuation_completion_exists_uniformizer : 
+  ∃ (π : K_v), valued.v π = (multiplicative.of_add ((-1 : ℤ))) :=
+begin
+  obtain ⟨x, hx⟩ := is_dedekind_domain.height_one_spectrum.valuation_exists_uniformizer K v,
+  use ↑x,
+  rw [is_dedekind_domain.height_one_spectrum.valued_adic_completion_def, ← hx, 
+    valued.extension_extends],
+  refl,
+end
+
+noncomputable! instance : is_discrete (@valued.v K_v _ ℤₘ₀ _ _) := 
+sorry
+
+end is_dedekind_domain.height_one_spectrum
+
+
+#exit
+
+variables (K : out_param(Type*)) [field K]  [hv : valued K ℤₘ₀] [is_discrete hv.v]
+ -- [hu : uniform_space K]
+
+-- Without finite_dimensional, the fails_quickly does not complain
 variables (L : Type*) [field L] [algebra K L] [finite_dimensional K L]
 
 include hv
+
+--instance [finite_dimensional K L] : uniform_space L := infer_instance
 --instance normed_L : normed_field L := sorry
-definition hw : valued L ℤₘ₀ := sorry -- May be a bit hard
+def hw : valued L ℤₘ₀ := sorry -- May be a bit hard
 
 --is it reasonable to first have the `def` and then this `instance`?
 instance : valued L ℤₘ₀ := hw K L
 
-instance is_complete_of_finite [complete_space K] : complete_space L := sorry
+--omit hv
+--@[priority 100] instance : valued L ℤₘ₀ := valued.mk' (@hw.w K _ hv _ L _ _ _)
 
-instance is_discrete_of_finite : is_discrete (@valued.v L _ ℤₘ₀ _ _) := sorry
+/- #lint
+#exit -/
 
-lemma integral_closure_eq_integer :
+--#check @valuation.discrete_valuation.with_zero.valued
+
+
+--instance is_complete_of_finite [complete_space K] : complete_space L := sorry
+
+--instance is_discrete_of_finite : is_discrete (@valued.v L _ ℤₘ₀ _ _) := sorry
+instance is_discrete_of_finite : is_discrete (hw K L).v := sorry
+
+/- lemma integral_closure_eq_integer :
   (integral_closure hv.v.integer L).to_subring = (@valued.v L _ ℤₘ₀ _ _).integer :=
+sorry -/
+lemma integral_closure_eq_integer :
+  (integral_closure hv.v.integer L).to_subring = (hw K L).v.integer :=
 sorry
 
 --Chapter 2, Section 2, Proposition 3 in Serre's Local Fields
@@ -267,7 +313,7 @@ local notation `e(` K`,`L`)` := ideal.ramification_idx (algebra_map K₀ L₀)
 
 end discrete_valuation
 
-#exit
+
 
 noncomputable theory
 
@@ -279,10 +325,10 @@ variables (R : Type*) [comm_ring R] [is_domain R] [is_dedekind_domain R]
 local notation `R_v` := is_dedekind_domain.height_one_spectrum.adic_completion_integers K v 
 local notation `K_v` := is_dedekind_domain.height_one_spectrum.adic_completion K v
 
-instance : is_discrete (@valued.v K_v _ ℤₘ₀ _ _) := 
-{ hom := sorry,
-  strict_mono := sorry,
-  nontrivial := sorry }
+noncomputable! instance : is_discrete (@valued.v K_v _ ℤₘ₀ _ _) := 
+sorry
+
+#exit
 
 instance asdf : is_noetherian_ring R_v :=
 { noetherian := sorry }
