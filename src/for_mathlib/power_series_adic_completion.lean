@@ -315,7 +315,7 @@ by simpa only [fae_pol_ps_order_mul]
 -- section nat_order
 -- namespace power_series
 
--- variable {K}
+variable {K}
 -- def nat_order {φ : power_series K} (h : φ ≠ 0) : ℕ := 
 --   nat.find (exists_coeff_ne_zero_iff_ne_zero.mpr h)
 
@@ -1051,6 +1051,7 @@ begin
 end
 
 
+variable {K}
 def laurent_series.equiv : (completion_of_ratfunc K) ≃ (laurent_series K) :=
 { to_fun :=
   begin
@@ -1083,6 +1084,7 @@ def laurent_series.equiv : (completion_of_ratfunc K) ≃ (laurent_series K) :=
     rw ← this,
     rw ← truncation_coeff_eq_coeff,
     congr,
+    sorry,
     -- simp,
     -- simp,
   end, }
