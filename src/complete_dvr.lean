@@ -380,17 +380,22 @@ local notation `L₀` := hw.v.integer -/
 variables {A B : Type*} [comm_ring A] [is_domain A] [discrete_valuation_ring A]
 [comm_ring B] [is_domain B] [discrete_valuation_ring B] (h_alg : algebra A B)
 
--- [is_scalar_tower K₀ L₀ L]
-
-
---#check h_alg.to_ring_hom
-
-local notation `e(` B`,`A`)` := ideal.ramification_idx h_alg.to_ring_hom/- (algebra_map K₀ L₀) -/
+local notation `e(` B`,`A`)` := ideal.ramification_idx h_alg.to_ring_hom
   (local_ring.maximal_ideal A) (local_ring.maximal_ideal B)
 
-lemma uniformizer_iff_unramified {a : A} (ha : is_uniformizer ↑a) :
-  is_uniformizer (h_alg.to_ring_hom x.val) ↔ e(B,A) = 1 :=
+lemma uniformizer_iff_unramified {a : A} (ha : is_uniformizer (↑a : fraction_ring A)) :
+  is_uniformizer (↑(h_alg.to_ring_hom a) : fraction_ring B) ↔ e(B,A) = 1 :=
 sorry
+
+/- TODO list:
+-- Put the adic valuation on any DVR (in mathlib for Dedekind domains)
+-- Put a valued instance on the field of fractions of a DVR (in mathlib for Dedekind domains)
+-- Since the fraction field of the unit ball of a valued field is not definitionally equal to
+  the field we don't have a diamond
+
+-- Upshot: we put valued instances on fields, but not on other rings (there we only
+  define the valuation)
+-/
 
 end extension
 
