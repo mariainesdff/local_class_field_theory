@@ -6,6 +6,7 @@ import topology.algebra.valued_field
 import topology.algebra.with_zero_topology
 import from_mathlib.rank_one_valuation
 
+
 namespace with_zero
 
 open_locale discrete_valuation
@@ -64,11 +65,11 @@ open_locale discrete_valuation
 open valuation ideal
 namespace discrete_valuation
 
-variables {D : Type*} [comm_ring D] [is_domain D] [discrete_valuation_ring D]
+variables {A : Type*} [comm_ring A] [is_domain A] [discrete_valuation_ring A]
 
-instance : valued (fraction_ring D) ℤₘ₀ := sorry
+instance : valued (fraction_ring A) ℤₘ₀ := sorry
 
-instance : is_discrete (@valued.v (fraction_ring D) _ ℤₘ₀ _ _) := sorry
+instance : is_discrete (@valued.v (fraction_ring A) _ ℤₘ₀ _ _) := sorry
 
 
 section basic
@@ -293,18 +294,22 @@ end is_dedekind_domain.height_one_spectrum
 
 section complete
 
-variables (K : Type*) [field K]  [hv : valued K ℤₘ₀] [is_discrete hv.v]
+variables (K : Type*) [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v] 
  -- [hu : uniform_space K]
+include hv
+--  example : uniform_space K := infer_instance
 
 -- Without finite_dimensional, the fails_quickly does not complain
-variables (L : Type*) [field L] [algebra K L] -- [finite_dimensional K L]
+variables (L : Type*) [field L] [algebra K L] [complete_space K] -- [finite_dimensional K L]
+-- 
 
-include hv
 
+--  example : uniform_space K := infer_instance
 --instance [finite_dimensional K L] : uniform_space L := infer_instance
 --instance normed_L : normed_field L := sorry
-def hw : valued L ℤₘ₀ := sorry -- May be a bit hard
+def w : valuation L ℤₘ₀ := sorry -- May be a bit hard
 
+-- instance : is_discrete w :=
 --is it reasonable to first have the `def` and then this `instance`?
 --instance : valued L ℤₘ₀ := hw K L
 
@@ -314,17 +319,18 @@ def hw : valued L ℤₘ₀ := sorry -- May be a bit hard
 --instance : complete_space L := sorry
 
 --instance is_discrete_of_finite : is_discrete (@valued.v L _ ℤₘ₀ _ _) := sorry
-instance is_discrete_of_finite : is_discrete (hw K L).v := sorry
+instance is_discrete_of_finite : is_discrete (w K L) := sorry
 
 /- lemma integral_closure_eq_integer :
   (integral_closure hv.v.integer L).to_subring = (@valued.v L _ ℤₘ₀ _ _).integer :=
 sorry -/
 lemma integral_closure_eq_integer :
-  (integral_closure hv.v.integer L).to_subring = (hw K L).v.integer :=
+  (integral_closure hv.v.integer L).to_subring = (w K L).integer :=
 sorry
 
 --Chapter 2, Section 2, Proposition 3 in Serre's Local Fields
-instance : discrete_valuation_ring (integral_closure hv.v.integer L) := sorry
+lemma dvr_of_finite_extension : discrete_valuation_ring (integral_closure hv.v.integer L) := sorry
+-- proof: make a local instance of valued on `L`
 
 lemma integral_closure_finrank :
   finite_dimensional.finrank hv.v.integer (integral_closure hv.v.integer L) =
@@ -333,38 +339,71 @@ sorry
 
 local notation `K₀` := hv.v.integer
 
-local notation `L₀` := (hw K L).v.integer
+local notation `L₀` := (w K L).integer
 
 def integer.algebra : algebra K₀ L₀ :=
 by rw ← integral_closure_eq_integer; exact (integral_closure ↥(valued.v.integer) L).algebra
 
 end complete
 
-section extension
+section unramified
 
-lemma is_domain_of_irreducible {A : Type*} [comm_ring A] [is_domain A]
-  [discrete_valuation_ring A] {f : polynomial A} 
+-- #where
+
+lemma is_domain_of_irreducible {f : polynomial A} 
   (hf : irreducible (polynomial.map (algebra_map A (local_ring.residue_field A)) f)) :
   is_domain (adjoin_root f) :=
 sorry
 
 -- Ch. I, Section 6, Prop. 15 of Serre's "Local Fields"
-lemma is_dvr_of_irreducible {A : Type*} [comm_ring A] [is_domain A] 
-  [discrete_valuation_ring A] {f : polynomial A} 
+lemma is_dvr_of_irreducible {f : polynomial A} 
   (hf : irreducible (polynomial.map (algebra_map A (local_ring.residue_field A)) f)) :
   @discrete_valuation_ring (adjoin_root f) _ (is_domain_of_irreducible hf) :=
 sorry
 
 -- Ch. I, Section 6, Cor. 1 of Serre's "Local Fields"
-lemma is_dvr_of_irreducible' {A : Type*} [comm_ring A] [is_domain A] 
-  [discrete_valuation_ring A] {f : polynomial A} 
+lemma is_dvr_of_irreducible' {f : polynomial A} 
   (hf : irreducible (polynomial.map (algebra_map A (local_ring.residue_field A)) f)) :
   is_integral_closure (adjoin_root f) A (fraction_ring (adjoin_root f)) :=
 sorry
 
+local notation `K` := fraction_ring A
+
+variables (L : Type*) [field L] [algebra K L] [finite_dimensional K L] [algebra A L]
+[is_scalar_tower A K L]
+
+open finite_dimensional
+
+--Serre's Proposition 16 in Chapter I, Section 6: we may want the algebra instance to become an\
+-- explicit variable so that when we use the definition we do not need `@`.
+noncomputable!
+def minimal_poly_eq_residue_fields_of_unramified
+  (hB : discrete_valuation_ring (integral_closure A L))
+  [algebra (local_ring.residue_field A)
+  (@local_ring.residue_field _ _ hB.to_local_ring)]
+  (hpb : power_basis (local_ring.residue_field A)
+  (@local_ring.residue_field _ _ hB.to_local_ring))
+  (hdeg : finrank K L = hpb.dim) (x : (integral_closure A L))
+  (hx : ideal.quotient.mk (@local_ring.maximal_ideal _ _ hB.to_local_ring) x = hpb.gen) : 
+  (integral_closure A L) ≃+* algebra.adjoin A ({x} : set (integral_closure A L)) := sorry
+
+noncomputable!
+def minimal_poly_eq_residue_fields_of_unramified'
+  (hB : discrete_valuation_ring (integral_closure A L))
+  [algebra (local_ring.residue_field A)
+  (@local_ring.residue_field _ _ hB.to_local_ring)]
+  (hpb : power_basis (local_ring.residue_field A)
+  (@local_ring.residue_field _ _ hB.to_local_ring))
+  (hdeg : finrank K L = hpb.dim) (x : (integral_closure A L))
+  (hx : ideal.quotient.mk (@local_ring.maximal_ideal _ _ hB.to_local_ring) x = hpb.gen) : 
+  (integral_closure A L) ≃+* adjoin_root (minpoly A x) := sorry
+
+#exit
+ 
+
 /- variables (K : Type*) [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v]
 variables (L : Type*) [field L] [hw : valued L ℤₘ₀] [is_discrete hw.v]
-variables [algebra K L] [finite_dimensional K L]
+variables 
 
 include hv hw
 /- postfix `₀`:1025:= valued.v.integer
@@ -377,8 +416,7 @@ local notation `L₀` := hw.v.integer -/
 --variable (hmax : algebra_map )
 
 -- We need to indicate in the doctring that h_alg is not an instance so when we apply it with local fields...
-variables {A B : Type*} [comm_ring A] [is_domain A] [discrete_valuation_ring A]
-[comm_ring B] [is_domain B] [discrete_valuation_ring B] (h_alg : algebra A B)
+variables {B : Type*} [comm_ring B] [is_domain B] [discrete_valuation_ring B] (h_alg : algebra A B)
 
 local notation `e(` B`,`A`)` := ideal.ramification_idx h_alg.to_ring_hom
   (local_ring.maximal_ideal A) (local_ring.maximal_ideal B)
@@ -388,16 +426,24 @@ lemma uniformizer_iff_unramified {a : A} (ha : is_uniformizer (↑a : fraction_r
 sorry
 
 /- TODO list:
--- Put the adic valuation on any DVR (in mathlib for Dedekind domains)
+-- Replace Kevin's valuation with the adic valuation on any DVR (in mathlib for Dedekind domains)
+-- Prove that Kevin's uniformiser coincides with ours
 -- Put a valued instance on the field of fractions of a DVR (in mathlib for Dedekind domains)
 -- Since the fraction field of the unit ball of a valued field is not definitionally equal to
   the field we don't have a diamond
+-- We do not put a `valued`  instance on a finite extension `L` of a valued `K` to avoid the diamond 
+  when `L=K`.
+-- For the "same" reason we do not put an instance of an `K₀` algebra on the unit ball `L₀` wrt a
+  finite extension `L/K`.
 
 -- Upshot: we put valued instances on fields, but not on other rings (there we only
   define the valuation)
+-- When working with the basics about field extensions we only put valuations rather than valued
+  instances in order to be able to adapt it to the setting of a finite ext. of number fields with
+    some chosen valuation.
 -/
 
-end extension
+end unramified
 
 #exit
 
