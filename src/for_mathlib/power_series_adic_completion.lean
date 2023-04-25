@@ -33,7 +33,6 @@ instance already : valued (completion_of_ratfunc K) ℤₘ₀ :=
 
 instance : uniform_space (completion_of_ratfunc K) := infer_instance
 
-
 variable (F : completion_of_ratfunc K)
 
 def entourage (d : ℤ) : set (ratfunc K × ratfunc K) :=
@@ -718,23 +717,56 @@ end
 -/
 def cauchy.coeff_map {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) : ℤ → K :=
 begin
+  letI : uniform_space K := ⊥,
   have hK : @uniformity K ⊥ = filter.principal id_rel := rfl,
-  let try := @cauchy_discrete_is_constant K _ ⊥ hK,
-  
-  let g := @uniform_continuous_coeff_map K _ ⊥ hK,
-  -- let d : ℤ, sorry,
-  -- let gg := g d,
-  use λ d, try (@cauchy.map _ K _ ⊥ ℱ _ hℱ (g d)),
+  use λ d, (cauchy_discrete_is_constant hK (hℱ.map (uniform_continuous_coeff_map hK d))),
+end
 
-  -- use λ d, try (hℱ.map (g d)),
-  -- let also := (hℱ.map (uniform_continuous_coeff_map hK d)),
+def Cauchy.coeff_map (ℱ : Cauchy (ratfunc K)) : ℤ → K :=
+begin
+  letI : uniform_space K := ⊥,
+  have hK : @uniformity K ⊥ = filter.principal id_rel := rfl,
+  use λ d, (cauchy_discrete_is_constant hK (ℱ.2.map (uniform_continuous_coeff_map hK d))),
+end
 
-  -- use λ d, (cauchy_discrete_is_constant hK (hℱ.map (uniform_continuous_coeff_map hK d))),
+lemma Cauchy.uniform_continuous_coeff_map {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) (d : ℤ)
+: uniform_continuous (λ ℱ : Cauchy (ratfunc K), ℱ.coeff_map d) :=
+begin
+  sorry
+end
+
+lemma Cauchy.coeff_eq_of_inseparable (ℱ 𝒢 : Cauchy (ratfunc K)) 
+(H : (ℱ, 𝒢) ∈ separation_rel (Cauchy (ratfunc K))) : ℱ.coeff_map = 𝒢.coeff_map :=
+begin
+  letI : uniform_space K := ⊥,
+  have hK : @uniformity K ⊥ = filter.principal id_rel := rfl,
+  haveI : separated_space K,
+  { rw [separated_space_iff, separation_rel, hK],
+    ext x,
+    simp only [mem_sInter, filter.mem_sets, mem_principal, id_rel_subset],
+    split,
+    { intro hx,
+      simp only [hx, mem_id_rel, eq_self_iff_true, forall_const]},
+    {intros hx T hT,
+      simp [hx, ← id_rel_subset] at hT,
+      exact hT hx}},
+  ext d,
+  exact uniform_space.eq_of_separated_of_uniform_continuous
+    (Cauchy.uniform_continuous_coeff_map hK d) H,
 end
 
 @[simp]
 lemma cauchy.coeff_map_le {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) (n : ℤ) : 
   ℱ.map (ratfunc.coeff_map K n) ≤ 𝓟 {hℱ.coeff_map n} := 
+begin
+  letI : uniform_space K := ⊥,
+  have hK : uniformity K = filter.principal id_rel, refl,
+  exact cauchy_discrete_le _ _,
+end
+
+@[simp]
+lemma Cauchy.coeff_map_le (ℱ : Cauchy (ratfunc K)) (n : ℤ) : 
+  ℱ.1.map (ratfunc.coeff_map K n) ≤ 𝓟 {ℱ.coeff_map n} := 
 begin
   letI : uniform_space K := ⊥,
   have hK : uniformity K = filter.principal id_rel, refl,
@@ -835,6 +867,16 @@ begin
   exact hN _ (le_of_lt hn),
 end
 
+lemma Cauchy.coeff_map_support_bdd (ℱ : Cauchy (ratfunc K)) : bdd_below (ℱ.coeff_map.support) :=
+begin
+  obtain ⟨N, hN⟩ := ℱ.2.coeff_map_support_bdd,
+  use N,
+  intros n hn,
+  rw function.mem_support at hn,
+  contrapose! hn,
+  exact hN _ (le_of_lt hn),
+end
+
 -- lemma eventually_constant {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel)
 --   {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) (n : ℤ) :
 --   ∀ᶠ x in ℱ, ratfunc.coeff x n = cauchy_discrete_is_constant h 
@@ -869,9 +911,21 @@ end
 lemma bdd_below.well_founded_on_lt {X : Type} [preorder X] {s : set X} : 
   bdd_below s → s.well_founded_on (<) := sorry
 
+
+def Cauchy.to_laurent_series (ℱ : Cauchy (ratfunc K)) : (laurent_series K) :=
+hahn_series.mk ℱ.coeff_map (is_wf.is_pwo ℱ.coeff_map_support_bdd.well_founded_on_lt)
+
+variable (K)
+lemma Cauchy.laurent_series_eq_of_inseparable (ℱ 𝒢 : Cauchy (ratfunc K)) 
+(H : (ℱ, 𝒢) ∈ separation_rel (Cauchy (ratfunc K))) : ℱ.to_laurent_series = 𝒢.to_laurent_series :=
+begin
+  simp [Cauchy.to_laurent_series, Cauchy.coeff_eq_of_inseparable _ _ H],
+end
+
 section truncation
 open ideal
 
+variable {K}
 -- def laurent_series.X_pow (f : laurent_series K) (hf : f ≠ 0) : ℤ := 
 -- (away.exists_reduced_fraction (power_series.X : (power_series K)) (laurent_series K)
 --   power_series.irreducible_X f hf).some_spec.some
@@ -987,6 +1041,15 @@ begin
 end
 
 end truncation
+
+def laurent_series.equiv_other_proof : (completion_of_ratfunc K) ≃ (laurent_series K) :=
+begin
+  apply equiv.of_bijective
+    (λ α, quot.lift Cauchy.to_laurent_series (Cauchy.laurent_series_eq_of_inseparable K) α),
+  simp,
+  sorry
+end
+
 
 def laurent_series.equiv : (completion_of_ratfunc K) ≃ (laurent_series K) :=
 { to_fun :=

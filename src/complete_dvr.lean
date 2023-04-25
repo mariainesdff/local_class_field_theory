@@ -53,6 +53,9 @@ lemma mem_integer {Γ₀ : Type*} [linear_ordered_comm_group_with_zero Γ₀] (v
 
 
 /- TODO list:
+-- move is_localization.at_prime.discrete_valuation_ring_of_dedekind_domain
+  (currently in discrete_valuation_ring.basic, or at least there after my PR) to
+  discrete_valuation_ring.global_to_local
 -- Replace Kevin's valuation with the adic valuation on any DVR (in mathlib for Dedekind domains)
 -- Prove that Kevin's uniformiser coincides with ours
 -- Put a valued instance on the field of fractions of a DVR (in mathlib for Dedekind domains)
