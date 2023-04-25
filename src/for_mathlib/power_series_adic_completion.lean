@@ -950,9 +950,6 @@ lemma truncation_zero : truncation_seq (0 : (laurent_series K)) = 0 :=
 --   (f : laurent_series K).trunc d = ↑(f.trunc d) := sorry
 
 
-end truncation
-
-
 
 theorem truncation_cauchy_seq (f : laurent_series K) : cauchy_seq (truncation_seq f) :=
 begin
@@ -979,6 +976,18 @@ begin
       exact sub_lt_comm.mp hm }},
 end
 
+def truncation_cauchy_filter (f : laurent_series K) : Cauchy (ratfunc K) := 
+  ⟨at_top.map (truncation_seq f), truncation_cauchy_seq f⟩
+
+@[simp]
+lemma truncation_coeff_eq_coeff (f : laurent_series K) (d : ℤ) : 
+ (truncation_cauchy_filter f).2.coeff_map d = f.coeff d :=
+begin
+  sorry,
+end
+
+end truncation
+
 def laurent_series.equiv : (completion_of_ratfunc K) ≃ (laurent_series K) :=
 { to_fun :=
   begin
@@ -989,16 +998,31 @@ def laurent_series.equiv : (completion_of_ratfunc K) ≃ (laurent_series K) :=
   end,
   inv_fun := -- apply cau_seq.completion.mk_add-- there are a lot of things like this, only useful for
     -- valued fields, but the proofs are probably exactly what I need
-    λ f, @quotient.mk (Cauchy (ratfunc K)) (uniform_space.separation_setoid _)
-      ⟨at_top.map (truncation_seq f), truncation_cauchy_seq f⟩,
+    -- λ f, @quotient.mk (Cauchy (ratfunc K)) (uniform_space.separation_setoid _)
+    --   ⟨at_top.map (truncation_seq f), truncation_cauchy_seq f⟩,
+    -- begin
+      λ f, quotient.mk' $ truncation_cauchy_filter f,
+
+    -- end,
   left_inv := 
   begin
-    intro f,
+    intro ℱ,
     simp only,
     sorry,
   end,
   -- sorry,
-  right_inv := sorry }
+  right_inv := 
+  begin
+    intro f,
+    ext d,
+    simp,
+    have := truncation_coeff_eq_coeff f d,
+    rw ← this,
+    rw ← truncation_coeff_eq_coeff,
+    congr,
+    -- simp,
+    -- simp,
+  end, }
 
 
 noncomputable! def laurent_series.ring_equiv : 
