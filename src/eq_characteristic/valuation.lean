@@ -75,12 +75,10 @@ begin
     { exact zero_le_one }},
 end
 
-
 variables (R : Type*) [comm_ring R] [is_domain R] [is_dedekind_domain R] (L : Type*) [field L]
   [algebra R L] [is_fraction_ring R L] (v : height_one_spectrum R)
 
 open_locale classical
-
 
 def with_zero_mult_int_to_nnreal_def (e : nnreal)  : ℤₘ₀ → ℝ≥0 := 
 λ x, if hx : x = 0 then 0 else e^(multiplicative.to_add (with_zero.unzero hx))

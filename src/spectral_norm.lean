@@ -39,31 +39,39 @@ lemma spectral_norm_eq_root_zero_coeff (h_alg : algebra.is_algebraic K L)
  (hna : is_nonarchimedean (norm : K → ℝ)) (x : L) :
   spectral_norm K L x = ‖ (minpoly K x).coeff 0 ‖^(1/(minpoly K x).nat_degree : ℝ) :=
 begin
-  rw real.eq_rpow_one_div_iff,
-  rw [real.rpow_nat_cast],
-  --simp only [spectral_norm, spectral_value, spectral_value_terms],
   have hspl : splits  (ring_hom.id L) (map_alg K L (minpoly K x)),
   { sorry },
   have h0 : (algebra_map K L ((minpoly K x).coeff 0)) = (map_alg K L (minpoly K x)).coeff 0,
-  { sorry },
+  { rw [map_alg_eq_map, coeff_map] },
+  rw real.eq_rpow_one_div_iff (spectral_norm_nonneg x)
+    (norm_nonneg ((minpoly K x).coeff 0)),
+  rw [real.rpow_nat_cast],  
   rw ← @spectral_norm_extends K _ L _ _ ((minpoly K x).coeff 0),
   rw ← spectral_mul_ring_norm_def h_alg hna,
   rw ← spectral_mul_ring_norm_def h_alg hna,
   rw h0,
   rw polynomial.prod_roots_eq_coeff_zero_of_monic_of_split _ hspl,
-  simp only [map_mul, map_pow, map_neg_eq_map, map_one, one_pow, one_mul],
+  rw [map_mul, map_pow, map_neg_eq_map, map_one, one_pow, one_mul],
+  simp only [polynomial.roots],
+  simp only [multiset.empty_eq_zero],
+  rw dif_neg,
   sorry,
-  sorry,
-  sorry,
-  sorry
+  { sorry },
+  { have h_monic: (minpoly K x).leading_coeff = 1,
+    { exact minpoly.monic (is_algebraic_iff_is_integral.mp (h_alg x)),},
+    rw [map_alg_eq_map, monic, leading_coeff, coeff_map, nat_degree_map, 
+      coeff_nat_degree, h_monic, map_one] },
+  { rw [ne.def, nat.cast_eq_zero],
+    exact ne_of_gt 
+      (minpoly.nat_degree_pos (is_algebraic_iff_is_integral.mp (h_alg x))) },
 end
 
-lemma spectral_value_term_le (h_alg : algebra.is_algebraic K L) (x : L) {n : ℕ}
-  (hn : n < (minpoly K x).nat_degree)  :
+lemma spectral_value_term_le (h_alg : algebra.is_algebraic K L) 
+  (hna : is_nonarchimedean (norm : K → ℝ)) (x : L) {n : ℕ} (hn : n < (minpoly K x).nat_degree) :
   ‖(minpoly K x).coeff n‖ ^ (1 / (((minpoly K x).nat_degree : ℝ) - n)) ≤ 
   ‖(minpoly K x).coeff 0‖ ^ (1 / ((minpoly K x).nat_degree : ℝ)) :=
 begin
-  rw ← spectral_norm_eq_root_zero_coeff h_alg,
+  rw ← spectral_norm_eq_root_zero_coeff h_alg hna,
   simp only [spectral_norm, spectral_value, spectral_value_terms], 
   apply le_csupr_of_le (spectral_value_terms_bdd_above (minpoly K x)) n,
   simp only [spectral_value_terms, if_pos hn]
