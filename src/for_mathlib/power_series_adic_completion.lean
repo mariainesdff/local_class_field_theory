@@ -3,6 +3,7 @@ Copyright (c) 2022 María Inés de Frutos-Fernández, Filippo A. E. Nuccio. All 
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
+import order.filter.basic
 import algebra.order.hom.monoid
 -- import algebra.hom.group
 import for_mathlib.num_denom_away
@@ -699,6 +700,16 @@ lemma cauchy_discrete_le  {X : Type*} [nonempty X] {uX : uniform_space X}
   (hX : uniformity X = 𝓟 id_rel) {α : filter X} (hα : cauchy α) : 
   α ≤ 𝓟 {cauchy_discrete_is_constant hX hα} := Exists.some_spec (cauchy_discrete_le_principal hX hα)
 
+lemma cauchy_discrete_le'  {X : Type*} [nonempty X] {uX : uniform_space X} 
+  (hX : uniformity X = 𝓟 id_rel) {α : filter X} (hα : cauchy α) : 
+  α ≤ 𝓝 (cauchy_discrete_is_constant hX hα) :=
+begin
+  convert cauchy_discrete_le hX hα,
+  have top_discrete : ∀ a : X, is_open {a},
+    { exact λ a, @is_open_discrete _ _ (discrete_topology_of_discrete_uniformity hX) {a} },
+  rw [((is_open_singleton_iff_nhds_eq_pure _).mp (top_discrete _)), principal_singleton],
+end
+
 lemma ne_bot_unique_principal {X : Type*} [uniform_space X] (hX : uniformity X = 𝓟 id_rel)
   {α : filter X} (hα : α.ne_bot) {x y : X} (hx : α ≤ 𝓟 {x}) (hy : α ≤ 𝓟 {y}) : x = y :=
 begin
@@ -738,10 +749,102 @@ defined in a way that unvails its abstract properties better.-/
 lemma coeff_map_eq_coeff_map' {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) (d : ℤ) :
   Cauchy.coeff_map d = Cauchy.coeff_map' h d :=
 begin
+  haveI t2_K : t2_space K, sorry,
+  have top_discrete : ∀ a : K, is_open {a},
+    { exact λ a, @is_open_discrete _ _ (discrete_topology_of_discrete_uniformity h) {a} },
   ext ℱ,
+  have ℱ_bot : (comap (@Cauchy.pure_cauchy (ratfunc K) _) (𝓟 {ℱ})).ne_bot,
+  {sorry},
   simp only [Cauchy.coeff_map, Cauchy.coeff_map', Cauchy.extend,
     if_pos (uniform_continuous_coeff_map h d), subtype.val_eq_coe],
-    sorry
+  -- have due : lim (filter.comap Cauchy.pure_cauchy (𝓝 ℱ)) (ratfunc.coeff_map K d) =
+  --   (cauchy_discrete_is_constant h (ℱ.2.map (uniform_continuous_coeff_map h d))),
+  have uno : lim (filter.comap Cauchy.pure_cauchy (𝓟 {ℱ})) (ratfunc.coeff_map K d) =
+    (cauchy_discrete_is_constant h (ℱ.2.map (uniform_continuous_coeff_map h d))),
+    { rw [lim, Lim_eq_iff _],
+    --   -- rw [Lim_eq_iff _],
+    --   { rw ((is_open_singleton_iff_nhds_eq_pure _).mp (top_discrete _)),
+    --     rw ← principal_singleton,
+    --     apply le_trans _ (cauchy_discrete_le h (ℱ.2.map (uniform_continuous_coeff_map h d))),
+    --     apply filter.map_mono,
+    --     -- simp only [principal_singleton, subtype.val_eq_coe],
+    --     intros T hT,
+    --     rw mem_comap,
+    --     -- use set.Iic (𝓟 {ℱ}),
+    --     -- use {ℱ},
+    --     -- split,
+    --     -- sorry,
+    --     -- rw mem_nh
+    --     -- rw mem_nhds_iff,
+    --     -- rw filter.mem_principal,
+    --     rw set.preimage_subset_iff,
+    --     intro f,
+    --     -- intro f,
+    --     rw Cauchy.pure_cauchy,
+    --     intro hf,
+    --     rw mem_singleton_iff at hf,
+    --     rw subtype.ext_iff at hf,
+    --     rw [← hf, subtype.coe_mk, mem_pure] at hT,
+    --     -- exact hT,
+    --   },
+      { rw ((is_open_singleton_iff_nhds_eq_pure _).mp (top_discrete _)),
+        rw ← principal_singleton,
+        apply le_trans _ (cauchy_discrete_le h (ℱ.2.map (uniform_continuous_coeff_map h d))),
+        apply filter.map_mono,
+        simp only [principal_singleton, comap_pure, subtype.val_eq_coe],
+        intros T hT,
+        rw filter.mem_principal,
+        rw set.preimage_subset_iff,
+        intro f,
+        rw Cauchy.pure_cauchy,
+        intro hf,
+        rw mem_singleton_iff at hf,
+        rw subtype.ext_iff at hf,
+        rw [← hf, subtype.coe_mk, mem_pure] at hT,
+        exact hT,
+      },
+      { exact t2_K},
+      { sorry },
+      { use cauchy_discrete_is_constant h (ℱ.2.map (uniform_continuous_coeff_map h d)),
+        apply le_trans _ (cauchy_discrete_le' h (ℱ.2.map (uniform_continuous_coeff_map h d))),
+        apply filter.map_mono,
+        simp only [principal_singleton, comap_pure, subtype.val_eq_coe],
+        intros T hT,
+        rw filter.mem_principal,
+        rw set.preimage_subset_iff,
+        intro f,
+        rw Cauchy.pure_cauchy,
+        intro hf,
+        rw mem_singleton_iff at hf,
+        rw subtype.ext_iff at hf,
+        rw [← hf, subtype.coe_mk, mem_pure] at hT,
+        exact hT, }},
+
+      -- convert uno.symm,
+      -- sorry,
+      -- dsimp [Cauchy.dense_inducing_pure_cauchy.extend],
+      erw ← uno,
+      -- rw principal_singleton,
+      rw dense_inducing.extend,
+      symmetry,
+      rw @lim_eq_iff _ _ _ _ _ _,
+      sorry,
+      sorry,
+      sorry,
+      sorry, 
+      -- rw @lim_eq_iff _ _ _ _ _ ℱ_bot, 
+      -- rw lim_monoto
+      -- rw lim,
+      -- rw Lim,
+      -- simp,
+      -- simp,
+      -- congr' 1,
+
+      
+      
+      -- exact (is_open_singleton_iff_nhds_eq_pure _).mp (top_discrete _),
+
+
 end
 
 lemma Cauchy.uniform_continuous_coeff_map {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel)
