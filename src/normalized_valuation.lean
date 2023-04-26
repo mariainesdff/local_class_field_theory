@@ -4,6 +4,15 @@ import spectral_norm
 
 noncomputable theory
 
+namespace add_subgroup
+
+lemma closure_singleton_eq_zmultiples {A : Type*} [add_group A] (a : A) :
+  closure {a} = zmultiples a :=
+by ext n; rw [mem_closure_singleton, mem_zmultiples_iff]
+
+end add_subgroup
+
+
 open_locale discrete_valuation nnreal
 
 def with_zero_mult_int_to_nnreal_def (e : nnreal)  : ℤₘ₀ → ℝ≥0 := 
@@ -123,6 +132,8 @@ noncomputable! def aux_hom' {W : Type*} [field W] :
 lemma norm_is_nonarchimedean : is_nonarchimedean (norm : K → ℝ) :=
 sorry
 
+-- TODO: deduce h_alg from [finite_dimensional K L]
+
 variables {K} [complete_space K] {L : Type*} [field L] [algebra K L] 
 
 def disc_norm_extension (h_alg : algebra.is_algebraic K L) : mul_algebra_norm K L :=
@@ -148,7 +159,14 @@ end
 
 open finite_dimensional minpoly
 
+
 local attribute [-instance] disc_norm_field'
+
+--#check @disc_norm_extension_eq_root_zero_coeff' 
+
+
+--#check disc_norm_extension 
+
 
 lemma pow_valuation_unit_ne_zero [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) 
   (x : Lˣ) :
@@ -215,7 +233,7 @@ begin
 
 
   sorry,
-  sorry,
+  { exact norm_is_nonarchimedean K, },
   sorry,
   sorry,
   sorry,
@@ -242,12 +260,85 @@ def aux_hom [finite_dimensional K L] (h_alg : algebra.is_algebraic K L)
   end } 
 
 --variables (h_alg : algebra.is_algebraic K L) (hna : is_nonarchimedean (norm : K → ℝ))
-def aux_d [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) : ℕ :=
+def aux_d' [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) : ℕ :=
 subgroup.index (subgroup.map (aux_hom h_alg) ⊤)
+
+/- lemma range_eq_aux_d_pow [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) :
+  (subgroup.map (aux_hom h_alg) ⊤) = subgroup.zpowers (multiplicative.of_add (aux_d h_alg : ℤ)) :=
+begin
+  ext n,
+  split; intro hn,
+  { obtain ⟨x, -, hx⟩ := hn,
+    
+    --simp only [subgroup.mem_map, subgroup.mem_top, exists_true_left] at hn,
+    have :=  of_add_image_zmultiples_eq_zpowers_of_add,
+    --rw subgroup.mem_zpowers_iff,
+    rw ← subgroup.mem_carrier,
+    
+    change n ∈ 
+      ((subgroup.zpowers (multiplicative.of_add (aux_d h_alg : ℤ))) : set (multiplicative ℤ)),
+
+    rw ← of_add_image_zmultiples_eq_zpowers_of_add,
+    simp only [set.mem_image, set_like.mem_coe],
+    sorry },
+  { sorry }
+end
+ -/
+
+open multiplicative
+
+def aux_d [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) : ℕ :=
+int.nat_abs (int.subgroup_cyclic (subgroup.map (aux_hom h_alg) ⊤).to_add_subgroup).some
+
+lemma aux_d_prop [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) : 
+subgroup.to_add_subgroup (subgroup.map (aux_hom h_alg) ⊤) =
+    add_subgroup.closure {(aux_d h_alg : ℤ)} := 
+begin
+  rw [(int.subgroup_cyclic (subgroup.map (aux_hom h_alg) ⊤).to_add_subgroup).some_spec,
+    add_subgroup.closure_singleton_eq_zmultiples, add_subgroup.closure_singleton_eq_zmultiples,
+    aux_d, int.zmultiples_nat_abs],
+end
+
+-- This proof is ridiculous (TODO: golf)
+lemma range_eq_aux_d_pow [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) :
+  (subgroup.map (aux_hom h_alg) ⊤) = subgroup.closure {of_add (aux_d h_alg : ℤ)}:=
+begin
+  have h' : add_subgroup.to_subgroup (subgroup.to_add_subgroup (subgroup.map (aux_hom h_alg) ⊤)) =
+    add_subgroup.to_subgroup (add_subgroup.closure {(aux_d h_alg : ℤ)}),
+  { rw aux_d_prop, },
+  convert h',
+  { ext x,
+    have hx : x ∈ subgroup.zpowers (of_add (aux_d h_alg : ℤ)) ↔ 
+    x ∈ (subgroup.zpowers (of_add (aux_d h_alg : ℤ)) : set (multiplicative ℤ)),
+    { refl },
+    have hx' : x ∈ (add_subgroup.to_subgroup (add_subgroup.closure {(aux_d h_alg : ℤ)})) ↔
+      x.to_add ∈ (add_subgroup.closure {(aux_d h_alg : ℤ)}),
+    { simp only [add_subgroup.to_subgroup, rel_iso.coe_fn_mk, equiv.coe_fn_mk,
+        add_submonoid.to_submonoid, add_subgroup.coe_to_add_submonoid],
+      rw ← subgroup.mem_carrier,
+      change x ∈ to_add ⁻¹' (↑(add_subgroup.closure {(aux_d h_alg : ℤ)}) : set ℤ)
+      ↔ to_add x ∈ add_subgroup.closure {(aux_d h_alg : ℤ)},
+      rw set.mem_preimage,
+      refl,},
+    have hx'' : x ∈ of_add '' (add_subgroup.zmultiples (aux_d h_alg : ℤ) : set ℤ) ↔
+      x.to_add ∈ ↑(add_subgroup.zmultiples (aux_d h_alg : ℤ)),
+    { simp only [set.mem_image, set_like.mem_coe],
+      split,
+      { rintros ⟨n, hn, hnx⟩, rw ← hnx, exact hn, },
+      { intro h, exact ⟨to_add x, h, rfl⟩, }, },
+    rw [subgroup.mem_closure_singleton, ← subgroup.mem_zpowers_iff, hx,
+      ← of_add_image_zmultiples_eq_zpowers_of_add, hx', hx'', 
+      add_subgroup.mem_closure_singleton, ← add_subgroup.mem_zmultiples_iff],
+    refl, },
+end
 
 lemma aux_d_divides [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) (x : L) : 
   (aux_d h_alg) ∣ ((finrank K L)/(minpoly K x).nat_degree) :=
-sorry
+begin
+  rw nat.dvd_div_iff,
+  sorry,
+  { sorry }
+end
 
 --variables (h_alg : algebra.is_algebraic K L) (x : L)
 
@@ -283,7 +374,11 @@ def w [decidable_eq L] [finite_dimensional K L] (h_alg : algebra.is_algebraic K 
   map_add_le_max' := sorry }
 
 instance hw [decidable_eq L] [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) :
-  is_discrete (w h_alg) := sorry
+  is_discrete (w h_alg) := 
+begin
+  apply discrete_valuation.is_discrete_of_exists_uniformizer,
+  sorry, sorry
+end
 
 
 
