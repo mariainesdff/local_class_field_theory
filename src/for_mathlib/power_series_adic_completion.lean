@@ -628,8 +628,8 @@ end
 --   exact hN y hy n (int.lt_of_le_sub_one hn),
 -- end
 
-lemma uniform_continuous_coeff_map {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) (d : ℤ)
-: uniform_continuous (ratfunc.coeff_map K d) :=
+lemma uniform_continuous_coeff_map {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) (d : ℤ) :
+  uniform_continuous (ratfunc.coeff_map K d) :=
 begin
   refine uniform_continuous_iff_eventually.mpr _,
   intros S hS,
@@ -722,21 +722,46 @@ begin
   use λ d, (cauchy_discrete_is_constant hK (hℱ.map (uniform_continuous_coeff_map hK d))),
 end
 
-def Cauchy.coeff_map (ℱ : Cauchy (ratfunc K)) : ℤ → K :=
+def Cauchy.coeff_map (d : ℤ) : Cauchy (ratfunc K) → K :=
 begin
   letI : uniform_space K := ⊥,
   have hK : @uniformity K ⊥ = filter.principal id_rel := rfl,
-  use λ d, (cauchy_discrete_is_constant hK (ℱ.2.map (uniform_continuous_coeff_map hK d))),
+  use λ ℱ, (cauchy_discrete_is_constant hK (ℱ.2.map (uniform_continuous_coeff_map hK d))),
 end
 
-lemma Cauchy.uniform_continuous_coeff_map {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) (d : ℤ)
-: uniform_continuous (λ ℱ : Cauchy (ratfunc K), ℱ.coeff_map d) :=
+def Cauchy.coeff_map' {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) (d : ℤ) :
+  Cauchy (ratfunc K) → K := Cauchy.extend (ratfunc.coeff_map K d)
+
+
+/-To perform explicit computation, `Cauchy.coeff_map` is more suitable, but `Cauchy.coeff_map'` is
+defined in a way that unvails its abstract properties better.-/
+lemma coeff_map_eq_coeff_map' {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) (d : ℤ) :
+  Cauchy.coeff_map d = Cauchy.coeff_map' h d :=
 begin
-  sorry
+  ext ℱ,
+  simp only [Cauchy.coeff_map, Cauchy.coeff_map', Cauchy.extend,
+    if_pos (uniform_continuous_coeff_map h d), subtype.val_eq_coe],
+    sorry
 end
 
-lemma Cauchy.coeff_eq_of_inseparable (ℱ 𝒢 : Cauchy (ratfunc K)) 
-(H : (ℱ, 𝒢) ∈ separation_rel (Cauchy (ratfunc K))) : ℱ.coeff_map = 𝒢.coeff_map :=
+lemma Cauchy.uniform_continuous_coeff_map {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel)
+  (d : ℤ) : uniform_continuous (Cauchy.coeff_map' h d) :=
+begin
+  haveI hK_compl : complete_space K,
+  { rw complete_space_iff_ultrafilter,
+    intros ℱ hℱ,
+    set a := cauchy_discrete_is_constant h hℱ with ha,
+    have top_discrete : is_open {a},
+    { exact @is_open_discrete _ _ (discrete_topology_of_discrete_uniformity h) {a} },
+    use a,
+    convert cauchy_discrete_le h hℱ,
+    rw principal_singleton,
+    exact (is_open_singleton_iff_nhds_eq_pure a).mp top_discrete},
+  apply Cauchy.uniform_continuous_extend,
+end
+
+lemma Cauchy.coeff_eq_of_inseparable (d : ℤ)  (ℱ 𝒢 : Cauchy (ratfunc K)) 
+(H : (ℱ, 𝒢) ∈ separation_rel (Cauchy (ratfunc K))) : ℱ.coeff_map d = 𝒢.coeff_map d :=
 begin
   letI : uniform_space K := ⊥,
   have hK : @uniformity K ⊥ = filter.principal id_rel := rfl,
@@ -750,7 +775,7 @@ begin
     {intros hx T hT,
       simp [hx, ← id_rel_subset] at hT,
       exact hT hx}},
-  ext d,
+  rw coeff_map_eq_coeff_map',
   exact uniform_space.eq_of_separated_of_uniform_continuous
     (Cauchy.uniform_continuous_coeff_map hK d) H,
 end
@@ -777,26 +802,6 @@ example : uniform_continuous₂ (λ f g : (ratfunc K), f + g ) :=
 begin
   rw uniform_continuous₂_def,
   apply uniform_continuous_add,
-end
-
-example {ℱ ℱ' : filter (ratfunc K)} (hℱ : cauchy ℱ) (hℱ' : cauchy ℱ') :
-  cauchy ((ℱ.prod ℱ').map (+).uncurry) := 
-begin
-  exact (hℱ.prod hℱ').map (uniform_continuous_add),
-end
-
-lemma coeff_map_add {ℱ ℱ' : filter (ratfunc K)} (hℱ : cauchy ℱ) (hℱ' : cauchy ℱ') :
-  ((hℱ.prod hℱ').map (uniform_continuous_add)).coeff_map = hℱ.coeff_map + hℱ'.coeff_map :=
-begin
-  ext n,
-  -- have fine : ((ℱ.prod ℱ').map (+).uncurry).coeff_map n ≤ 𝓝 ( (hℱ.coeff_map n) + (hℱ'.coeff_map n)),
-  -- letI : uniform_space K := ⊥,
-  
-  rw cauchy.coeff_map,
-  rw cauchy.coeff_map,
-  rw cauchy.coeff_map,
-  simp,
-  sorry
 end
 
 
@@ -867,7 +872,8 @@ begin
   exact hN _ (le_of_lt hn),
 end
 
-lemma Cauchy.coeff_map_support_bdd (ℱ : Cauchy (ratfunc K)) : bdd_below (ℱ.coeff_map.support) :=
+lemma Cauchy.coeff_map_support_bdd (ℱ : Cauchy (ratfunc K)) :
+  bdd_below ((λ d, ℱ.coeff_map d).support) :=
 begin
   obtain ⟨N, hN⟩ := ℱ.2.coeff_map_support_bdd,
   use N,
@@ -913,13 +919,13 @@ lemma bdd_below.well_founded_on_lt {X : Type} [preorder X] {s : set X} :
 
 
 def Cauchy.to_laurent_series (ℱ : Cauchy (ratfunc K)) : (laurent_series K) :=
-hahn_series.mk ℱ.coeff_map (is_wf.is_pwo ℱ.coeff_map_support_bdd.well_founded_on_lt)
+hahn_series.mk (λ d, ℱ.coeff_map d) (is_wf.is_pwo ℱ.coeff_map_support_bdd.well_founded_on_lt)
 
 variable (K)
 lemma Cauchy.laurent_series_eq_of_inseparable (ℱ 𝒢 : Cauchy (ratfunc K)) 
 (H : (ℱ, 𝒢) ∈ separation_rel (Cauchy (ratfunc K))) : ℱ.to_laurent_series = 𝒢.to_laurent_series :=
 begin
-  simp [Cauchy.to_laurent_series, Cauchy.coeff_eq_of_inseparable _ _ H],
+  simp [Cauchy.to_laurent_series, Cauchy.coeff_eq_of_inseparable _ _ _ H],
 end
 
 section truncation
@@ -1089,6 +1095,25 @@ def laurent_series.equiv : (completion_of_ratfunc K) ≃ (laurent_series K) :=
     -- simp,
   end, }
 
+example {ℱ ℱ' : filter (ratfunc K)} (hℱ : cauchy ℱ) (hℱ' : cauchy ℱ') :
+  cauchy ((ℱ.prod ℱ').map (+).uncurry) := 
+begin
+  exact (hℱ.prod hℱ').map (uniform_continuous_add),
+end
+
+lemma coeff_map_add {ℱ ℱ' : filter (ratfunc K)} (hℱ : cauchy ℱ) (hℱ' : cauchy ℱ') :
+  ((hℱ.prod hℱ').map (uniform_continuous_add)).coeff_map = hℱ.coeff_map + hℱ'.coeff_map :=
+begin
+  ext n,
+  -- have fine : ((ℱ.prod ℱ').map (+).uncurry).coeff_map n ≤ 𝓝 ( (hℱ.coeff_map n) + (hℱ'.coeff_map n)),
+  -- letI : uniform_space K := ⊥,
+  
+  rw cauchy.coeff_map,
+  rw cauchy.coeff_map,
+  rw cauchy.coeff_map,
+  simp,
+  sorry
+end
 
 noncomputable! def laurent_series.ring_equiv : 
   ring_equiv (completion_of_ratfunc K) (laurent_series K) :=
