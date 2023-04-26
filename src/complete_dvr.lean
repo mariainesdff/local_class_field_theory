@@ -51,6 +51,61 @@ end
 lemma mem_integer {Γ₀ : Type*} [linear_ordered_comm_group_with_zero Γ₀] (v : valuation A Γ₀)
   (a : A) : a ∈ v.integer ↔ v a ≤ 1 := iff.rfl
 
+/-lemma is_unit_iff_valuation_eq_one (a : ↥(height_one_spectrum.adic_completion_integers K v)) :
+  is_unit a ↔ valued.v (a : K_v) = (1 : ℤₘ₀) :=
+begin
+  refine ⟨λ ha, valuation_eq_one_of_is_unit R K v ha, λ ha, _⟩,
+  have ha0 : (a : K_v) ≠ 0,
+  { by_contra h0,
+    rw [h0, map_zero] at ha,
+    exact zero_ne_one ha, }, 
+  have ha' : valued.v (a : K_v)⁻¹ = 
+        (1 : ℤₘ₀),
+  { rw [map_inv₀, inv_eq_one], exact ha, },
+  rw is_unit_iff_exists_inv,
+  use (a : K_v)⁻¹,
+  { rw mem_adic_completion_integers,
+    exact le_of_eq ha' },
+  { ext, rw [subring.coe_mul, set_like.coe_mk, algebra_map.coe_one, mul_inv_cancel ha0] },
+end
+
+lemma not_is_unit_iff_valuation_lt_one (a : ↥(height_one_spectrum.adic_completion_integers K v)) :
+  ¬ is_unit a ↔ valued.v (a : K_v) < (1 : ℤₘ₀) :=
+begin
+  rw [← not_le, not_iff_not, is_unit_iff_valuation_eq_one, le_antisymm_iff],
+  exact and_iff_right a.2,
+end-/
+
+namespace integer
+theorem is_unit_iff_valuation_eq_one {K : Type*} [field K] {Γ₀ : Type*} 
+  [linear_ordered_comm_group_with_zero Γ₀] {v : valuation K Γ₀} (x : v.integer) : 
+  is_unit x ↔ v x = 1 :=
+begin
+  refine ⟨@integers.one_of_is_unit K Γ₀ _ _ v v.integer _ _ (valuation.integer.integers v) _, 
+    λ hx, _⟩,
+  have hx0 : (x : K) ≠ 0,
+  { by_contra h0,
+    rw [h0, map_zero] at hx,
+    exact zero_ne_one hx, }, 
+  have hx' : v (x : K)⁻¹ = (1 : Γ₀) ,
+  { rw [map_inv₀, inv_eq_one], exact hx, },
+  rw is_unit_iff_exists_inv,
+  use (x : K)⁻¹,
+  { rw mem_integer,
+    exact le_of_eq hx' },
+  { ext, rw [subring.coe_mul, set_like.coe_mk, algebra_map.coe_one, mul_inv_cancel hx0] },
+end
+
+lemma not_is_unit_iff_valuation_lt_one {K : Type*} [field K] {Γ₀ : Type*} 
+  [linear_ordered_comm_group_with_zero Γ₀] {v : valuation K Γ₀} (x : v.integer) :
+  ¬ is_unit x ↔ v x < 1 :=
+begin
+  rw [← not_le, not_iff_not, is_unit_iff_valuation_eq_one, le_antisymm_iff],
+  exact and_iff_right x.2,
+end
+
+end integer
+
 
 /- TODO list:
 -- move is_localization.at_prime.discrete_valuation_ring_of_dedekind_domain
