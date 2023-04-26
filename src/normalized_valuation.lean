@@ -90,27 +90,38 @@ ne_zero_of_lt (one_lt_valuation_base K)
 
 end
 
-variables (K : Type*) [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v]
+variables (K : Type*) [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v] 
+--(v : valuation K ℤₘ₀) [hv : is_discrete v]
 
-instance rk1 : is_rank_one hv.v := is_rank_one_of_is_discrete hv.v (valuation_base_ne_zero K)
+instance rk1 : is_rank_one hv.v := is_rank_one_of_is_discrete hv.v (valuation_base_ne_zero K) 
   (one_lt_valuation_base K)
-  
+
 include hv
 
-@[priority 100] instance disc_norm_field : normed_field K :=
+@[priority 100] def disc_norm_field : normed_field K :=
 rank_one_valuation.valued_field.to_normed_field K ℤₘ₀
---@rank_one_valuation.valued_field.to_normed_field K _ ℤₘ₀ _ _ (rk1 K)
+/- @rank_one_valuation.valued_field.to_normed_field K _ ℤₘ₀ _ (valued.mk' v) 
+  (@rk1 K _ (valued.mk' v).v hv) -/
 
-/- @[priority 100] instance disc_norm_field' : nontrivially_normed_field K :=
+@[priority 100] def disc_norm_field' : nontrivially_normed_field K :=
 { non_trivial := sorry,
-  ..(@rank_one_valuation.valued_field.to_normed_field K _ ℤₘ₀ _ _ (rk1 K)) } -/
+  --..(disc_norm_field K v )
+  ..(@rank_one_valuation.valued_field.to_normed_field K _ ℤₘ₀ _ _ (rk1 K))  } 
 
-/- noncomputable! def aux_hom' {W : Type*} [field W] : 
-  Wˣ →ₙ* (multiplicative ℤ) := sorry -/
+local attribute [priority 100, instance] disc_norm_field'
 
-#exit
+--instance foo {W : Type*} [field W] : has_one W := infer_instance
 
-lemma norm_is_nonarchimedean : is_nonarchimedean (norm : K → ℝ) := sorry
+
+/- -- To help the elaborator
+instance  {W : Type*} [field W] : has_mul Wˣ := 
+mul_one_class.to_has_mul Wˣ
+
+noncomputable! def aux_hom' {W : Type*} [field W] : 
+  Wˣ →ₙ* (multiplicative ℤ) := sorry  -/
+
+lemma norm_is_nonarchimedean : is_nonarchimedean (norm : K → ℝ) :=
+sorry
 
 variables {K} [complete_space K] {L : Type*} [field L] [algebra K L] 
 
@@ -135,47 +146,144 @@ end
 
 --  e^(multiplicative.to_add (with_zero.unzero hx))
 
-open finite_dimensional
+open finite_dimensional minpoly
 
-variables (K L)
-noncomputable! def aux_hom /- (h_alg : algebra.is_algebraic K L) 
-  (hna : is_nonarchimedean (norm : K → ℝ)) -/ : 
+local attribute [-instance] disc_norm_field'
+
+lemma pow_valuation_unit_ne_zero [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) 
+  (x : Lˣ) :
+  (valued.v ((minpoly K x.1).coeff 0))^((finrank K L)/(minpoly K x.1).nat_degree) ≠ (0 : ℤₘ₀) :=
+begin
+  have hdeg : 0 < finrank K L / (minpoly K x.val).nat_degree,
+  { exact nat.div_pos (nat_degree_le (is_algebraic_iff_is_integral.mp (h_alg x.val)))
+      (nat_degree_pos (is_algebraic_iff_is_integral.mp (h_alg x.val))), },
+  rw [ne.def, pow_eq_zero_iff hdeg, valuation.zero_iff],
+  exact coeff_zero_ne_zero (is_algebraic_iff_is_integral.mp (h_alg x.val)) (units.ne_zero x),
+  apply_instance,
+end
+
+open function
+
+lemma map_mul_aux [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) (x y : Lˣ) : 
+  valued.v ((minpoly K ((x : L) * ↑y)).coeff 0) ^ 
+    (finrank K L / (minpoly K ((x : L) * ↑y)).nat_degree) = 
+  valued.v ((minpoly K (x : L)).coeff 0) ^ (finrank K L / (minpoly K (x : L)).nat_degree) 
+  * valued.v ((minpoly K (y : L)).coeff 0) ^ (finrank K L / (minpoly K (y : L)).nat_degree) :=
+begin
+  have hinj : injective (with_zero_mult_int_to_nnreal (valuation_base_ne_zero K)),
+  { exact (with_zero_mult_int_to_nnreal_strict_mono (one_lt_valuation_base K)).injective, },
+  rw [← function.injective.eq_iff hinj, map_mul],
+  rw map_pow,
+  rw ← nnreal.rpow_nat_cast,
+  rw nat.cast_div, 
+  rw div_eq_mul_inv,
+  rw mul_comm (finrank K L : ℝ),
+  rw nnreal.rpow_mul,
+  rw ← one_div,
+
+  rw map_pow,
+  rw ← nnreal.rpow_nat_cast,
+  rw nat.cast_div, 
+  rw div_eq_mul_inv (finrank K L : ℝ),
+  rw mul_comm (finrank K L : ℝ),
+  rw nnreal.rpow_mul,
+  rw ← one_div,
+
+  rw map_pow,
+  rw ← nnreal.rpow_nat_cast,
+  rw nat.cast_div, 
+  rw div_eq_mul_inv (finrank K L : ℝ),
+  rw mul_comm (finrank K L : ℝ),
+  rw nnreal.rpow_mul,
+  rw ← one_div,
+  --rw ← disc_norm_extension_eq_root_zero_coeff' h_alg _ (x : L),
+
+  rw ← nnreal.mul_rpow,
+  rw nnreal.rpow_eq_rpow_iff,
+  ext,
+  rw nnreal.coe_mul,
+  rw nnreal.coe_rpow,
+  rw nnreal.coe_rpow,
+  rw nnreal.coe_rpow,
+  rw ← disc_norm_extension_eq_root_zero_coeff' h_alg _ (x : L),
+
+  rw ← disc_norm_extension_eq_root_zero_coeff' h_alg _ (y : L),
+
+  rw ← disc_norm_extension_eq_root_zero_coeff' h_alg _ ((x * y) : L),
+  rw [map_mul],
+    --rw ← disc_norm_extension_eq_root_zero_coeff' h_alg _ (x : L),
+
+
+  sorry,
+  sorry,
+  sorry,
+  sorry,
+  sorry,
+  sorry,
+  sorry,
+  sorry,
+  sorry,
+  sorry,
+end
+
+def aux_hom [finite_dimensional K L] (h_alg : algebra.is_algebraic K L)
+  /-(hna : is_nonarchimedean (norm : K → ℝ)) -/ : 
   Lˣ →* (multiplicative ℤ) :=
-{ to_fun := λ x, --TODO : convert to term mode (extract proof to lemma)
+{ to_fun   := λ x, with_zero.unzero (pow_valuation_unit_ne_zero h_alg x),
+  map_one' := by simp only [units.val_eq_coe, units.coe_one, one, polynomial.coeff_sub, 
+    polynomial.coeff_X_zero, polynomial.coeff_one_zero, zero_sub, valuation.map_neg, 
+    valuation.map_one, one_pow, unzero_coe],
+  map_mul' := λ x y,
   begin
-    have hx : (valued.v ((minpoly K x.1).coeff 0))^((finrank K L)/(minpoly K x.1).nat_degree) ≠
-      (0 : ℤₘ₀),
-    { sorry },
-    apply with_zero.unzero hx,
-  end,
-  map_one' := sorry,
-  map_mul' := sorry } 
+    simp only [units.val_eq_coe, units.coe_mul],
+    rw [← with_zero.coe_inj, with_zero.coe_mul, with_zero.coe_unzero, with_zero.coe_unzero, 
+      with_zero.coe_unzero],
+    exact map_mul_aux h_alg x y,
+  end } 
 
 --variables (h_alg : algebra.is_algebraic K L) (hna : is_nonarchimedean (norm : K → ℝ))
-def aux_d : ℕ :=
-subgroup.index (subgroup.map (aux_hom K L) ⊤)
+def aux_d [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) : ℕ :=
+subgroup.index (subgroup.map (aux_hom h_alg) ⊤)
 
-lemma aux_d_divides 
-  (x : L) : (aux_d K L) ∣ ((finrank K L)/(minpoly K x).nat_degree) :=
+lemma aux_d_divides [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) (x : L) : 
+  (aux_d h_alg) ∣ ((finrank K L)/(minpoly K x).nat_degree) :=
 sorry
 
 --variables (h_alg : algebra.is_algebraic K L) (x : L)
 
 --#check disc_norm_extension K L h_alg x
 
-def w [decidable_eq L] : valuation L ℤₘ₀ := 
+--set_option trace.class_instances true
+def w [decidable_eq L] [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) :
+  valuation L ℤₘ₀ := 
 { to_fun    := λ x, if x = 0 then 0 else 
-    (valued.v ((minpoly K x).coeff 0))^((finrank K L)/((aux_d K L)*(minpoly K x).nat_degree)),
+    (valued.v ((minpoly K x).coeff 0))^((finrank K L)/((aux_d h_alg)*(minpoly K x).nat_degree)),
   map_zero' := by rw if_pos rfl,
   map_one'  := 
   begin
-    
-    sorry,
+    rw [if_neg one_ne_zero, minpoly.one, polynomial.coeff_sub, polynomial.coeff_X_zero, 
+      polynomial.coeff_one_zero, zero_sub, valuation.map_neg, valuation.map_one, one_pow],
+    apply_instance,
   end,
-  map_mul'  := sorry,
+  map_mul'  := λ x y,
+  begin
+    by_cases hx : x = 0,
+    { have hxy : x * y = 0,
+      { rw [hx, zero_mul] },
+      rw [if_pos hx, if_pos hxy, zero_mul] },
+    { by_cases hy : y = 0,
+      { have hxy : x * y = 0,
+      { rw [hy, mul_zero] },
+        rw [if_pos hy, if_pos hxy, mul_zero]  },
+      { have hxy : x * y ≠ 0,
+        { sorry },
+        rw [if_neg hx, if_neg hy, if_neg hxy],
+        sorry } },
+  end,
   map_add_le_max' := sorry }
 
-instance hw [decidable_eq L] : is_discrete (w K L) := sorry
+instance hw [decidable_eq L] [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) :
+  is_discrete (w h_alg) := sorry
 
 
 
