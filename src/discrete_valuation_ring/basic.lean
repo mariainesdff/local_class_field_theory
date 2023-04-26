@@ -35,7 +35,7 @@ structure uniformizer :=
 
 
 noncomputable
-lemma discrete_of_exists_uniformizer {π : K₀} (hπ : is_uniformizer v (π : K)) : is_discrete v :=
+lemma is_discrete_of_exists_uniformizer {π : K₀} (hπ : is_uniformizer v (π : K)) : is_discrete v :=
 ⟨begin
   intro x,
   apply with_zero.cases_on x,
@@ -78,6 +78,12 @@ begin
   exact with_zero.zero_ne_coe this,
 end
 
+lemma uniformizer_valuation_pos {π : K₀} (hπ : is_uniformizer v (π : K)) : 0 < v (π : K) := 
+begin
+  rw [zero_lt_iff, ne.def, zero_iff, subring.coe_eq_zero_iff],
+  exact uniformizer_ne_zero v hπ,
+end
+
 lemma uniformizer_not_is_unit {π : K₀} (hπ : is_uniformizer v (π : K)) : ¬ is_unit π := 
 begin
   intro h,
@@ -86,6 +92,9 @@ begin
   erw [is_uniformizer, h1] at hπ,
   exact ne_of_gt with_zero.of_add_neg_one_le_one hπ,
 end
+
+lemma uniformizer_valuation_lt_one {π : K₀} (hπ : is_uniformizer v (π : K)) : v (π : K) < 1 := 
+(valuation.integer.not_is_unit_iff_valuation_lt_one π).mp (uniformizer_not_is_unit v hπ)
 
 variables (π : K₀) (hπ : is_uniformizer v (π : K))
 

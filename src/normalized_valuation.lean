@@ -1,5 +1,6 @@
 import discrete_valuation_ring.basic
 import from_mathlib.normed_valued
+import for_mathlib.rank_one_valuation
 import spectral_norm
 
 noncomputable theory
@@ -109,15 +110,25 @@ include hv
 @[priority 100] def disc_norm_field : normed_field K :=
 rank_one_valuation.valued_field.to_normed_field K ℤₘ₀
 
+--local attribute [priority 100, instance] disc_norm_field
+
 @[priority 100] def disc_norm_field' : nontrivially_normed_field K :=
-{ non_trivial := sorry,
-  --..(disc_norm_field K v )
+{ non_trivial := 
+  begin
+    obtain ⟨x, hx⟩ := discrete_valuation.exists_uniformizer hv.v,
+    use x.1⁻¹,
+    erw [@norm_inv K (@normed_field.to_normed_division_ring K (disc_norm_field K)),
+      one_lt_inv_iff, rank_one_valuation.norm_lt_one_iff_val_lt_one,
+      rank_one_valuation.norm_pos_iff_val_pos],
+    exact ⟨discrete_valuation.uniformizer_valuation_pos hv.v hx,
+     discrete_valuation.uniformizer_valuation_lt_one hv.v hx⟩,
+  end
   ..(@rank_one_valuation.valued_field.to_normed_field K _ ℤₘ₀ _ _ (rk1 K))  } 
 
 local attribute [priority 100, instance] disc_norm_field'
 
-lemma norm_is_nonarchimedean : is_nonarchimedean (norm : K → ℝ) :=
-sorry
+lemma norm_is_nonarchimedean : is_nonarchimedean (norm : K → ℝ) := 
+λ x y, rank_one_valuation.norm_def_add_le x y
 
 -- TODO: deduce h_alg from [finite_dimensional K L]
 
@@ -143,7 +154,6 @@ begin
 end
 
 open finite_dimensional minpoly
-
 
 local attribute [-instance] disc_norm_field'
 

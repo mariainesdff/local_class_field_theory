@@ -5,7 +5,7 @@ import topology.algebra.valued_field
 
 open_locale discrete_valuation
 
-namespace is_dedekind_domain.height_one_spectrum
+namespace rank_one_valuation
 
 variables {L : Type*} [field L] [valued L ℤₘ₀]
 
@@ -32,7 +32,17 @@ begin
   exact is_rank_one.strict_mono,
 end
 
-end is_dedekind_domain.height_one_spectrum
+lemma norm_pos_iff_val_pos (x : L) :
+  0 < rank_one_valuation.norm_def x ↔ (0 : ℤₘ₀) < valued.v x :=
+begin
+  sorry
+  /- have hx : rank_one_valuation.norm_def x  = hv.hom (valued.v x) := rfl,
+  rw [hx, ← nnreal.coe_one, nnreal.coe_lt_coe, ← map_one  (is_rank_one.hom
+      (@valued.v L _ ℤₘ₀ _ _)), strict_mono.lt_iff_lt],
+  exact is_rank_one.strict_mono, -/
+end
+
+end rank_one_valuation
 
 namespace rank_one_valuation
 
