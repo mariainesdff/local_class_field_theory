@@ -100,7 +100,6 @@ ne_zero_of_lt (one_lt_valuation_base K)
 end
 
 variables (K : Type*) [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v] 
---(v : valuation K ℤₘ₀) [hv : is_discrete v]
 
 instance rk1 : is_rank_one hv.v := is_rank_one_of_is_discrete hv.v (valuation_base_ne_zero K) 
   (one_lt_valuation_base K)
@@ -109,8 +108,6 @@ include hv
 
 @[priority 100] def disc_norm_field : normed_field K :=
 rank_one_valuation.valued_field.to_normed_field K ℤₘ₀
-/- @rank_one_valuation.valued_field.to_normed_field K _ ℤₘ₀ _ (valued.mk' v) 
-  (@rk1 K _ (valued.mk' v).v hv) -/
 
 @[priority 100] def disc_norm_field' : nontrivially_normed_field K :=
 { non_trivial := sorry,
@@ -118,16 +115,6 @@ rank_one_valuation.valued_field.to_normed_field K ℤₘ₀
   ..(@rank_one_valuation.valued_field.to_normed_field K _ ℤₘ₀ _ _ (rk1 K))  } 
 
 local attribute [priority 100, instance] disc_norm_field'
-
---instance foo {W : Type*} [field W] : has_one W := infer_instance
-
-
-/- -- To help the elaborator
-instance  {W : Type*} [field W] : has_mul Wˣ := 
-mul_one_class.to_has_mul Wˣ
-
-noncomputable! def aux_hom' {W : Type*} [field W] : 
-  Wˣ →ₙ* (multiplicative ℤ) := sorry  -/
 
 lemma norm_is_nonarchimedean : is_nonarchimedean (norm : K → ℝ) :=
 sorry
@@ -155,18 +142,10 @@ begin
   exact spectral_norm_eq_root_zero_coeff h_alg (norm_is_nonarchimedean K) x,
 end
 
---  e^(multiplicative.to_add (with_zero.unzero hx))
-
 open finite_dimensional minpoly
 
 
 local attribute [-instance] disc_norm_field'
-
---#check @disc_norm_extension_eq_root_zero_coeff' 
-
-
---#check disc_norm_extension 
-
 
 lemma pow_valuation_unit_ne_zero [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) 
   (x : Lˣ) :
@@ -258,32 +237,6 @@ def aux_hom [finite_dimensional K L] (h_alg : algebra.is_algebraic K L)
       with_zero.coe_unzero],
     exact map_mul_aux h_alg x y,
   end } 
-
---variables (h_alg : algebra.is_algebraic K L) (hna : is_nonarchimedean (norm : K → ℝ))
-def aux_d' [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) : ℕ :=
-subgroup.index (subgroup.map (aux_hom h_alg) ⊤)
-
-/- lemma range_eq_aux_d_pow [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) :
-  (subgroup.map (aux_hom h_alg) ⊤) = subgroup.zpowers (multiplicative.of_add (aux_d h_alg : ℤ)) :=
-begin
-  ext n,
-  split; intro hn,
-  { obtain ⟨x, -, hx⟩ := hn,
-    
-    --simp only [subgroup.mem_map, subgroup.mem_top, exists_true_left] at hn,
-    have :=  of_add_image_zmultiples_eq_zpowers_of_add,
-    --rw subgroup.mem_zpowers_iff,
-    rw ← subgroup.mem_carrier,
-    
-    change n ∈ 
-      ((subgroup.zpowers (multiplicative.of_add (aux_d h_alg : ℤ))) : set (multiplicative ℤ)),
-
-    rw ← of_add_image_zmultiples_eq_zpowers_of_add,
-    simp only [set.mem_image, set_like.mem_coe],
-    sorry },
-  { sorry }
-end
- -/
 
 open multiplicative
 
