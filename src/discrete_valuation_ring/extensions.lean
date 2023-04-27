@@ -1,7 +1,10 @@
 import discrete_valuation_ring.basic
+import normalized_valuation
 
 open valuation
 open_locale discrete_valuation
+
+noncomputable theory
 
 section complete
 
@@ -13,12 +16,16 @@ include hv
 -- Without finite_dimensional, the fails_quickly does not complain
 variables (L : Type*) [field L] [algebra K L] [complete_space K] -- [finite_dimensional K L]
 -- 
-
-
 --  example : uniform_space K := infer_instance
 --instance [finite_dimensional K L] : uniform_space L := infer_instance
 --instance normed_L : normed_field L := sorry
-def w : valuation L ℤₘ₀ := sorry -- May be a bit hard
+def w' [decidable_eq L] [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) : 
+  valuation L ℤₘ₀ := 
+w h_alg
+
+
+#exit
+  --sorry -- May be a bit hard
 
 -- instance : is_discrete w :=
 --is it reasonable to first have the `def` and then this `instance`?

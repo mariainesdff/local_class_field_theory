@@ -55,6 +55,7 @@ begin
   simp only [polynomial.roots],
   simp only [multiset.empty_eq_zero],
   rw dif_neg,
+  -- polynomial.degree_eq_card_roots
   sorry,
   { sorry },
   { have h_monic: (minpoly K x).leading_coeff = 1,
