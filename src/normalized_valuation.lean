@@ -5,6 +5,15 @@ import spectral_norm
 
 noncomputable theory
 
+open_locale discrete_valuation nnreal
+
+open multiplicative
+
+lemma of_add_neg_nat (n : ℕ) : 
+  (of_add (-n : ℤ) : ℤₘ₀) = (of_add (-1 : ℤ))^n :=
+by rw [← with_zero.coe_pow, with_zero.coe_inj, ← one_mul (n : ℤ), ← neg_mul, 
+  int.of_add_mul, zpow_coe_nat]
+
 namespace add_subgroup
 
 lemma closure_singleton_eq_zmultiples {A : Type*} [add_group A] (a : A) :
@@ -78,11 +87,9 @@ set.inj_on.eq_iff (zpow_left_inj_on hn) (set.mem_Ioi.mpr (zero_lt_iff.mpr ha))
     (set.mem_Ioi.mpr (zero_lt_iff.mpr hb))
 /- (zpow_left_injective hn).eq_iff -/
 
-
 end with_zero
 
 
-open_locale discrete_valuation nnreal
 
 def with_zero_mult_int_to_nnreal_def (e : nnreal)  : ℤₘ₀ → ℝ≥0 := 
 λ x, if hx : x = 0 then 0 else e^(multiplicative.to_add (with_zero.unzero hx))
@@ -289,6 +296,10 @@ def aux_hom [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) :
     exact map_mul_aux h_alg x y,
   end } 
 
+lemma aux_hom_apply [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) (x : Lˣ) : 
+  aux_hom h_alg x = with_zero.unzero (pow_valuation_unit_ne_zero h_alg x) :=
+rfl
+
 open multiplicative
 
 def aux_d [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) : ℕ :=
@@ -303,6 +314,12 @@ begin
     aux_d, int.zmultiples_nat_abs],
 end
 
+open polynomial
+
+lemma valued_coeff_zero (x : K) :
+  valued.v ((minpoly K ((algebra_map K L) x)).coeff 0) = valued.v x :=
+by rw [minpoly.eq_X_sub_C, coeff_sub, coeff_X_zero, coeff_C_zero, zero_sub, valuation.map_neg]
+
 lemma aux_d_ne_zero [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) :
   aux_d h_alg ≠ 0 :=
 begin
@@ -310,24 +327,26 @@ begin
   have hx_unit : is_unit (x : K),
   { rw [is_unit_iff_ne_zero, ne.def, subring.coe_eq_zero_iff],
     exact discrete_valuation.uniformizer_ne_zero hv.v hx },
-  set y : L := algebra_map K L x,
-  have hy_unit: is_unit y,
-  { 
-    sorry },
+  set z : Lˣ := units.map (algebra_map K L).to_monoid_hom (is_unit.unit hx_unit) with hz,
   rw discrete_valuation.is_uniformizer at hx,
   by_contradiction h0,
   have h := aux_d_prop h_alg,
-  rw h0 at h,
-  rw [zmod.nat_cast_self] at h,
-  rw add_subgroup.closure_singleton_zero at h,
-  rw [map_eq_bot_iff] at h,
-  rw subgroup.map_eq_bot_iff at h,
-  rw [top_le_iff] at h,
-  have hx1 : aux_hom h_alg (is_unit.unit hy_unit) = 1,
-  { sorry },
-  have hxne1 : aux_hom h_alg (is_unit.unit hy_unit) ≠ 1,
-  { sorry },
-  exact hxne1 hx1,
+  rw [h0, zmod.nat_cast_self, add_subgroup.closure_singleton_zero, map_eq_bot_iff,
+    subgroup.map_eq_bot_iff, top_le_iff] at h,
+  have hz1 : aux_hom h_alg z = 1,
+  { rw [← monoid_hom.mem_ker, h], exact subgroup.mem_top _ },
+  have hzne1 : aux_hom h_alg z ≠ 1,
+  { have hv : valued.v ((minpoly K ((units.map (algebra_map K L).to_monoid_hom) 
+    hx_unit.unit).val).coeff 0) = valued.v (x : K),
+    { rw [ring_hom.to_monoid_hom_eq_coe, units.val_eq_coe, units.coe_map, 
+        is_unit.unit_spec, ring_hom.coe_monoid_hom, valued_coeff_zero] },
+    rw [hz, aux_hom_apply, ne.def, ← with_zero.coe_inj, coe_unzero, hv, hx,
+      ← of_add_neg_nat, ← of_add_zero, with_zero.coe_inj, ring_hom.to_monoid_hom_eq_coe, 
+      units.val_eq_coe, units.coe_map, is_unit.unit_spec, ring_hom.coe_monoid_hom, int.coe_nat_div,
+      of_add_neg, of_add_zero, inv_eq_one, of_add_eq_one, ← int.coe_nat_div, int.coe_nat_eq_zero,
+      nat.div_eq_zero_iff (minpoly.nat_degree_pos (is_algebraic_iff_is_integral.mp (h_alg _)))],
+    exact not_lt.mpr (minpoly.nat_degree_le (is_algebraic_iff_is_integral.mp (h_alg _))) },
+  exact hzne1 hz1,
 end
 
 
@@ -436,17 +455,7 @@ begin
   rw [zpow_coe_nat],
 end
 
--- TODO: generalize
-lemma bar [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) : 
-  (of_add (-aux_d h_alg : ℤ) : ℤₘ₀) = (of_add (-1 : ℤ))^(aux_d h_alg) :=
-begin
-  rw ← with_zero.coe_pow,
-  rw with_zero.coe_inj,
-  rw ← one_mul (aux_d h_alg : ℤ), 
-  rw ← neg_mul,
-  rw int.of_add_mul,
-  rw [zpow_coe_nat],
-end
+
 
 instance hw [decidable_eq L] [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) :
   is_discrete (w h_alg) := 
@@ -456,7 +465,7 @@ begin
   rw ←  with_zero.coe_inj at hx,
   simp only [aux_hom] at hx,
   simp only [units.val_eq_coe, monoid_hom.coe_mk, coe_unzero] at hx,
-  rw bar at hx,
+  rw of_add_neg_nat at hx,
   have hπ1 : w h_alg ((exists_uniformizer h_alg).some) = (multiplicative.of_add (-1 : ℤ)),
   { rw w_apply_if_neg,
     rw ← with_zero.zpow_left_inj _ with_zero.coe_ne_zero (nat.cast_ne_zero.mpr (aux_d_ne_zero h_alg)),
