@@ -7,9 +7,18 @@ import topology.algebra.with_zero_topology
 import from_mathlib.rank_one_valuation
 
 
+open_locale discrete_valuation
+open multiplicative
+
 namespace with_zero
 
-open_locale discrete_valuation
+lemma of_add_neg_nat (n : ℕ) : 
+  (of_add (-n : ℤ) : ℤₘ₀) = (of_add (-1 : ℤ))^n :=
+by rw [← with_zero.coe_pow, with_zero.coe_inj, ← one_mul (n : ℤ), ← neg_mul, 
+  int.of_add_mul, zpow_coe_nat]
+
+/- rw [← with_zero.coe_zpow, with_zero.coe_inj, ← one_mul (n : ℤ), ← neg_mul, 
+  int.of_add_mul, zpow_coe_nat] -/
 
 lemma of_add_neg_one_le_one : ((multiplicative.of_add ((-1 : ℤ))) : ℤₘ₀) < (1 : ℤₘ₀) := 
 begin

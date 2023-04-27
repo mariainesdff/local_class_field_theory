@@ -9,7 +9,7 @@ whose valuation is exactly `with_zero.multiplicative (- 1) : ℤₘ₀`-/
 class is_discrete (v : valuation A ℤₘ₀) :=
 (surj : function.surjective v)
 
-open valuation ideal is_dedekind_domain
+open valuation ideal is_dedekind_domain multiplicative with_zero
 
 namespace discrete_valuation
 
@@ -34,18 +34,17 @@ structure uniformizer :=
 (valuation_eq_neg_one : v val = (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀))
 
 
-noncomputable
-lemma is_discrete_of_exists_uniformizer {π : K₀} (hπ : is_uniformizer v (π : K)) : is_discrete v :=
+noncomputable lemma is_discrete_of_exists_uniformizer {π : K₀} (hπ : is_uniformizer v (π : K)) : 
+  is_discrete v :=
 ⟨begin
   intro x,
   apply with_zero.cases_on x,
-  {use 0,
-    simp only [valuation.map_zero]} ,
+  { exact ⟨0, valuation.map_zero v⟩ },
   { rw is_uniformizer at hπ,
     intro m,
     use π^(- multiplicative.to_add m),
-    rw [map_zpow₀, hπ, ← with_zero.coe_zpow, with_zero.coe_inj, ← of_add_zsmul, ← zsmul_neg', 
-      neg_neg,zsmul_one, int.cast_id, of_add_to_add] }
+    rw [map_zpow₀, hπ, ← coe_zpow, coe_inj, ← of_add_zsmul, ← zsmul_neg', neg_neg, zsmul_one,
+      int.cast_id, of_add_to_add] }
 end⟩
 
 variable [is_discrete v]
@@ -53,11 +52,10 @@ variable [is_discrete v]
 lemma exists_uniformizer : ∃ π : K₀, is_uniformizer v (π : K) := 
 begin
   letI surj_v : is_discrete v, apply_instance,
-  use (surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some,
-  rw mem_integer,
-  rw (surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some_spec,
-  exact (le_of_lt with_zero.of_add_neg_one_le_one),
-  exact (surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some_spec,
+  refine ⟨⟨(surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some, _⟩, 
+    (surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some_spec⟩,
+  rw [mem_integer, (surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some_spec],
+  exact (le_of_lt of_add_neg_one_le_one),
 end
 
 instance : nonempty (uniformizer v) := 
@@ -71,12 +69,7 @@ begin
 end
 
 lemma uniformizer_ne_zero' (π : uniformizer v) : π.1 ≠ 0 := 
-begin
-  intro h0,
-  have := π.2,
-  rw [h0, algebra_map.coe_zero, valuation.map_zero] at this,
-  exact with_zero.zero_ne_coe this,
-end
+uniformizer_ne_zero v π.2
 
 lemma uniformizer_valuation_pos {π : K₀} (hπ : is_uniformizer v (π : K)) : 0 < v (π : K) := 
 begin
@@ -90,58 +83,81 @@ begin
   have h1 := @valuation.integers.one_of_is_unit K ℤₘ₀ _ _ v v.integer _ _ 
    (valuation.integer.integers v) π h,
   erw [is_uniformizer, h1] at hπ,
-  exact ne_of_gt with_zero.of_add_neg_one_le_one hπ,
+  exact ne_of_gt of_add_neg_one_le_one hπ,
 end
 
 lemma uniformizer_valuation_lt_one {π : K₀} (hπ : is_uniformizer v (π : K)) : v (π : K) < 1 := 
 (valuation.integer.not_is_unit_iff_valuation_lt_one π).mp (uniformizer_not_is_unit v hπ)
 
-variables (π : K₀) (hπ : is_uniformizer v (π : K))
+-- The lemma doesn't pick up hπ, so I switch to (π : uniformizer v)
+--variables (π : K₀) (hπ : is_uniformizer v (π : K))
+variables (π : uniformizer v)
 
 variable {K}
-lemma pow_uniformizer (r : K₀) (hr : r ≠ 0) : ∃ n : ℕ, ∃ u : K₀ˣ, r = π^n * u :=
+lemma pow_uniformizer /- {π : K₀} (hπ : is_uniformizer v (π : K)) -/ {r : K₀} (hr : r ≠ 0) : 
+  ∃ n : ℕ, ∃ u : K₀ˣ, r = π.1^n * u :=
 begin
-  have hr₀ : v r ≠ 0, sorry,
-  set m := - (with_zero.unzero hr₀).to_add with hm,
-  have hm₀ : 0 ≤ m, sorry,
+  have hr₀ : v r ≠ 0, 
+  { rw [ne.def, zero_iff, subring.coe_eq_zero_iff], exact hr},
+  set m := - (unzero hr₀).to_add with hm,
+  have hm₀ : 0 ≤ m, 
+  { rw [hm, right.nonneg_neg_iff, ← to_add_one, to_add_le, ← coe_le_coe, coe_unzero],
+    exact r.2 },
   obtain ⟨n, hn⟩ := int.eq_coe_of_zero_le hm₀,
   use n,
-  set x := π.1^(-m) * r with hx,
-  have hx₀ : v x = 1, sorry,
-  let a : K₀ := ⟨x, by apply le_of_eq hx₀⟩,
-  have ha₀ : (↑a : K) ≠ 0, sorry,
+  have hpow : v (π.1^(-m) * r) = 1, 
+  { rw [valuation.map_mul, map_zpow₀,π.2, of_add_neg, coe_inv, inv_zpow', neg_neg,
+      ← with_zero.coe_zpow, ← int.of_add_mul, one_mul, of_add_neg, of_add_to_add, 
+      coe_inv, coe_unzero, inv_mul_cancel hr₀], },
+  set a : K₀ := ⟨π.1^(-m )*r, by apply le_of_eq hpow⟩ with ha,
+  have ha₀ : (↑a : K) ≠ 0, 
+  { simp only [ha, neg_neg, set_like.coe_mk, ne.def],
+    by_cases h0 : to_add (unzero hr₀) = 0,
+    { rw [h0, zpow_zero, one_mul, subring.coe_eq_zero_iff], exact hr },
+    { apply mul_ne_zero,
+      { rw [ne.def, zpow_eq_zero_iff h0, subring.coe_eq_zero_iff],
+        exact uniformizer_ne_zero' v π},
+      { rw [ne.def, subring.coe_eq_zero_iff], exact hr, }}},
   have h_unit_a : is_unit a,
-  exact integers.is_unit_of_one (integer.integers v) ((is_unit_iff_ne_zero).mpr ha₀) hx₀,
-  use is_unit.unit h_unit_a,
+  { exact integers.is_unit_of_one (integer.integers v) ((is_unit_iff_ne_zero).mpr ha₀) hpow },
+  use h_unit_a.unit,
   ext,
+  rw [is_unit.unit_spec, subring.coe_mul, subring.coe_pow, subtype.coe_mk, hn],
+  rw ← mul_assoc,
+  --rw ← zpow_coe_nat,
+  --rw ← zpow_add,
+  rw [zpow_neg, zpow_coe_nat],
+  rw mul_inv_cancel, rw one_mul,
   sorry,
 end
+
+#exit
 
 lemma ideal_is_principal (I : ideal K₀) : I.is_principal:=
 begin
   classical,
-  obtain ⟨π, hπ⟩ := exists_uniformizer v,
+  have π := (uniformizer.nonempty v).some,
   by_cases hI : I = ⊥,
   {rw hI, exact bot_is_principal},
   { rw ← ne.def at hI,
     obtain ⟨x, ⟨hx_mem, hx₀⟩⟩ := submodule.exists_mem_ne_zero_of_ne_bot hI,
-    let P : ℕ → Prop := λ n, π^n ∈ I,
+    let P : ℕ → Prop := λ n, π.1^n ∈ I,
     have H : ∃ n, P n,
-    { obtain ⟨n, ⟨u, hu⟩⟩ := pow_uniformizer v π x hx₀,
+    { obtain ⟨n, ⟨u, hu⟩⟩ := pow_uniformizer v π hx₀,
       use n,
       simp_rw P,
       rwa [← mul_unit_mem_iff_mem I u.is_unit, ← hu] },
     let N := nat.find H,
-    use π^N,
+    use π.1^N,
     ext r,
     split,
     { intro hr,
       by_cases hr₀ : r = 0,
       { rw hr₀, exact zero_mem _ },
-      { obtain ⟨m, ⟨u, hu⟩⟩ := pow_uniformizer v π r hr₀,
+      { obtain ⟨m, ⟨u, hu⟩⟩ := pow_uniformizer v π hr₀,
         rw submodule_span_eq,
         rw mem_span_singleton',
-        use u * π^(m - N),
+        use u * π.1^(m - N),
         rw [mul_assoc, ← pow_add, nat.sub_add_cancel, mul_comm, hu],
         apply nat.find_min',
         simp_rw P,

@@ -7,12 +7,7 @@ noncomputable theory
 
 open_locale discrete_valuation nnreal
 
-open multiplicative
-
-lemma of_add_neg_nat (n : ℕ) : 
-  (of_add (-n : ℤ) : ℤₘ₀) = (of_add (-1 : ℤ))^n :=
-by rw [← with_zero.coe_pow, with_zero.coe_inj, ← one_mul (n : ℤ), ← neg_mul, 
-  int.of_add_mul, zpow_coe_nat]
+open multiplicative with_zero
 
 namespace add_subgroup
 
@@ -454,8 +449,6 @@ begin
   rw int.of_add_mul,
   rw [zpow_coe_nat],
 end
-
-
 
 instance hw [decidable_eq L] [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) :
   is_discrete (w h_alg) := 
