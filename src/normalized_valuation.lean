@@ -20,8 +20,66 @@ theorem minpoly.degree_dvd {K : Type*} [field K] {L : Type*} [field L] [algebra 
   (minpoly K x).nat_degree ∣ (finite_dimensional.finrank K L) :=
 sorry
 
-
 end minpoly
+
+namespace with_zero
+
+theorem one_lt_zpow' {α : Type*} [linear_ordered_comm_group_with_zero α] {a : α} 
+  (ha : 1 < a) {k : ℤ} (hk : 0 < k) : 1 < a ^ k :=
+begin
+  lift k to ℕ using int.le_of_lt hk,
+  rw zpow_coe_nat,
+  exact one_lt_pow' ha (int.coe_nat_pos.mp hk).ne',
+end
+
+theorem mul_lt_mul_right₀ {α : Type*} {a b c : α}
+  [linear_ordered_comm_group_with_zero α] (hc : 0 < c) :
+  a * c < b * c ↔ a < b :=
+begin
+  rw [mul_comm a, mul_comm b],
+  exact ⟨λ h, lt_of_mul_lt_mul_of_le₀ h hc (le_refl _), 
+    λ h, mul_lt_mul_of_lt_of_le₀ (le_refl _) (ne_of_gt hc) h⟩,
+end
+
+theorem one_lt_div' {α : Type*} [linear_ordered_comm_group_with_zero α] (a : α)
+  {b : α} (hb : b ≠ 0) : 1 < a / b ↔ b < a :=
+by rw [← mul_lt_mul_right₀ (zero_lt_iff.mpr hb), one_mul, div_eq_mul_inv, inv_mul_cancel_right₀ hb]
+
+open_locale discrete_valuation 
+
+-- TODO: generalize these
+
+theorem strict_mono_on_zpow {n : ℤ} (hn : 0 < n) :
+  strict_mono_on (λ (x : ℤₘ₀), x ^ n) (set.Ioi 0) :=
+λ a ha b hb hab, 
+begin 
+  simp only [set.mem_Ioi] at ha hb,
+  have ha0 : a ≠ 0 := ne_of_gt ha, 
+  have han : a^n ≠ 0,
+  { rw with_zero.ne_zero_iff_exists at ha0 ⊢,
+    obtain ⟨x, hx⟩ := ha0,
+    exact ⟨x^n,by rw [← hx, with_zero.coe_zpow]⟩ },
+  simp only [← one_lt_div' _ han, ← div_zpow],
+  exact one_lt_zpow' ((one_lt_div' _ ha0).mpr hab) hn
+end
+
+theorem zpow_left_inj_on {n : ℤ} (hn : n ≠ 0) : 
+  set.inj_on (λ (_x : ℤₘ₀), _x ^ n) (set.Ioi 0) :=
+begin
+  cases hn.symm.lt_or_lt,
+  { exact (strict_mono_on_zpow h).inj_on },
+  { refine λ a ha b hb (hab : a ^ n = b ^ n), (strict_mono_on_zpow (neg_pos.mpr h)).inj_on ha hb _,
+    simp only [zpow_neg, zpow_neg, hab] }
+end
+
+theorem zpow_left_inj {n : ℤ} {a b : ℤₘ₀} (ha : a ≠ 0) (hb : b ≠ 0) (hn : n ≠ 0) :
+  a ^ n = b ^ n ↔ a = b :=
+set.inj_on.eq_iff (zpow_left_inj_on hn) (set.mem_Ioi.mpr (zero_lt_iff.mpr ha)) 
+    (set.mem_Ioi.mpr (zero_lt_iff.mpr hb))
+/- (zpow_left_injective hn).eq_iff -/
+
+
+end with_zero
 
 
 open_locale discrete_valuation nnreal
@@ -237,13 +295,41 @@ def aux_d [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) : ℕ :=
 int.nat_abs (int.subgroup_cyclic (subgroup.map (aux_hom h_alg) ⊤).to_add_subgroup).some
 
 lemma aux_d_prop [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) : 
-subgroup.to_add_subgroup (subgroup.map (aux_hom h_alg) ⊤) =
+  subgroup.to_add_subgroup (subgroup.map (aux_hom h_alg) ⊤) =
     add_subgroup.closure {(aux_d h_alg : ℤ)} := 
 begin
   rw [(int.subgroup_cyclic (subgroup.map (aux_hom h_alg) ⊤).to_add_subgroup).some_spec,
     add_subgroup.closure_singleton_eq_zmultiples, add_subgroup.closure_singleton_eq_zmultiples,
     aux_d, int.zmultiples_nat_abs],
 end
+
+lemma aux_d_ne_zero [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) :
+  aux_d h_alg ≠ 0 :=
+begin
+  obtain ⟨x, hx⟩ := discrete_valuation.exists_uniformizer hv.v,
+  have hx_unit : is_unit (x : K),
+  { rw [is_unit_iff_ne_zero, ne.def, subring.coe_eq_zero_iff],
+    exact discrete_valuation.uniformizer_ne_zero hv.v hx },
+  set y : L := algebra_map K L x,
+  have hy_unit: is_unit y,
+  { 
+    sorry },
+  rw discrete_valuation.is_uniformizer at hx,
+  by_contradiction h0,
+  have h := aux_d_prop h_alg,
+  rw h0 at h,
+  rw [zmod.nat_cast_self] at h,
+  rw add_subgroup.closure_singleton_zero at h,
+  rw [map_eq_bot_iff] at h,
+  rw subgroup.map_eq_bot_iff at h,
+  rw [top_le_iff] at h,
+  have hx1 : aux_hom h_alg (is_unit.unit hy_unit) = 1,
+  { sorry },
+  have hxne1 : aux_hom h_alg (is_unit.unit hy_unit) ≠ 1,
+  { sorry },
+  exact hxne1 hx1,
+end
+
 
 -- This proof is ridiculous (TODO: golf)
 lemma range_eq_aux_d_pow [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) :
@@ -315,25 +401,76 @@ def w [decidable_eq L] [finite_dimensional K L] (h_alg : algebra.is_algebraic K 
   end,
   map_add_le_max' := sorry }
 
+lemma w_apply [decidable_eq L] [finite_dimensional K L] (h_alg : algebra.is_algebraic K L)
+  (x : L):  w h_alg x = (if x = 0 then 0 else 
+    (valued.v ((minpoly K x).coeff 0))^((finrank K L)/((aux_d h_alg)*(minpoly K x).nat_degree))) :=
+rfl
+
+lemma w_apply_if_neg [decidable_eq L] [finite_dimensional K L] (h_alg : algebra.is_algebraic K L)
+  {x : L} (hx : x ≠ 0) :  w h_alg x = 
+  (valued.v ((minpoly K x).coeff 0))^((finrank K L)/((aux_d h_alg)*(minpoly K x).nat_degree)) :=
+by rw [w_apply, if_neg hx]
+
+
 lemma exists_uniformizer [decidable_eq L] [finite_dimensional K L] 
   (h_alg : algebra.is_algebraic K L) :
-  ∃ (x : Lˣ), aux_hom h_alg x = of_add (aux_d h_alg : ℤ) :=
+  ∃ (x : Lˣ), aux_hom h_alg x = of_add (-aux_d h_alg : ℤ) :=
 begin
   have h_subgp := range_eq_aux_d_pow h_alg,
   have h_mem : of_add (aux_d h_alg : ℤ) ∈ subgroup.closure {of_add (aux_d h_alg : ℤ)},
   { exact subgroup.mem_closure_singleton.mpr ⟨1, by rw zpow_one⟩,},
   rw [← range_eq_aux_d_pow h_alg, subgroup.mem_map] at h_mem,
   obtain ⟨x, _, hx⟩ := h_mem,
-  exact ⟨x, hx⟩,
+  use x⁻¹,
+  rw [map_inv, hx],
+  refl,
 end
-  --(subgroup.map (aux_hom h_alg) ⊤) = subgroup.closure {of_add (aux_d h_alg : ℤ)} :=
+
+lemma foo [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) : 
+  (of_add (aux_d h_alg : ℤ) : ℤₘ₀) = (of_add (1 : ℤ))^(aux_d h_alg) :=
+begin
+  rw ← with_zero.coe_pow,
+  rw with_zero.coe_inj,
+  rw ← one_mul (aux_d h_alg : ℤ), 
+  rw int.of_add_mul,
+  rw [zpow_coe_nat],
+end
+
+-- TODO: generalize
+lemma bar [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) : 
+  (of_add (-aux_d h_alg : ℤ) : ℤₘ₀) = (of_add (-1 : ℤ))^(aux_d h_alg) :=
+begin
+  rw ← with_zero.coe_pow,
+  rw with_zero.coe_inj,
+  rw ← one_mul (aux_d h_alg : ℤ), 
+  rw ← neg_mul,
+  rw int.of_add_mul,
+  rw [zpow_coe_nat],
+end
 
 instance hw [decidable_eq L] [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) :
   is_discrete (w h_alg) := 
 begin
+  set x := (exists_uniformizer h_alg).some with hx_def,
+  have hx := (exists_uniformizer h_alg).some_spec,
+  rw ←  with_zero.coe_inj at hx,
+  simp only [aux_hom] at hx,
+  simp only [units.val_eq_coe, monoid_hom.coe_mk, coe_unzero] at hx,
+  rw bar at hx,
   have hπ1 : w h_alg ((exists_uniformizer h_alg).some) = (multiplicative.of_add (-1 : ℤ)),
-  { rw w,
-    sorry },
+  { rw w_apply_if_neg,
+    rw ← with_zero.zpow_left_inj _ with_zero.coe_ne_zero (nat.cast_ne_zero.mpr (aux_d_ne_zero h_alg)),
+    { conv_rhs{rw zpow_coe_nat},
+      rw ← hx,
+      simp only [of_add_neg, zpow_coe_nat],
+
+      rw ← pow_mul,
+      rw mul_comm _ (aux_d h_alg),
+      sorry },
+    { apply pow_ne_zero,
+      simp only [of_add_neg, ne.def, valuation.zero_iff],
+      sorry},
+    { exact units.ne_zero _ }},
   set π : (w h_alg).integer := ⟨(exists_uniformizer h_alg).some, 
     by rw [valuation.mem_integer, hπ1]; exact le_of_lt with_zero.of_add_neg_one_le_one⟩, 
   have hπ : w h_alg (π : L) = (multiplicative.of_add (-1 : ℤ)) := hπ1,
