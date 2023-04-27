@@ -1054,7 +1054,13 @@ variable {K}
 def laurent_series.trunc (f : laurent_series K) (d : ℕ) : ratfunc K :=
 if hf : f = 0 then 0 else ratfunc.X^(f.order) * ↑((power_series_part f).trunc d)
 
-lemma power_series_part_trunc_coeff (f : laurent_series K) {d n: ℕ} (h : n < d) :
+lemma trunc_coeff_eq_zero_of_lt (f : laurent_series K) {d n: ℕ} (h : n < d) :
+  ((power_series_part f).trunc d).coeff n = 0 :=
+begin
+  
+end
+
+lemma trunc_coeff_eq_coeff_of_ge (f : laurent_series K) {d n: ℕ} (h : d ≤ n) :
   ((power_series_part f).trunc d).coeff n = 0 := sorry
 
 lemma int_valuation_trunc_sub (f : laurent_series K) {d₁ d₂ : ℕ} (hd : d₁ ≤ d₂) :
@@ -1066,7 +1072,7 @@ begin
   { have h_coeff : polynomial.X ^ d₁ ∣ g,
     { rw polynomial.X_pow_dvd_iff,
       intros m hm,
-      rw [coeff_sub, power_series_part_trunc_coeff f hm, power_series_part_trunc_coeff f
+      rw [coeff_sub, trunc_coeff_eq_zero_of_lt f hm, trunc_coeff_eq_zero_of_lt f
         (lt_of_lt_of_le hm hd), zero_sub_zero]},
   rwa [← hg, fae_int_valuation_apply, int_valuation_le_pow_iff_dvd, ideal_X_span,
     dvd_span_singleton, span_singleton_pow, mem_span_singleton] },
@@ -1113,7 +1119,6 @@ lemma truncation_zero : truncation_seq (0 : (laurent_series K)) = 0 :=
 --   (f : laurent_series K).trunc d = ↑(f.trunc d) := sorry
 
 
-
 theorem truncation_cauchy_seq (f : laurent_series K) : cauchy_seq (truncation_seq f) :=
 begin
   by_cases hf : f = 0,  
@@ -1142,7 +1147,6 @@ end
 def truncation_cauchy_filter (f : laurent_series K) : Cauchy (ratfunc K) := 
   ⟨at_top.map (truncation_seq f), truncation_cauchy_seq f⟩
 
-@[simp]
 lemma truncation_coeff_eq_coeff (f : laurent_series K) (d : ℤ) : 
  (truncation_cauchy_filter f).2.coeff_map d = f.coeff d :=
 begin
@@ -1152,13 +1156,21 @@ end
 end truncation
 
 def laurent_series.equiv_other_proof : (completion_of_ratfunc K) ≃ (laurent_series K) :=
-begin
-  apply equiv.of_bijective
-    (λ α, quot.lift Cauchy.to_laurent_series (Cauchy.laurent_series_eq_of_inseparable K) α),
-  simp,
-  sorry
-end
-
+{ to_fun := λ α, quot.lift Cauchy.to_laurent_series (Cauchy.laurent_series_eq_of_inseparable K) α,
+  inv_fun := λ f, quotient.mk' $ truncation_cauchy_filter f,
+  left_inv := 
+  begin
+    rw function.left_inverse,
+    rintro ⟨α, hα⟩,
+    sorry
+  end,
+  right_inv := λ f, hahn_series.ext _ _ (_root_.funext (λ _, truncation_coeff_eq_coeff _ _))
+   }
+  
+    -- apply equiv.of_bijective
+  --   (λ α, quot.lift Cauchy.to_laurent_series (Cauchy.laurent_series_eq_of_inseparable K) α),
+  -- simp,
+  -- sorry
 
 variable {K}
 def laurent_series.equiv : (completion_of_ratfunc K) ≃ (laurent_series K) :=
