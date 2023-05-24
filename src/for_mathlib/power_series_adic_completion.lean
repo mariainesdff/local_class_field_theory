@@ -745,7 +745,7 @@ def Cauchy.coeff_map' {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) (d
 
 
 /-To perform explicit computation, `Cauchy.coeff_map` is more suitable, but `Cauchy.coeff_map'` is
-defined in a way that unvails its abstract properties better.-/
+defined in a way that unveils its abstract properties better.-/
 lemma coeff_map_eq_coeff_map' {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) (d : ℤ) :
   Cauchy.coeff_map d = Cauchy.coeff_map' h d :=
 begin
@@ -759,9 +759,22 @@ begin
     if_pos (uniform_continuous_coeff_map h d), subtype.val_eq_coe],
   -- have due : lim (filter.comap Cauchy.pure_cauchy (𝓝 ℱ)) (ratfunc.coeff_map K d) =
   --   (cauchy_discrete_is_constant h (ℱ.2.map (uniform_continuous_coeff_map h d))),
+  have speroma : comap Cauchy.pure_cauchy (𝓟 {ℱ}) = ℱ.1, sorry,
   have uno : lim (filter.comap Cauchy.pure_cauchy (𝓟 {ℱ})) (ratfunc.coeff_map K d) =
     (cauchy_discrete_is_constant h (ℱ.2.map (uniform_continuous_coeff_map h d))),
     { rw [lim, Lim_eq_iff _],
+      rw speroma,
+      apply cauchy_discrete_le',
+      exact t2_K,
+      simp [ℱ_bot], sorry,
+      use ℱ.coeff_map d,
+      rw speroma,
+      simp,
+      rw Cauchy.coeff_map,
+      simp,
+      -- apply cauchy_discrete_le',
+    },
+    -- { rw [lim, Lim_eq_iff _],
     --   -- rw [Lim_eq_iff _],
     --   { rw ((is_open_singleton_iff_nhds_eq_pure _).mp (top_discrete _)),
     --     rw ← principal_singleton,
@@ -863,6 +876,7 @@ begin
   apply Cauchy.uniform_continuous_extend,
 end
 
+/- Lemma below needed for the trivial generalization `Cauchy.laurent_series_eq_of_inseparable`-/
 lemma Cauchy.coeff_eq_of_inseparable (d : ℤ)  (ℱ 𝒢 : Cauchy (ratfunc K)) 
 (H : (ℱ, 𝒢) ∈ separation_rel (Cauchy (ratfunc K))) : ℱ.coeff_map d = 𝒢.coeff_map d :=
 begin
@@ -901,11 +915,11 @@ begin
   exact cauchy_discrete_le _ _,
 end
 
-example : uniform_continuous₂ (λ f g : (ratfunc K), f + g ) :=
-begin
-  rw uniform_continuous₂_def,
-  apply uniform_continuous_add,
-end
+-- example : uniform_continuous₂ (λ f g : (ratfunc K), f + g ) :=
+-- begin
+--   rw uniform_continuous₂_def,
+--   apply uniform_continuous_add,
+-- end
 
 
 lemma coeff_eventually_zero_cauchy {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) : ∃ N, 
@@ -1025,6 +1039,13 @@ def Cauchy.to_laurent_series (ℱ : Cauchy (ratfunc K)) : (laurent_series K) :=
 hahn_series.mk (λ d, ℱ.coeff_map d) (is_wf.is_pwo ℱ.coeff_map_support_bdd.well_founded_on_lt)
 
 variable (K)
+/-- The lemma `Cauchy.laurent_series_eq_of_inseparable` guarantees that if two filters are "closed"
+  the Laurent series that they give rise to coincide. This is needed to `lift` functions defined
+  on the `completion`=`Cauchy/(inseparables)`, and ultimately to define
+  `laurent_series.equiv_other_proof.to_fun` as a function leaving from the completion rather than
+  from `Cauchy`.
+-/
+
 lemma Cauchy.laurent_series_eq_of_inseparable (ℱ 𝒢 : Cauchy (ratfunc K)) 
 (H : (ℱ, 𝒢) ∈ separation_rel (Cauchy (ratfunc K))) : ℱ.to_laurent_series = 𝒢.to_laurent_series :=
 begin
@@ -1057,7 +1078,7 @@ if hf : f = 0 then 0 else ratfunc.X^(f.order) * ↑((power_series_part f).trunc 
 lemma trunc_coeff_eq_zero_of_lt (f : laurent_series K) {d n: ℕ} (h : n < d) :
   ((power_series_part f).trunc d).coeff n = 0 :=
 begin
-  
+  sorry,
 end
 
 lemma trunc_coeff_eq_coeff_of_ge (f : laurent_series K) {d n: ℕ} (h : d ≤ n) :
@@ -1162,7 +1183,14 @@ def laurent_series.equiv_other_proof : (completion_of_ratfunc K) ≃ (laurent_se
   begin
     rw function.left_inverse,
     rintro ⟨α, hα⟩,
-    sorry
+    simp,
+    have : truncation_cauchy_filter (Cauchy.to_laurent_series ⟨α, hα⟩) = ⟨α, hα⟩,
+    { ext,
+      sorry,
+    
+    },
+    rw this,
+    rw quotient.mk',
   end,
   right_inv := λ f, hahn_series.ext _ _ (_root_.funext (λ _, truncation_coeff_eq_coeff _ _))
    }
@@ -1171,6 +1199,8 @@ def laurent_series.equiv_other_proof : (completion_of_ratfunc K) ≃ (laurent_se
   --   (λ α, quot.lift Cauchy.to_laurent_series (Cauchy.laurent_series_eq_of_inseparable K) α),
   -- simp,
   -- sorry
+
+#exit
 
 variable {K}
 def laurent_series.equiv : (completion_of_ratfunc K) ≃ (laurent_series K) :=
