@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+  MathJax = { 
+    tex: {
+		    inlineMath: [['$','$'], ['\\(','\\)']]
+	} }
+</script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+</script>
+<meta name="generator" content="plasTeX" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>The sphere eversion project</title>
+<link rel="stylesheet" href="styles/theme-blue.css" />
+<link rel="stylesheet" href="styles/amsthm.css" />
+<link rel="stylesheet" href="styles/showmore.css" />
+<link rel="stylesheet" href="styles/stylecours.css" />
+</head>
+
+<body>
+
+<div class="wrapper">
+
+<div class="content">
+<div class="content-wrapper">
+
+
+<div class="main-text">
+ <div class="titlepage">
+<h1>The sphere eversion project</h1>
+<p class="authors">
+<span class="author">Patrick Massot Oliver Nash Floris van Doorn</span>
+</p>
+<p class="date">May 25, 2023</p>
+</div><h1 id="a0000000002">0.1 Generalities</h1>
+<p> Fix a field \(K\). <div class="definition_thmwrapper" id="def:discrete_val">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">0.1</span>
+    ✓
+    <div class="thm_icons">
+    <a class="icon proof" href="index.html#def:discrete_val">#</a>
+    <button class="modal lean">L∃∀N</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+          <li><a href="https://github.com/mariainesdff/local_class_field_theory/blob/bbbc257359a8a86aba2f6a8a0277a40745197510/src/discrete_valuation_ring/basic.lean#L9">is_discrete</a></li>
+        </ul>
+
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>  A valuation \(v\colon K \to \mathbb {Z}\) on \(K\) is discrete if it is non-archimedean and surjective. </p>
+
+  </div>
+</div> We have the </p>
+<p><div class="proposition_thmwrapper" id="prop:unit_ball_dvr">
+  <div class="proposition_thmheading">
+    <span class="proposition_thmcaption">
+    Proposition
+    </span>
+    <span class="proposition_thmlabel">0.2</span>
+    <span class="proposition_thmtitle"><span class="cite">
+	[
+</span></span>
+    <div class="thm_icons">
+    <a class="icon proof" href="index.html#prop:unit_ball_dvr">#</a>
+    <button class="modal lean">L∃∀N</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+        </ul>
+
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <div class="proposition_thmcontent">
+  <p>   If \(K\) is complete with respect to a discrete valuation \(v\), then its unit ball \({K}^\circ \) is a discrete valuation ring. </p>
+
+  </div>
+</div> </p>
+<p><div class="lemma_thmwrapper" id="lemma:val_L">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">0.3</span>
+    <span class="lemma_thmtitle"><span class="cite">
+	[
+</span></span>
+    <div class="thm_icons">
+    <a class="icon proof" href="index.html#lemma:val_L">#</a>
+    <button class="modal lean">L∃∀N</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+        </ul>
+
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>     If \(K\) is complete with respect to a discrete valuation \(v\) and if \(L/K\) is a finite extension, then \(L\) has a discrete valuation \(w\colon L \twoheadrightarrow \mathbb {Z}\) inducing \(v\) and \(L\) is complete with respect to \(w\). </p>
+
+  </div>
+</div> </p>
+<p>Moreover, <div class="proposition_thmwrapper" id="prop:unitball_L">
+  <div class="proposition_thmheading">
+    <span class="proposition_thmcaption">
+    Proposition
+    </span>
+    <span class="proposition_thmlabel">0.4</span>
+    <span class="proposition_thmtitle"><span class="cite">
+	[
+</span></span>
+    <div class="thm_icons">
+    <a class="icon proof" href="index.html#prop:unitball_L">#</a>
+    <button class="modal lean">L∃∀N</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+        </ul>
+
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <div class="proposition_thmcontent">
+  <p>     If \(K\) is complete with respect to a discrete valuation \(v\) and if \(L/K\) is a finite extension, then the integral closure of \({K}^\circ \) inside \(L\) coincides \({L}^\circ \) and so, in particular, it is a discrete valuation ring by&#160;<a href="index.html#prop:unit_ball_dvr">0.2</a>. Moreover, \({L}^\circ \) is a finite, free \({K}^\circ \)-module of rank \(n=[L:K]\). </p>
+
+  </div>
+</div> </p>
+<h1 id="a0000000003">0.2 Local Fields</h1>
+<p> <div class="definition_thmwrapper" id="local_field">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">0.5</span>
+    ✓
+    <div class="thm_icons">
+    <a class="icon proof" href="index.html#local_field">#</a>
+    <button class="modal lean">L∃∀N</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+          <li><a href="https://github.com/mariainesdff/local_class_field_theory/blob/bbbc257359a8a86aba2f6a8a0277a40745197510/src/local_field.lean#L10">local_field</a></li>
+        </ul>
+
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>  A <i class="itshape">(nonarchimedean) local field</i> is a field complete with respect to a discrete valuation and with finite residue field. </p>
+
+  </div>
+</div> </p>
+<p><div class="definition_thmwrapper" id="mixed_char_local_field">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">0.6</span>
+    ✓
+    <div class="thm_icons">
+    <a class="icon proof" href="index.html#mixed_char_local_field">#</a>
+    <button class="modal lean">L∃∀N</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+          <li><a href="https://github.com/mariainesdff/local_class_field_theory/blob/bbbc257359a8a86aba2f6a8a0277a40745197510/src/mixed_characteristic/basic.lean#L79">mixed_char_local_field</a></li>
+        </ul>
+
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>  A <i class="itshape">mixed characteristic local field</i> is a finite field extension of the field \(\mathbb {Q}_{p}\) of \(p\)-adic numbers, for some prime \(p\). </p>
+
+  </div>
+</div> </p>
+<p><div class="definition_thmwrapper" id="eq_char_local_field">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">0.7</span>
+    ✓
+    <div class="thm_icons">
+    <a class="icon proof" href="index.html#eq_char_local_field">#</a>
+    <button class="modal lean">L∃∀N</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+          <li><a href="https://github.com/mariainesdff/local_class_field_theory/blob/bbbc257359a8a86aba2f6a8a0277a40745197510/src/eq_characteristic/basic.lean#L211">eq_char_local_field</a></li>
+        </ul>
+
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p>  An <i class="itshape">equal characteristic local field</i> is a finite field extension of the field \({\mathbb {F}_{p}}(\! (X)\! )\), for some prime \(p\). </p>
+
+  </div>
+</div> </p>
+<p><div class="lemma_thmwrapper" id="mixed_char_local_field.local_field">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">0.8</span>
+    <div class="thm_icons">
+    <a class="icon proof" href="index.html#mixed_char_local_field.local_field">#</a>
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+          <li><a href="index.html#local_field">Definition 0.5</a></li>
+          <li><a href="index.html#mixed_char_local_field">Definition 0.6</a></li>
+        </ul>
+
+      </div>
+    </div>
+    <button class="modal lean">L∃∀N</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+          <li><a href="https://github.com/mariainesdff/local_class_field_theory/blob/bbbc257359a8a86aba2f6a8a0277a40745197510/src/local_field.lean#L17">mixed_char_local_field.local_field</a></li>
+        </ul>
+
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>   A mixed characteristic local field is a local field. </p>
+
+  </div>
+</div> </p>
+<p><div class="lemma_thmwrapper" id="eq_char_local_field.local_field">
+  <div class="lemma_thmheading">
+    <span class="lemma_thmcaption">
+    Lemma
+    </span>
+    <span class="lemma_thmlabel">0.9</span>
+    <div class="thm_icons">
+    <a class="icon proof" href="index.html#eq_char_local_field.local_field">#</a>
+    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
+</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Uses</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+          <li><a href="index.html#local_field">Definition 0.5</a></li>
+          <li><a href="index.html#eq_char_local_field">Definition 0.7</a></li>
+        </ul>
+
+      </div>
+    </div>
+    <button class="modal lean">L∃∀N</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+          <li><a href="https://github.com/mariainesdff/local_class_field_theory/blob/bbbc257359a8a86aba2f6a8a0277a40745197510/src/local_field.lean#L26">eq_char_local_field.local_field</a></li>
+        </ul>
+
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <div class="lemma_thmcontent">
+  <p>   An equal characteristic local field is a local field. </p>
+
+  </div>
+</div> </p>
+<h2 id="a0000000004">0.2.1 Ramification Index</h2>
+<ol class="enumerate">
+  <li><p>Define a local ramification index to get rid of the variables \(\mathfrak {p}\) and \(\mathfrak {P}\) in the mathlib definition </p>
+</li>
+  <li><p>Obtain from there the formula \(n=ef\) </p>
+</li>
+  <li><p>Prove that \(\mathbb {Q}_{p}\) and \({\mathbb {F}_{p}}(\! (X)\! )\) are unramified </p>
+</li>
+  <li><p>If possible, go through <span class="cite">
+	[
+</span> (before completion, the results there hold for DVR’s). </p>
+</li>
+</ol>
+<h1 id="a0000000005">0.3 Global to Local</h1>
+<p> Starting with a Dedekind domain \(R\) and a non-zero maximal ideal \(\mathfrak {p}\), let \(K=\operatorname {Frac}(R)\). Then we prove the <div class="proposition_thmwrapper" id="prop:extension_equal">
+  <div class="proposition_thmheading">
+    <span class="proposition_thmcaption">
+    Proposition
+    </span>
+    <span class="proposition_thmlabel">0.10</span>
+    <span class="proposition_thmtitle"><span class="cite">
+	[
+</span></span>
+    <div class="thm_icons">
+    <a class="icon proof" href="index.html#prop:extension_equal">#</a>
+    <button class="modal lean">L∃∀N</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+        </ul>
+
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <div class="proposition_thmcontent">
+  <p>   The completion \(K_{\mathfrak {p}}\) has a discrete valuation extending the valuation \(v_{\mathfrak {p}}\) and such that \({K_{\mathfrak {p}}}^\circ =R_{\mathfrak {p}}\). In particular, this localization is a DVR by Proposition&#160;<a href="index.html#prop:unit_ball_dvr">0.2</a>. </p>
+
+  </div>
+</div> </p>
+<p><div class="proposition_thmwrapper" id="prop:number_field_localization">
+  <div class="proposition_thmheading">
+    <span class="proposition_thmcaption">
+    Proposition
+    </span>
+    <span class="proposition_thmlabel">0.11</span>
+    <div class="thm_icons">
+    <a class="icon proof" href="index.html#prop:number_field_localization">#</a>
+    <button class="modal lean">L∃∀N</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+          <li><a href="https://github.com/mariainesdff/local_class_field_theory/blob/bbbc257359a8a86aba2f6a8a0277a40745197510/src/global_to_local.lean#L21">number_field.adic_completion.mixed_char_local_field</a></li>
+        </ul>
+
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <div class="proposition_thmcontent">
+  <p>  Let \(F\) be a number field and let \(v\) be a finite place of residue characteristic \(p\). Then \(F_v\) is a mixed characteristic local field with residue characteristic \(p\). </p>
+
+  </div>
+</div> </p>
+<p><div class="proposition_thmwrapper" id="prop:function_field_localization">
+  <div class="proposition_thmheading">
+    <span class="proposition_thmcaption">
+    Proposition
+    </span>
+    <span class="proposition_thmlabel">0.12</span>
+    <div class="thm_icons">
+    <a class="icon proof" href="index.html#prop:function_field_localization">#</a>
+    <button class="modal lean">L∃∀N</button>
+    <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+                <ul class="uses">
+          <li><a href="https://github.com/mariainesdff/local_class_field_theory/blob/bbbc257359a8a86aba2f6a8a0277a40745197510/src/global_to_local.lean#L47">function_field.adic_completion.eq_char_local_field</a></li>
+        </ul>
+
+      </div>
+    </div>
+
+  </div>
+  </div>
+  <div class="proposition_thmcontent">
+  <p>  Let \(F\) be a function field and let \(v\) be any place. Then \(F_v\) is an equal characteristic local field with residue characteristic \(p\). </p>
+
+  </div>
+</div>  </p>
+
+</div> <!--main-text -->
+</div> <!-- content-wrapper -->
+</div> <!-- content -->
+</div> <!-- wrapper -->
+
+<nav class="prev_up_next">
+  <svg  id="showmore-minus" class="icon icon-eye-minus showmore"><use xlink:href="symbol-defs.svg#icon-eye-minus"></use></svg>
+
+  <svg  id="showmore-plus" class="icon icon-eye-plus showmore"><use xlink:href="symbol-defs.svg#icon-eye-plus"></use></svg>
+
+</nav>
+
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/plastex.js"></script>
+<script type="text/javascript" src="js/svgxuse.js"></script>
+<script type="text/javascript" src="js/js.cookie.min.js"></script>
+<script type="text/javascript" src="js/showmore.js"></script>
+</body>
+</html>
