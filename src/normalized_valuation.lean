@@ -147,8 +147,10 @@ end is_rank_one
 
 section
 
+--remove!
+instance (K : Type*) [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v]: local_ring (hv.v.integer) := sorry
 
-def valuation_base (K : Type*) [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v] : ℝ≥0 := 
+def valuation_base (K : Type*) [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v] : ℝ≥0 :=
 if 1 < nat.card (local_ring.residue_field hv.v.integer)
   then nat.card (local_ring.residue_field hv.v.integer)
   else 2

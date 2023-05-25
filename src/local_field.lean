@@ -9,7 +9,7 @@ open_locale discrete_valuation
 
 class local_field (K : Type*) [field K] extends valued K ℤₘ₀ :=
 (complete : complete_space K)
-(is_discrete : is_discrete (@valued.v K _ ℤₘ₀ _ _))
+-- (is_discrete : is_discrete (@valued.v K _ ℤₘ₀ _ _))
 (finite_residue_field : fintype (residue_ring K))
 
 namespace mixed_char_local_field

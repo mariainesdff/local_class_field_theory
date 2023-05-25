@@ -205,9 +205,10 @@ instance :
 by apply rank_one_valuation.valued_field.to_normed_field
   (is_dedekind_domain.height_one_spectrum.adic_completion L v) ℤₘ₀ 
 
+--fix
 lemma norm_le_one_iff_val_le_one (x : is_dedekind_domain.height_one_spectrum.adic_completion L v) :
-  ‖x‖ ≤ 1 ↔ valued.v x ≤ (1 : ℤₘ₀) :=
-is_dedekind_domain.height_one_spectrum.norm_le_one_iff_val_le_one x
+  ‖x‖ ≤ 1 ↔ valued.v x ≤ (1 : ℤₘ₀) := sorry
+-- is_dedekind_domain.height_one_spectrum.norm_le_one_iff_val_le_one x
 
 def int_polynomial {P : (is_dedekind_domain.height_one_spectrum.adic_completion L v)[X]}
   (hP : ∀ n : ℕ , ‖P.coeff n‖ ≤ 1) :
@@ -721,18 +722,19 @@ namespace FpX_field_completion
 open eq_char_local_field
 variable (p)
 
+--fix
 lemma FpX_int_completion.norm_lt_one_iff_dvd (f : 𝔽_[p]⟦X⟧) :
-  ‖(f : 𝔽_[p]⟮⟮X⟯⟯)‖ < 1 ↔ ((FpX_int_completion.X p) ∣ f) :=
-begin
-  have hf : ‖(f : 𝔽_[p]⟮⟮X⟯⟯)‖ = rank_one_valuation.norm_def (f : 𝔽_[p]⟮⟮X⟯⟯) := rfl,
-  rw [hf, height_one_spectrum.norm_lt_one_iff_val_lt_one],
-  rw height_one_spectrum.valued_adic_completion_def,
+  ‖(f : 𝔽_[p]⟮⟮X⟯⟯)‖ < 1 ↔ ((FpX_int_completion.X p) ∣ f) := sorry
+-- begin
+--   have hf : ‖(f : 𝔽_[p]⟮⟮X⟯⟯)‖ = rank_one_valuation.norm_def (f : 𝔽_[p]⟮⟮X⟯⟯) := rfl,
+--   rw [hf, height_one_spectrum.norm_lt_one_iff_val_lt_one],
+--   rw height_one_spectrum.valued_adic_completion_def,
 
-  rw ← ideal.mem_span_singleton,
+--   rw ← ideal.mem_span_singleton,
 
-  --rw ← height_one_spectrum.valuation_lt_one_iff_dvd, --not for completion
-  sorry
-end
+--   --rw ← height_one_spectrum.valuation_lt_one_iff_dvd, --not for completion
+--   sorry
+-- end
 . 
 
 --set_option profiler true --7.26s
@@ -840,9 +842,12 @@ begin
     sorry }
 end
 
+--fix
 lemma ring_of_integers_eq_adic_completion_integers' [eq_char_local_field p K] :
   (𝓞 p K).to_subring = (@valued.v K _ ℤₘ₀ _ _).valuation_subring.to_subring :=
 begin
+sorry
+{
   ext x,
   rw [subalgebra.mem_to_subring],
   rw eq_char_local_field.mem_ring_of_integers_iff_norm_le_one,
@@ -856,6 +861,7 @@ begin
       (algebra.is_algebraic_of_finite (FpX_field_completion p) K) function_extends_norm
       FpX_field_completion.norm_is_nonarchimedean },
   rw hx,
+}
 end
 
 
