@@ -36,6 +36,9 @@ def laurent_series_pkg : abstract_completion (ratfunc K) :=
 def ψ : (completion_of_ratfunc K) ≃ᵤ laurent_series K :=
   abstract_completion.compare_equiv (ratfunc_pkg K) (laurent_series_pkg K)
 
+-- def ϕ : (completion_of_ratfunc K) → laurent_series K :=
+#check uniform_space.completion.extension (coe : (ratfunc K) → (laurent_series K))
+
 section sub
 
 lemma has_sub_hat : @has_neg.neg (completion_of_ratfunc K) _ =
@@ -49,6 +52,7 @@ begin
   suffices : (ψ K) ∘ has_neg.neg = has_neg.neg ∘ (ψ K),
   exact congr_fun this f,
   rw has_sub_hat,
+  rw ψ,
   sorry,
 end
 
