@@ -13,10 +13,11 @@ open uniform_space
 
 -- example : uniform_space (ratfunc K) := infer_instance
 
-noncomputable def laurent_series_as_pkg : abstract_completion (ratfunc K) :=
+--todo: fix
+/- noncomputable def laurent_series_as_pkg : abstract_completion (ratfunc K) :=
 begin
   sorry,
-end
+end -/
 
 -- def φ : (ratfunc K) → (laurent_series K) := sorry
 

@@ -10,7 +10,7 @@ import field_theory.finite.galois_field
 import ring_theory.dedekind_domain.adic_valuation
 import ring_theory.dedekind_domain.integral_closure
 
-import for_mathlib.power_series_adic_completion
+import for_mathlib.laurent_series_iso.power_series_adic_completion
 
 import ring_theory.laurent_series
 

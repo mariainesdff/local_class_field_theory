@@ -13,7 +13,7 @@ import ring_theory.dedekind_domain.adic_valuation
 import ring_theory.laurent_series
 import ring_theory.power_series.well_known
 
-import algebra_comp
+import for_mathlib.algebra_comp
 
 open polynomial is_dedekind_domain.height_one_spectrum topological_space ratfunc
   sequentially_complete filter
@@ -1201,7 +1201,7 @@ def laurent_series.equiv_other_proof : (completion_of_ratfunc K) ≃ (laurent_se
   -- simp,
   -- sorry
 
-#exit
+--#exit --TODO
 
 variable {K}
 def laurent_series.equiv : (completion_of_ratfunc K) ≃ (laurent_series K) :=
@@ -1267,10 +1267,10 @@ noncomputable! def laurent_series.ring_equiv :
   map_add' := sorry,
   .. laurent_series.equiv }
 
-#where
 noncomputable! def power_series.ring_equiv : ring_equiv (adic_completion_integers (ratfunc K) 
   (ideal_X K : is_dedekind_domain.height_one_spectrum (polynomial K))) (power_series K) :=
 sorry
+
 
 instance : algebra (ratfunc K) (completion_of_ratfunc K) := 
 adic_completion.algebra (polynomial K) (ratfunc K) (ideal_X K)

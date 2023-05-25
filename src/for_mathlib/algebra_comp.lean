@@ -1,6 +1,7 @@
 import algebra.algebra.tower
 import ring_theory.localization.fraction_ring
 
+--TODO>
 def algebra.comp (R A B : Type*) [comm_semiring R] [comm_semiring A] [comm_semiring B] 
   [algebra R A] [algebra A B] : algebra R B := 
 (ring_hom.comp (algebra_map A B) (algebra_map R A)).to_algebra
