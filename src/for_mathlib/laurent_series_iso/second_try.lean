@@ -49,6 +49,7 @@ begin
   suffices : (ψ K) ∘ has_neg.neg = has_neg.neg ∘ (ψ K),
   exact congr_fun this f,
   rw has_sub_hat,
+  sorry,
 end
 
 

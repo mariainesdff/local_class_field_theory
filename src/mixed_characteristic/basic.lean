@@ -7,7 +7,7 @@ import ring_theory.dedekind_domain.integral_closure
 import ring_theory.discrete_valuation_ring
 import number_theory.padics.padic_integers
 
-import algebra_comp
+import for_mathlib.algebra_comp
 
 /-!
 --TODO: Fix comments
