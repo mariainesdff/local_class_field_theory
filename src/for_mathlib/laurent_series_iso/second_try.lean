@@ -1,21 +1,32 @@
 import for_mathlib.laurent_series_iso.power_series_adic_completion
 import topology.uniform_space.abstract_completion
+import ring_theory.dedekind_domain.adic_valuation
 
 noncomputable theory
 
 variables (K : Type*) [field K]
 
-open uniform_space ratfunc
+open uniform_space ratfunc power_series
+open_locale discrete_valuation
 
-instance : uniform_space (laurent_series K) := sorry
+namespace laurent_series
 
-instance : separated_space (laurent_series K) := sorry
+def ideal_X : is_dedekind_domain.height_one_spectrum (power_series K) := 
+{ as_ideal := ideal.span({X}),
+  is_prime := span_X_is_prime,
+  ne_bot   := by { rw [ne.def, ideal.span_singleton_eq_bot], exact X_ne_zero }} 
+
+instance : valued (laurent_series K) ℤₘ₀ := valued.mk' (ideal_X K).valuation
+
+-- instance : uniform_space (laurent_series K) := infer_instance
+
+-- instance : separated_space (laurent_series K) := infer_instance
+
+-- instance : topological_ring (laurent_series K) := infer_instance
+
+-- instance : uniform_add_group (laurent_series K) := infer_instance
 
 instance : complete_space (laurent_series K) := sorry
-
-instance : topological_ring (laurent_series K) := sorry
-
-instance : uniform_add_group (laurent_series K) := sorry
 
 noncomputable!
 def coe_is_inducing : uniform_inducing (coe : (ratfunc K) → (laurent_series K)) :=
