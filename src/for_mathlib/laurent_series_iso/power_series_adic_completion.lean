@@ -3,42 +3,95 @@ import topology.uniform_space.abstract_completion
 
 noncomputable theory
 
-open uniform_space ratfunc power_series abstract_completion
+open uniform_space ratfunc power_series abstract_completion is_dedekind_domain.height_one_spectrum polynomial
 open_locale discrete_valuation
+
+namespace laurent_series
+
+/-The main point of this section is to prove the equality between the X-adic valuation and the order of laurent_series. Applying then `fae_order_eq_val'`, we deduce that for every `f : ratfunc`, the equality of `f : ratfunc` coincides with the valuation of `↑f : laurent_series` -/
+
+
+
+end laurent_series
 
 namespace completion_laurent_series
 
 variables (K : Type*) [field K]
 
-def ideal_X (K : Type*) [field K] : is_dedekind_domain.height_one_spectrum (power_series K) := 
+def power_series.ideal_X (K : Type*) [field K] : is_dedekind_domain.height_one_spectrum (power_series K) := 
 { as_ideal := ideal.span({X}),
   is_prime := power_series.span_X_is_prime,
   ne_bot   := by { rw [ne.def, ideal.span_singleton_eq_bot], exact X_ne_zero }} 
 
-instance : valued (laurent_series K) ℤₘ₀ := valued.mk' (ideal_X K).valuation
+instance : valued (laurent_series K) ℤₘ₀ := valued.mk' (power_series.ideal_X K).valuation
 
 instance : complete_space (laurent_series K) := sorry
 
 lemma coe_range_dense : dense_range (coe : (ratfunc K) → (laurent_series K)) := sorry
 
-noncomputable!
-def coe_is_inducing : uniform_inducing (coe : (ratfunc K) → (laurent_series K)) :=
-{ comap_uniformity := sorry }
+lemma should_be_in_old_pol (P : (polynomial K)) : (ideal_X K).int_valuation (P) = (power_series.ideal_X K).int_valuation (↑P : (power_series K)) :=
+begin
+  sorry;
+  {
+  apply le_antisymm,
+  { rw fae_int_valuation_apply,
+    have := @int_valuation_le_pow_iff_dvd (polynomial K) _ _ _ (ideal_X K) P,
+    
 
-lemma coe_is_inducing' : uniform_inducing (coe : (ratfunc K) → (laurent_series K)) :=
+  }}
+end
+
+
+lemma ovvio (f : (polynomial K)) (g : (polynomial K)) (hg : g ≠ 0): (ratfunc.mk f g) = is_localization.mk' (ratfunc K) f ⟨g, mem_non_zero_divisors_iff_ne_zero.2 hg⟩ := by simp only [mk_eq_div, is_fraction_ring.mk'_eq_div, set_like.coe_mk]
+
+lemma ovvio' (f : (polynomial K)) (g : polynomial K) (hg : g ≠ 0) : 
+  (ideal_X K).valuation ( ratfunc.mk f g) =
+  ((ideal_X K).int_valuation f) / ((ideal_X K).int_valuation g) := by simp only [ovvio _ _ _ hg, valuation_of_mk', set_like.coe_mk]
+
+lemma should_be_in_old' (P: (ratfunc K)) : (ideal_X K).valuation (P) = (power_series.ideal_X K).valuation ((↑P : (laurent_series K))) :=
+begin
+  apply ratfunc.induction_on' P,
+  intros f g h,
+  convert ovvio' K f g h,
+  rw ovvio K f g h,
+  have uff : (↑(is_localization.mk' (ratfunc K) f ⟨g, mem_non_zero_divisors_iff_ne_zero.2 h⟩) : laurent_series K) = ((is_localization.mk' (laurent_series K) (↑f : power_series K) ⟨g, mem_non_zero_divisors_iff_ne_zero.2 $ coe_ne_zero h⟩) : laurent_series K),
+  { simp only [is_fraction_ring.mk'_eq_div, set_like.coe_mk, coe_div], --laurent_series.coe_algebra_map],
+    congr,
+    { 
+
+    },
+  -- hahn_series.of_power_series_apply],
+
+
+  },
+  rw uff,
+  have := @valuation_of_mk' (power_series K) _ _ _ (laurent_series K) _ _ _ (power_series.ideal_X K) ↑f ⟨g, mem_non_zero_divisors_iff_ne_zero.2 $ coe_ne_zero h⟩,
+  convert this;
+  apply should_be_in_old_pol,
+end
+
+lemma should_be_in_old (P₁ P₂ : (ratfunc K)) : valued.v (P₁ - P₂) = valued.v ((↑P₁ : (laurent_series K)) - ↑P₂) :=
+begin
+  have : valued.v (P₁ - P₂) = (ideal_X K).valuation (P₁ - P₂),
+  refl,
+  rw [this, should_be_in_old', ratfunc.coe_sub],
+  refl,
+end
+
+-- FAE: The one below is probably the most disgusting proof on earth
+lemma coe_is_inducing : uniform_inducing (coe : (ratfunc K) → (laurent_series K)) :=
 begin
   rw uniform_inducing_iff,
   rw filter.comap,
   ext S,
   split,
   { intro hS,
-    simp at hS,
+    simp only [exists_prop, filter.mem_mk, set.mem_set_of_eq] at hS,
     obtain ⟨T, ⟨hT, pre_T⟩⟩ := hS,
     rw uniformity_eq_comap_nhds_zero at hT ⊢,
-    simp at hT ⊢,
+    simp only [filter.mem_comap, exists_prop] at hT ⊢,
     obtain ⟨R, ⟨hR, pre_R⟩⟩ := hT,
     obtain ⟨d, hd⟩ := valued.mem_nhds.mp hR,
-    simp only [sub_zero] at hd,--useless?
 
     use {P : (ratfunc K) | valued.v P < ↑d},
     split,
@@ -55,16 +108,45 @@ begin
       apply pre_R,
       simp only [set.mem_preimage],
       apply hd,
-      simp only [set.mem_set_of_eq],
-      sorry,--this is the statement that 
+      simp only [set.mem_set_of_eq, sub_zero],
 
+      rw ← should_be_in_old,
+        --this is the statement that the valuations on pol and laurent ser coincide
+      exact h,
     },
-    -- let := (λ (x : laurent_series K × laurent_series K), x.snd - x.fst),
-    -- rw uniformi
-    -- simp at pre_T,
-
   },
-  -- simp,
+  { simp,
+    intro hS,
+    -- simp at hS,
+    rw uniformity_eq_comap_nhds_zero at hS ⊢,
+    simp only [filter.mem_comap, exists_prop] at hS ⊢,
+    obtain ⟨T, ⟨hT, pre_T⟩⟩ := hS,
+    -- simp only [filter.mem_comap],
+    obtain ⟨d, hd⟩ := valued.mem_nhds.mp hT,
+    let try := {f : (laurent_series K) | valued.v f < ↑d},
+    use (λ (x : laurent_series K × laurent_series K), x.snd - x.fst) ⁻¹' try,
+    use try,
+    { split,
+      { rw valued.mem_nhds,-- questa parentesi e' orribile
+        use d,
+        simp only [sub_zero],
+      },
+      { simp only [set.preimage_set_of_eq],
+      } },
+    { simp only [set.preimage_set_of_eq],
+      refine subset_trans _ pre_T,
+      rintros ⟨P1, P2⟩ h,
+      simp only [set.mem_set_of_eq] at h,
+      rw set.mem_preimage,
+      simp only,
+      apply hd,
+      simp only [set.mem_set_of_eq, sub_zero],
+
+      rw should_be_in_old,
+      exact h,
+    },
+    
+  },
 end
 
 lemma unif_cont_coe : uniform_continuous (coe : (ratfunc K) → (laurent_series K)) :=
