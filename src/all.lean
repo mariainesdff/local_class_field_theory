@@ -17,8 +17,8 @@ import for_mathlib.polynomial
 import for_mathlib.power_series
 import for_mathlib.rank_one_valuation
 import for_mathlib.residue_ring_def
+import for_mathlib.laurent_series_iso.old_power_series_adic_completion
 import for_mathlib.laurent_series_iso.power_series_adic_completion
-import for_mathlib.laurent_series_iso.second_try
 import from_mathlib.alg_norm_of_galois
 import from_mathlib.Cp_def
 import from_mathlib.filter
