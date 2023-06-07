@@ -1,4 +1,8 @@
+--import analysis.special_functions.pow.nnreal
 import from_mathlib.spectral_norm_unique
+
+
+open_locale nnreal
 
 open finite_dimensional
 
@@ -30,9 +34,11 @@ end -/
 lemma real.eq_rpow_one_div_iff {x y : ℝ} (hx : 0 ≤ x) (hy : 0 ≤ y) {z : ℝ} (hz : z ≠ 0) :
   x = y ^ (1 / z) ↔ x ^ z = y :=
 begin
-  sorry
+  have hx' : x = (⟨x, hx⟩ : ℝ≥0) := rfl,
+  have hy' : y = (⟨y, hy⟩ : ℝ≥0) := rfl,
+  rw [hx', hy', ← nnreal.coe_rpow, ← nnreal.coe_rpow, nnreal.coe_eq, nnreal.coe_eq,
+    nnreal.eq_rpow_one_div_iff hz],
 end
---by rw [← rpow_eq_rpow_iff hz, rpow_self_rpow_inv hz]
 
 open polynomial 
 lemma spectral_norm_eq_root_zero_coeff (h_alg : algebra.is_algebraic K L) 
