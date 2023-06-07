@@ -223,9 +223,13 @@ begin
 end
 end hahn_series
 
--- FAE for `mathlib`?
-lemma fae_int_valuation_apply (f : polynomial K) : 
+-- FAE for `mathlib`? **USED** IN `power_series_adic_completion`
+lemma fae_int_valuation_apply' (f : polynomial K) : 
   ((ideal_X K).int_valuation f) = ((ideal_X K).int_valuation_def f) := refl _
+
+lemma fae_int_valuation_apply {R : Type*} [comm_ring R] [is_domain R] [is_dedekind_domain R] 
+  (v : is_dedekind_domain.height_one_spectrum R) {r : R} :
+  int_valuation v r = int_valuation_def v r := refl _
 
 -- `FAE` The two lemmas that follow are not `refl` because the iso `to_power_series` is an iso with
 -- Hahn series indexed on `ℕ` while `of_power_series` embeds the power series in any ring of Hahn
@@ -355,7 +359,11 @@ begin
   {rwa [ne.def, ideal.zero_eq_bot, ideal.span_singleton_eq_bot] },
 end
 
---GOLF IT!
+--GOLF BOTH AND UNIFY THEM **USED** in `power_series_adic_completion`!
+lemma count_normalized_factors_eq_associates_count' {I J : ideal (power_series K)} (hI : I ≠ 0)
+  (hJ : J.is_prime ) (hJ₀ : J ≠ ⊥) : multiset.count J (normalized_factors I) =
+  (associates.mk J).count (associates.mk I).factors := sorry
+
 lemma count_normalized_factors_eq_associates_count {I J : ideal (polynomial K)} (hI : I ≠ 0)
   (hJ : J.is_prime ) (hJ₀ : J ≠ ⊥) :
   multiset.count J (normalized_factors I) = (associates.mk J).count (associates.mk I).factors :=

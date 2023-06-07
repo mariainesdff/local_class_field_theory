@@ -6,13 +6,13 @@ noncomputable theory
 open uniform_space ratfunc power_series abstract_completion is_dedekind_domain.height_one_spectrum polynomial
 open_locale discrete_valuation
 
-namespace laurent_series
+-- namespace laurent_series
 
-/-The main point of this section is to prove the equality between the X-adic valuation and the order of laurent_series. Applying then `fae_order_eq_val'`, we deduce that for every `f : ratfunc`, the equality of `f : ratfunc` coincides with the valuation of `↑f : laurent_series` -/
+-- /-The main point of this section is to prove the equality between the X-adic valuation and the order of laurent_series. Applying then `fae_order_eq_val'`, we deduce that for every `f : ratfunc`, the equality of `f : ratfunc` coincides with the valuation of `↑f : laurent_series` -/
 
 
 
-end laurent_series
+-- end laurent_series
 
 namespace completion_laurent_series
 
@@ -29,46 +29,85 @@ instance : complete_space (laurent_series K) := sorry
 
 lemma coe_range_dense : dense_range (coe : (ratfunc K) → (laurent_series K)) := sorry
 
-lemma should_be_in_old_pol (P : (polynomial K)) : (ideal_X K).int_valuation (P) = (power_series.ideal_X K).int_valuation (↑P : (power_series K)) :=
-begin
-  sorry;
-  {
-  apply le_antisymm,
-  { rw fae_int_valuation_apply,
-    have := @int_valuation_le_pow_iff_dvd (polynomial K) _ _ _ (ideal_X K) P,
-    
+local attribute [instance] classical.prop_decidable
+open multiplicity unique_factorization_monoid
 
-  }}
+lemma aux_old_pol (P : (polynomial K)) : 
+  multiset.count (power_series.ideal_X K).as_ideal (normalized_factors (ideal.span {↑P})) =
+  multiset.count (ideal.span {polynomial.X} : ideal (polynomial K)) (normalized_factors (ideal.span {P})) :=
+begin
+  sorry,
 end
 
 
-lemma ovvio (f : (polynomial K)) (g : (polynomial K)) (hg : g ≠ 0): (ratfunc.mk f g) = is_localization.mk' (ratfunc K) f ⟨g, mem_non_zero_divisors_iff_ne_zero.2 hg⟩ := by simp only [mk_eq_div, is_fraction_ring.mk'_eq_div, set_like.coe_mk]
+
+
+lemma should_be_in_old_pol (P : (polynomial K)) : (ideal_X K).int_valuation (P) =
+  (power_series.ideal_X K).int_valuation (↑P : (power_series K)) :=
+begin
+  by_cases hP : P = 0,
+  sorry,
+  { simp only [fae_int_valuation_apply],
+    rw [int_valuation_def_if_neg _ hP, int_valuation_def_if_neg _ $ coe_ne_zero hP],
+    simp only [ideal_X_span, of_add_neg, inv_inj, with_zero.coe_inj, embedding_like.apply_eq_iff_eq,
+      nat.cast_inj],
+    have span_ne_zero : (ideal.span {P} : ideal (polynomial K)) ≠ 0 ∧
+    (ideal.span {polynomial.X} : ideal (polynomial K)) ≠ 0 := by simp only [ideal.zero_eq_bot,
+    ne.def, ideal.span_singleton_eq_bot, hP, polynomial.X_ne_zero, not_false_iff, and_self],
+    have span_X_prime : (ideal.span {polynomial.X} : ideal (polynomial K)).is_prime,
+    { apply (@ideal.span_singleton_prime (polynomial K) _ _ polynomial.X_ne_zero).mpr prime_X },
+    have := @count_normalized_factors_eq_associates_count K _ (ideal.span {P})
+    (ideal.span {polynomial.X}) span_ne_zero.1 ((@ideal.span_singleton_prime (polynomial K) _ _ 
+    polynomial.X_ne_zero).mpr prime_X) span_ne_zero.2,
+    convert this.symm,
+
+    have span_ne_zero' : (ideal.span {↑P} : ideal (power_series K)) ≠ 0 ∧
+    ((power_series.ideal_X K).as_ideal : ideal (power_series K)) ≠ 0 := by simp only [ne.def, 
+      ideal.zero_eq_bot, ideal.span_singleton_eq_bot, coe_ne_zero hP, power_series.X_ne_zero,
+      not_false_iff, and_self, (power_series.ideal_X K).3],
+    have also := @count_normalized_factors_eq_associates_count' K _ (ideal.span {↑P})
+    (power_series.ideal_X K).as_ideal span_ne_zero'.1 (power_series.ideal_X K).2 span_ne_zero'.2,
+    rw ← aux_old_pol,
+    convert also.symm,
+  }
+end
+
+
+lemma ovvio (f : (polynomial K)) (g : (polynomial K)) (hg : g ≠ 0) : (ratfunc.mk f g) = 
+  is_localization.mk' (ratfunc K) f ⟨g, mem_non_zero_divisors_iff_ne_zero.2 hg⟩ :=
+by simp only [mk_eq_div, is_fraction_ring.mk'_eq_div, set_like.coe_mk]
 
 lemma ovvio' (f : (polynomial K)) (g : polynomial K) (hg : g ≠ 0) : 
   (ideal_X K).valuation ( ratfunc.mk f g) =
-  ((ideal_X K).int_valuation f) / ((ideal_X K).int_valuation g) := by simp only [ovvio _ _ _ hg, valuation_of_mk', set_like.coe_mk]
+  ((ideal_X K).int_valuation f) / ((ideal_X K).int_valuation g) :=
+by simp only [ovvio _ _ _ hg, valuation_of_mk', set_like.coe_mk]
 
-lemma should_be_in_old' (P: (ratfunc K)) : (ideal_X K).valuation (P) = (power_series.ideal_X K).valuation ((↑P : (laurent_series K))) :=
+lemma ratfunc.coe_coe (f : polynomial K) : (↑(algebra_map (polynomial K) (ratfunc K) f) :
+  (laurent_series K)) = (algebra_map (power_series K) (laurent_series K)) f :=
+by {rw [ratfunc.coe_def, coe_alg_hom, lift_alg_hom_apply, denom_algebra_map f, map_one, div_one,
+  num_algebra_map], refl}
+
+
+lemma should_be_in_old' (P: (ratfunc K)) : (ideal_X K).valuation (P) =
+  (power_series.ideal_X K).valuation ((↑P : (laurent_series K))) :=
 begin
   apply ratfunc.induction_on' P,
   intros f g h,
   convert ovvio' K f g h,
   rw ovvio K f g h,
-  have uff : (↑(is_localization.mk' (ratfunc K) f ⟨g, mem_non_zero_divisors_iff_ne_zero.2 h⟩) : laurent_series K) = ((is_localization.mk' (laurent_series K) (↑f : power_series K) ⟨g, mem_non_zero_divisors_iff_ne_zero.2 $ coe_ne_zero h⟩) : laurent_series K),
-  { simp only [is_fraction_ring.mk'_eq_div, set_like.coe_mk, coe_div], --laurent_series.coe_algebra_map],
-    congr,
-    { 
-
-    },
-  -- hahn_series.of_power_series_apply],
-
-
-  },
-  rw uff,
+  have aux : (↑(is_localization.mk' (ratfunc K) f ⟨g, mem_non_zero_divisors_iff_ne_zero.2 h⟩) : 
+    laurent_series K) = ((is_localization.mk' (laurent_series K) (↑f : (power_series K))
+    ⟨g, mem_non_zero_divisors_iff_ne_zero.2 $ coe_ne_zero h⟩) : laurent_series K),
+  { simp only [is_fraction_ring.mk'_eq_div, set_like.coe_mk, coe_div],
+    congr;
+    apply ratfunc.coe_coe K,
+   },
+  rw aux,
   have := @valuation_of_mk' (power_series K) _ _ _ (laurent_series K) _ _ _ (power_series.ideal_X K) ↑f ⟨g, mem_non_zero_divisors_iff_ne_zero.2 $ coe_ne_zero h⟩,
   convert this;
   apply should_be_in_old_pol,
 end
+
 
 lemma should_be_in_old (P₁ P₂ : (ratfunc K)) : valued.v (P₁ - P₂) = valued.v ((↑P₁ : (laurent_series K)) - ↑P₂) :=
 begin
