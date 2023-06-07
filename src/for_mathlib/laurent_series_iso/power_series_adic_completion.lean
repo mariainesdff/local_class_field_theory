@@ -1,4 +1,4 @@
-import for_mathlib.laurent_series_iso.power_series_adic_completion
+import for_mathlib.laurent_series_iso.old_power_series_adic_completion
 import topology.uniform_space.abstract_completion
 
 noncomputable theory
