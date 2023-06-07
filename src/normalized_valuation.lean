@@ -46,9 +46,6 @@ end is_rank_one
 
 section
 
---remove!
-instance (K : Type*) [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v]: local_ring (hv.v.integer) := sorry
-
 namespace discrete_valuation
 
 def valuation_base (K : Type*) [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v] : ℝ≥0 :=
