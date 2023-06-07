@@ -131,7 +131,6 @@ begin
   exact spectral_norm_eq_root_zero_coeff h_alg (norm_is_nonarchimedean K) x,
 end
 
-
 local attribute [-instance] disc_norm_field'
 
 end is_discrete
