@@ -4,14 +4,10 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
 
-/- import data.polynomial.eval
-import data.real.nnreal
-import number_theory.padics.padic_integers
-import ring_theory.dedekind_domain.adic_valuation
-import ring_theory.polynomial.basic -/
 import eq_characteristic.basic
 import from_mathlib.normed_valued
 import from_mathlib.spectral_norm_unique
+import with_zero
 
 --import normalized_valuation --TODO
 
@@ -82,50 +78,6 @@ variables (R : Type*) [comm_ring R] [is_domain R] [is_dedekind_domain R] (L : Ty
 
 open_locale classical
 
---TODO: import from correct file
-def with_zero_mult_int_to_nnreal_def' (e : nnreal)  : ℤₘ₀ → ℝ≥0 := 
-λ x, if hx : x = 0 then 0 else e^(multiplicative.to_add (with_zero.unzero hx))
-
-open with_zero
-
-def with_zero_mult_int_to_nnreal' {e : nnreal} (he : e ≠ 0)  : ℤₘ₀ →*₀ ℝ≥0 := 
-{ to_fun    := with_zero_mult_int_to_nnreal_def' e,
-  map_zero' := by { simp only [with_zero_mult_int_to_nnreal_def'], rw dif_pos, refl },
-  map_one'  := begin
-    simp only [with_zero_mult_int_to_nnreal_def'], rw dif_neg,
-    { simp only [unzero_coe, to_add_one, zpow_zero] },
-    { exact ne_zero.ne 1 },
-  end,
-  map_mul'  := λ x y, begin
-    simp only [with_zero_mult_int_to_nnreal_def'],
-    by_cases hxy : x * y = 0,
-    { cases (zero_eq_mul.mp (eq.symm hxy)) with hx hy, --either x = 0 or y = 0
-      { rw [dif_pos hxy, dif_pos hx, zero_mul] },
-      { rw [dif_pos hxy, dif_pos hy, mul_zero] },},
-    { cases (mul_ne_zero_iff.mp hxy) with hx hy, --  x ≠ 0 and y ≠ 0
-      rw [dif_neg hxy, dif_neg hx, dif_neg hy, ← zpow_add' (or.inl he)], 
-      apply congr_arg,
-      rw ← to_add_mul,
-      apply congr_arg,
-      rw [← with_zero.coe_inj, with_zero.coe_mul, coe_unzero hx,coe_unzero hy, coe_unzero hxy] },
-  end }
-
---TODO: import
-lemma  with_zero_mult_int_to_nnreal_strict_mono' {e : nnreal} (he : 1 < e) : 
-  strict_mono (with_zero_mult_int_to_nnreal' (ne_zero_of_lt he))  := 
-begin
-  intros x y hxy,
-  simp only [with_zero_mult_int_to_nnreal', with_zero_mult_int_to_nnreal_def', 
-    monoid_with_zero_hom.coe_mk],
-  split_ifs with hx hy hy,
-  { simp only [hy, not_lt_zero'] at hxy, exfalso, exact hxy },
-  { apply zpow_pos (ne_zero_of_lt he) },
-  { simp only [hy, not_lt_zero'] at hxy, exfalso, exact hxy },
-  { rw [zpow_lt_iff_lt he, multiplicative.to_add_lt, ← with_zero.coe_lt_coe,
-      with_zero.coe_unzero hx, with_zero.coe_unzero hy],
-    exact hxy }
-end 
-
 --TODO: import
 def valuation_base' (R : Type*) [comm_ring R] [is_domain R] [is_dedekind_domain R] (L : Type*)
   [field L] [algebra R L] [is_fraction_ring R L] (v : height_one_spectrum R) : ℝ≥0 := 
@@ -154,8 +106,8 @@ open is_dedekind_domain is_dedekind_domain.height_one_spectrum
 
 def is_dedekind_domain.height_one_spectrum.valuation_is_rank_one /- (hR : ¬ is_field R) -/ :
   is_rank_one  (@valued.v L _ ℤₘ₀ _ v.adic_valued) := 
-{ hom         := with_zero_mult_int_to_nnreal' (valuation_base'_ne_zero R L v),
-  strict_mono := with_zero_mult_int_to_nnreal_strict_mono' (one_lt_valuation_base' R L v),
+{ hom         := with_zero_mult_int_to_nnreal (valuation_base'_ne_zero R L v),
+  strict_mono := with_zero_mult_int_to_nnreal_strict_mono (one_lt_valuation_base' R L v),
   nontrivial  := begin
     obtain ⟨x, hxv, hx0⟩ := submodule.exists_mem_ne_zero_of_ne_bot v.ne_bot,
     use algebra_map L _ (algebra_map R L x),
@@ -173,15 +125,15 @@ lemma is_dedekind_domain.height_one_spectrum.valuation_is_rank_one_hom_def
   /- (hR : ¬ is_field R) -/ :
   (@is_rank_one.hom L _ ℤₘ₀ _ (@valued.v L _ ℤₘ₀ _ v.adic_valued) 
     (is_dedekind_domain.height_one_spectrum.valuation_is_rank_one R L v/-  hR -/)) =
-  with_zero_mult_int_to_nnreal' (valuation_base'_ne_zero R L v) :=
+  with_zero_mult_int_to_nnreal (valuation_base'_ne_zero R L v) :=
 rfl
 
 
 def is_dedekind_domain.height_one_spectrum.valuation_completion_is_rank_one
   (hL : is_rank_one  (@valued.v L _ ℤₘ₀ _ v.adic_valued)) :
   is_rank_one  (@valued.v (is_dedekind_domain.height_one_spectrum.adic_completion L v) _ ℤₘ₀ _ _) := 
-{ hom         := with_zero_mult_int_to_nnreal' (valuation_base'_ne_zero R L v),
-  strict_mono := with_zero_mult_int_to_nnreal_strict_mono' (one_lt_valuation_base' R L v),
+{ hom         := with_zero_mult_int_to_nnreal (valuation_base'_ne_zero R L v),
+  strict_mono := with_zero_mult_int_to_nnreal_strict_mono (one_lt_valuation_base' R L v),
   nontrivial  := begin
     obtain ⟨x, hx0, hx1⟩ := hL.nontrivial,
     use algebra_map L _ x,
@@ -198,11 +150,12 @@ lemma is_dedekind_domain.height_one_spectrum.valuation_completion_is_rank_one_ho
   (@valued.v (is_dedekind_domain.height_one_spectrum.adic_completion L v) _ ℤₘ₀ _ _)
     (is_dedekind_domain.height_one_spectrum.valuation_completion_is_rank_one R L v
       (is_dedekind_domain.height_one_spectrum.valuation_is_rank_one R L v)/-  hR -/)) =
-  with_zero_mult_int_to_nnreal' (valuation_base'_ne_zero R L v) :=
+  with_zero_mult_int_to_nnreal (valuation_base'_ne_zero R L v) :=
 rfl
 
 variables [hv : is_rank_one 
   (@valued.v (is_dedekind_domain.height_one_spectrum.adic_completion L v) _ ℤₘ₀ _ _)]
+
 include hv 
 
 instance : 
@@ -289,12 +242,12 @@ begin
   have hX : ‖X p‖ = is_rank_one.hom  _ (valued.v (X p)) := rfl,
   rw [hX, is_dedekind_domain.height_one_spectrum.valuation_completion_is_rank_one_hom_def, hv],
   simp only [of_add_neg, with_zero.coe_inv, map_inv₀, nonneg.coe_inv, one_div, inv_inj],
-  simp only [ with_zero_mult_int_to_nnreal', with_zero_mult_int_to_nnreal_def', 
+  simp only [ with_zero_mult_int_to_nnreal, with_zero_mult_int_to_nnreal_def, 
     monoid_with_zero_hom.coe_mk], 
   rw dif_neg,
   { simp only [with_zero.unzero_coe, to_add_of_add, zpow_one],
     rw valuation_base'_eq_char, simp only [nnreal.coe_nat_cast], },
-  { simp only [with_zero.coe_ne_zero, with_zero_mult_int_to_nnreal_strict_mono', not_false_iff],}
+  { simp only [with_zero.coe_ne_zero, with_zero_mult_int_to_nnreal_strict_mono, not_false_iff] }
 end
 
 lemma norm_X_pos : 0 < ‖ X p ‖ :=
