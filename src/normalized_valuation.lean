@@ -20,7 +20,7 @@ end add_subgroup
 
 namespace minpoly
 
-theorem minpoly.degree_dvd {K : Type*} [field K] {L : Type*} [field L] [algebra K L] {x : L}
+theorem degree_dvd {K : Type*} [field K] {L : Type*} [field L] [algebra K L] {x : L}
   [finite_dimensional K L] (hx : is_integral K x) :
   (minpoly K x).nat_degree ∣ (finite_dimensional.finrank K L) :=
 sorry
@@ -69,7 +69,13 @@ ne_zero_of_lt (one_lt_valuation_base K)
 
 end
 
-variables (K : Type*) [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v] 
+open finite_dimensional minpoly
+
+variables (K : Type*) [field K] [hv : valued K ℤₘ₀]
+
+section is_discrete
+
+variables [is_discrete hv.v] 
 
 instance rk1 : is_rank_one hv.v := is_rank_one_of_is_discrete hv.v (valuation_base_ne_zero K) 
   (one_lt_valuation_base K)
@@ -109,23 +115,25 @@ spectral_mul_alg_norm h_alg (norm_is_nonarchimedean K)
 def disc_normed_field_extension (h_alg : algebra.is_algebraic K L) : normed_field L :=
 spectral_norm_to_normed_field h_alg (norm_is_nonarchimedean K)
 
-lemma disc_norm_extension_eq_root_zero_coeff (h_alg : algebra.is_algebraic K L) 
- (hna : is_nonarchimedean (norm : K → ℝ)) (x : L) :
+lemma disc_norm_extension_eq_root_zero_coeff (h_alg : algebra.is_algebraic K L) (x : L) :
   disc_norm_extension h_alg x = 
   ((rk1 K).hom (valued.v ((minpoly K x).coeff 0)))^(1/(minpoly K x).nat_degree : ℝ) :=
 spectral_norm_eq_root_zero_coeff h_alg (norm_is_nonarchimedean K) x
 
-lemma disc_norm_extension_eq_root_zero_coeff' (h_alg : algebra.is_algebraic K L) 
- (hna : is_nonarchimedean (norm : K → ℝ)) (x : L) :
+lemma disc_norm_extension_eq_root_zero_coeff' (h_alg : algebra.is_algebraic K L) (x : L) :
   disc_norm_extension h_alg x = (with_zero_mult_int_to_nnreal (valuation_base_ne_zero K)
     (valued.v ((minpoly K x).coeff 0)))^(1/(minpoly K x).nat_degree : ℝ) :=
 begin
   exact spectral_norm_eq_root_zero_coeff h_alg (norm_is_nonarchimedean K) x,
 end
 
-open finite_dimensional minpoly
 
 local attribute [-instance] disc_norm_field'
+
+end is_discrete
+
+variables {K} {L : Type*} [field L] [algebra K L] 
+include hv
 
 lemma pow_valuation_unit_ne_zero [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) 
   (x : Lˣ) :
@@ -139,7 +147,15 @@ begin
   apply_instance,
 end
 
+open polynomial
+
+lemma valued_coeff_zero (x : K) :
+  valued.v ((minpoly K ((algebra_map K L) x)).coeff 0) = valued.v x :=
+by rw [minpoly.eq_X_sub_C, coeff_sub, coeff_X_zero, coeff_C_zero, zero_sub, valuation.map_neg]
+
 open function
+
+variables [is_discrete hv.v]
 
 lemma aux_pow_div [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) (x : Lˣ) : 
   (with_zero_mult_int_to_nnreal (valuation_base_ne_zero K)) 
@@ -158,6 +174,8 @@ end
 
 open nnreal 
 
+variables [complete_space K] 
+
 lemma map_mul_aux [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) (x y : Lˣ) : 
   valued.v ((minpoly K ((x : L) * ↑y)).coeff 0) ^ 
     (finrank K L / (minpoly K ((x : L) * ↑y)).nat_degree) = 
@@ -171,10 +189,9 @@ begin
     aux_pow_div h_alg, aux_pow_div h_alg, ← mul_rpow,
     rpow_eq_rpow_iff (nat.cast_ne_zero.mpr (ne_of_gt finrank_pos))],
   ext,
-  rw [nnreal.coe_mul, coe_rpow, coe_rpow, coe_rpow,
-    ← disc_norm_extension_eq_root_zero_coeff' h_alg hna,
-    ← disc_norm_extension_eq_root_zero_coeff' h_alg hna,
-    ← disc_norm_extension_eq_root_zero_coeff' h_alg hna, units.coe_mul, map_mul],
+  rw [nnreal.coe_mul, coe_rpow, coe_rpow, coe_rpow, ← disc_norm_extension_eq_root_zero_coeff' h_alg,
+    ← disc_norm_extension_eq_root_zero_coeff' h_alg,
+    ← disc_norm_extension_eq_root_zero_coeff' h_alg, units.coe_mul, map_mul],
   apply_instance,
   apply_instance,
 end
@@ -211,11 +228,6 @@ begin
     aux_d, int.zmultiples_nat_abs],
 end
 
-open polynomial
-
-lemma valued_coeff_zero (x : K) :
-  valued.v ((minpoly K ((algebra_map K L) x)).coeff 0) = valued.v x :=
-by rw [minpoly.eq_X_sub_C, coeff_sub, coeff_X_zero, coeff_C_zero, zero_sub, valuation.map_neg]
 
 lemma aux_d_ne_zero [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) :
   aux_d h_alg ≠ 0 :=
@@ -328,7 +340,7 @@ lemma w_apply_if_neg [decidable_eq L] [finite_dimensional K L] (h_alg : algebra.
 by rw [w_apply, if_neg hx]
 
 
-lemma exists_uniformizer [decidable_eq L] [finite_dimensional K L] 
+lemma exists_uniformizer [finite_dimensional K L] 
   (h_alg : algebra.is_algebraic K L) :
   ∃ (x : Lˣ), aux_hom h_alg x = of_add (-aux_d h_alg : ℤ) :=
 begin
