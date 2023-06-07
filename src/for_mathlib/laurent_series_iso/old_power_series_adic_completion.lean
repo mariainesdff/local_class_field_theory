@@ -5,8 +5,6 @@ Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
 import order.filter.basic
 import algebra.order.hom.monoid
--- import algebra.hom.group
-import for_mathlib.num_denom_away
 import for_mathlib.polynomial
 import for_mathlib.power_series
 import ring_theory.dedekind_domain.adic_valuation
