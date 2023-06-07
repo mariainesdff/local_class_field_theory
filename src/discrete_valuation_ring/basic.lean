@@ -21,20 +21,18 @@ instance : is_discrete (@valued.v (fraction_ring A) _ ℤₘ₀ _ _) := sorry
 
 variables {R : Type*} [comm_ring R] (vR : valuation R ℤₘ₀)
 
-definition is_uniformizer (π : R) : Prop := 
-  vR π = (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)
+def is_uniformizer (π : R) : Prop := 
+vR π = (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)
 
 variables {K : Type*} [field K] (v : valuation K ℤₘ₀) 
 
 local notation `K₀` := v.integer
---variable (K)
-@[ext]
-structure uniformizer :=
+
+@[ext] structure uniformizer :=
 (val : v.integer)
 (valuation_eq_neg_one : v val = (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀))
 
-
-noncomputable lemma is_discrete_of_exists_uniformizer {π : K₀} (hπ : is_uniformizer v (π : K)) : 
+def is_discrete_of_exists_uniformizer {π : K₀} (hπ : is_uniformizer v (π : K)) : 
   is_discrete v :=
 ⟨begin
   intro x,
@@ -47,20 +45,6 @@ noncomputable lemma is_discrete_of_exists_uniformizer {π : K₀} (hπ : is_unif
       int.cast_id, of_add_to_add] }
 end⟩
 
-variable [is_discrete v]
-
-lemma exists_uniformizer : ∃ π : K₀, is_uniformizer v (π : K) := 
-begin
-  letI surj_v : is_discrete v, apply_instance,
-  refine ⟨⟨(surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some, _⟩, 
-    (surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some_spec⟩,
-  rw [mem_integer, (surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some_spec],
-  exact (le_of_lt of_add_neg_one_le_one),
-end
-
-instance : nonempty (uniformizer v) := 
-  ⟨⟨(exists_uniformizer v).some, (exists_uniformizer v).some_spec⟩⟩
-   
 lemma uniformizer_ne_zero {π : K₀} (hπ : is_uniformizer v (π : K)) : π ≠ 0 := 
 begin
   intro h0,
@@ -89,11 +73,22 @@ end
 lemma uniformizer_valuation_lt_one {π : K₀} (hπ : is_uniformizer v (π : K)) : v (π : K) < 1 := 
 (valuation.integer.not_is_unit_iff_valuation_lt_one π).mp (uniformizer_not_is_unit v hπ)
 
--- The lemma doesn't pick up hπ, so I switch to (π : uniformizer v)
---variables (π : K₀) (hπ : is_uniformizer v (π : K))
-variables (π : uniformizer v)
+variable [is_discrete v]
 
-variable {K}
+lemma exists_uniformizer : ∃ π : K₀, is_uniformizer v (π : K) := 
+begin
+  letI surj_v : is_discrete v, apply_instance,
+  refine ⟨⟨(surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some, _⟩, 
+    (surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some_spec⟩,
+  rw [mem_integer, (surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some_spec],
+  exact (le_of_lt of_add_neg_one_le_one),
+end
+
+instance : nonempty (uniformizer v) := 
+⟨⟨(exists_uniformizer v).some, (exists_uniformizer v).some_spec⟩⟩
+
+variables (π : uniformizer v) {K}
+
 lemma pow_uniformizer /- {π : K₀} (hπ : is_uniformizer v (π : K)) -/ {r : K₀} (hr : r ≠ 0) : 
   ∃ n : ℕ, ∃ u : K₀ˣ, r = π.1^n * u :=
 begin
@@ -130,8 +125,6 @@ begin
   rw mul_inv_cancel, rw one_mul,
   sorry,
 end
-
-#exit
 
 lemma ideal_is_principal (I : ideal K₀) : I.is_principal:=
 begin
@@ -178,9 +171,8 @@ begin
 end
 
 lemma is_principal_ideal_ring : is_principal_ideal_ring K₀:= 
-  ⟨λ I, ideal_is_principal v I⟩
+⟨λ I, ideal_is_principal v I⟩
 
--- noncomputable!
 lemma integer_is_local_ring : local_ring K₀ :=
 { exists_pair_ne := ⟨0, 1, zero_ne_one⟩,
   is_unit_or_is_unit_of_add_one := λ a b hab, 
@@ -209,12 +201,11 @@ lemma integer_is_local_ring : local_ring K₀ :=
 
 end discrete_valuation
 
-
 namespace disc_valued
 
 open discrete_valuation
 
-variables (K : Type*) [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v]
+variables (K : Type*) [field K] [hv : valued K ℤₘ₀] 
 
 local notation `K₀` := hv.v.integer
 
@@ -222,10 +213,14 @@ def is_uniformizer := discrete_valuation.is_uniformizer hv.v
 
 def uniformizer := discrete_valuation.uniformizer hv.v
 
+instance [hv : valued K ℤₘ₀] [is_discrete hv.v] : nonempty (uniformizer K) := 
+⟨⟨(exists_uniformizer hv.v).some, (exists_uniformizer hv.v).some_spec⟩⟩
+
+variables [is_discrete hv.v]
+
 instance is_principal_ideal_ring : is_principal_ideal_ring K₀ := 
 discrete_valuation.is_principal_ideal_ring hv.v
 
--- noncomputable!
 instance : local_ring K₀ := discrete_valuation.integer_is_local_ring hv.v
 
 -- Chapter I, Section 1, Proposition 1 in Serre's Local Fields
