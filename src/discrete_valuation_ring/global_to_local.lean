@@ -1,3 +1,4 @@
+import ring_theory.dedekind_domain.adic_valuation
 import discrete_valuation_ring.basic
 
 namespace is_dedekind_domain.height_one_spectrum

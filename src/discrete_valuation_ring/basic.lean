@@ -1,8 +1,95 @@
-import complete_dvr
+
+import ring_theory.discrete_valuation_ring
+import ring_theory.valuation.tfae
+import topology.algebra.valued_field
+import topology.algebra.with_zero_topology
+import algebra.order.group.type_tags
+
+open_locale discrete_valuation
+
+namespace with_zero
+
+open multiplicative
+
+lemma of_add_neg_nat (n : ℕ) : 
+  (of_add (-n : ℤ) : ℤₘ₀) = (of_add (-1 : ℤ))^n :=
+by rw [← with_zero.coe_pow, with_zero.coe_inj, ← one_mul (n : ℤ), ← neg_mul, 
+  int.of_add_mul, zpow_coe_nat]
+
+lemma of_add_neg_one_le_one : ((multiplicative.of_add ((-1 : ℤ))) : ℤₘ₀) < (1 : ℤₘ₀) := 
+begin
+  rw [← with_zero.coe_one, with_zero.coe_lt_coe, ← of_add_zero],
+  exact neg_one_lt_zero,
+end
+
+end with_zero
+
+namespace valuation
 
 variables {A : Type*} [comm_ring A] 
 
-open_locale discrete_valuation
+lemma add_eq_max_of_ne {Γ₀ : Type*} [linear_ordered_comm_group_with_zero Γ₀]
+  {v : valuation A Γ₀} {a b : A} (hne : v a ≠ v b) : v (a + b) = max (v a) (v b) :=
+begin
+  wlog hle : v b ≤ v a generalizing b a with H,
+  { rw [add_comm, max_comm],
+    exact H hne.symm (le_of_lt (not_le.mp hle)), },
+  { have hlt : v b  < v a, from lt_of_le_of_ne hle hne.symm,
+    have : v a  ≤ max (v (a + b)) (v b), from calc
+      v a = v (a + b + (-b)) : by rw [add_neg_cancel_right]
+                ... ≤ max (v (a + b)) (v (-b)) : valuation.map_add _ _ _
+                ... = max (v (a + b)) (v b ) : by rw valuation.map_neg _ _,
+    have hnge : v b  ≤ v (a + b),
+    { apply le_of_not_gt,
+      intro hgt,
+      rw max_eq_right_of_lt hgt at this,
+      apply not_lt_of_ge this,
+      assumption },
+    have : v a ≤ v (a + b), by rwa [max_eq_left hnge] at this,
+    apply le_antisymm,
+    { exact valuation.map_add _ _ _, },
+    { rw max_eq_left_of_lt hlt,
+      assumption }},
+end
+
+lemma mem_integer {Γ₀ : Type*} [linear_ordered_comm_group_with_zero Γ₀] (v : valuation A Γ₀)
+  (a : A) : a ∈ v.integer ↔ v a ≤ 1 := iff.rfl
+
+namespace integer
+
+theorem is_unit_iff_valuation_eq_one {K : Type*} [field K] {Γ₀ : Type*} 
+  [linear_ordered_comm_group_with_zero Γ₀] {v : valuation K Γ₀} (x : v.integer) : 
+  is_unit x ↔ v x = 1 :=
+begin
+  refine ⟨@integers.one_of_is_unit K Γ₀ _ _ v v.integer _ _ (valuation.integer.integers v) _, 
+    λ hx, _⟩,
+  have hx0 : (x : K) ≠ 0,
+  { by_contra h0,
+    rw [h0, map_zero] at hx,
+    exact zero_ne_one hx, }, 
+  have hx' : v (x : K)⁻¹ = (1 : Γ₀) ,
+  { rw [map_inv₀, inv_eq_one], exact hx, },
+  rw is_unit_iff_exists_inv,
+  use (x : K)⁻¹,
+  { rw mem_integer,
+    exact le_of_eq hx' },
+  { ext, rw [subring.coe_mul, set_like.coe_mk, algebra_map.coe_one, mul_inv_cancel hx0] },
+end
+
+lemma not_is_unit_iff_valuation_lt_one {K : Type*} [field K] {Γ₀ : Type*} 
+  [linear_ordered_comm_group_with_zero Γ₀] {v : valuation K Γ₀} (x : v.integer) :
+  ¬ is_unit x ↔ v x < 1 :=
+begin
+  rw [← not_le, not_iff_not, is_unit_iff_valuation_eq_one, le_antisymm_iff],
+  exact and_iff_right x.2,
+end
+
+end integer
+
+end valuation
+
+variables {A : Type*} [comm_ring A] 
+
 
 /- We insist that `v` takes values in ℤₘ₀ in order to define uniformizers as the elements in `K`
 whose valuation is exactly `with_zero.multiplicative (- 1) : ℤₘ₀`-/
