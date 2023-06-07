@@ -8,9 +8,8 @@ import eq_characteristic.basic
 import from_mathlib.normed_valued
 import from_mathlib.spectral_norm_unique
 import normalized_valuation
-
 import for_mathlib.rank_one_valuation
---import discrete_valuation_ring.global_to_local
+import discrete_valuation_ring.global_to_local
 
 --import algebra.group.type_tags
 
@@ -77,44 +76,29 @@ open_locale classical
 
 namespace is_dedekind_domain.height_one_spectrum
 
---TODO: find
-def valuation_is_discrete : 
-  is_discrete (@valued.v (is_dedekind_domain.height_one_spectrum.adic_completion L v)  _ ℤₘ₀ _ 
-  (v.valued_adic_completion L)) :=
-{ surj := sorry }
-
--- Wrong definition (todo: fix)
 def valuation_base (R : Type*) [comm_ring R] [is_domain R] [is_dedekind_domain R] (L : Type*)
   [field L] [algebra R L] [is_fraction_ring R L] (v : height_one_spectrum R) : ℝ≥0 :=
-@discrete_valuation.valuation_base (is_dedekind_domain.height_one_spectrum.adic_completion L v) _ 
-  (v.valued_adic_completion L) (by sorry)
+@discrete_valuation.valuation_base (adic_completion L v) _ 
+  (v.valued_adic_completion L) _
 
 lemma valuation_base_def {R : Type*} [comm_ring R] [is_domain R] [is_dedekind_domain R] (L : Type*)
   [field L] [algebra R L] [is_fraction_ring R L] (v : height_one_spectrum R) :
   valuation_base R L v = (if 1 < nat.card
-    (local_ring.residue_field (is_dedekind_domain.height_one_spectrum.adic_completion_integers L v))
+    (local_ring.residue_field (adic_completion_integers L v))
   then nat.card
-    (local_ring.residue_field (is_dedekind_domain.height_one_spectrum.adic_completion_integers L v))
+    (local_ring.residue_field (adic_completion_integers L v))
   else 2) :=
 rfl
-
-/- def valuation_base' (R : Type*) [comm_ring R] [is_domain R] [is_dedekind_domain R] (L : Type*)
-  [field L] [algebra R L] [is_fraction_ring R L] (v : height_one_spectrum R) : ℝ≥0 := 
-if 1 < nat.card
-    (local_ring.residue_field (is_dedekind_domain.height_one_spectrum.adic_completion_integers L v))
-  then nat.card
-    (local_ring.residue_field (is_dedekind_domain.height_one_spectrum.adic_completion_integers L v))
-  else 2-/
 
 lemma one_lt_valuation_base {R : Type*} [comm_ring R] [is_domain R] [is_dedekind_domain R]
   (L : Type*) [field L] [algebra R L] [is_fraction_ring R L] (v : height_one_spectrum R) : 
   1 < valuation_base R L v :=
-@discrete_valuation.one_lt_valuation_base L _ v.adic_valued (valuation_is_discrete L v)
+@discrete_valuation.one_lt_valuation_base (adic_completion L v) _ (v.valued_adic_completion L) _
 
 lemma valuation_base_ne_zero {R : Type*} [comm_ring R] [is_domain R] [is_dedekind_domain R]
   (L : Type*) [field L] [algebra R L] [is_fraction_ring R L] (v : height_one_spectrum R) : 
   valuation_base R L v ≠ 0:=
-@discrete_valuation.valuation_base_ne_zero L _ v.adic_valued (valuation_is_discrete L v)
+@discrete_valuation.valuation_base_ne_zero (adic_completion L v) _ (v.valued_adic_completion L) _
 
 end is_dedekind_domain.height_one_spectrum
 
@@ -176,10 +160,9 @@ instance :
 by apply rank_one_valuation.valued_field.to_normed_field
   (is_dedekind_domain.height_one_spectrum.adic_completion L v) ℤₘ₀ 
 
---fix
 lemma norm_le_one_iff_val_le_one (x : is_dedekind_domain.height_one_spectrum.adic_completion L v) :
-  ‖x‖ ≤ 1 ↔ valued.v x ≤ (1 : ℤₘ₀) := sorry
--- is_dedekind_domain.height_one_spectrum.norm_le_one_iff_val_le_one x
+  ‖x‖ ≤ 1 ↔ valued.v x ≤ (1 : ℤₘ₀) :=
+rank_one_valuation.norm_le_one_iff_val_le_one x
 
 variables (R)
 
@@ -373,7 +356,7 @@ begin
         (algebra.is_algebraic_of_finite 𝔽_[p]⟮⟮X⟯⟯ K x)),
     rw [norm_on_K, spectral_norm, spectral_value_le_one_iff hmonic] at hx,
     set P : polynomial ((FpX_int_completion p)) := 
-    int_polynomial /- (polynomial 𝔽_[p]) -/ (ratfunc 𝔽_[p]) (ideal_X 𝔽_[p]) hx with hP,
+    int_polynomial (polynomial 𝔽_[p]) (ratfunc 𝔽_[p]) (ideal_X 𝔽_[p]) hx with hP,
     rw [mem_ring_of_integers, is_integral, adic_algebra.int_algebra_map_def,
       ring_hom.is_integral_elem],
     use P,
@@ -645,4 +628,4 @@ end
 
 end ring_of_integers
 
-#lint
+--#lint
