@@ -201,6 +201,7 @@ begin
       local_ring.mem_maximal_ideal, one_not_mem_nonunits, not_false_iff] }
 end
 
+--TODO: remove? (See `discrete_valuation.maximal_ideal`)
 noncomputable! def completion_max_ideal : height_one_spectrum R_v :=
 { as_ideal := completion_max_ideal_def R K v,
   is_prime := ideal.is_maximal.is_prime (local_ring.maximal_ideal.is_maximal R_v),

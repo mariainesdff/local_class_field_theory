@@ -10,41 +10,25 @@ noncomputable theory
 section complete
 
 variables (K : Type*) [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v] 
- -- [hu : uniform_space K]
+
 include hv
---example : uniform_space K := infer_instance
 
 -- Without finite_dimensional, the fails_quickly does not complain
-variables (L : Type*) [field L] [algebra K L] [complete_space K] -- [finite_dimensional K L]
--- 
---  example : uniform_space K := infer_instance
---instance [finite_dimensional K L] : uniform_space L := infer_instance
---instance normed_L : normed_field L := sorry
-def w' [decidable_eq L] [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) : 
-  valuation L ℤₘ₀ := 
-w h_alg
+variables (L : Type*) [field L] [algebra K L] [complete_space K] 
 
+def uniform_space_extension : uniform_space L := sorry
 
-#exit
-  --sorry -- May be a bit hard
-
--- instance : is_discrete w :=
---is it reasonable to first have the `def` and then this `instance`?
---instance : valued L ℤₘ₀ := hw K L
-
---#lint
-
---TODO: fix
---instance : complete_space L := sorry
+lemma extension_is_complete : @is_complete L (uniform_space_extension K L) set.univ := sorry
 
 --instance is_discrete_of_finite : is_discrete (@valued.v L _ ℤₘ₀ _ _) := sorry
-instance is_discrete_of_finite : is_discrete (w K L) := sorry
+instance is_discrete_of_finite [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) : 
+  is_discrete (w h_alg) := sorry
 
 /- lemma integral_closure_eq_integer :
   (integral_closure hv.v.integer L).to_subring = (@valued.v L _ ℤₘ₀ _ _).integer :=
 sorry -/
-lemma integral_closure_eq_integer :
-  (integral_closure hv.v.integer L).to_subring = (w K L).integer :=
+lemma integral_closure_eq_integer [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) :
+  (integral_closure hv.v.integer L).to_subring = (w h_alg).integer :=
 sorry
 
 --Chapter 2, Section 2, Proposition 3 in Serre's Local Fields
@@ -56,9 +40,11 @@ lemma integral_closure_finrank :
   finite_dimensional.finrank K L :=
 sorry
 
+variables [finite_dimensional K L]  (h_alg : algebra.is_algebraic K L) 
+
 local notation `K₀` := hv.v.integer
 
-local notation `L₀` := (w K L).integer
+local notation `L₀` := (w h_alg).integer
 
 def integer.algebra : algebra K₀ L₀ :=
 by rw ← integral_closure_eq_integer; exact (integral_closure ↥(valued.v.integer) L).algebra
@@ -120,29 +106,14 @@ def minimal_poly_eq_residue_fields_of_unramified'
   (integral_closure A L) ≃+* adjoin_root (minpoly A x) := sorry
 
 
-
-/- variables (K : Type*) [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v]
-variables (L : Type*) [field L] [hw : valued L ℤₘ₀] [is_discrete hw.v]
-variables 
-
-include hv hw
-/- postfix `₀`:1025:= valued.v.integer
-
-#check K₀ -/
-local notation `K₀` := hv.v.integer
-
-local notation `L₀` := hw.v.integer -/
-
---variable (hmax : algebra_map )
-
 -- We need to indicate in the doctring that h_alg is not an instance so when we apply it with local fields...
 variables {B : Type*} [comm_ring B] [is_domain B] [discrete_valuation_ring B] (h_alg : algebra A B)
 
 local notation `e(` B`,`A`)` := ideal.ramification_idx h_alg.to_ring_hom
   (local_ring.maximal_ideal A) (local_ring.maximal_ideal B)
 
-lemma uniformizer_iff_unramified {a : A} (ha : is_uniformizer (↑a : fraction_ring A)) :
-  is_uniformizer (↑(h_alg.to_ring_hom a) : fraction_ring B) ↔ e(B,A) = 1 :=
+lemma uniformizer_iff_unramified {a : A} (ha : is_uniformizer valued.v (↑a : fraction_ring A)) :
+  is_uniformizer valued.v (↑(h_alg.to_ring_hom a) : fraction_ring B) ↔ e(B,A) = 1 :=
 sorry
 
 end unramified

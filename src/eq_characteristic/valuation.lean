@@ -456,7 +456,7 @@ noncomputable! def open_unit_ball : height_one_spectrum (𝓞 p K) :=
   end }
 
 def normalized_valuation (K : Type*) [field K] [eq_char_local_field p K] : valuation K ℤₘ₀ :=
-  (open_unit_ball K).valuation
+(open_unit_ball K).valuation
 
 @[priority 100] instance (K : Type*) [field K] [eq_char_local_field p K] : valued K ℤₘ₀ :=
   valued.mk' (normalized_valuation K)
