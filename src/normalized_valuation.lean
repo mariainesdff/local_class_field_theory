@@ -305,9 +305,9 @@ begin
 end
 
 --set_option trace.class_instances true
-def w [decidable_eq L] [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) :
+def w [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) :
   valuation L ℤₘ₀ := 
-{ to_fun    := λ x, if x = 0 then 0 else 
+{ to_fun    := λ x, by classical; exact if x = 0 then 0 else 
     (valued.v ((minpoly K x).coeff 0))^((finrank K L)/((aux_d h_alg)*(minpoly K x).nat_degree)),
   map_zero' := by rw if_pos rfl,
   map_one'  := 
@@ -333,12 +333,12 @@ def w [decidable_eq L] [finite_dimensional K L] (h_alg : algebra.is_algebraic K 
   end,
   map_add_le_max' := sorry }
 
-lemma w_apply [decidable_eq L] [finite_dimensional K L] (h_alg : algebra.is_algebraic K L)
+lemma w_apply [finite_dimensional K L] (h_alg : algebra.is_algebraic K L)
   (x : L):  w h_alg x = (if x = 0 then 0 else 
     (valued.v ((minpoly K x).coeff 0))^((finrank K L)/((aux_d h_alg)*(minpoly K x).nat_degree))) :=
 rfl
 
-lemma w_apply_if_neg [decidable_eq L] [finite_dimensional K L] (h_alg : algebra.is_algebraic K L)
+lemma w_apply_if_neg [finite_dimensional K L] (h_alg : algebra.is_algebraic K L)
   {x : L} (hx : x ≠ 0) :  w h_alg x = 
   (valued.v ((minpoly K x).coeff 0))^((finrank K L)/((aux_d h_alg)*(minpoly K x).nat_degree)) :=
 by rw [w_apply, if_neg hx]
