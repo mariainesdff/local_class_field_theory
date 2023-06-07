@@ -1,7 +1,4 @@
---import ring_theory.dedekind_domain.adic_valuation
-import from_mathlib.rank_one_valuation
 import from_mathlib.normed_valued
-import topology.algebra.valued_field
 
 open_locale discrete_valuation
 
@@ -10,9 +7,8 @@ namespace rank_one_valuation
 variables {L : Type*} [field L] [valued L ℤₘ₀]
 
 variables [hv: is_rank_one (@valued.v L _ ℤₘ₀ _ _)]
-include hv 
 
---@[priority 100] instance : normed_field L := rank_one_valuation.valued_field.to_normed_field L ℤₘ₀
+include hv 
 
 lemma norm_le_one_iff_val_le_one (x : L) :
   rank_one_valuation.norm_def x ≤ 1 ↔ valued.v x ≤ (1 : ℤₘ₀) :=
@@ -35,11 +31,10 @@ end
 lemma norm_pos_iff_val_pos (x : L) :
   0 < rank_one_valuation.norm_def x ↔ (0 : ℤₘ₀) < valued.v x :=
 begin
-  sorry
-  /- have hx : rank_one_valuation.norm_def x  = hv.hom (valued.v x) := rfl,
-  rw [hx, ← nnreal.coe_one, nnreal.coe_lt_coe, ← map_one  (is_rank_one.hom
-      (@valued.v L _ ℤₘ₀ _ _)), strict_mono.lt_iff_lt],
-  exact is_rank_one.strict_mono, -/
+  have hx : rank_one_valuation.norm_def x  = hv.hom (valued.v x) := rfl,
+  rw [hx, ← nnreal.coe_zero, nnreal.coe_lt_coe, 
+    ← map_zero (is_rank_one.hom (@valued.v L _ ℤₘ₀ _ _)), strict_mono.lt_iff_lt],
+  exact is_rank_one.strict_mono,
 end
 
 end rank_one_valuation
