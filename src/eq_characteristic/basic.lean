@@ -50,15 +50,6 @@ variables (p : ℕ) [fact(nat.prime p)]
 notation (name := prime_galois_field)
   `𝔽_[` p `]` := galois_field p 1
 
--- Now in the polynomial file
-/- The valued field `Fp(X)` with the valuation at `X`. -/
-/- instance FpX_valued  : valued (ratfunc 𝔽_[p]) ℤₘ₀ :=
-valued.mk' (ideal_X 𝔽_[p]).valuation 
-
-lemma FqX_valued_def {x : ratfunc 𝔽_[p]} :
-  @valued.v (ratfunc 𝔽_[p]) _ _ _ (ratfunc.with_zero.valued 𝔽_[p]) x =
-    (ideal_X 𝔽_[p]).valuation x := rfl -/
-
 def FpX_field_completion :=
  (ideal_X 𝔽_[p]).adic_completion (ratfunc 𝔽_[p])
 
@@ -70,7 +61,6 @@ def FpX_int_completion  :=
 
 notation (name := FpX_int_completion)
   `𝔽_[` p `]⟦` X `⟧` := FpX_int_completion p
-
 
 instance ratfunc.char_p : char_p (ratfunc 𝔽_[p]) p := 
 char_p_of_injective_algebra_map ((algebra_map 𝔽_[p] (ratfunc 𝔽_[p])).injective) p
@@ -193,11 +183,6 @@ is_scalar_tower.comp 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K
 @[priority 1000] instance int_is_scalar_tower [algebra K L] [is_scalar_tower 𝔽_[p]⟮⟮X⟯⟯ K L] :
   is_scalar_tower 𝔽_[p]⟦X⟧ K L :=
 is_scalar_tower.comp' 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K L
-/- { smul_assoc := λ x y z,
-  begin
-    nth_rewrite 0 [← one_smul 𝔽_[p]⟮⟮X⟯⟯ y],
-    rw [← one_smul 𝔽_[p]⟮⟮X⟯⟯ (y • z), ← smul_assoc, ← smul_assoc, ← smul_assoc],
-  end } -/
 
 lemma algebra_map_injective {E : Type*} [field E] [algebra 𝔽_[p]⟦X⟧ E] [algebra 𝔽_[p]⟮⟮X⟯⟯ E]
   [is_scalar_tower 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ E] : function.injective ⇑(algebra_map 𝔽_[p]⟦X⟧ E) :=
@@ -347,10 +332,6 @@ variables (K)
 
 instance : char_p (𝓞 p K) p := char_p.subring' K p (𝓞 p K).to_subring --char_zero.of_module _ K
 
- -- This doesn't need to be part of the definition of local field
---noncomputable! instance : is_separable 𝔽_[p]⟮⟮X⟯⟯ K := sorry
-
-
 /-- This can be proven using the argument from Serre's Local Fields II.2, which
 does not assume K/𝔽_[p]⟮⟮X⟯⟯ to be separable.  -/
 noncomputable! instance : is_noetherian 𝔽_[p]⟦X⟧ (𝓞 p K) :=
@@ -450,6 +431,3 @@ end
 
 
 end FpX_field_completion
-
-
---#lint

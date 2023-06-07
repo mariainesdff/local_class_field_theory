@@ -1,3 +1,4 @@
+import ring_theory.dedekind_domain.adic_valuation
 import discrete_valuation_ring.basic
 
 namespace is_dedekind_domain.height_one_spectrum
@@ -35,8 +36,7 @@ noncomputable instance : is_discrete (@valued.v K_v _ ℤₘ₀ _ _) :=
   is_discrete_of_exists_uniformizer _
   (valuation_completion_integers_exists_uniformizer R K v).some_spec
 
---fix
-instance : discrete_valuation_ring R_v := sorry
--- disc_valued.discrete_valuation_ring K_v
+instance : discrete_valuation_ring R_v :=
+disc_valued.discrete_valuation_ring K_v
 
 end is_dedekind_domain.height_one_spectrum

@@ -1,120 +1,8 @@
-import number_theory.ramification_inertia
 import ring_theory.dedekind_domain.adic_valuation
-import ring_theory.discrete_valuation_ring
-import ring_theory.valuation.tfae
-import topology.algebra.valued_field
-import topology.algebra.with_zero_topology
-import from_mathlib.rank_one_valuation
-
+import discrete_valuation_ring.basic
 
 open_locale discrete_valuation
 open multiplicative
-
-namespace with_zero
-
-lemma of_add_neg_nat (n : ℕ) : 
-  (of_add (-n : ℤ) : ℤₘ₀) = (of_add (-1 : ℤ))^n :=
-by rw [← with_zero.coe_pow, with_zero.coe_inj, ← one_mul (n : ℤ), ← neg_mul, 
-  int.of_add_mul, zpow_coe_nat]
-
-/- rw [← with_zero.coe_zpow, with_zero.coe_inj, ← one_mul (n : ℤ), ← neg_mul, 
-  int.of_add_mul, zpow_coe_nat] -/
-
-lemma of_add_neg_one_le_one : ((multiplicative.of_add ((-1 : ℤ))) : ℤₘ₀) < (1 : ℤₘ₀) := 
-begin
-  rw [← with_zero.coe_one, with_zero.coe_lt_coe, ← of_add_zero],
-  exact neg_one_lt_zero,
-end
-
-end with_zero
-
-namespace valuation
-
-
-variables {A : Type*} [comm_ring A] 
-
-lemma add_eq_max_of_ne {Γ₀ : Type*} [linear_ordered_comm_group_with_zero Γ₀]
-  {v : valuation A Γ₀} {a b : A} (hne : v a ≠ v b) : v (a + b) = max (v a) (v b) :=
-begin
-  wlog hle : v b ≤ v a generalizing b a with H,
-  { rw [add_comm, max_comm],
-    exact H hne.symm (le_of_lt (not_le.mp hle)), },
-  { have hlt : v b  < v a, from lt_of_le_of_ne hle hne.symm,
-    have : v a  ≤ max (v (a + b)) (v b), from calc
-      v a = v (a + b + (-b)) : by rw [add_neg_cancel_right]
-                ... ≤ max (v (a + b)) (v (-b)) : valuation.map_add _ _ _
-                ... = max (v (a + b)) (v b ) : by rw valuation.map_neg _ _,
-    have hnge : v b  ≤ v (a + b),
-    { apply le_of_not_gt,
-      intro hgt,
-      rw max_eq_right_of_lt hgt at this,
-      apply not_lt_of_ge this,
-      assumption },
-    have : v a ≤ v (a + b), by rwa [max_eq_left hnge] at this,
-    apply le_antisymm,
-    { exact valuation.map_add _ _ _, },
-    { rw max_eq_left_of_lt hlt,
-      assumption }},
-end
-
-lemma mem_integer {Γ₀ : Type*} [linear_ordered_comm_group_with_zero Γ₀] (v : valuation A Γ₀)
-  (a : A) : a ∈ v.integer ↔ v a ≤ 1 := iff.rfl
-
-/-lemma is_unit_iff_valuation_eq_one (a : ↥(height_one_spectrum.adic_completion_integers K v)) :
-  is_unit a ↔ valued.v (a : K_v) = (1 : ℤₘ₀) :=
-begin
-  refine ⟨λ ha, valuation_eq_one_of_is_unit R K v ha, λ ha, _⟩,
-  have ha0 : (a : K_v) ≠ 0,
-  { by_contra h0,
-    rw [h0, map_zero] at ha,
-    exact zero_ne_one ha, }, 
-  have ha' : valued.v (a : K_v)⁻¹ = 
-        (1 : ℤₘ₀),
-  { rw [map_inv₀, inv_eq_one], exact ha, },
-  rw is_unit_iff_exists_inv,
-  use (a : K_v)⁻¹,
-  { rw mem_adic_completion_integers,
-    exact le_of_eq ha' },
-  { ext, rw [subring.coe_mul, set_like.coe_mk, algebra_map.coe_one, mul_inv_cancel ha0] },
-end
-
-lemma not_is_unit_iff_valuation_lt_one (a : ↥(height_one_spectrum.adic_completion_integers K v)) :
-  ¬ is_unit a ↔ valued.v (a : K_v) < (1 : ℤₘ₀) :=
-begin
-  rw [← not_le, not_iff_not, is_unit_iff_valuation_eq_one, le_antisymm_iff],
-  exact and_iff_right a.2,
-end-/
-
-namespace integer
-theorem is_unit_iff_valuation_eq_one {K : Type*} [field K] {Γ₀ : Type*} 
-  [linear_ordered_comm_group_with_zero Γ₀] {v : valuation K Γ₀} (x : v.integer) : 
-  is_unit x ↔ v x = 1 :=
-begin
-  refine ⟨@integers.one_of_is_unit K Γ₀ _ _ v v.integer _ _ (valuation.integer.integers v) _, 
-    λ hx, _⟩,
-  have hx0 : (x : K) ≠ 0,
-  { by_contra h0,
-    rw [h0, map_zero] at hx,
-    exact zero_ne_one hx, }, 
-  have hx' : v (x : K)⁻¹ = (1 : Γ₀) ,
-  { rw [map_inv₀, inv_eq_one], exact hx, },
-  rw is_unit_iff_exists_inv,
-  use (x : K)⁻¹,
-  { rw mem_integer,
-    exact le_of_eq hx' },
-  { ext, rw [subring.coe_mul, set_like.coe_mk, algebra_map.coe_one, mul_inv_cancel hx0] },
-end
-
-lemma not_is_unit_iff_valuation_lt_one {K : Type*} [field K] {Γ₀ : Type*} 
-  [linear_ordered_comm_group_with_zero Γ₀] {v : valuation K Γ₀} (x : v.integer) :
-  ¬ is_unit x ↔ v x < 1 :=
-begin
-  rw [← not_le, not_iff_not, is_unit_iff_valuation_eq_one, le_antisymm_iff],
-  exact and_iff_right x.2,
-end
-
-end integer
-
 
 /- TODO list:
 -- move is_localization.at_prime.discrete_valuation_ring_of_dedekind_domain
@@ -139,8 +27,6 @@ end integer
 
 -- end unramified
 
-#exit
-
 --#check e(K, L)
 
 -- #lint
@@ -148,10 +34,11 @@ end integer
 -- #check ideal.ramification_idx (algebra_map : K₀ →+* (hw.v.integer))
 --   (local_ring.maximal_ideal K₀) (local_ring.maximal_ideal hw.v.integer)
 
-
 noncomputable theory
 
+open is_dedekind_domain valuation
 namespace is_dedekind_domain.height_one_spectrum
+
 variables (R : Type*) [comm_ring R] [is_domain R] [is_dedekind_domain R]
   (K : Type*) [field K] [algebra R K] [is_fraction_ring R K]
   (v : height_one_spectrum R)
@@ -161,8 +48,6 @@ local notation `K_v` := is_dedekind_domain.height_one_spectrum.adic_completion K
 
 noncomputable! instance : is_discrete (@valued.v K_v _ ℤₘ₀ _ _) := 
 sorry
-
-#exit
 
 instance asdf : is_noetherian_ring R_v :=
 { noetherian := sorry }
@@ -202,10 +87,12 @@ begin
   rw is_unit_iff_exists_inv at ha,
   obtain ⟨b, hab⟩ := ha,
   have hab' : valued.v (a * b : K_v) = (1 : ℤₘ₀),
-  { rw [← subring.coe_mul, hab, subring.coe_one, map_one] },
-  rw map_mul at hab',
+  { rw [← subring.coe_mul, hab, subring.coe_one, valuation.map_one] },
+  rw valuation.map_mul at hab',
   exact eq_one_of_one_le_mul_left a.2 b.2 (le_of_eq hab'.symm),
 end
+
+open is_dedekind_domain is_dedekind_domain.height_one_spectrum
 
 --already done above?
 lemma is_unit_iff_valuation_eq_one (a : ↥(height_one_spectrum.adic_completion_integers K v)) :
@@ -214,14 +101,14 @@ begin
   refine ⟨λ ha, valuation_eq_one_of_is_unit R K v ha, λ ha, _⟩,
   have ha0 : (a : K_v) ≠ 0,
   { by_contra h0,
-    rw [h0, map_zero] at ha,
+    rw [h0, valuation.map_zero] at ha,
     exact zero_ne_one ha, }, 
   have ha' : valued.v (a : K_v)⁻¹ = 
         (1 : ℤₘ₀),
   { rw [map_inv₀, inv_eq_one], exact ha, },
   rw is_unit_iff_exists_inv,
   use (a : K_v)⁻¹,
-  { rw mem_adic_completion_integers,
+  { rw is_dedekind_domain.height_one_spectrum.mem_adic_completion_integers,
     exact le_of_eq ha' },
   { ext, rw [subring.coe_mul, set_like.coe_mk, algebra_map.coe_one, mul_inv_cancel ha0] },
 end
@@ -242,7 +129,7 @@ instance : local_ring R_v :=
     { right,
       have hab' : valued.v (a + b : K_v) = 
         (1 : ℤₘ₀),
-      { rw [← subring.coe_add, hab, subring.coe_one, map_one] },
+      { rw [← subring.coe_add, hab, subring.coe_one, valuation.map_one] },
       by_contra hb,
       rw not_is_unit_iff_valuation_lt_one at ha hb,
       have hab'' : valued.v (a + b : K_v) < (1 : ℤₘ₀),
@@ -274,13 +161,13 @@ begin
   --simp only [valuation_subring.algebra_map_apply, set_like.eta],
   rw ← hx, 
   simp only [set_like.coe_mk],/- , valued.valued_completion_apply] -/
-  rw valued_adic_completion_def,
+  rw is_dedekind_domain.height_one_spectrum.valued_adic_completion_def,
   rw valued.extension_extends,
   have h1 : (↑x : K) = algebra_map R K x := rfl,
   rw h1,
   have h2 : v.int_valuation_def x = v.int_valuation x := rfl,
   rw h2,
-  rw ← @valuation_of_algebra_map R _ _ _ K _ _ _ v x,
+  rw ← @is_dedekind_domain.height_one_spectrum.valuation_of_algebra_map R _ _ _ K _ _ _ v x,
   refl,
 end
 
@@ -289,7 +176,7 @@ lemma is_dedekind_domain.height_one_spectrum.valuation_completion_exists_uniform
 begin
   obtain ⟨x, hx⟩ := is_dedekind_domain.height_one_spectrum.valuation_exists_uniformizer K v,
   use ↑x,
-  rw [valued_adic_completion_def, ← hx, valued.extension_extends],
+  rw [is_dedekind_domain.height_one_spectrum.valued_adic_completion_def, ← hx, valued.extension_extends],
   refl,
 end
 
@@ -306,7 +193,7 @@ begin
     have h1 : π ∈ completion_max_ideal_def R K v,
     { rw [completion_max_ideal_def, local_ring.mem_maximal_ideal, mem_nonunits_iff,
         not_is_unit_iff_valuation_lt_one, hπ],
-      exact bar },
+      sorry/- exact bar -/ },
     rw [h, ideal.mem_bot] at h1,
     simp only [h1, algebra_map.coe_zero, valuation.map_zero, with_zero.zero_ne_coe] at hπ,
     exact hπ },
@@ -353,7 +240,7 @@ have h3 : continuous (val R K v),
   rw continuous_iff_continuous_at,
   intros x,
   rcases eq_or_ne x 0 with rfl|h,
-  { rw [continuous_at, map_zero, with_zero_topology.tendsto_zero],
+  { rw [continuous_at, valuation.map_zero, with_zero_topology.tendsto_zero],
     intros γ hγ,
     rw [filter.eventually, valued.mem_nhds_zero],
     refine ⟨units.mk0 γ hγ, _⟩,
@@ -400,7 +287,7 @@ begin
     sorry,
     exact valued.continuous_extension,
     intros x,
-    rw valued_adic_completion_def,
+    rw is_dedekind_domain.height_one_spectrum.valued_adic_completion_def,
     rw valued.extension_extends,
     
 
@@ -415,6 +302,4 @@ begin
   sorry -/
 end
 
-
 end is_dedekind_domain.height_one_spectrum
-

@@ -13,8 +13,6 @@ We define rank one valuations and discrete valuations
 
 ## Main Definitions
 * `is_rank_one` : A valuation has rank one if it is nontrivial and its image is contained in `ℝ≥0`.
-* `is_discrete` : A valuation is discrete if it is nontrivial and its image is contained in
-  `with_zero (multiplicative ℤ)`. 
 
 ## Tags
 
@@ -70,13 +68,6 @@ begin
   rw [ne.def, ← units.eq_iff, units.coe_one],
   exact (classical.some_spec hv.nontrivial).2,
 end
-
-/-- A valuation is discrete if it is nontrivial and its image is contained in
-  `with_zero (multiplicative ℤ)`. -/
-class is_discrete' (v : valuation R Γ₀) :=
-(hom : Γ₀ →*₀ with_zero (multiplicative ℤ)) 
-(strict_mono : strict_mono hom) 
-(nontrivial : ∃ r : R, v r ≠ 0 ∧ v r ≠ 1)
 
 end is_rank_one
 

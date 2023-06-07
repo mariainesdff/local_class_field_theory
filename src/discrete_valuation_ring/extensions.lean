@@ -1,3 +1,4 @@
+import number_theory.ramification_inertia
 import discrete_valuation_ring.basic
 import normalized_valuation
 
@@ -11,7 +12,7 @@ section complete
 variables (K : Type*) [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v] 
  -- [hu : uniform_space K]
 include hv
---  example : uniform_space K := infer_instance
+--example : uniform_space K := infer_instance
 
 -- Without finite_dimensional, the fails_quickly does not complain
 variables (L : Type*) [field L] [algebra K L] [complete_space K] -- [finite_dimensional K L]

@@ -14,7 +14,8 @@ class local_field (K : Type*) [field K] extends valued K ℤₘ₀ :=
 
 namespace mixed_char_local_field
 
-instance (p : ℕ) [fact(nat.prime p)] (K : Type*) [field K] [mixed_char_local_field p K] :
+@[priority 100]
+instance (p : out_param ℕ) [fact(nat.prime p)] (K : Type*) [field K] [mixed_char_local_field p K] :
   local_field K := sorry
 
 --#check mixed_char_local_field.local_field
@@ -23,7 +24,8 @@ end mixed_char_local_field
 
 namespace eq_char_local_field
 
-instance (p : ℕ) [fact(nat.prime p)] (K : Type*) [field K] [eq_char_local_field p K] :
+@[priority 100]
+instance (p : out_param ℕ) [fact(nat.prime p)] (K : Type*) [field K] [eq_char_local_field p K] :
   local_field K := sorry
 
 --#check eq_char_local_field.local_field

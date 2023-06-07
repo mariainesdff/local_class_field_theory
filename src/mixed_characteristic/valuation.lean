@@ -27,7 +27,7 @@ noncomputable theory
 open is_dedekind_domain nnreal polynomial
 open_locale mixed_char_local_field nnreal discrete_valuation
 
-variables {p : ℕ} [fact (p.prime)] 
+variables {p : out_param ℕ} [fact (p.prime)] 
 variables {K : Type*} [field K] [mixed_char_local_field p K]
 
 namespace mixed_char_local_field
@@ -163,6 +163,7 @@ def open_unit_ball : height_one_spectrum (𝓞 p K) :=
 def normalized_valuation (K : Type*) [field K] [mixed_char_local_field p K] : valuation K ℤₘ₀ :=
   (open_unit_ball K).valuation
 
+@[priority 100]
 instance (K : Type*) [field K] [mixed_char_local_field p K] : valued K ℤₘ₀ :=
   valued.mk' (normalized_valuation K)
 
