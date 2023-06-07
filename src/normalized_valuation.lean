@@ -49,6 +49,8 @@ section
 --remove!
 instance (K : Type*) [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v]: local_ring (hv.v.integer) := sorry
 
+namespace discrete_valuation
+
 def valuation_base (K : Type*) [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v] : ℝ≥0 :=
 if 1 < nat.card (local_ring.residue_field hv.v.integer)
   then nat.card (local_ring.residue_field hv.v.integer)
@@ -67,9 +69,11 @@ lemma valuation_base_ne_zero (K : Type*) [field K] [hv : valued K ℤₘ₀] [is
   valuation_base K ≠ 0 :=
 ne_zero_of_lt (one_lt_valuation_base K)
 
+end discrete_valuation
+
 end
 
-open finite_dimensional minpoly
+open finite_dimensional minpoly discrete_valuation
 
 variables (K : Type*) [field K] [hv : valued K ℤₘ₀]
 
