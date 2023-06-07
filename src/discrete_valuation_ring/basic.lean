@@ -189,20 +189,6 @@ end
 lemma uniformizer_valuation_lt_one {π : K₀} (hπ : is_uniformizer v (π : K)) : v (π : K) < 1 := 
 (valuation.integer.not_is_unit_iff_valuation_lt_one π).mp (uniformizer_not_is_unit v hπ)
 
-variable [is_discrete v]
-
-lemma exists_uniformizer : ∃ π : K₀, is_uniformizer v (π : K) := 
-begin
-  letI surj_v : is_discrete v, apply_instance,
-  refine ⟨⟨(surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some, _⟩, 
-    (surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some_spec⟩,
-  rw [mem_integer, (surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some_spec],
-  exact (le_of_lt of_add_neg_one_le_one),
-end
-
-instance : nonempty (uniformizer v) := 
-⟨⟨(exists_uniformizer v).some, (exists_uniformizer v).some_spec⟩⟩
-
 variables (π : uniformizer v) {K}
 
 lemma pow_uniformizer {r : K₀} (hr : r ≠ 0) : ∃ n : ℕ, ∃ u : K₀ˣ, r = π.1^n * u :=
@@ -238,6 +224,48 @@ begin
   rw [ne.def, subring.coe_eq_zero_iff],
   exact uniformizer_ne_zero' _ π,
 end
+
+lemma integer_is_local_ring : local_ring K₀ :=
+{ exists_pair_ne := ⟨0, 1, zero_ne_one⟩,
+  is_unit_or_is_unit_of_add_one := λ a b hab, 
+  begin
+    by_cases ha : is_unit a,
+    { exact or.inl ha },
+    { right,
+      have hab' : v (a + b : K) = 
+        (1 : ℤₘ₀),
+      { rw [← subring.coe_add, hab, subring.coe_one, valuation.map_one] },
+      have hb0 : (↑b : K) ≠ 0,
+      { rw [ne.def, subring.coe_eq_zero_iff],
+        intro hb,
+        rw [hb, add_zero] at hab,
+        rw hab at ha,
+        exact ha is_unit_one },
+      apply @integers.is_unit_of_one K _ _ _ v K₀ _ _ (integer.integers v) b
+        ((is_unit_iff_ne_zero).mpr hb0) _,
+      have hab'' : v (-a) < v (a + b),
+      { rw [hab', valuation.map_neg],
+        exact (integer.not_is_unit_iff_valuation_lt_one a).mp ha }, 
+      have hb : (algebra_map ↥(v.integer) K) b = (b : K), {refl},
+      rw [hb, ← add_sub_cancel' (↑a : K) ↑b, sub_eq_add_neg, add_comm (↑a + ↑b) _,
+        add_eq_max_of_ne (ne_of_lt hab''), ←hab'], 
+      apply max_eq_right,
+      exact (le_of_lt hab''),  },
+  end }
+
+variable [is_discrete v]
+
+lemma exists_uniformizer : ∃ π : K₀, is_uniformizer v (π : K) := 
+begin
+  letI surj_v : is_discrete v, apply_instance,
+  refine ⟨⟨(surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some, _⟩, 
+    (surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some_spec⟩,
+  rw [mem_integer, (surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some_spec],
+  exact (le_of_lt of_add_neg_one_le_one),
+end
+
+instance : nonempty (uniformizer v) := 
+⟨⟨(exists_uniformizer v).some, (exists_uniformizer v).some_spec⟩⟩
 
 lemma ideal_is_principal (I : ideal K₀) : I.is_principal:=
 begin
@@ -287,34 +315,6 @@ end
 lemma is_principal_ideal_ring : is_principal_ideal_ring K₀:= 
 ⟨λ I, ideal_is_principal v I⟩
 
-lemma integer_is_local_ring : local_ring K₀ :=
-{ exists_pair_ne := ⟨0, 1, zero_ne_one⟩,
-  is_unit_or_is_unit_of_add_one := λ a b hab, 
-  begin
-    by_cases ha : is_unit a,
-    { exact or.inl ha },
-    { right,
-      have hab' : v (a + b : K) = 
-        (1 : ℤₘ₀),
-      { rw [← subring.coe_add, hab, subring.coe_one, valuation.map_one] },
-      have hb0 : (↑b : K) ≠ 0,
-      { rw [ne.def, subring.coe_eq_zero_iff],
-        intro hb,
-        rw [hb, add_zero] at hab,
-        rw hab at ha,
-        exact ha is_unit_one },
-      apply @integers.is_unit_of_one K _ _ _ v K₀ _ _ (integer.integers v) b
-        ((is_unit_iff_ne_zero).mpr hb0) _,
-      have hab'' : v (-a) < v (a + b),
-      { rw [hab', valuation.map_neg],
-        exact (integer.not_is_unit_iff_valuation_lt_one a).mp ha }, 
-      have hb : (algebra_map ↥(v.integer) K) b = (b : K), {refl},
-      rw [hb, ← add_sub_cancel' (↑a : K) ↑b, sub_eq_add_neg, add_comm (↑a + ↑b) _,
-        add_eq_max_of_ne (ne_of_lt hab''), ←hab'], 
-      apply max_eq_right,
-      exact (le_of_lt hab''),  },
-  end }
-
 end discrete_valuation
 
 namespace disc_valued
@@ -332,12 +332,12 @@ def uniformizer := discrete_valuation.uniformizer hv.v
 instance [hv : valued K ℤₘ₀] [is_discrete hv.v] : nonempty (uniformizer K) := 
 ⟨⟨(exists_uniformizer hv.v).some, (exists_uniformizer hv.v).some_spec⟩⟩
 
+instance : local_ring K₀ := discrete_valuation.integer_is_local_ring hv.v
+
 variables [is_discrete hv.v]
 
 instance is_principal_ideal_ring : is_principal_ideal_ring K₀ := 
 discrete_valuation.is_principal_ideal_ring hv.v
-
-instance : local_ring K₀ := discrete_valuation.integer_is_local_ring hv.v
 
 -- Chapter I, Section 1, Proposition 1 in Serre's Local Fields
 instance discrete_valuation_ring : discrete_valuation_ring K₀ := 
