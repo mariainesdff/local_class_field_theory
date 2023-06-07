@@ -290,7 +290,7 @@ is_principal_ideal_ring.is_dedekind_domain (power_series K)
 
 instance : normalization_monoid (power_series K) :=
 { norm_unit := λ f, (unit_of_divided_by_X_pow f)⁻¹,
-  norm_unit_zero := by squeeze_simp [unit_of_divided_by_X_pow_zero],
+  norm_unit_zero := by simp only [unit_of_divided_by_X_pow_zero, inv_one],
   norm_unit_mul := λ f g hf hg, by { simp only [← mul_inv, inv_inj],
     simp only [unit_of_divided_by_X_pow_nonzero (mul_ne_zero hf hg), 
     unit_of_divided_by_X_pow_nonzero hf, unit_of_divided_by_X_pow_nonzero hg, units.ext_iff,
