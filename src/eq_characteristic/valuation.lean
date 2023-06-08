@@ -497,7 +497,7 @@ lemma FpX_int_completion.norm_lt_one_iff_dvd (f : 𝔽_[p]⟦X⟧) :
 -- end
 . 
 
---set_option profiler true --7.26s
+-- set_option profiler true --7.26s ([FAE] 15.9 s on Jun8th)
 -- Even compiling the statement is slow...
 noncomputable! lemma open_unit_ball_def : (open_unit_ball 𝔽_[p]⟮⟮X⟯⟯).as_ideal =
   ideal.span {(algebra_map 𝔽_[p]⟦X⟧ (𝓞 p 𝔽_[p]⟮⟮X⟯⟯) (FpX_int_completion.X p))}
