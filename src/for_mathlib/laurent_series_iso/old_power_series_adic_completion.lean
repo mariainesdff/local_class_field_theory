@@ -360,6 +360,12 @@ begin
 end
 
 --GOLF BOTH AND UNIFY THEM **USED** in `power_series_adic_completion`!
+lemma count_normalized_factors_eq_associates_count'' {R : Type*} [comm_ring R]
+  [is_domain R] [is_principal_ideal_ring R] [normalization_monoid R] [unique_factorization_monoid R] 
+  {I J : ideal R} (hI : I ≠ 0)
+  (hJ : J.is_prime ) (hJ₀ : J ≠ ⊥) : multiset.count J (normalized_factors I) =
+  (associates.mk J).count (associates.mk I).factors := sorry
+
 lemma count_normalized_factors_eq_associates_count' {I J : ideal (power_series K)} (hI : I ≠ 0)
   (hJ : J.is_prime ) (hJ₀ : J ≠ ⊥) : multiset.count J (normalized_factors I) =
   (associates.mk J).count (associates.mk I).factors := sorry

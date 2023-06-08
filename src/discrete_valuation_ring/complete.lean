@@ -229,6 +229,10 @@ end -/
 
 open_locale with_zero_topology
 
+/-We are probably trying to prove that starting with a global field and a place, the extension of
+the valuation to the completion agrees with the DVR valuation on the local field induced by the 
+maximal ideal.
+-/
 
 lemma a (x : K_v) : true :=
 begin
