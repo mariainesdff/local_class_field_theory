@@ -34,7 +34,8 @@ open multiplicity unique_factorization_monoid
 
 lemma aux_old_pol (P : (polynomial K)) : 
   multiset.count (power_series.ideal_X K).as_ideal (normalized_factors (ideal.span {↑P})) =
-  multiset.count (ideal.span {polynomial.X} : ideal (polynomial K)) (normalized_factors (ideal.span {P})) :=
+  multiset.count (ideal.span {polynomial.X} : ideal (polynomial K))
+    (normalized_factors (ideal.span {P})) :=
 begin
   sorry,
 end
@@ -220,7 +221,7 @@ def compare_pkg : (completion_of_ratfunc K) ≃ᵤ laurent_series K :=
 --   uniform_space.completion.extension_unique (unif_cont_coe K)
 --     (uniform_continuous_compare_equiv _ _) (aux K)
 
-noncomputable! def  laurent_series_ring_equiv' : 
+noncomputable! def  laurent_series_ring_equiv : 
   ring_equiv (completion_of_ratfunc K) (laurent_series K) :=
 { map_mul' := (extension_as_ring_hom K (unif_cont_coe K).continuous).map_mul',
   map_add' := (extension_as_ring_hom K (unif_cont_coe K).continuous).map_add',

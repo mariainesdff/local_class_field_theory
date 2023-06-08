@@ -1273,13 +1273,13 @@ begin
   sorry
 end
 
-noncomputable! def laurent_series.ring_equiv : 
+noncomputable! def laurent_series.ring_equiv' : 
   ring_equiv (completion_of_ratfunc K) (laurent_series K) :=
 { map_mul' := sorry,
   map_add' := sorry,
   .. laurent_series.equiv }
 
-noncomputable! def power_series.ring_equiv : ring_equiv (adic_completion_integers (ratfunc K) 
+noncomputable! def power_series.ring_equiv' : ring_equiv (adic_completion_integers (ratfunc K) 
   (ideal_X K : is_dedekind_domain.height_one_spectrum (polynomial K))) (power_series K) :=
 sorry
 
