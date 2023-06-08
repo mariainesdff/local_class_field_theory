@@ -1,17 +1,15 @@
 /-
-Copyright (c) 2022 María Inés de Frutos-Fernández, Filippo A. E. Nuccio. All rights reserved.
+Copyright (c) 2023 María Inés de Frutos-Fernández, Filippo A. E. Nuccio. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
 
+import discrete_valuation_ring.extensions
+import discrete_valuation_ring.global_to_local
 import eq_characteristic.basic
+import for_mathlib.rank_one_valuation
 import from_mathlib.normed_valued
 import from_mathlib.spectral_norm_unique
-import normalized_valuation
-import for_mathlib.rank_one_valuation
-import discrete_valuation_ring.global_to_local
-
---import algebra.group.type_tags
 
 noncomputable theory
 
