@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2023 María Inés de Frutos-Fernández, Filippo A. E. Nuccio. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
+-/
 
 import ring_theory.dedekind_domain.adic_valuation
 import ring_theory.discrete_valuation_ring
@@ -90,9 +95,7 @@ end
 
 end integer
 
-end valuation
-
-variables {A : Type*} [comm_ring A] 
+-- variables {A : Type*} [comm_ring A] 
 
 
 /- We insist that `v` takes values in ℤₘ₀ in order to define uniformizers as the elements in `K`
@@ -101,39 +104,6 @@ class is_discrete (v : valuation A ℤₘ₀) :=
 (surj : function.surjective v)
 
 open valuation ideal is_dedekind_domain multiplicative with_zero
-
-namespace discrete_valuation
-
-variables [is_domain A] [discrete_valuation_ring A]
-
-variable (A)
-
-def maximal_ideal : height_one_spectrum A :=
-{ as_ideal := local_ring.maximal_ideal A,
-  is_prime := ideal.is_maximal.is_prime (local_ring.maximal_ideal.is_maximal A),
-  ne_bot   := begin
-    rw [ne.def, ← local_ring.is_field_iff_maximal_ideal_eq],
-    exact discrete_valuation_ring.not_is_field A,
-  end }
-
-variable {A}
-
-noncomputable instance : valued (fraction_ring A) ℤₘ₀ := 
-(maximal_ideal A).adic_valued
-
--- TODO: Can we rewrite `is_discrete_of_exists_uniformizer` in a way that applies here?
-instance : is_discrete (@valued.v (fraction_ring A) _ ℤₘ₀ _ _) := 
-⟨begin
-  intro x,
-  apply with_zero.cases_on x,
-  { exact ⟨0, valuation.map_zero valued.v⟩ },
-  { obtain ⟨π, hπ⟩ := is_dedekind_domain.height_one_spectrum.valuation_exists_uniformizer
-      (fraction_ring A) (maximal_ideal A),
-    intro m,
-    use π^(- multiplicative.to_add m),
-    erw [map_zpow₀, hπ, ← coe_zpow, coe_inj, ← of_add_zsmul, ← zsmul_neg', neg_neg, zsmul_one,
-      int.cast_id, of_add_to_add], }
-end⟩
 
 variables {R : Type*} [comm_ring R] (vR : valuation R ℤₘ₀)
 
@@ -316,29 +286,66 @@ end
 lemma is_principal_ideal_ring : is_principal_ideal_ring K₀:= 
 ⟨λ I, ideal_is_principal v I⟩
 
+end valuation
+
+namespace discrete_valuation
+
+variables {A : Type*} [comm_ring A] [is_domain A] [discrete_valuation_ring A]
+
+open is_dedekind_domain valuation
+
+variable (A)
+
+def maximal_ideal : height_one_spectrum A :=
+{ as_ideal := local_ring.maximal_ideal A,
+  is_prime := ideal.is_maximal.is_prime (local_ring.maximal_ideal.is_maximal A),
+  ne_bot   := begin
+    rw [ne.def, ← local_ring.is_field_iff_maximal_ideal_eq],
+    exact discrete_valuation_ring.not_is_field A,
+  end }
+
+variable {A}
+
+noncomputable instance : valued (fraction_ring A) ℤₘ₀ := 
+(maximal_ideal A).adic_valued
+
+-- TODO: Can we rewrite `is_discrete_of_exists_uniformizer` in a way that applies here?
+instance : is_discrete (@valued.v (fraction_ring A) _ ℤₘ₀ _ _) := 
+⟨begin
+  intro x,
+  apply with_zero.cases_on x,
+  { exact ⟨0, valuation.map_zero valued.v⟩ },
+  { obtain ⟨π, hπ⟩ := is_dedekind_domain.height_one_spectrum.valuation_exists_uniformizer
+      (fraction_ring A) (maximal_ideal A),
+    intro m,
+    use π^(- multiplicative.to_add m),
+    erw [map_zpow₀, hπ, ← with_zero.coe_zpow, with_zero.coe_inj, ← of_add_zsmul, ← zsmul_neg',
+      neg_neg, zsmul_one, int.cast_id, of_add_to_add], }
+end⟩
+
 end discrete_valuation
 
 namespace disc_valued
 
-open discrete_valuation
+open valuation
 
 variables (K : Type*) [field K] [hv : valued K ℤₘ₀] 
 
 local notation `K₀` := hv.v.integer
 
-def is_uniformizer := discrete_valuation.is_uniformizer hv.v
+def is_uniformizer := valuation.is_uniformizer hv.v
 
-def uniformizer := discrete_valuation.uniformizer hv.v
+def uniformizer := valuation.uniformizer hv.v
 
 instance [hv : valued K ℤₘ₀] [is_discrete hv.v] : nonempty (uniformizer K) := 
 ⟨⟨(exists_uniformizer hv.v).some, (exists_uniformizer hv.v).some_spec⟩⟩
 
-instance : local_ring K₀ := discrete_valuation.integer_is_local_ring hv.v
+instance : local_ring K₀ := valuation.integer_is_local_ring hv.v
 
 variables [is_discrete hv.v]
 
 instance is_principal_ideal_ring : is_principal_ideal_ring K₀ := 
-discrete_valuation.is_principal_ideal_ring hv.v
+valuation.is_principal_ideal_ring hv.v
 
 -- Chapter I, Section 1, Proposition 1 in Serre's Local Fields
 instance discrete_valuation_ring : discrete_valuation_ring K₀ := 
