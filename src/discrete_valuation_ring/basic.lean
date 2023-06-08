@@ -225,6 +225,7 @@ begin
   exact uniformizer_ne_zero' _ π,
 end
 
+/-In the following lemma, the assumption that v be discrete is not needed. -/
 lemma integer_is_local_ring : local_ring K₀ :=
 { exists_pair_ne := ⟨0, 1, zero_ne_one⟩,
   is_unit_or_is_unit_of_add_one := λ a b hab, 
