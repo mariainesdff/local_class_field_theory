@@ -40,8 +40,6 @@ begin
 end
 
 
-
-
 lemma should_be_in_old_pol (P : (polynomial K)) : (ideal_X K).int_valuation (P) =
   (power_series.ideal_X K).int_valuation (↑P : (power_series K)) :=
 begin
@@ -103,13 +101,15 @@ begin
     apply ratfunc.coe_coe K,
    },
   rw aux,
-  have := @valuation_of_mk' (power_series K) _ _ _ (laurent_series K) _ _ _ (power_series.ideal_X K) ↑f ⟨g, mem_non_zero_divisors_iff_ne_zero.2 $ coe_ne_zero h⟩,
+  have := @valuation_of_mk' (power_series K) _ _ _ (laurent_series K) _ _ _
+    (power_series.ideal_X K) ↑f ⟨g, mem_non_zero_divisors_iff_ne_zero.2 $ coe_ne_zero h⟩,
   convert this;
   apply should_be_in_old_pol,
 end
 
 
-lemma should_be_in_old (P₁ P₂ : (ratfunc K)) : valued.v (P₁ - P₂) = valued.v ((↑P₁ : (laurent_series K)) - ↑P₂) :=
+lemma should_be_in_old (P₁ P₂ : (ratfunc K)) : valued.v (P₁ - P₂) =
+  valued.v ((↑P₁ : (laurent_series K)) - ↑P₂) :=
 begin
   have : valued.v (P₁ - P₂) = (ideal_X K).valuation (P₁ - P₂),
   refl,
