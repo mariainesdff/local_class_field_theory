@@ -21,7 +21,7 @@ lemma of_add_neg_nat (n : ℕ) :
 by rw [← with_zero.coe_pow, with_zero.coe_inj, ← one_mul (n : ℤ), ← neg_mul, 
   int.of_add_mul, zpow_coe_nat]
 
-lemma of_add_neg_one_le_one : ((multiplicative.of_add ((-1 : ℤ))) : ℤₘ₀) < (1 : ℤₘ₀) := 
+lemma of_add_neg_one_lt_one : ((multiplicative.of_add ((-1 : ℤ))) : ℤₘ₀) < (1 : ℤₘ₀) := 
 begin
   rw [← with_zero.coe_one, with_zero.coe_lt_coe, ← of_add_zero],
   exact neg_one_lt_zero,
@@ -110,16 +110,22 @@ variables {R : Type*} [comm_ring R] (vR : valuation R ℤₘ₀)
 def is_uniformizer (π : R) : Prop := 
 vR π = (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)
 
-variables {K : Type*} [field K] (v : valuation K ℤₘ₀) 
+variable {vR}
+lemma is_uniformizer_iff {π : R} : is_uniformizer vR π ↔ 
+  vR π = (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀) := refl _
 
-local notation `K₀` := v.integer
-
+variable (vR)
 @[ext] structure uniformizer :=
-(val : v.integer)
-(valuation_eq_neg_one : v val = (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀))
+(val : vR.integer)
+(valuation_eq_neg_one : is_uniformizer vR val)
 
-def is_discrete_of_exists_uniformizer {π : K₀} (hπ : is_uniformizer v (π : K)) : 
-  is_discrete v :=
+def uniformizer.mk' (x : R) (hx : is_uniformizer vR x) : uniformizer vR :=
+{ val := ⟨x, by {rw [mem_integer, is_uniformizer_iff.mp hx],
+   exact (le_of_lt with_zero.of_add_neg_one_lt_one)}⟩,
+valuation_eq_neg_one := hx }
+
+def is_discrete_of_exists_uniformizer {K : Type*} [field K] (v : valuation K ℤₘ₀) {π : K}
+  (hπ : is_uniformizer v π) : is_discrete v :=
 ⟨begin
   intro x,
   apply with_zero.cases_on x,
@@ -131,39 +137,39 @@ def is_discrete_of_exists_uniformizer {π : K₀} (hπ : is_uniformizer v (π : 
       int.cast_id, of_add_to_add] }
 end⟩
 
-lemma uniformizer_ne_zero {π : K₀} (hπ : is_uniformizer v (π : K)) : π ≠ 0 := 
+lemma uniformizer_ne_zero {π : R} (hπ : is_uniformizer vR π) : π ≠ 0 := 
 begin
   intro h0,
-  rw [h0, is_uniformizer, algebra_map.coe_zero, valuation.map_zero] at hπ,
+  rw [h0, is_uniformizer, valuation.map_zero] at hπ,
   exact with_zero.zero_ne_coe hπ,
 end
 
-lemma uniformizer_ne_zero' (π : uniformizer v) : π.1 ≠ 0 := 
-uniformizer_ne_zero v π.2
+lemma uniformizer_ne_zero' (π : uniformizer vR) : π.1.1 ≠ 0 := 
+uniformizer_ne_zero vR π.2
 
-lemma uniformizer_valuation_pos {π : K₀} (hπ : is_uniformizer v (π : K)) : 0 < v (π : K) := 
-begin
-  rw [zero_lt_iff, ne.def, zero_iff, subring.coe_eq_zero_iff],
-  exact uniformizer_ne_zero v hπ,
-end
+lemma uniformizer_valuation_pos {π : R} (hπ : is_uniformizer vR π) : 0 < vR π := 
+  by {rw is_uniformizer_iff at hπ, simp only [zero_lt_iff, ne.def, hπ, coe_ne_zero, not_false_iff]}
 
-lemma uniformizer_not_is_unit {π : K₀} (hπ : is_uniformizer v (π : K)) : ¬ is_unit π := 
+lemma uniformizer_not_is_unit {π : vR.integer} (hπ : is_uniformizer vR π ) : ¬ is_unit π := 
 begin
   intro h,
-  have h1 := @valuation.integers.one_of_is_unit K ℤₘ₀ _ _ v v.integer _ _ 
-   (valuation.integer.integers v) π h,
+  have h1 := @valuation.integers.one_of_is_unit R ℤₘ₀ _ _ vR vR.integer _ _ 
+   (valuation.integer.integers vR) π h,
   erw [is_uniformizer, h1] at hπ,
-  exact ne_of_gt of_add_neg_one_le_one hπ,
+  exact ne_of_gt of_add_neg_one_lt_one hπ,
 end
 
-lemma uniformizer_valuation_lt_one {π : K₀} (hπ : is_uniformizer v (π : K)) : v (π : K) < 1 := 
-(valuation.integer.not_is_unit_iff_valuation_lt_one π).mp (uniformizer_not_is_unit v hπ)
+lemma uniformizer_valuation_lt_one {π : R} (hπ : is_uniformizer vR π) : vR π < 1 := 
+by {rw is_uniformizer_iff.mp hπ, exact of_add_neg_one_lt_one}
 
-variables (π : uniformizer v) {K}
+
+variables {K : Type*} [field K] (v : valuation K ℤₘ₀) (π : uniformizer v) {K}
+
+local notation `K₀` := v.integer
 
 lemma pow_uniformizer {r : K₀} (hr : r ≠ 0) : ∃ n : ℕ, ∃ u : K₀ˣ, r = π.1^n * u :=
 begin
-  have hr₀ : v r ≠ 0, 
+  have hr₀ : v r ≠ 0,
   { rw [ne.def, zero_iff, subring.coe_eq_zero_iff], exact hr},
   set m := - (unzero hr₀).to_add with hm,
   have hm₀ : 0 ≤ m, 
@@ -172,16 +178,16 @@ begin
   obtain ⟨n, hn⟩ := int.eq_coe_of_zero_le hm₀,
   use n,
   have hpow : v (π.1^(-m) * r) = 1, 
-  { rw [valuation.map_mul, map_zpow₀,π.2, of_add_neg, coe_inv, inv_zpow', neg_neg,
-      ← with_zero.coe_zpow, ← int.of_add_mul, one_mul, of_add_neg, of_add_to_add, 
-      coe_inv, coe_unzero, inv_mul_cancel hr₀], },
+  { rw [valuation.map_mul, map_zpow₀, is_uniformizer_iff.mp π.2, of_add_neg, coe_inv, inv_zpow',
+      neg_neg, ← with_zero.coe_zpow, ← int.of_add_mul, one_mul, of_add_neg, of_add_to_add, coe_inv,
+      coe_unzero, inv_mul_cancel hr₀], },
   set a : K₀ := ⟨π.1^(-m )*r, by apply le_of_eq hpow⟩ with ha,
   have ha₀ : (↑a : K) ≠ 0, 
   { simp only [ha, neg_neg, set_like.coe_mk, ne.def],
     by_cases h0 : to_add (unzero hr₀) = 0,
     { rw [h0, zpow_zero, one_mul, subring.coe_eq_zero_iff], exact hr },
     { apply mul_ne_zero,
-      { rw [ne.def, zpow_eq_zero_iff h0, subring.coe_eq_zero_iff],
+      { rw [ne.def, zpow_eq_zero_iff h0],
         exact uniformizer_ne_zero' v π},
       { rw [ne.def, subring.coe_eq_zero_iff], exact hr, }}},
   have h_unit_a : is_unit a,
@@ -189,9 +195,8 @@ begin
   use h_unit_a.unit,
   ext,
   rw [is_unit.unit_spec, subring.coe_mul, subring.coe_pow, subtype.coe_mk, hn, ← mul_assoc, 
-    zpow_neg, zpow_coe_nat, mul_inv_cancel,  one_mul],
+    zpow_neg, zpow_coe_nat, mul_inv_cancel, one_mul],
   apply pow_ne_zero,
-  rw [ne.def, subring.coe_eq_zero_iff],
   exact uniformizer_ne_zero' _ π,
 end
 
@@ -232,7 +237,7 @@ begin
   refine ⟨⟨(surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some, _⟩, 
     (surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some_spec⟩,
   rw [mem_integer, (surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some_spec],
-  exact (le_of_lt of_add_neg_one_le_one),
+  exact (le_of_lt of_add_neg_one_lt_one),
 end
 
 instance : nonempty (uniformizer v) := 
@@ -278,7 +283,9 @@ lemma not_is_field : ¬ is_field K₀ :=
 begin
   obtain ⟨π, hπ⟩ := exists_uniformizer v,
   rintros ⟨-, -, h⟩,
-  specialize h (uniformizer_ne_zero v hπ),
+  have := uniformizer_ne_zero v hπ,
+  simp only [uniformizer_ne_zero v hπ, ne.def, subring.coe_eq_zero_iff] at this,
+  specialize h this,
   rw ← is_unit_iff_exists_inv at h,
   exact uniformizer_not_is_unit v hπ h,
 end
@@ -292,7 +299,7 @@ namespace discrete_valuation
 
 variables {A : Type*} [comm_ring A] [is_domain A] [discrete_valuation_ring A]
 
-open is_dedekind_domain valuation
+open is_dedekind_domain is_dedekind_domain.height_one_spectrum valuation
 
 variable (A)
 
@@ -309,19 +316,11 @@ variable {A}
 noncomputable instance : valued (fraction_ring A) ℤₘ₀ := 
 (maximal_ideal A).adic_valued
 
--- TODO: Can we rewrite `is_discrete_of_exists_uniformizer` in a way that applies here?
-instance : is_discrete (@valued.v (fraction_ring A) _ ℤₘ₀ _ _) := 
-⟨begin
-  intro x,
-  apply with_zero.cases_on x,
-  { exact ⟨0, valuation.map_zero valued.v⟩ },
-  { obtain ⟨π, hπ⟩ := is_dedekind_domain.height_one_spectrum.valuation_exists_uniformizer
-      (fraction_ring A) (maximal_ideal A),
-    intro m,
-    use π^(- multiplicative.to_add m),
-    erw [map_zpow₀, hπ, ← with_zero.coe_zpow, with_zero.coe_inj, ← of_add_zsmul, ← zsmul_neg',
-      neg_neg, zsmul_one, int.cast_id, of_add_to_add], }
-end⟩
+
+noncomputable
+instance : is_discrete (@valued.v (fraction_ring A) _ ℤₘ₀ _ _) :=
+is_discrete_of_exists_uniformizer valued.v
+  (valuation_exists_uniformizer (fraction_ring A) (maximal_ideal A)).some_spec
 
 end discrete_valuation
 
