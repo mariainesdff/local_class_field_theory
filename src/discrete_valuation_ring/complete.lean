@@ -235,7 +235,7 @@ begin
   sorry
 end
 
-lemma continuous_adic_valuation : continuous (adic_valuation R K v).to_monoid_with_zero_hom :=
+lemma continuous_adic_valuation : continuous (adic_valuation R K v) :=
 begin
   sorry
 end
@@ -243,25 +243,16 @@ end
 --set_option pp.implicit true
 lemma valuations_eq (x : K_v) : adic_valuation R K v x = valued.v x :=
 begin
-  have : (adic_valuation R K v).to_fun = valued.v,
+  have heq : (adic_valuation R K v).to_fun = valued.v,
   { letI : valued K ℤₘ₀ := valued.mk' v.valuation,
-    apply uniform_space.completion.ext,
-    sorry,
-    exact valued.continuous_extension,
+    apply uniform_space.completion.ext (continuous_adic_valuation R K v),
+    { exact valued.continuous_extension },
     intros x,
     rw is_dedekind_domain.height_one_spectrum.valued_adic_completion_def,
     rw valued.extension_extends,
-    
-
-    sorry },
-  rw ← this,
+    exact valuations_eq_on_K R K v x, },
+  rw ← heq,
   refl,
-  /- letI : valued K ℤₘ₀ := v.adic_valued,
-  apply uniform_space.completion.induction_on x,
-  { simp only, --(?)
-    sorry },
-  intros a,
-  sorry -/
 end
 
 end is_dedekind_domain.height_one_spectrum.completion
