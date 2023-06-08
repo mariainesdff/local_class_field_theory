@@ -16,9 +16,10 @@ include hv
 -- Without finite_dimensional, the fails_quickly does not complain
 variables (L : Type*) [field L] [algebra K L] [complete_space K] 
 
+-- TODO: Maybe this can be an instance
 def uniform_space_extension : uniform_space L := sorry
 
-lemma extension_is_complete : @is_complete L (uniform_space_extension K L) set.univ := sorry
+lemma extension_is_complete [finite_dimensional K L] : @is_complete L (uniform_space_extension K L) set.univ := sorry
 
 --instance is_discrete_of_finite : is_discrete (@valued.v L _ ℤₘ₀ _ _) := sorry
 instance is_discrete_of_finite [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) : 

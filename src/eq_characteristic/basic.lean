@@ -39,7 +39,6 @@ but are independent of that choice.
 number field, ring of integers
 -/
 
-
 --TODO: organize this file better
 noncomputable theory
 
@@ -56,8 +55,8 @@ def FpX_field_completion :=
 notation (name := FpX_field_completion)
   `𝔽_[` p `]⟮⟮` X `⟯⟯` := FpX_field_completion p
 
-def FpX_int_completion  :=
- (ideal_X 𝔽_[p]).adic_completion_integers (ratfunc 𝔽_[p])
+def FpX_int_completion :=
+(ideal_X 𝔽_[p]).adic_completion_integers (ratfunc 𝔽_[p])
 
 notation (name := FpX_int_completion)
   `𝔽_[` p `]⟦` X `⟧` := FpX_int_completion p
@@ -111,7 +110,8 @@ end
 variable (p)
 -- Upgrade to (ratfunc Fp)-algebra iso
 noncomputable!
-def isom_laurent : 𝔽_[p]⟮⟮X⟯⟯  ≃+* (laurent_series 𝔽_[p]) := sorry -- F
+def isom_laurent : 𝔽_[p]⟮⟮X⟯⟯  ≃+* (laurent_series 𝔽_[p]) := 
+completion_laurent_series.laurent_series_ring_equiv 𝔽_[p]
 
 end FpX_field_completion
 
