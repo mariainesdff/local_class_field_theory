@@ -100,7 +100,7 @@ end integer
 
 /- We insist that `v` takes values in ℤₘ₀ in order to define uniformizers as the elements in `K`
 whose valuation is exactly `with_zero.multiplicative (- 1) : ℤₘ₀`-/
-class is_discrete (v : valuation A ℤₘ₀) :=
+class is_discrete (v : valuation A ℤₘ₀) : Prop :=
 (surj : function.surjective v)
 
 open valuation ideal is_dedekind_domain multiplicative with_zero
@@ -165,7 +165,7 @@ by {rw is_uniformizer_iff.mp hπ, exact of_add_neg_one_lt_one}
 
 variables {K : Type*} [field K] (v : valuation K ℤₘ₀) (π : uniformizer v) {K}
 
-local notation `K₀` := v.integer
+local notation `K₀` := v.valuation_subring
 
 lemma pow_uniformizer {r : K₀} (hr : r ≠ 0) : ∃ n : ℕ, ∃ u : K₀ˣ, r = π.1^n * u :=
 begin
@@ -222,7 +222,7 @@ lemma integer_is_local_ring : local_ring K₀ :=
       have hab'' : v (-a) < v (a + b),
       { rw [hab', valuation.map_neg],
         exact (integer.not_is_unit_iff_valuation_lt_one a).mp ha }, 
-      have hb : (algebra_map ↥(v.integer) K) b = (b : K), {refl},
+      have hb : (algebra_map ↥(v.valuation_subring) K) b = (b : K), {refl},
       rw [hb, ← add_sub_cancel' (↑a : K) ↑b, sub_eq_add_neg, add_comm (↑a + ↑b) _,
         add_eq_max_of_ne (ne_of_lt hab''), ←hab'], 
       apply max_eq_right,
@@ -236,7 +236,7 @@ begin
   letI surj_v : is_discrete v, apply_instance,
   refine ⟨⟨(surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some, _⟩, 
     (surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some_spec⟩,
-  rw [mem_integer, (surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some_spec],
+  rw [mem_valuation_subring_iff, (surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some_spec],
   exact (le_of_lt of_add_neg_one_lt_one),
 end
 
@@ -330,7 +330,7 @@ open valuation
 
 variables (K : Type*) [field K] [hv : valued K ℤₘ₀] 
 
-local notation `K₀` := hv.v.integer
+local notation `K₀` := hv.v.valuation_subring
 
 def is_uniformizer := valuation.is_uniformizer hv.v
 
