@@ -47,7 +47,11 @@ local notation `R_v` := is_dedekind_domain.height_one_spectrum.adic_completion_i
 local notation `K_v` := is_dedekind_domain.height_one_spectrum.adic_completion K v
 
 noncomputable! instance : is_discrete (@valued.v K_v _ ℤₘ₀ _ _) := 
-sorry
+begin
+  sorry,
+  -- apply discrete_valuation.is_discrete_of_exists_uniformizer,
+
+end
 
 instance asdf : is_noetherian_ring R_v :=
 { noetherian := sorry }
