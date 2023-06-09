@@ -16,7 +16,7 @@ def inter_as_set : set K' := λ x, (coe '' K : (set (uniform_space.completion X)
 lemma completion_closed_inter_univ (h_sub : coe '' K ⊆ K')
   (H : dense (inter_as_set X  K K')) : K' ∩ (coe '' (set.univ : set X)) = coe '' K :=
 begin
-  set Y := {x : uniform_space.completion X // x ∈ K' ∩ (coe '' (set.univ : set X))} with hY,
+  set Y := K' ∩ (coe '' (set.univ : set X)) with hY,
   haveI : uniform_space Y := infer_instance,
   set K'' : set Y :=  {x : Y | ∃ (y : K), (y : uniform_space.completion X) = ↑x } with hK'',
   --set K'' : set Y := λ x, ((coe '' K : (set (uniform_space.completion X))) x) with hK'',
@@ -39,9 +39,8 @@ begin
   have h2 : (coe '' (set.univ : set Y) : set (uniform_space.completion X)) = 
     K' ∩ coe '' (set.univ : set X),
   { ext x',
-    simp only [set.image_univ, subtype.range_coe_subtype, set.mem_set_of_eq],},
-  simp only [← h1, ← h2, h_closed], 
-
+    simp only [set.image_univ, subtype.range_coe_subtype, set.mem_inter_iff, set.mem_set_of_eq] },
+  simp only [hY,← h1, ← h2, h_closed], 
 end
 
 
