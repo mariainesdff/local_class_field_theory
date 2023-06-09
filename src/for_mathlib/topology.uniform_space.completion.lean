@@ -6,7 +6,6 @@ variables (K' : set (uniform_space.completion X)) --[hK' : is_closed K']
 
 open_locale big_operators
 
--- example : uniform_space K := infer_instance
 -- noncomputable
 def inter_as_set : set K' := λ x, (coe '' K : (set (uniform_space.completion X))) x
 -- def bleah : set K' := λ x, (coe '' K : (set (uniform_space.completion X))) x
