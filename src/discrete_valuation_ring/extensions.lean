@@ -7,7 +7,7 @@ import with_zero
 
 noncomputable theory
 
-open multiplicative with_zero
+open multiplicative valuation with_zero
 open_locale discrete_valuation nnreal
 
 namespace add_subgroup
@@ -23,7 +23,9 @@ namespace minpoly
 theorem degree_dvd {K : Type*} [field K] {L : Type*} [field L] [algebra K L] {x : L}
   [finite_dimensional K L] (hx : is_integral K x) :
   (minpoly K x).nat_degree ∣ (finite_dimensional.finrank K L) :=
-sorry
+begin
+  sorry
+end
 
 end minpoly
 
@@ -31,15 +33,15 @@ section is_rank_one
 
 variables {K : Type*} [field K] 
 
-def is_rank_one_of_is_discrete (v : valuation K ℤₘ₀) [is_discrete v]
-  {e : ℝ≥0} (he0 : e ≠ 0) (he1 : 1 < e) : is_rank_one v :=
+def is_rank_one_of_is_discrete (v : valuation K ℤₘ₀) [is_discrete v] {e : ℝ≥0} (he0 : e ≠ 0) 
+  (he1 : 1 < e) : is_rank_one v :=
 { hom         := with_zero_mult_int_to_nnreal he0,
   strict_mono := with_zero_mult_int_to_nnreal_strict_mono he1,
   nontrivial  := 
   begin
-    obtain ⟨π, hπ⟩ := discrete_valuation.exists_uniformizer v,
-    exact ⟨π, ne_of_gt (discrete_valuation.uniformizer_valuation_pos v hπ),
-      ne_of_lt (discrete_valuation.uniformizer_valuation_lt_one v hπ)⟩,
+    obtain ⟨π, hπ⟩ := exists_uniformizer v,
+    exact ⟨π, ne_of_gt (uniformizer_valuation_pos v hπ),
+      ne_of_lt (uniformizer_valuation_lt_one v hπ)⟩,
   end }
 
 end is_rank_one
@@ -47,9 +49,9 @@ end is_rank_one
 namespace discrete_valuation
 
 def valuation_base (K : Type*) [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v] : ℝ≥0 :=
-if 1 < nat.card (local_ring.residue_field hv.v.integer)
-  then nat.card (local_ring.residue_field hv.v.integer)
-  else 2
+if 1 < nat.card (local_ring.residue_field hv.v.valuation_subring)
+  then nat.card (local_ring.residue_field hv.v.valuation_subring)
+  else 6
 
 lemma one_lt_valuation_base (K : Type*) [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v] : 
   1 < valuation_base K :=
@@ -57,10 +59,10 @@ begin
   rw valuation_base,
   split_ifs with hlt hge,
   { rw [nat.one_lt_cast], exact hlt },
-  { exact one_lt_two }
+  { norm_num }
 end
 
-lemma valuation_base_ne_zero (K : Type*) [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v]  : 
+lemma valuation_base_ne_zero (K : Type*) [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v] : 
   valuation_base K ≠ 0 :=
 ne_zero_of_lt (one_lt_valuation_base K)
 
@@ -89,13 +91,12 @@ rank_one_valuation.valued_field.to_normed_field K ℤₘ₀
 @[priority 100] def disc_norm_field' : nontrivially_normed_field K :=
 { non_trivial := 
   begin
-    obtain ⟨x, hx⟩ := discrete_valuation.exists_uniformizer hv.v,
+    obtain ⟨x, hx⟩ := exists_uniformizer hv.v,
     use x.1⁻¹,
     erw [@norm_inv K (@normed_field.to_normed_division_ring K (disc_norm_field K)),
       one_lt_inv_iff, rank_one_valuation.norm_lt_one_iff_val_lt_one,
       rank_one_valuation.norm_pos_iff_val_pos],
-    exact ⟨discrete_valuation.uniformizer_valuation_pos hv.v hx,
-     discrete_valuation.uniformizer_valuation_lt_one hv.v hx⟩,
+    exact ⟨uniformizer_valuation_pos hv.v hx, uniformizer_valuation_lt_one hv.v hx⟩,
   end
   ..(@rank_one_valuation.valued_field.to_normed_field K _ ℤₘ₀ _ _ (rk1 K))  } 
 
@@ -162,7 +163,7 @@ lemma aux_pow_div [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) (x
     (valued.v ((minpoly K (x : L)).coeff 0)) ^ 
     (1 / ((minpoly K (x : L)).nat_degree : ℝ))) ^ (finrank K L : ℝ) :=
 begin
-  rw [map_pow, ← nnreal.rpow_nat_cast,
+  rw [_root_.map_pow, ← nnreal.rpow_nat_cast,
    nat.cast_div (minpoly.degree_dvd (is_algebraic_iff_is_integral.mp (h_alg ↑x)))
     (nat.cast_ne_zero.mpr (ne_of_gt (minpoly.nat_degree_pos 
     (is_algebraic_iff_is_integral.mp (h_alg ↑x))))), div_eq_mul_inv, mul_comm (finrank K L : ℝ),
@@ -183,13 +184,13 @@ begin
   have hinj : injective (with_zero_mult_int_to_nnreal (valuation_base_ne_zero K)),
   { exact (with_zero_mult_int_to_nnreal_strict_mono (one_lt_valuation_base K)).injective, },
   have hna := norm_is_nonarchimedean K,
-  rw [← function.injective.eq_iff hinj, map_mul, ← units.coe_mul, aux_pow_div h_alg,
+  rw [← function.injective.eq_iff hinj, _root_.map_mul, ← units.coe_mul, aux_pow_div h_alg,
     aux_pow_div h_alg, aux_pow_div h_alg, ← mul_rpow,
     rpow_eq_rpow_iff (nat.cast_ne_zero.mpr (ne_of_gt finrank_pos))],
   ext,
   rw [nnreal.coe_mul, coe_rpow, coe_rpow, coe_rpow, ← disc_norm_extension_eq_root_zero_coeff' h_alg,
     ← disc_norm_extension_eq_root_zero_coeff' h_alg,
-    ← disc_norm_extension_eq_root_zero_coeff' h_alg, units.coe_mul, map_mul],
+    ← disc_norm_extension_eq_root_zero_coeff' h_alg, units.coe_mul, _root_.map_mul],
   apply_instance,
   apply_instance,
 end
@@ -230,12 +231,11 @@ end
 lemma aux_d_ne_zero [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) :
   aux_d h_alg ≠ 0 :=
 begin
-  obtain ⟨x, hx⟩ := discrete_valuation.exists_uniformizer hv.v,
+  obtain ⟨x, hx⟩ := exists_uniformizer hv.v,
   have hx_unit : is_unit (x : K),
-  { rw [is_unit_iff_ne_zero, ne.def, subring.coe_eq_zero_iff],
-    exact discrete_valuation.uniformizer_ne_zero hv.v hx },
+  { exact is_unit_iff_ne_zero.mpr (uniformizer_ne_zero hv.v hx) },
   set z : Lˣ := units.map (algebra_map K L).to_monoid_hom (is_unit.unit hx_unit) with hz,
-  rw discrete_valuation.is_uniformizer at hx,
+  rw is_uniformizer at hx,
   by_contradiction h0,
   have h := aux_d_prop h_alg,
   rw [h0, zmod.nat_cast_self, add_subgroup.closure_singleton_zero, map_eq_bot_iff,
@@ -382,13 +382,13 @@ begin
       rw mul_comm _ (aux_d h_alg),
       sorry },
     { apply pow_ne_zero,
-      simp only [of_add_neg, ne.def, valuation.zero_iff],
+      simp only [of_add_neg, ne.def, zero_iff],
       sorry},
     { exact units.ne_zero _ }},
   set π : (w h_alg).integer := ⟨(exists_uniformizer h_alg).some, 
-    by rw [valuation.mem_integer, hπ1]; exact le_of_lt with_zero.of_add_neg_one_le_one⟩, 
+    by rw [mem_integer, hπ1]; exact le_of_lt with_zero.of_add_neg_one_lt_one⟩, 
   have hπ : w h_alg (π : L) = (multiplicative.of_add (-1 : ℤ)) := hπ1,
-  apply discrete_valuation.is_discrete_of_exists_uniformizer (w h_alg) hπ,
+  apply is_discrete_of_exists_uniformizer (w h_alg) hπ,
 end
 
 end extension
@@ -407,7 +407,11 @@ variables (L : Type*) [field L] [algebra K L] [complete_space K]
 -- TODO: Maybe this can be an instance
 def uniform_space_extension : uniform_space L := sorry
 
-lemma extension_is_complete [finite_dimensional K L] : @is_complete L (uniform_space_extension K L) set.univ := sorry
+lemma extension_is_complete [finite_dimensional K L] : 
+  @is_complete L (uniform_space_extension K L) set.univ := 
+begin
+  sorry
+end
 
 --instance is_discrete_of_finite : is_discrete (@valued.v L _ ℤₘ₀ _ _) := sorry
 instance is_discrete_of_finite [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) : 
@@ -495,7 +499,8 @@ def minimal_poly_eq_residue_fields_of_unramified'
   (integral_closure A L) ≃+* adjoin_root (minpoly A x) := sorry
 
 
--- We need to indicate in the doctring that h_alg is not an instance so when we apply it with local fields...
+-- We need to indicate in the doctring that h_alg is not an instance so when we apply it 
+-- with local fields...
 variables {B : Type*} [comm_ring B] [is_domain B] [discrete_valuation_ring B] (h_alg : algebra A B)
 
 local notation `e(` B`,`A`)` := ideal.ramification_idx h_alg.to_ring_hom
