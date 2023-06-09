@@ -240,15 +240,12 @@ begin
   sorry
 end
 
---set_option pp.implicit true
 lemma valuations_eq (x : K_v) : adic_valuation R K v x = valued.v x :=
 begin
   have heq : (adic_valuation R K v).to_fun = valued.v,
   { letI : valued K ℤₘ₀ := valued.mk' v.valuation,
-    apply uniform_space.completion.ext (continuous_adic_valuation R K v),
-    { exact valued.continuous_extension },
+    apply uniform_space.completion.ext (continuous_adic_valuation R K v) valued.continuous_extension,
     intros x,
-    rw is_dedekind_domain.height_one_spectrum.valued_adic_completion_def,
     rw valued.extension_extends,
     exact valuations_eq_on_K R K v x, },
   rw ← heq,
