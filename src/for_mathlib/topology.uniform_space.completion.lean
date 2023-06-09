@@ -43,6 +43,48 @@ begin
   simp only [← h1, ← h2, h_closed], 
 
 end
-  -- (uniform_space.completion K) := sorry
-  
-  -- (set (uniform_space.completion X))) : true :=
+
+
+local notation `φ` := (coe : X → uniform_space.completion X)
+
+lemma dense_inducing_comp (A B C : Type*) [topological_space A] [topological_space B] [topological_space C]
+ (f : A → B) (g : B → C) (h : dense_inducing f) (h': dense_inducing g) : dense_inducing (g ∘ f) :=
+begin
+  refine {to_inducing := _, dense := _},
+  refine inducing.comp h'.1 h.1,
+  refine dense_range.comp h'.dense h.dense _,
+  refine dense_inducing.continuous h',
+end
+
+/-**USEFUL LEMMAS**
+* uniform_embedding.dense_embedding
+* dense_embedding.subtype
+-/
+lemma foo (h_incl : set.maps_to φ K K' ) (h_triv : set.maps_to φ K (φ '' set.univ))
+  (h1 : dense_embedding (set.maps_to.restrict _ _ _ h_incl)) 
+  (h2 : closed_embedding (set.maps_to.restrict _ _ _ h_triv)) 
+  : φ '' K = K' ∩ (φ '' set.univ) :=
+begin
+  set S := K' ∩ (φ '' set.univ) with hS,
+  have h_inclS : set.maps_to φ K S, sorry,
+  -- let ι₁: S → K' := λ x, inter_mem,
+  -- { apply set.maps_to.comp,
+
+  -- },
+  have h1S : dense_embedding (set.maps_to.restrict _ _ _ h_inclS),
+  { have := @dense.dense_embedding_coe,    
+    sorry, --apply dense_inducing_comp,
+    -- apply dense_inducing.mk,
+    -- sorry,
+  },
+  have h2S : closed_embedding (set.maps_to.restrict _ _ _ h_inclS),
+  { sorry,
+
+  },
+
+  -- have uno := dense.closure_eq,
+  -- have := h1.1,
+  have one := ((dense_embedding.dense_image h1S).mpr (dense_univ)).closure_eq,
+  have two := (closed_embedding.closed_iff_image_closed h2S).mp (is_closed_univ),
+  rw two.closure_eq at one,
+end
