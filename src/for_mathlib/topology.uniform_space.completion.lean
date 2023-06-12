@@ -46,13 +46,18 @@ end
 
 local notation `φ` := (coe : X → uniform_space.completion X)
 
-lemma dense_inducing_comp (A B C : Type*) [topological_space A] [topological_space B] [topological_space C]
- (f : A → B) (g : B → C) (h : dense_inducing f) (h': dense_inducing g) : dense_inducing (g ∘ f) :=
+lemma dense_of
+
+lemma dense_inducing_of_inducing_comp (A B : Type*) [topological_space A] [topological_space B] 
+  {f : A → B} (h : dense_inducing f) (S : set B) (H : ∀ a : A, f a ∈ S)
+    : dense_inducing (set.cod_restrict f S H) :=  
 begin
   refine {to_inducing := _, dense := _},
-  refine inducing.comp h'.1 h.1,
-  refine dense_range.comp h'.dense h.dense _,
-  refine dense_inducing.continuous h',
+  apply inducing.cod_restrict h.1,
+  rw dense_range_iff_closure_range,
+  have := dense_inducing.closure_range h,
+  sorry,  
+  -- have :=
 end
 
 /-**USEFUL LEMMAS**

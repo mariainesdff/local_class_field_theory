@@ -106,7 +106,7 @@ disc_valued.discrete_valuation_ring K_v
 
 --TODO: clean up
 lemma is_dedekind_domain.height_one_spectrum.valuation_completion_integers_exists_uniformizer : 
-  ∃ (π : R_v), valued.v (π : K_v) = (multiplicative.of_add ((-1 : ℤ))) :=
+  ∃ (π : R_v), valued.v (π : K_v) = of_add (-1 : ℤ) :=
 begin 
   obtain ⟨x, hx⟩ := is_dedekind_domain.height_one_spectrum.int_valuation_exists_uniformizer v,
   have h : algebra_map R_v K_v (↑x) = (↑((↑x) : K) : K_v) := rfl,
@@ -127,7 +127,7 @@ begin
 end
 
 lemma is_dedekind_domain.height_one_spectrum.valuation_completion_exists_uniformizer : 
-  ∃ (π : K_v), valued.v π = (multiplicative.of_add ((-1 : ℤ))) :=
+  ∃ (π : K_v), valued.v π = of_add (-1 : ℤ) :=
 begin
   obtain ⟨x, hx⟩ := is_dedekind_domain.height_one_spectrum.valuation_exists_uniformizer K v,
   use ↑x,
@@ -172,7 +172,6 @@ noncomputable def adic_int_valuation : _root_.valuation R_v ℤₘ₀ :=
 
 noncomputable def adic_valuation : _root_.valuation K_v ℤₘ₀ :=
 (max_ideal_of_completion R K v).valuation
-
 
 /- example : has_zero ℤₘ₀ := with_zero.has_zero
 
@@ -229,7 +228,7 @@ have h3 : continuous (adic_valuation R K v),
 --continuous (@valued.v K_v _ ℤₘ₀ _ _)
 end
 
-lemma valuations_eq_on_K  (x : K) : (adic_valuation R K v) ↑x = ((valued.mk' v.valuation)).v x :=
+lemma valuations_eq_on_K  (x : K) : (adic_valuation R K v) ↑x = (valued.mk' v.valuation).v x :=
 begin
   rw adic_valuation,
   sorry
@@ -251,5 +250,73 @@ begin
   rw ← heq,
   refl,
 end
+
+section fae
+
+open is_dedekind_domain.height_one_spectrum.
+
+example : is_principal_ideal_ring R_v :=
+begin
+  exact discrete_valuation_ring.to_is_principal_ideal_ring,
+end
+
+lemma exists_double_uniformizer : ∃ π₁ π₂: R_v, 
+  valued.v (↑π₁ : K_v) = of_add (-1 : ℤ) ∧ adic_valuation R K v π₂ = of_add (-1 : ℤ) :=
+begin
+  obtain ⟨π₁, h1⟩ := valuation_completion_exists_uniformizer R K v,
+  haveI := (is_principal_ideal_ring_iff R_v).mp discrete_valuation_ring.to_is_principal_ideal_ring
+    (max_ideal_of_completion R K v).1,
+  let π₂ := ↑(submodule.is_principal.generator (max_ideal_of_completion R K v).1),
+  have h2 : adic_valuation R K v π₂ = of_add (-1 : ℤ), sorry,
+  sorry,
+  -- use [π₁, π₂],
+  -- ⟨h1, h2⟩],
+end
+
+lemma integral_is_integral (α : R_v) :
+  valued.v (↑α : K_v) ≤ of_add (0 : ℤ) ∧ adic_valuation R K v α ≤ of_add (0 : ℤ) :=
+begin
+  split,
+  { let w : valuation K_v ℤₘ₀ := valued.v,
+    have := α.2,
+    rw ← valuation_subring.valuation_le_one_iff at this,
+    convert this,
+    sorry,
+    },
+  { apply @valuation_le_one R_v _ _ _ K_v _ _ _ (max_ideal_of_completion R K v) α }
+end
+
+-- #check exists_double_uniformizer R K v
+include R K v
+lemma foo : true :=
+begin
+  obtain ⟨ϖ₁, h1⟩ := valuation_completion_integers_exists_uniformizer R K v,
+  set v₁ : valuation K_v ℤₘ₀ := valued.v with hv1,
+  set v₂ : valuation K_v ℤₘ₀ := adic_valuation R K v with hv2,
+  let π₁ : uniformizer v₁ := uniformizer.mk' v₁ ϖ₁ ((is_uniformizer_iff).mp h1),
+
+  haveI := (is_principal_ideal_ring_iff R_v).mp discrete_valuation_ring.to_is_principal_ideal_ring
+    (max_ideal_of_completion R K v).1,
+  let ϖ₂ := submodule.is_principal.generator (max_ideal_of_completion R K v).1,
+  have h_nz_2 : ϖ₂ ≠ 0, sorry,
+  have h2 : adic_valuation R K v ϖ₂ = of_add (-1 : ℤ), sorry,
+  let π₂ : uniformizer v₂ := uniformizer.mk' v₂ ϖ₂ ((is_uniformizer_iff).mp h2),
+
+  -- let d := v₁ (↑ϖ₂ : K_v),
+  -- -- have : d ≤ of_add (0 : ℤ) := (integral_is_integral R K v π₂).1,
+  -- -- have := uniformizer_ne_zero v₂ π₂.2,
+  obtain ⟨n, ⟨u, hu⟩⟩ := pow_uniformizer v₁ π₁ h_nz_2,
+  have key : v₂ (π₁.val) = of_add (-1 : ℤ),
+  { apply_fun (v₂ ∘ coe) at hu,
+    simp only [function.comp_app, subring.coe_mul, subring.coe_pow, valuation.map_mul,
+      valuation.map_pow] at hu,
+    rw h2 at hu,
+    have := valuation_eq_one_of_is_unit R K v _,
+    -- simp only [of_add_neg, with_zero.coe_inv] at hu,
+
+  },
+end
+
+end fae
 
 end is_dedekind_domain.height_one_spectrum.completion
