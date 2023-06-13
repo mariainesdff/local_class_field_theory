@@ -166,7 +166,7 @@ noncomputable! def max_ideal_of_completion : height_one_spectrum R_v :=
     exact adic_completion_integers_not_is_field R K v,
   end }
 
-#where
+--#where
 
 noncomputable def adic_int_valuation : _root_.valuation R_v ℤₘ₀ :=
 (max_ideal_of_completion R K v).int_valuation
@@ -251,7 +251,7 @@ begin
 -- --  rw this,
 -- --  convert this,
 -- end
-begin
+--begin
   have heq : (adic_valuation R K v).to_fun = valued.v,
   { letI : valued K ℤₘ₀ := valued.mk' v.valuation,
     apply uniform_space.completion.ext (continuous_adic_valuation R K v) valued.continuous_extension,
@@ -300,7 +300,7 @@ open is_dedekind_domain.height_one_spectrum.
 -- #check exists_double_uniformizer R K v
 -- include R K v
 
-#check v
+--#check v
 -- #check (max_ideal_of_completion R K v)
 def v1 : valuation K_v ℤₘ₀ := 
   (@is_dedekind_domain.height_one_spectrum.valuation R_v _ _ _ K_v _ _ _ (max_ideal_of_completion R K v))
@@ -310,6 +310,7 @@ def v2 : valuation K_v ℤₘ₀ := valued.v
 lemma hope : v1 R K v = v2 R K v :=
 begin
   ext x,
+  sorry
 end
 
 lemma almost_there_using_dvd_iff {A : Type} [comm_ring A] [is_domain A] [is_dedekind_domain A]
@@ -325,12 +326,13 @@ lemma maximals_equal {A : Type} [comm_ring A] [is_domain A] [is_dedekind_domain 
  [is_fraction_ring A L] : true :=
 begin
   -- let S := (@is_dedekind_domain.height_one_spectrum.valuation _ _ _ _ L _ _ _ p).valuation_subring.valuation_ring,
-  let M := local_ring.maximal_ideal (@is_dedekind_domain.height_one_spectrum.valuation _ _ _ _
+  /- let M := local_ring.maximal_ideal (@is_dedekind_domain.height_one_spectrum.valuation _ _ _ _
     L _ _ _ p).valuation_subring,
   let N := M.carrier,
   let T := p.1.carrier,
   let a : A := sorry,
-  let b : p.valuation.valuation_subring := a,
+  let b : p.valuation.valuation_subring := a, -/
+  sorry
   -- hav
 end
 
@@ -354,12 +356,33 @@ begin
   sorry,
 end
 
-lemma uno' (L : Type*) [field L] {w : valuation L ℤₘ₀} (x : w.valuation_subring) (n : ℕ) :
-w x ≤ multiplicative.of_add (-(n : ℤ)) ↔
-  (local_ring.maximal_ideal (w.valuation_subring))^n ∣ ideal.span {x} := sorry
+section test
+  variables (L : Type*) [field L] --{w : valuation L ℤₘ₀} (x : w.valuation_subring)
+  variables [w : valued K ℤₘ₀] [is_discrete w.v] (x : w.v.valuation_subring)
+  variable [decidable_eq (ideal ↥(w.v.valuation_subring))]
+  variable [decidable_eq (associates (ideal (↥(w.v.valuation_subring))))]
+  variable [Π (p : associates (ideal ↥(w.v.valuation_subring))), decidable (irreducible p)]
 
--- noncomputable!
--- lemma uno' (L : Type*) [field L] {w : valuation L ℤₘ₀} (x : w.valuation_subring) :
+  noncomputable! instance : cancel_comm_monoid_with_zero (ideal ↥(w.v.valuation_subring)) := 
+  infer_instance
+  --variables --[cancel_comm_monoid_with_zero (ideal ↥(w.valuation_subring))] 
+    --[unique_factorization_monoid (ideal ↥(w.valuation_subring))]
+  
+ #check (associates.mk (local_ring.maximal_ideal (w.v.valuation_subring))).count
+   (associates.mk (ideal.span {x} : ideal w.v.valuation_subring)).factors
+end test
+
+open_locale classical
+
+noncomputable!
+lemma uno' (L : Type*) [field L] --{w : valuation L ℤₘ₀} (x : w.valuation_subring)
+  [w : valued K ℤₘ₀] [is_discrete w.v] (x : w.v.valuation_subring) :
+  --[decidable_eq (ideal ↥(w.v.valuation_subring))]
+  --[decidable_eq (associates (ideal (↥(w.v.valuation_subring))))]
+  --[Π (p : associates (ideal ↥(w.v.valuation_subring))), decidable (irreducible p)] :
+  (of_add ((associates.mk (local_ring.maximal_ideal (w.v.valuation_subring))).count
+    (associates.mk (ideal.span {x} : ideal w.v.valuation_subring)).factors : ℤ) : ℤₘ₀) = w.v x :=
+sorry
 -- --  of_add (↑(associates.mk (local_ring.maximal_ideal (w.valuation_subring))).count
 --   (associates.mk ((ideal.span {x}) : ideal (w.valuation_subring))).factors = 
 --   (associates.mk ((ideal.span {x}) : ideal (w.valuation_subring))).factors :=
@@ -371,6 +394,7 @@ w x ≤ multiplicative.of_add (-(n : ℤ)) ↔
 --   --   (associates.mk (ideal.span {x})).factors))),
 -- end
 
+#exit
 
 
 example {L : Type*} [field L] {w : valuation L ℤₘ₀} :
