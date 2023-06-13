@@ -354,6 +354,10 @@ begin
   sorry,
 end
 
+lemma uno' (L : Type*) [field L] {w : valuation L ℤₘ₀} (x : w.valuation_subring) (n : ℕ) :
+w x ≤ multiplicative.of_add (-(n : ℤ)) ↔
+  (local_ring.maximal_ideal (w.valuation_subring))^n ∣ ideal.span {x} := sorry
+
 -- noncomputable!
 -- lemma uno' (L : Type*) [field L] {w : valuation L ℤₘ₀} (x : w.valuation_subring) :
 -- --  of_add (↑(associates.mk (local_ring.maximal_ideal (w.valuation_subring))).count
@@ -395,11 +399,25 @@ begin
   { have ha : ¬ a = 0, sorry, --otherwise trivial
     dsimp only [v2] at ha,
     rw fae_int_valuation_apply,
-    rw int_valuation_def,
-    rw [if_neg],
-    -- simp,
-
-  },
+    apply le_antisymm,
+    { obtain ⟨n, hn⟩ : ∃ n : ℕ, v2 R K v a = of_add (-n : ℤ),sorry,
+      dsimp only [v2] at hn,
+      rw hn,
+      rw int_valuation_le_pow_iff_dvd,
+      apply (uno' K_v _ n).mp (le_of_eq hn) },
+    { obtain ⟨m, hm⟩ : ∃ m : ℕ, v1 R K v a = of_add (-m : ℤ), sorry,
+      have triv : (a : K_v) = algebra_map _ K_v a,sorry,
+      rw triv at hm,
+      dsimp only [v1, v2] at hm,
+      erw valuation_of_algebra_map at hm,
+      rw fae_int_valuation_apply at hm,
+      rw hm,
+      replace hm := le_of_eq hm,
+      rw int_valuation_le_pow_iff_dvd at hm,
+      rw uno' K_v _ m,
+      apply hm,
+    } },
+  sorry,
 end
 
 
