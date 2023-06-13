@@ -564,8 +564,8 @@ begin
       refl, },
     { exact zpow_ne_zero _ with_zero.coe_ne_zero,
     exact units.ne_zero _ }},
-  set π : (w K L).integer := ⟨(exists_uniformizer K L).some, 
-    by rw [mem_integer, hπ1]; exact le_of_lt with_zero.of_add_neg_one_lt_one⟩, 
+  set π : (w K L).valuation_subring := ⟨(exists_uniformizer K L).some, 
+    by rw [mem_valuation_subring_iff, hπ1]; exact le_of_lt with_zero.of_add_neg_one_lt_one⟩, 
   have hπ : w K L (π : L) = (multiplicative.of_add (-1 : ℤ)) := hπ1,
   apply is_discrete_of_exists_uniformizer (w K L) hπ,
 end
@@ -603,15 +603,71 @@ begin
 end
 
 /- lemma integral_closure_eq_integer :
-  (integral_closure hv.v.integer L).to_subring = (@valued.v L _ ℤₘ₀ _ _).integer :=
+  (integral_closure hv.v.valuation_subring L).to_subring = (@valued.v L _ ℤₘ₀ _ _).valuation_subring :=
 sorry -/
 lemma integral_closure_eq_integer [finite_dimensional K L] :
   (integral_closure hv.v.integer L).to_subring = (w K L).integer :=
-sorry
+begin
+  ext x,
+  have h : x ∈ (integral_closure hv.v.integer L) ↔ is_integral hv.v.integer x,
+  { refl }, --TODO: mathlib lemma
+  --rw [valuation_subring.mem_to_subring, mem_valuation_subring_iff],
+  rw mem_integer,
+  rw [subalgebra.mem_to_subring],
+  rw h,
+  rw is_integral, rw ring_hom.is_integral_elem,
+  
+  refine ⟨λ hx, _, λ hx, _⟩,
+  { sorry },
+  { sorry }
+end
+
+-- TODO: Do we want to use valuation_subring in this file?
+section
+
+.
+
+omit hv
+
+-- TODO: move
+theorem ring_equiv.discrete_valuation_ring {A  B : Type*} [comm_ring A] [is_domain A]
+  [discrete_valuation_ring A] [comm_ring B] [is_domain B] (e : A ≃+* B) :
+  discrete_valuation_ring B :=
+{ to_is_principal_ideal_ring := is_principal_ideal_ring.of_surjective e.to_ring_hom e.surjective,
+  to_local_ring  := e.local_ring,
+  not_a_field'   := 
+  begin
+    have hA : local_ring.maximal_ideal A ≠ ⊥,
+    { exact discrete_valuation_ring.not_a_field A },
+    obtain ⟨a, ha⟩ := submodule.nonzero_mem_of_bot_lt (bot_lt_iff_ne_bot.mpr hA),
+    rw submodule.ne_bot_iff,
+    use (e a),
+    split,
+    { erw [local_ring.mem_maximal_ideal, map_mem_nonunits_iff (e : A →+* B),
+        ← local_ring.mem_maximal_ideal], 
+      exact a.2, },
+    { rw map_ne_zero_iff _ (e.injective),
+      simp only [ne.def, submodule.coe_eq_zero], exact ha },
+  end }
+end
 
 --Chapter 2, Section 2, Proposition 3 in Serre's Local Fields
-lemma dvr_of_finite_extension : discrete_valuation_ring (integral_closure hv.v.integer L) := sorry
--- proof: make a local instance of valued on `L`
+lemma dvr_of_finite_extension [finite_dimensional K L] : 
+  discrete_valuation_ring (integral_closure hv.v.integer L) := 
+begin
+  letI hw : valued L ℤₘ₀ := valued.mk' (w K L),
+  letI hw_disc : is_discrete hw.v := is_discrete_of_finite K L,
+  let e : (w K L).valuation_subring ≃+* (integral_closure hv.v.integer L) :=
+  { to_fun    := sorry,
+    inv_fun   := sorry,
+    left_inv  := sorry,
+    right_inv := sorry,
+    map_mul'  := sorry,
+    map_add'  := sorry },
+  letI h : discrete_valuation_ring ↥((w K L).valuation_subring) := 
+  disc_valued.discrete_valuation_ring L,
+  exact ring_equiv.discrete_valuation_ring e,
+end
 
 lemma integral_closure_finrank :
   finite_dimensional.finrank hv.v.integer (integral_closure hv.v.integer L) =
@@ -621,7 +677,6 @@ sorry
 variables [finite_dimensional K L] 
 
 local notation `K₀` := hv.v.integer
-
 local notation `L₀` := (w K L).integer
 
 def integer.algebra : algebra K₀ L₀ :=
@@ -647,7 +702,7 @@ lemma is_dvr_of_irreducible {f : polynomial A}
 sorry
 
 -- Ch. I, Section 6, Cor. 1 of Serre's "Local Fields"
-lemma is_dvr_of_irreducible' {f : polynomial A} 
+lemma is_integral_closure_of_irreducible {f : polynomial A} 
   (hf : irreducible (polynomial.map (algebra_map A (local_ring.residue_field A)) f)) :
   is_integral_closure (adjoin_root f) A (fraction_ring (adjoin_root f)) :=
 sorry
@@ -664,10 +719,8 @@ open finite_dimensional
 noncomputable!
 def minimal_poly_eq_residue_fields_of_unramified
   (hB : discrete_valuation_ring (integral_closure A L))
-  [algebra (local_ring.residue_field A)
-  (@local_ring.residue_field _ _ hB.to_local_ring)]
-  (hpb : power_basis (local_ring.residue_field A)
-  (@local_ring.residue_field _ _ hB.to_local_ring))
+  [algebra (local_ring.residue_field A) (@local_ring.residue_field _ _ hB.to_local_ring)]
+  (hpb : power_basis (local_ring.residue_field A) (@local_ring.residue_field _ _ hB.to_local_ring))
   (hdeg : finrank K L = hpb.dim) (x : (integral_closure A L))
   (hx : ideal.quotient.mk (@local_ring.maximal_ideal _ _ hB.to_local_ring) x = hpb.gen) : 
   (integral_closure A L) ≃+* algebra.adjoin A ({x} : set (integral_closure A L)) := sorry
@@ -675,10 +728,8 @@ def minimal_poly_eq_residue_fields_of_unramified
 noncomputable!
 def minimal_poly_eq_residue_fields_of_unramified'
   (hB : discrete_valuation_ring (integral_closure A L))
-  [algebra (local_ring.residue_field A)
-  (@local_ring.residue_field _ _ hB.to_local_ring)]
-  (hpb : power_basis (local_ring.residue_field A)
-  (@local_ring.residue_field _ _ hB.to_local_ring))
+  [algebra (local_ring.residue_field A) (@local_ring.residue_field _ _ hB.to_local_ring)]
+  (hpb : power_basis (local_ring.residue_field A) (@local_ring.residue_field _ _ hB.to_local_ring))
   (hdeg : finrank K L = hpb.dim) (x : (integral_closure A L))
   (hx : ideal.quotient.mk (@local_ring.maximal_ideal _ _ hB.to_local_ring) x = hpb.gen) : 
   (integral_closure A L) ≃+* adjoin_root (minpoly A x) := sorry
