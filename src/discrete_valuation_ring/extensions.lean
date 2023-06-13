@@ -602,12 +602,11 @@ begin
   apply_instance,
 end
 
-/- lemma integral_closure_eq_integer :
-  (integral_closure hv.v.valuation_subring L).to_subring = (@valued.v L _ ℤₘ₀ _ _).valuation_subring :=
-sorry -/
 lemma integral_closure_eq_integer [finite_dimensional K L] :
   (integral_closure hv.v.integer L).to_subring = (w K L).integer :=
 begin
+  classical,
+  have h_alg : algebra.is_algebraic K L := algebra.is_algebraic_of_finite K L,
   ext x,
   have h : x ∈ (integral_closure hv.v.integer L) ↔ is_integral hv.v.integer x,
   { refl }, --TODO: mathlib lemma
@@ -618,8 +617,28 @@ begin
   rw is_integral, rw ring_hom.is_integral_elem,
   
   refine ⟨λ hx, _, λ hx, _⟩,
-  { sorry },
-  { sorry }
+  { obtain ⟨p, hp, hpx⟩ := hx,
+    rw w_apply,
+    by_cases hx : x = 0,
+    { rw dif_pos hx, exact zero_le_one },
+    { rw dif_neg hx,
+      
+      sorry} },
+  { let q := minpoly K x,
+      have hq : ∀ n : ℕ, (q.coeff n) ∈ hv.v.integer,
+      { sorry },
+      set p : polynomial (hv.v.integer) :=
+      { to_finsupp := { support := q.support,
+        to_fun := λ n, ⟨q.coeff n, hq n⟩,
+        mem_support_to_fun := λ n, by rw [ne.def, ← subring.coe_eq_zero_iff, 
+          set_like.coe_mk, polynomial.mem_support_iff] }},
+      use p,
+      split,
+      { rw polynomial.monic,
+        ext,
+        rw [algebra_map.coe_one],
+        exact minpoly.monic (is_algebraic_iff_is_integral.mp (h_alg x)), },
+      { sorry }}
 end
 
 -- TODO: Do we want to use valuation_subring in this file?
