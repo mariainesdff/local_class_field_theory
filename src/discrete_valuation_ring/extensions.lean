@@ -10,6 +10,29 @@ noncomputable theory
 open multiplicative valuation with_zero
 open_locale discrete_valuation nnreal
 
+lemma multiplicative.of_add_pow_comm (a b : ℤ) : (of_add a)^b = (of_add b)^a :=
+by rw [← int.of_add_mul, mul_comm, int.of_add_mul]
+
+
+namespace with_zero
+--TODO: rename
+lemma of_add_zpow (n : ℤ) : (of_add n : ℤₘ₀) = (of_add (1 : ℤ))^n :=
+by rw [← with_zero.coe_zpow, with_zero.coe_inj, ← int.of_add_mul, one_mul]
+
+lemma of_add_pow_pow_comm (a b c : ℤ) : 
+  ((of_add (a : ℤ) : ℤₘ₀) ^ b) ^ c =  ((of_add (a : ℤ)) ^ c) ^ b :=
+begin
+  simp only [ ← with_zero.coe_zpow],
+  rw [← zpow_mul,  mul_comm, zpow_mul],
+end
+
+lemma of_add_neg_one_pow_comm (a : ℤ) (n : ℕ) : 
+  ((of_add (-1 : ℤ) : ℤₘ₀) ^ (-a)) ^ n =  ((of_add (n : ℤ)) ^ a) :=
+by rw [with_zero.of_add_zpow (-1), ← zpow_mul, neg_mul, one_mul, neg_neg, ← zpow_coe_nat,
+  of_add_pow_pow_comm 1 a, ← with_zero.coe_zpow,  ← int.of_add_mul, one_mul]
+
+end with_zero
+
 namespace add_subgroup
 
 lemma closure_singleton_eq_zmultiples {A : Type*} [add_group A] (a : A) :
@@ -130,6 +153,38 @@ lemma disc_norm_extension_eq_root_zero_coeff' (h_alg : algebra.is_algebraic K L)
 begin
   exact spectral_norm_eq_root_zero_coeff h_alg (norm_is_nonarchimedean K) x,
 end
+
+lemma pow_disc_norm_extension_eq_pow_root_zero_coeff' (h_alg : algebra.is_algebraic K L) (x : L)
+  (n : ℕ) : 
+  (disc_norm_extension h_alg x)^n = (with_zero_mult_int_to_nnreal (valuation_base_ne_zero K) 
+    (valued.v ((minpoly K x).coeff 0)) ^ (n/(minpoly K x).nat_degree : ℝ)) :=
+by  rw [div_eq_inv_mul, real.rpow_mul nnreal.zero_le_coe, disc_norm_extension_eq_root_zero_coeff',
+    inv_eq_one_div, real.rpow_nat_cast]
+
+lemma pow_disc_norm_extension_eq_pow_root_zero_coeff (h_alg : algebra.is_algebraic K L) (x : L)
+  {n : ℕ} (hn : (minpoly K x).nat_degree ∣ n) : 
+  (disc_norm_extension h_alg x)^n = (with_zero_mult_int_to_nnreal (valuation_base_ne_zero K) 
+    (valued.v ((minpoly K x).coeff 0)) ^ (n/(minpoly K x).nat_degree)) :=
+begin
+  nth_rewrite 1 [← real.rpow_nat_cast],
+  rw [nat.cast_div hn (nat.cast_ne_zero.mpr
+    (ne_of_gt (minpoly.nat_degree_pos (is_algebraic_iff_is_integral.mp (h_alg x)))))],
+  exact pow_disc_norm_extension_eq_pow_root_zero_coeff'  h_alg x n,
+  { apply_instance }
+end
+
+lemma disc_norm_extension_nonneg (h_alg : algebra.is_algebraic K L) (x : L) :
+  0 ≤ disc_norm_extension h_alg x :=
+spectral_norm_nonneg _
+
+lemma disc_norm_extension_is_nonarchimedean (h_alg : algebra.is_algebraic K L) :
+  is_nonarchimedean (disc_norm_extension h_alg) :=
+spectral_norm_is_nonarchimedean h_alg (norm_is_nonarchimedean K)
+
+lemma disc_norm_extension_mul (h_alg : algebra.is_algebraic K L) (x y : L) :
+  (disc_norm_extension h_alg (x * y)) = 
+  (disc_norm_extension h_alg x) * (disc_norm_extension h_alg y) :=
+spectral_norm_is_mul h_alg (norm_is_nonarchimedean K) x y
 
 local attribute [-instance] disc_norm_field'
 
@@ -258,6 +313,9 @@ begin
   exact hzne1 hz1,
 end
 
+lemma aux_d_pos [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) :
+  0 < aux_d h_alg :=
+nat.pos_of_ne_zero (aux_d_ne_zero h_alg)
 
 -- This proof is ridiculous (TODO: golf)
 lemma range_eq_aux_d_pow [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) :
@@ -292,103 +350,174 @@ begin
     refl, },
 end
 
-lemma aux_d_divides [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) (x : L) : 
-  (aux_d h_alg) ∣ ((finrank K L)/(minpoly K x).nat_degree) :=
+lemma aux_w [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) (x : Lˣ) : 
+  ∃ (n : ℤ), (((of_add (-1 : ℤ))^n)^(aux_d h_alg) : ℤₘ₀) =
+  (valued.v ((minpoly K (x : L)).coeff 0))^((finrank K L)/((minpoly K (x : L)).nat_degree)) :=
 begin
-  rw nat.dvd_div_iff (minpoly.degree_dvd (is_algebraic_iff_is_integral.mp (h_alg x))),
-  rw aux_d,
-  sorry,
+  have h_subgp := range_eq_aux_d_pow h_alg,
+  set y := (with_zero.unzero (pow_valuation_unit_ne_zero h_alg x)),
+  have h_mem : (with_zero.unzero (pow_valuation_unit_ne_zero h_alg x)) ∈ 
+    subgroup.closure ({of_add (aux_d h_alg : ℤ)} : set (multiplicative ℤ)),
+  { rw [← range_eq_aux_d_pow h_alg, subgroup.mem_map],
+    exact ⟨x, subgroup.mem_top x, rfl⟩ },
+  rw subgroup.mem_closure_singleton at h_mem,
+  obtain ⟨n, hn⟩ := h_mem,
+  use - n,
+  rw [with_zero.of_add_neg_one_pow_comm n, ← with_zero.coe_zpow, hn],
+  exact with_zero.coe_unzero _,
 end
 
-lemma aux_pow_div' [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) (x : Lˣ) :
-  (with_zero_mult_int_to_nnreal (valuation_base_ne_zero K)) 
-    (valued.v ((minpoly K (x : L)).coeff 0) ^ 
-      (finrank K L / (minpoly K (x : L)).nat_degree / aux_d h_alg)) =
-  (with_zero_mult_int_to_nnreal (valuation_base_ne_zero K)
-  (valued.v ((minpoly K (x : L)).coeff 0))) ^ 
-    (((finrank K L : ℝ) / ((minpoly K (x : L)).nat_degree : ℝ))*(1/(aux_d h_alg : ℝ))) := 
+section
+
+omit hv
+--TODO: generalize
+lemma of_add_inj {x y : multiplicative ℤ} (hxy : of_add x = of_add y) : x = y := hxy
+
+end
+
+def w_def [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) : L → ℤₘ₀ :=
+λ x, by classical; exact if hx : x = 0 then 0 else 
+  (of_add (-1 : ℤ))^(aux_w h_alg (is_unit_iff_ne_zero.mpr hx).unit).some
+
+lemma w_def_apply [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) (x : L) :
+w_def h_alg x = (if hx : x = 0 then 0 else 
+  (of_add (-1 : ℤ))^(aux_w h_alg (is_unit_iff_ne_zero.mpr hx).unit).some) := rfl
+
+lemma w_def_mul [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) (x y : L) :
+  w_def h_alg (x * y) = w_def h_alg x * w_def h_alg y :=
 begin
-  rw [_root_.map_pow, ← nnreal.rpow_nat_cast, nat.cast_div (aux_d_divides h_alg _)
-      (nat.cast_ne_zero.mpr (aux_d_ne_zero h_alg)), 
-    nat.cast_div (minpoly.degree_dvd (is_algebraic_iff_is_integral.mp (h_alg ↑x)))
-      (nat.cast_ne_zero.mpr (ne_of_gt (minpoly.nat_degree_pos 
-    (is_algebraic_iff_is_integral.mp (h_alg ↑x))))), div_eq_mul_inv, one_div]; 
-  apply_instance,
+  by_cases hx : x = 0,
+  { have hxy : x * y = 0,
+    { rw [hx, zero_mul] },
+    rw [w_def_apply h_alg, dif_pos hxy, w_def_apply h_alg, dif_pos hx, zero_mul] },
+    { by_cases hy : y = 0,
+      { have hxy : x * y = 0,
+        { rw [hy, mul_zero] },
+        simp only [w_def_apply h_alg],
+        rw [dif_pos hxy, dif_pos hy, mul_zero] },
+      { have hxy : x * y ≠ 0,
+        { exact mul_ne_zero hx hy, },
+        simp only [w_def_apply],
+        rw [dif_neg hx, dif_neg hy, dif_neg (mul_ne_zero hx hy)],
+        have hinj : injective (with_zero_mult_int_to_nnreal (valuation_base_ne_zero K)),
+        { exact (with_zero_mult_int_to_nnreal_strict_mono (one_lt_valuation_base K)).injective },
+        rw [← function.injective.eq_iff hinj, ← pow_left_inj _ _ (aux_d_pos h_alg), ← nnreal.coe_eq,
+          _root_.map_mul, mul_pow, ← _root_.map_pow,
+          (aux_w h_alg (is_unit_iff_ne_zero.mpr hxy).unit).some_spec, nnreal.coe_mul],
+        nth_rewrite 1 ← _root_.map_pow,
+        rw (aux_w h_alg (is_unit_iff_ne_zero.mpr hx).unit).some_spec,
+        nth_rewrite 2 ← _root_.map_pow,
+        rw [(aux_w h_alg (is_unit_iff_ne_zero.mpr hy).unit).some_spec, _root_.map_pow,
+          nnreal.coe_pow, ← pow_disc_norm_extension_eq_pow_root_zero_coeff h_alg,
+          _root_.map_pow, nnreal.coe_pow, ← pow_disc_norm_extension_eq_pow_root_zero_coeff h_alg,
+          _root_.map_pow, nnreal.coe_pow, ← pow_disc_norm_extension_eq_pow_root_zero_coeff h_alg,
+         ← mul_pow, ← disc_norm_extension_mul h_alg],
+        refl,
+        repeat { exact minpoly.degree_dvd (is_algebraic_iff_is_integral.mp (h_alg _))},
+        { exact zero_le' },
+        { exact zero_le' }}},
 end
 
 --set_option trace.class_instances true
 def w [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) :
   valuation L ℤₘ₀ := 
-{ to_fun    := λ x, by classical; exact if x = 0 then 0 else 
-    (valued.v ((minpoly K x).coeff 0))^((finrank K L)/((aux_d h_alg)*(minpoly K x).nat_degree)),
-  map_zero' := by rw if_pos rfl,
+{ to_fun    := w_def h_alg,
+  map_zero' := by rw [w_def_apply h_alg, dif_pos rfl],
   map_one'  := 
   begin
-    rw [if_neg one_ne_zero, minpoly.one, polynomial.coeff_sub, polynomial.coeff_X_zero, 
-      polynomial.coeff_one_zero, zero_sub, valuation.map_neg, valuation.map_one, one_pow],
-    apply_instance,
+    rw [w_def_apply h_alg, dif_neg one_ne_zero],
+    have h1 : (1 : L) ≠ 0 := one_ne_zero, 
+    set u := (aux_w h_alg (is_unit_iff_ne_zero.mpr h1).unit).some with hu_def,
+    have hu : (↑(of_add (-1 : ℤ)) ^ u) ^ aux_d h_alg = 
+      valued.v ((minpoly K ↑((is_unit_iff_ne_zero.mpr h1).unit)).coeff 0) ^ 
+        (finrank K L / (minpoly K ((is_unit_iff_ne_zero.mpr h1).unit : L)).nat_degree) := 
+    (aux_w h_alg (is_unit_iff_ne_zero.mpr h1).unit).some_spec,
+    simp only [is_unit.unit_spec, one, 
+      coeff_sub, coeff_X_zero, coeff_one_zero, zero_sub, valuation.map_neg, valuation.map_one, 
+      one_pow, inv_eq_one] at hu,
+    simp only [← with_zero.coe_one, ← of_add_zero, ← with_zero.coe_zpow, 
+      ← with_zero.coe_pow, with_zero.coe_inj, ← zpow_coe_nat, ← int.of_add_mul] at hu,
+    have hu' := int.eq_zero_or_eq_zero_of_mul_eq_zero hu,
+    rw or_eq_of_eq_false_right at hu',
+    rw [← hu_def, ← with_zero.coe_one, ← of_add_zero, ← with_zero.coe_zpow, with_zero.coe_inj, 
+      ← int.of_add_mul, hu'],
+    { simp only [aux_d_ne_zero h_alg, nat.cast_eq_zero] },
+    { exact ne_zero.one L },
   end,
-  map_mul'  := λ x y,
-  begin
-    by_cases hx : x = 0,
-    { have hxy : x * y = 0,
-      { rw [hx, zero_mul] },
-      rw [if_pos hx, if_pos hxy, zero_mul] },
-    { by_cases hy : y = 0,
-      { have hxy : x * y = 0,
-        { rw [hy, mul_zero] },
-        rw [if_pos hy, if_pos hxy, mul_zero] },
-      { have hx' : x = (is_unit_iff_ne_zero.mpr hx).unit, { refl },
-        have hy' : y = (is_unit_iff_ne_zero.mpr hy).unit, { refl },
-        have hxy' : x * y = ((is_unit_iff_ne_zero.mpr hx).unit * 
-          (is_unit_iff_ne_zero.mpr hy).unit : Lˣ), { refl },
-        have hinj : injective (with_zero_mult_int_to_nnreal (valuation_base_ne_zero K)),
-        { exact (with_zero_mult_int_to_nnreal_strict_mono (one_lt_valuation_base K)).injective },
-        rw [if_neg hx, if_neg hy, if_neg (mul_ne_zero hx hy)],
-        conv_rhs { rw [hx', hy'] }, 
-        simp only [hxy', ← function.injective.eq_iff hinj, _root_.map_mul, mul_comm (aux_d h_alg), 
-          ← nat.div_div_eq_div_mul, aux_pow_div', rpow_mul, ← mul_rpow],
-        repeat { rw [ ← nat.cast_div (minpoly.degree_dvd (is_algebraic_iff_is_integral.mp 
-          (h_alg _))) (nat.cast_ne_zero.mpr (ne_of_gt (minpoly.nat_degree_pos 
-            (is_algebraic_iff_is_integral.mp (h_alg _))))), nnreal.rpow_nat_cast] },
-        repeat { rw ←_root_.map_pow},
-        simp only [← _root_.map_mul, units.coe_mul, valuation.map_pow, map_mul_aux h_alg],
-        all_goals { apply_instance }}},
-  end,
+  map_mul'  := w_def_mul h_alg,
   map_add_le_max' := λ x y,
   begin
     by_cases hx : x = 0,
     { have hxy : x + y = y,
       { rw [hx, zero_add] },
-      simp only [if_pos hx, hxy],
+      simp only [w_def_apply h_alg, dif_pos hx, hxy],
       rw max_eq_right, 
       exact le_refl _,
       { exact zero_le' }},
     { by_cases hy : y = 0,
       { have hxy : x + y = x,
         { rw [hy, add_zero] },
-          simp only [if_pos hy, hxy],
+          simp only [w_def_apply h_alg, dif_pos hy, hxy],
           rw max_eq_left, 
           exact le_refl _,
         { exact zero_le' }},
       { by_cases hxy : x + y = 0,
-        { simp only [if_pos hxy, zero_le'] },
-        { simp only [if_neg hx, if_neg hy, if_neg hxy],
-          sorry }}}
+        { simp only [w_def_apply h_alg, dif_pos hxy, zero_le'] },
+        { simp only [w_def_apply h_alg, dif_neg hx, dif_neg hy, dif_neg hxy],
+          set ux := (aux_w h_alg (is_unit_iff_ne_zero.mpr hx).unit).some with hux_def,
+          set uy := (aux_w h_alg (is_unit_iff_ne_zero.mpr hy).unit).some with huy_def,
+          set uxy := (aux_w h_alg (is_unit_iff_ne_zero.mpr hxy).unit).some with huxy_def,
+          rw [← hux_def, ← huy_def, ← huxy_def],
+        rw _root_.le_max_iff,
+        simp only [← with_zero.coe_zpow, coe_le_coe],
+        have hd : 0 < (aux_d h_alg : ℤ), 
+        { rw [int.coe_nat_pos],
+          exact nat.pos_of_ne_zero (aux_d_ne_zero h_alg), },
+        rw [← zpow_le_zpow_iff' hd, zpow_coe_nat, zpow_coe_nat, ← coe_le_coe, 
+          with_zero.coe_pow, with_zero.coe_zpow,
+          (aux_w h_alg (is_unit_iff_ne_zero.mpr hxy).unit).some_spec],
+        rw [ with_zero.coe_pow, with_zero.coe_zpow,
+          (aux_w h_alg (is_unit_iff_ne_zero.mpr hx).unit).some_spec],
+        rw [← zpow_le_zpow_iff' hd,zpow_coe_nat, zpow_coe_nat],
+        nth_rewrite 1 [← coe_le_coe],
+        simp only [with_zero.coe_pow, with_zero.coe_zpow,
+          (aux_w h_alg (is_unit_iff_ne_zero.mpr hxy).unit).some_spec,
+          (aux_w h_alg (is_unit_iff_ne_zero.mpr hy).unit).some_spec],
+        simp only [← (with_zero_mult_int_to_nnreal_strict_mono 
+          (one_lt_valuation_base K)).le_iff_le, ← nnreal.coe_le_coe],
+        rw [_root_.map_pow, nnreal.coe_pow, ← real.rpow_nat_cast, nat.cast_div,
+          ← pow_disc_norm_extension_eq_pow_root_zero_coeff' h_alg], --x + y
+        rw [_root_.map_pow, nnreal.coe_pow, ← real.rpow_nat_cast _
+          (finrank K L / (minpoly K _).nat_degree), nat.cast_div,
+          ← pow_disc_norm_extension_eq_pow_root_zero_coeff' h_alg], -- x
+        rw [_root_.map_pow, nnreal.coe_pow, ← real.rpow_nat_cast _
+          (finrank K L / (minpoly K _).nat_degree), nat.cast_div,
+          ← pow_disc_norm_extension_eq_pow_root_zero_coeff' h_alg], -- y
+        have h_le : (disc_norm_extension h_alg) (x + y)  ≤ (disc_norm_extension h_alg) x ∨ 
+          (disc_norm_extension h_alg) (x + y)  ≤ (disc_norm_extension h_alg) y,
+        { rw ← _root_.le_max_iff,
+          exact (disc_norm_extension_is_nonarchimedean h_alg) _ _ },
+        cases h_le with hlex hley,
+        { left,
+          exact pow_le_pow_of_le_left (disc_norm_extension_nonneg h_alg _) hlex _ },
+        { right,
+          exact pow_le_pow_of_le_left (disc_norm_extension_nonneg h_alg _) hley _ },
+        repeat { exact minpoly.degree_dvd (is_algebraic_iff_is_integral.mp (h_alg _))},
+        repeat { rw nat.cast_ne_zero,
+          exact ne_of_gt (minpoly.nat_degree_pos (is_algebraic_iff_is_integral.mp (h_alg _))) }}}}
   end }
 
-lemma w_apply [finite_dimensional K L] (h_alg : algebra.is_algebraic K L)
-  (x : L):  w h_alg x = (if x = 0 then 0 else 
-    (valued.v ((minpoly K x).coeff 0))^((finrank K L)/((aux_d h_alg)*(minpoly K x).nat_degree))) :=
+lemma w_apply [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) (x : L) : 
+   w h_alg x = (if hx : x = 0 then 0 else 
+    (of_add (-1 : ℤ))^(aux_w h_alg (is_unit_iff_ne_zero.mpr hx).unit).some) :=
 rfl
 
 lemma w_apply_if_neg [finite_dimensional K L] (h_alg : algebra.is_algebraic K L)
   {x : L} (hx : x ≠ 0) :  w h_alg x = 
-  (valued.v ((minpoly K x).coeff 0))^((finrank K L)/((aux_d h_alg)*(minpoly K x).nat_degree)) :=
-by rw [w_apply, if_neg hx]
+  ((of_add (-1 : ℤ))^(aux_w h_alg (is_unit_iff_ne_zero.mpr hx).unit).some) :=
+by rw [w_apply, dif_neg hx]
 
-lemma exists_uniformizer [finite_dimensional K L] 
-  (h_alg : algebra.is_algebraic K L) :
+lemma exists_uniformizer [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) :
   ∃ (x : Lˣ), aux_hom h_alg x = of_add (-aux_d h_alg : ℤ) :=
 begin
   have h_subgp := range_eq_aux_d_pow h_alg,
@@ -401,35 +530,22 @@ begin
   refl,
 end
 
-lemma foo [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) : 
-  (of_add (aux_d h_alg : ℤ) : ℤₘ₀) = (of_add (1 : ℤ))^(aux_d h_alg) :=
-by rw [← with_zero.coe_pow, with_zero.coe_inj, ← one_mul (aux_d h_alg : ℤ), int.of_add_mul,
-  zpow_coe_nat]
-
 instance hw [decidable_eq L] [finite_dimensional K L] (h_alg : algebra.is_algebraic K L) :
   is_discrete (w h_alg) := 
 begin
-  set x := (exists_uniformizer h_alg).some with hx_def,
+  set x := (exists_uniformizer h_alg).some,
   have hx := (exists_uniformizer h_alg).some_spec,
   rw ←  with_zero.coe_inj at hx,
   simp only [aux_hom, units.val_eq_coe, monoid_hom.coe_mk, coe_unzero, of_add_neg_nat] at hx,
-  have hπ1 : w h_alg ((exists_uniformizer h_alg).some) = (multiplicative.of_add (-1 : ℤ)),
+  have hπ1 : w h_alg x = (multiplicative.of_add (-1 : ℤ)),
   { rw [w_apply_if_neg, ← with_zero.zpow_left_inj _ with_zero.coe_ne_zero 
       (nat.cast_ne_zero.mpr (aux_d_ne_zero h_alg))],
-    { conv_rhs{rw zpow_coe_nat},
-      rw ← hx,
-      simp only [of_add_neg, zpow_coe_nat],
-      rw [← pow_mul, mul_comm _ (aux_d h_alg)],
-      apply congr_arg,
-      nth_rewrite 1 mul_comm,
-      rw [← nat.div_div_eq_div_mul, eq_comm, ← nat.div_eq_iff_eq_mul_right 
-        (nat.pos_of_ne_zero (aux_d_ne_zero h_alg)) (aux_d_divides h_alg _)],
+    { have hx0 : (x : L) ≠ 0, { exact units.ne_zero _ },
+      rw [zpow_coe_nat, zpow_coe_nat, ← hx],
+      erw (aux_w h_alg x).some_spec,
       refl, },
-    { apply pow_ne_zero,
-      simp only [of_add_neg, ne.def, zero_iff],
-      exact minpoly.coeff_zero_ne_zero (is_algebraic_iff_is_integral.mp (h_alg _))
-        (units.ne_zero _) },
-    { exact units.ne_zero _ }},
+    { exact zpow_ne_zero _ with_zero.coe_ne_zero,
+    exact units.ne_zero _ }},
   set π : (w h_alg).integer := ⟨(exists_uniformizer h_alg).some, 
     by rw [mem_integer, hπ1]; exact le_of_lt with_zero.of_add_neg_one_lt_one⟩, 
   have hπ : w h_alg (π : L) = (multiplicative.of_add (-1 : ℤ)) := hπ1,
