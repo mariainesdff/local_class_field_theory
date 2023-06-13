@@ -200,34 +200,35 @@ begin
   exact uniformizer_ne_zero' _ π,
 end
 
+
 /-In the following lemma, the assumption that v be discrete is not needed. -/
-lemma integer_is_local_ring : local_ring K₀ :=
-{ exists_pair_ne := ⟨0, 1, zero_ne_one⟩,
-  is_unit_or_is_unit_of_add_one := λ a b hab, 
-  begin
-    by_cases ha : is_unit a,
-    { exact or.inl ha },
-    { right,
-      have hab' : v (a + b : K) = 
-        (1 : ℤₘ₀),
-      { rw [← subring.coe_add, hab, subring.coe_one, valuation.map_one] },
-      have hb0 : (↑b : K) ≠ 0,
-      { rw [ne.def, subring.coe_eq_zero_iff],
-        intro hb,
-        rw [hb, add_zero] at hab,
-        rw hab at ha,
-        exact ha is_unit_one },
-      apply @integers.is_unit_of_one K _ _ _ v K₀ _ _ (integer.integers v) b
-        ((is_unit_iff_ne_zero).mpr hb0) _,
-      have hab'' : v (-a) < v (a + b),
-      { rw [hab', valuation.map_neg],
-        exact (integer.not_is_unit_iff_valuation_lt_one a).mp ha }, 
-      have hb : (algebra_map ↥(v.valuation_subring) K) b = (b : K), {refl},
-      rw [hb, ← add_sub_cancel' (↑a : K) ↑b, sub_eq_add_neg, add_comm (↑a + ↑b) _,
-        add_eq_max_of_ne (ne_of_lt hab''), ←hab'], 
-      apply max_eq_right,
-      exact (le_of_lt hab''),  },
-  end }
+-- lemma integer_is_local_ring : local_ring K₀ :=
+-- { exists_pair_ne := ⟨0, 1, zero_ne_one⟩,
+--   is_unit_or_is_unit_of_add_one := λ a b hab, 
+--   begin
+--     by_cases ha : is_unit a,
+--     { exact or.inl ha },
+--     { right,
+--       have hab' : v (a + b : K) = 
+--         (1 : ℤₘ₀),
+--       { rw [← subring.coe_add, hab, subring.coe_one, valuation.map_one] },
+--       have hb0 : (↑b : K) ≠ 0,
+--       { rw [ne.def, subring.coe_eq_zero_iff],
+--         intro hb,
+--         rw [hb, add_zero] at hab,
+--         rw hab at ha,
+--         exact ha is_unit_one },
+--       apply @integers.is_unit_of_one K _ _ _ v K₀ _ _ (integer.integers v) b
+--         ((is_unit_iff_ne_zero).mpr hb0) _,
+--       have hab'' : v (-a) < v (a + b),
+--       { rw [hab', valuation.map_neg],
+--         exact (integer.not_is_unit_iff_valuation_lt_one a).mp ha }, 
+--       have hb : (algebra_map ↥(v.valuation_subring) K) b = (b : K), {refl},
+--       rw [hb, ← add_sub_cancel' (↑a : K) ↑b, sub_eq_add_neg, add_comm (↑a + ↑b) _,
+--         add_eq_max_of_ne (ne_of_lt hab''), ←hab'], 
+--       apply max_eq_right,
+--       exact (le_of_lt hab''),  },
+--   end }
 
 variable [is_discrete v]
 
@@ -317,7 +318,6 @@ noncomputable instance : valued (fraction_ring A) ℤₘ₀ :=
 (maximal_ideal A).adic_valued
 
 
-noncomputable
 instance : is_discrete (@valued.v (fraction_ring A) _ ℤₘ₀ _ _) :=
 is_discrete_of_exists_uniformizer valued.v
   (valuation_exists_uniformizer (fraction_ring A) (maximal_ideal A)).some_spec
@@ -339,7 +339,7 @@ def uniformizer := valuation.uniformizer hv.v
 instance [hv : valued K ℤₘ₀] [is_discrete hv.v] : nonempty (uniformizer K) := 
 ⟨⟨(exists_uniformizer hv.v).some, (exists_uniformizer hv.v).some_spec⟩⟩
 
-instance : local_ring K₀ := valuation.integer_is_local_ring hv.v
+-- instance : local_ring K₀ := valuation.integer_is_local_ring hv.v
 
 variables [is_discrete hv.v]
 
