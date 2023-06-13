@@ -375,7 +375,7 @@ end test
 open_locale classical
 
 noncomputable!
-lemma uno' (L : Type*) [field L] --{w : valuation L ℤₘ₀} (x : w.valuation_subring)
+lemma uno'' (L : Type*) [field L] --{w : valuation L ℤₘ₀} (x : w.valuation_subring)
   [w : valued K ℤₘ₀] [is_discrete w.v] (x : w.v.valuation_subring) :
   --[decidable_eq (ideal ↥(w.v.valuation_subring))]
   --[decidable_eq (associates (ideal (↥(w.v.valuation_subring))))]
@@ -394,8 +394,9 @@ sorry
 --   --   (associates.mk (ideal.span {x})).factors))),
 -- end
 
--- lemma uno'' lemma int_valuation_le_pow_iff_dvd (r : R) (n : ℕ) :
---   v.int_valuation_def r ≤ multiplicative.of_add (-(n : ℤ)) ↔ v.as_ideal^n ∣ ideal.span {r} :=
+lemma uno' (L : Type*) [field L] {w : valuation L ℤₘ₀} (x : w.valuation_subring) (n : ℕ) :
+  w x ≤ multiplicative.of_add (-(n : ℤ)) ↔
+    (local_ring.maximal_ideal (w.valuation_subring)) ^ n ∣ ideal.span {x} := sorry
 
 example {L : Type*} [field L] {w : valuation L ℤₘ₀} :
   is_fraction_ring w.valuation_subring L := infer_instance
@@ -428,7 +429,7 @@ begin
       dsimp only [v2] at hn,
       rw hn,
       rw int_valuation_le_pow_iff_dvd,
-      apply (uno' K_v _ n).mp (le_of_eq hn) },
+      apply (uno' K_v _ n).mp (le_of_eq hn), },
     { obtain ⟨m, hm⟩ : ∃ m : ℕ, v1 R K v a = of_add (-m : ℤ), sorry,
       have triv : (a : K_v) = algebra_map _ K_v a,sorry,
       rw triv at hm,
@@ -444,6 +445,7 @@ begin
   sorry,
 end
 
+#exit
 
 #check A1
 lemma foo : A2 R K v ≤ A1 R K v :=
