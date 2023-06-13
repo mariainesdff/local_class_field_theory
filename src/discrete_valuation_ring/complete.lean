@@ -1,5 +1,6 @@
 import ring_theory.dedekind_domain.adic_valuation
 import discrete_valuation_ring.basic
+import for_mathlib.laurent_series_iso.old_power_series_adic_completion--only to have fae_int_valuation_apply
 
 open_locale discrete_valuation
 open multiplicative
@@ -85,16 +86,16 @@ end
 
 
 --already done above?
-lemma valuation_eq_one_of_is_unit {a : ↥(height_one_spectrum.adic_completion_integers K v)}
-  (ha : is_unit a) : valued.v (a : K_v) = (1 : ℤₘ₀) :=
-begin
-  rw is_unit_iff_exists_inv at ha,
-  obtain ⟨b, hab⟩ := ha,
-  have hab' : valued.v (a * b : K_v) = (1 : ℤₘ₀),
-  { rw [← subring.coe_mul, hab, subring.coe_one, valuation.map_one] },
-  rw valuation.map_mul at hab',
-  exact eq_one_of_one_le_mul_left a.2 b.2 (le_of_eq hab'.symm),
-end
+-- lemma valuation_eq_one_of_is_unit {a : ↥(height_one_spectrum.adic_completion_integers K v)}
+--   (ha : is_unit a) : valued.v (a : K_v) = (1 : ℤₘ₀) :=
+-- begin
+--   rw is_unit_iff_exists_inv at ha,
+--   obtain ⟨b, hab⟩ := ha,
+--   have hab' : valued.v (a * b : K_v) = (1 : ℤₘ₀),
+--   { rw [← subring.coe_mul, hab, subring.coe_one, valuation.map_one] },
+--   rw valuation.map_mul at hab',
+--   exact eq_one_of_one_le_mul_left a.2 b.2 (le_of_eq hab'.symm),
+-- end
 
 
 noncomputable! def max_ideal_of_completion_def : ideal R_v :=
@@ -190,43 +191,43 @@ the valuation to the completion agrees with the DVR valuation on the local field
 maximal ideal.
 -/
 
-lemma a (x : K_v) : true :=
-begin
---letI top : topological_space ℤₘ₀ := with_zero_topology.topological_space,
---letI : valued K ℤₘ₀ := valued.mk' v.valuation,
---have h1 := @valued.continuous_valuation K_v _ ℤₘ₀ _ _,
---have h2 := @valued.continuous_extension K _ ℤₘ₀ _ _,
-have h3 : continuous (adic_valuation R K v),
-{ --exact valued.continuous_valuation,
-  rw continuous_iff_continuous_at,
-  intros x,
-  rcases eq_or_ne x 0 with rfl|h,
-  { rw [continuous_at, valuation.map_zero, with_zero_topology.tendsto_zero],
-    intros γ hγ,
-    rw [filter.eventually, valued.mem_nhds_zero],
-    refine ⟨units.mk0 γ hγ, _⟩,
-    intros z hz,
-    simp only [set.mem_set_of_eq, units.coe_mk0] at hz ⊢,
-    sorry,
-     },
-  sorry,
-  /- { have h := @with_zero_topology.tendsto_zero K_v ℤₘ₀ _ (nhds 0)(val R K v),
-    rw [continuous_at, map_zero],
-    rw h,
-    intros γ hγ,
-    rw [filter.eventually, valued.mem_nhds_zero],
-    use [units.mk0 γ hγ, subset.rfl] }, -/
-  /- rcases eq_or_ne x 0 with rfl|h,
-  { rw [continuous_at, map_zero, with_zero_topology.tendsto_zero],
-    intros γ hγ,
-    rw [filter.eventually, valued.mem_nhds_zero],
-    use [units.mk0 γ hγ, subset.rfl] },
-  { have v_ne : (v x : Γ₀) ≠ 0, from (valuation.ne_zero_iff _).mpr h,
-    rw [continuous_at, with_zero_topology.tendsto_of_ne_zero v_ne],
-    apply valued.loc_const v_ne },-/ },
-  triv,
---continuous (@valued.v K_v _ ℤₘ₀ _ _)
-end
+-- lemma a (x : K_v) : true :=
+-- begin
+-- --letI top : topological_space ℤₘ₀ := with_zero_topology.topological_space,
+-- --letI : valued K ℤₘ₀ := valued.mk' v.valuation,
+-- --have h1 := @valued.continuous_valuation K_v _ ℤₘ₀ _ _,
+-- --have h2 := @valued.continuous_extension K _ ℤₘ₀ _ _,
+-- have h3 : continuous (adic_valuation R K v),
+-- { --exact valued.continuous_valuation,
+--   rw continuous_iff_continuous_at,
+--   intros x,
+--   rcases eq_or_ne x 0 with rfl|h,
+--   { rw [continuous_at, valuation.map_zero, with_zero_topology.tendsto_zero],
+--     intros γ hγ,
+--     rw [filter.eventually, valued.mem_nhds_zero],
+--     refine ⟨units.mk0 γ hγ, _⟩,
+--     intros z hz,
+--     simp only [set.mem_set_of_eq, units.coe_mk0] at hz ⊢,
+--     sorry,
+--      },
+--   sorry,
+--   /- { have h := @with_zero_topology.tendsto_zero K_v ℤₘ₀ _ (nhds 0)(val R K v),
+--     rw [continuous_at, map_zero],
+--     rw h,
+--     intros γ hγ,
+--     rw [filter.eventually, valued.mem_nhds_zero],
+--     use [units.mk0 γ hγ, subset.rfl] }, -/
+--   /- rcases eq_or_ne x 0 with rfl|h,
+--   { rw [continuous_at, map_zero, with_zero_topology.tendsto_zero],
+--     intros γ hγ,
+--     rw [filter.eventually, valued.mem_nhds_zero],
+--     use [units.mk0 γ hγ, subset.rfl] },
+--   { have v_ne : (v x : Γ₀) ≠ 0, from (valuation.ne_zero_iff _).mpr h,
+--     rw [continuous_at, with_zero_topology.tendsto_of_ne_zero v_ne],
+--     apply valued.loc_const v_ne },-/ },
+--   triv,
+-- --continuous (@valued.v K_v _ ℤₘ₀ _ _)
+-- end
 
 lemma valuations_eq_on_K  (x : K) : (adic_valuation R K v) ↑x = (valued.mk' v.valuation).v x :=
 begin
@@ -239,7 +240,17 @@ begin
   sorry
 end
 
+
 lemma valuations_eq (x : K_v) : adic_valuation R K v x = valued.v x :=
+begin
+--   -- rw hope R K v,
+--  have := hope R K v,
+--  rw [v1, v2] at this,
+--  rw ← this,
+--  refl,
+-- --  rw this,
+-- --  convert this,
+-- end
 begin
   have heq : (adic_valuation R K v).to_fun = valued.v,
   { letI : valued K ℤₘ₀ := valued.mk' v.valuation,
@@ -255,40 +266,194 @@ section fae
 
 open is_dedekind_domain.height_one_spectrum.
 
-example : is_principal_ideal_ring R_v :=
-begin
-  exact discrete_valuation_ring.to_is_principal_ideal_ring,
-end
+-- example : is_principal_ideal_ring R_v :=
+-- begin
+--   exact discrete_valuation_ring.to_is_principal_ideal_ring,
+-- end
 
-lemma exists_double_uniformizer : ∃ π₁ π₂: R_v, 
-  valued.v (↑π₁ : K_v) = of_add (-1 : ℤ) ∧ adic_valuation R K v π₂ = of_add (-1 : ℤ) :=
-begin
-  obtain ⟨π₁, h1⟩ := valuation_completion_exists_uniformizer R K v,
-  haveI := (is_principal_ideal_ring_iff R_v).mp discrete_valuation_ring.to_is_principal_ideal_ring
-    (max_ideal_of_completion R K v).1,
-  let π₂ := ↑(submodule.is_principal.generator (max_ideal_of_completion R K v).1),
-  have h2 : adic_valuation R K v π₂ = of_add (-1 : ℤ), sorry,
-  sorry,
-  -- use [π₁, π₂],
-  -- ⟨h1, h2⟩],
-end
+-- lemma exists_double_uniformizer : ∃ π₁ π₂: R_v, 
+--   valued.v (↑π₁ : K_v) = of_add (-1 : ℤ) ∧ adic_valuation R K v π₂ = of_add (-1 : ℤ) :=
+-- begin
+--   obtain ⟨π₁, h1⟩ := valuation_completion_exists_uniformizer R K v,
+--   haveI := (is_principal_ideal_ring_iff R_v).mp discrete_valuation_ring.to_is_principal_ideal_ring
+--     (max_ideal_of_completion R K v).1,
+--   let π₂ := ↑(submodule.is_principal.generator (max_ideal_of_completion R K v).1),
+--   have h2 : adic_valuation R K v π₂ = of_add (-1 : ℤ), sorry,
+--   sorry,
+--   -- use [π₁, π₂],
+--   -- ⟨h1, h2⟩],
+-- end
 
-lemma integral_is_integral (α : R_v) :
-  valued.v (↑α : K_v) ≤ of_add (0 : ℤ) ∧ adic_valuation R K v α ≤ of_add (0 : ℤ) :=
-begin
-  split,
-  { let w : valuation K_v ℤₘ₀ := valued.v,
-    have := α.2,
-    rw ← valuation_subring.valuation_le_one_iff at this,
-    convert this,
-    sorry,
-    },
-  { apply @valuation_le_one R_v _ _ _ K_v _ _ _ (max_ideal_of_completion R K v) α }
-end
+-- lemma integral_is_integral (α : R_v) :
+--   valued.v (↑α : K_v) ≤ of_add (0 : ℤ) ∧ adic_valuation R K v α ≤ of_add (0 : ℤ) :=
+-- begin
+--   split,
+--   { let w : valuation K_v ℤₘ₀ := valued.v,
+--     have := α.2,
+--     rw ← valuation_subring.valuation_le_one_iff at this,
+--     convert this,
+--     sorry,
+--     },
+--   { apply @valuation_le_one R_v _ _ _ K_v _ _ _ (max_ideal_of_completion R K v) α }
+-- end
 
 -- #check exists_double_uniformizer R K v
-include R K v
+-- include R K v
+
+#check v
+-- #check (max_ideal_of_completion R K v)
+def v1 : valuation K_v ℤₘ₀ := 
+  (@is_dedekind_domain.height_one_spectrum.valuation R_v _ _ _ K_v _ _ _ (max_ideal_of_completion R K v))
+
+def v2 : valuation K_v ℤₘ₀ := valued.v
+
+lemma hope : v1 R K v = v2 R K v :=
+begin
+  ext x,
+end
+
+lemma almost_there_using_dvd_iff {A : Type} [comm_ring A] [is_domain A] [is_dedekind_domain A]
+ (p : is_dedekind_domain.height_one_spectrum A) {L : Type} [field L] [algebra A L]
+ [is_fraction_ring A L] (x : A) : x ∈ p.1 ↔ 
+  p.int_valuation x ≤ 1 :=
+begin
+  sorry,
+end
+
+lemma maximals_equal {A : Type} [comm_ring A] [is_domain A] [is_dedekind_domain A]
+ (p : is_dedekind_domain.height_one_spectrum A) {L : Type} [field L] [algebra A L]
+ [is_fraction_ring A L] : true :=
+begin
+  -- let S := (@is_dedekind_domain.height_one_spectrum.valuation _ _ _ _ L _ _ _ p).valuation_subring.valuation_ring,
+  let M := local_ring.maximal_ideal (@is_dedekind_domain.height_one_spectrum.valuation _ _ _ _
+    L _ _ _ p).valuation_subring,
+  let N := M.carrier,
+  let T := p.1.carrier,
+  let a : A := sorry,
+  let b : p.valuation.valuation_subring := a,
+  -- hav
+end
+
+-- lemma zero (x : K_v) : v1 R K v x =
+
+def A1 :=
+  (@is_dedekind_domain.height_one_spectrum.valuation R_v _ _ _ K_v _ _ _
+  (max_ideal_of_completion R K v)).integer
+
+def A2 := valuation.integer (v2 R K v)
+
+example : local_ring R_v :=
+begin
+  exact valuation_ring.local_ring ↥(adic_completion_integers K v),
+end
+
+
+lemma uno (L : Type*) [field L] {w : valuation L ℤₘ₀} (x : w.valuation_subring) (n : ℕ) :
+ x ∈ (local_ring.maximal_ideal (w.valuation_subring)) ^ n ↔ w x ≤ of_add (-n : ℤ) :=
+begin
+  sorry,
+end
+
+-- noncomputable!
+-- lemma uno' (L : Type*) [field L] {w : valuation L ℤₘ₀} (x : w.valuation_subring) :
+-- --  of_add (↑(associates.mk (local_ring.maximal_ideal (w.valuation_subring))).count
+--   (associates.mk ((ideal.span {x}) : ideal (w.valuation_subring))).factors = 
+--   (associates.mk ((ideal.span {x}) : ideal (w.valuation_subring))).factors :=
+-- begin
+--   sorry,
+--   -- let := local_ring.maximal_ideal (w.valuation_subring),
+--   -- let := (associates.mk (ideal.span {x})).factors,
+--   -- let := (-↑((associates.mk (max_ideal_of_completion R K v).as_ideal).count
+--   --   (associates.mk (ideal.span {x})).factors))),
+-- end
+
+
+
+example {L : Type*} [field L] {w : valuation L ℤₘ₀} :
+  is_fraction_ring w.valuation_subring L := infer_instance
+
+lemma due (L : Type*) [field L] {w : valuation L ℤₘ₀} (a : w.valuation_subring)
+  (b : non_zero_divisors w.valuation_subring) : 
+  w (is_localization.mk' L a b) = w a / w b :=  
+begin
+  sorry,
+end
+
+lemma bar (x : K_v) : v1 R K v x = v2 R K v x :=
+begin
+  classical,
+  rw [v1, v2],
+  obtain ⟨a, b, H⟩ : ∃ (a : (v2 R K v).valuation_subring)
+    (b : non_zero_divisors (v2 R K v).valuation_subring), x = is_localization.mk' K_v a b, sorry,
+  have h2 := due K_v a b,
+  have h1 := @valuation_of_mk' R_v _ _ _ K_v _ _ _ (max_ideal_of_completion R K v) a b,
+  rw ← H at h1 h2,
+  rw h1,
+  dsimp only [v2] at h2,
+  rw h2,
+  congr,
+  { have ha : ¬ a = 0, sorry, --otherwise trivial
+    dsimp only [v2] at ha,
+    rw fae_int_valuation_apply,
+    rw int_valuation_def,
+    rw [if_neg],
+    -- simp,
+
+  },
+end
+
+
+#check A1
+lemma foo : A2 R K v ≤ A1 R K v :=
+begin
+  intros x hx,
+  rw [A1],
+  rw [A2, v2] at hx,
+  rw valuation.integer at hx ⊢,
+  simp only [subring.mem_mk, set.mem_set_of_eq] at hx ⊢,
+  apply le_trans ((bar R K v) x) hx,
+end
+
+lemma foo' (π₁ : K_v) (hπ₁ : v1 R K v π₁ = of_add (-1 : ℤ)) : v2 R K v π₁ = of_add (-1 : ℤ) :=
+begin
+  let ϖ : uniformizer (v2 R K v), sorry,
+  obtain ⟨π₂, hπ₂⟩ := ϖ,
+  -- let := this.1,
+  -- cases this with ⟨a, hα⟩,
+  -- obtain ⟨π₂, hπ₂⟩ := uniformizer,
+  
+  -- have := pow_uniformizer (v2 R K v),--does not work, it has the wrong type
+  obtain ⟨n, u, H⟩ : ∃ n : ℕ, ∃ u : (v2 R K v).integerˣ, π₁ = (↑π₂ : K_v) ^n * u, sorry,
+  have H' := H,
+  apply_fun (v1 R K v) at H,
+  rw valuation.map_mul at H,
+  rw hπ₁ at H,
+  rw valuation.map_pow at H,
+  have le_pi : (v1 R K v) π₂ ≤ of_add (-1 : ℤ),
+  { rw v1,
+    apply le_of_eq hπ₂ },
+  replace le_pi : (v1 R K v) π₂ ^ n ≤ of_add (-1 : ℤ) ^ n := sorry,
+  simp at le_pi,
+  have le_u : (v1 R K v) u ≤ 1,
+  { apply le_trans (bar R K v _) (le_of_eq _),
+    sorry,
+  },
+
+  -- have key : v₂ (π₁.val) = of_add (-1 : ℤ),
+  -- { apply_fun (v₂ ∘ coe) at hu,
+  --   simp only [function.comp_app, subring.coe_mul, subring.coe_pow, valuation.map_mul,
+  --     valuation.map_pow] at hu,
+  --   rw h2 at hu,
+  --   let v := u.1.1,
+  --   -- have u_int₂ := valuation_subring.mem_or_inv_mem,
+  --   have := @integer.is_unit_iff_valuation_eq_one K_v _ ℤₘ₀ _ v₂ u.1,
+  
+end
+
+#exit
+#check (max_ideal_of_completion R K v).1
 lemma foo : true :=
+
 begin
   obtain ⟨ϖ₁, h1⟩ := valuation_completion_integers_exists_uniformizer R K v,
   set v₁ : valuation K_v ℤₘ₀ := valued.v with hv1,
@@ -311,7 +476,14 @@ begin
     simp only [function.comp_app, subring.coe_mul, subring.coe_pow, valuation.map_mul,
       valuation.map_pow] at hu,
     rw h2 at hu,
-    have := valuation_eq_one_of_is_unit R K v _,
+    let v := u.1.1,
+    -- have u_int₂ := valuation_subring.mem_or_inv_mem,
+    have := @integer.is_unit_iff_valuation_eq_one K_v _ ℤₘ₀ _ v₂ u.1,
+    
+    --).mp u.is_unit,
+    -- have := (integer.is_unit_iff_valuation_eq_one u.1).mp u.is_unit,
+
+    -- rw this at hu,
     -- simp only [of_add_neg, with_zero.coe_inv] at hu,
 
   },
