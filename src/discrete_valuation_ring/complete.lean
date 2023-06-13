@@ -394,8 +394,8 @@ sorry
 --   --   (associates.mk (ideal.span {x})).factors))),
 -- end
 
-#exit
-
+-- lemma uno'' lemma int_valuation_le_pow_iff_dvd (r : R) (n : ℕ) :
+--   v.int_valuation_def r ≤ multiplicative.of_add (-(n : ℤ)) ↔ v.as_ideal^n ∣ ideal.span {r} :=
 
 example {L : Type*} [field L] {w : valuation L ℤₘ₀} :
   is_fraction_ring w.valuation_subring L := infer_instance
