@@ -145,6 +145,13 @@ spectral_mul_alg_norm h_alg (norm_is_nonarchimedean K)
 def disc_normed_field_extension (h_alg : algebra.is_algebraic K L) : normed_field L :=
 spectral_norm_to_normed_field h_alg (norm_is_nonarchimedean K)
 
+def disc_normed_field_extension_uniform_space (h_alg : algebra.is_algebraic K L) : 
+  uniform_space L :=
+begin
+  haveI : normed_field L := disc_normed_field_extension h_alg,
+  apply_instance,
+end
+
 lemma disc_norm_extension_eq_root_zero_coeff (h_alg : algebra.is_algebraic K L) (x : L) :
   disc_norm_extension h_alg x = 
   ((rk1 K).hom (valued.v ((minpoly K x).coeff 0)))^(1/(minpoly K x).nat_degree : ℝ) :=
@@ -541,7 +548,7 @@ begin
   refl,
 end
 
-instance is_discrete_of_finite [decidable_eq L] [finite_dimensional K L]  :
+instance is_discrete_of_finite [finite_dimensional K L]  :
   is_discrete (w K L) := 
 begin
   set x := (exists_uniformizer K L).some,
@@ -569,22 +576,31 @@ section complete
 
 open valuation
 
-variables (K : Type*) [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v] 
+variables {K : Type*} [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v] 
 
 include hv
 
 -- Without finite_dimensional, the fails_quickly does not complain
-variables (L : Type*) [field L] [algebra K L] [complete_space K] 
+variables {L : Type*} [field L] [algebra K L] [complete_space K] 
 
--- TODO: Maybe this can be an instance
-def uniform_space_extension : uniform_space L := sorry
+-- TODO: Maybe this can be an instance. Update: probably not (because of h_alg, plus the linter complains)
+def uniform_space_extension (h_alg : algebra.is_algebraic K L) : 
+  uniform_space L := 
+disc_normed_field_extension_uniform_space h_alg
 
-lemma extension_is_complete [finite_dimensional K L] : 
-  @is_complete L (uniform_space_extension K L) set.univ := 
+@[priority 100] instance extension_complete [finite_dimensional K L] : 
+  @complete_space L (uniform_space_extension (algebra.is_algebraic_of_finite K L)) := 
 begin
-  sorry
+  letI : nontrivially_normed_field K := disc_norm_field' K,
+  exact spectral_norm_complete_space (algebra.is_algebraic_of_finite K L) (norm_is_nonarchimedean K),
 end
 
+lemma extension_is_complete [finite_dimensional K L] : 
+  @is_complete L (uniform_space_extension (algebra.is_algebraic_of_finite K L)) set.univ := 
+begin
+  rw ← complete_space_iff_is_complete_univ,
+  apply_instance,
+end
 
 /- lemma integral_closure_eq_integer :
   (integral_closure hv.v.integer L).to_subring = (@valued.v L _ ℤₘ₀ _ _).integer :=
