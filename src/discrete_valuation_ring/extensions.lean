@@ -258,7 +258,11 @@ lemma disc_norm_extension_le_one_of_integer
   (x : (integral_closure hv.v.valuation_subring.to_subring L)) : 
   disc_norm_extension h_alg x ≤ 1 :=
 begin
-  letI ic : is_integrally_closed hv.v.valuation_subring.to_subring, sorry,
+  letI : valuation_ring hv.v.valuation_subring.to_subring := 
+  hv.v.valuation_subring.valuation_ring,
+  letI : is_bezout hv.v.valuation_subring.to_subring := valuation_ring.is_bezout,
+  letI ic : is_integrally_closed hv.v.valuation_subring.to_subring := 
+  is_bezout.is_integrally_closed,
   let min_int := minpoly hv.v.valuation_subring.to_subring x,
   let min_x : polynomial K := polynomial.map (algebra_map _ _) min_int,
   rw disc_norm_extension_of_integer,
