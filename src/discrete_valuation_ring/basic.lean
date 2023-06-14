@@ -361,7 +361,7 @@ end discrete_valuation
 
 namespace discretely_valued
 
-open valuation
+open valuation discrete_valuation
 
 variables (K : Type*) [field K] [hv : valued K ℤₘ₀] 
 /-When the valuation is defined on a field instead that simply on a (commutative) ring, we use the 
@@ -382,7 +382,7 @@ instance [hv : valued K ℤₘ₀] [is_discrete hv.v] : nonempty (uniformizer K)
 variables [is_discrete hv.v]
 
 instance is_principal_ideal_ring : is_principal_ideal_ring K₀ := 
-valuation.is_principal_ideal_ring hv.v
+discrete_valuation.is_principal_ideal_ring hv.v
 
 -- Chapter I, Section 1, Proposition 1 in Serre's Local Fields
 instance discrete_valuation_ring : discrete_valuation_ring K₀ := 
