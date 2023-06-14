@@ -9,7 +9,7 @@ import discrete_valuation_ring.global_to_local
 import eq_characteristic.basic
 import for_mathlib.rank_one_valuation
 import from_mathlib.normed_valued
-import from_mathlib.spectral_norm_unique
+import spectral_norm
 
 noncomputable theory
 
@@ -30,43 +30,6 @@ section is_dedekind_domain
 
 open_locale polynomial
 
-variables {S : Type*} [normed_division_ring S]
-
-
-lemma spectral_value_le_one_iff {P : S[X]} (hP : monic P) : 
-  spectral_value P ≤ 1 ↔ ∀ n : ℕ , ‖P.coeff n‖ ≤ 1 :=
-begin
-  rw spectral_value,
-  split; intro h,
-  { intros n,
-    by_contradiction hn,
-    rw not_le at hn,
-    have hsupr : 1 < supr (spectral_value_terms P),
-    { have hn' : 1 < spectral_value_terms P n,
-      { simp only [spectral_value_terms],
-        split_ifs with hPn,
-        { apply real.one_lt_rpow hn,
-          simp only [one_div, inv_pos, sub_pos, nat.cast_lt],
-          exact hPn },
-        { rw [not_lt, le_iff_lt_or_eq] at hPn,
-          cases hPn with hlt heq,
-          { rw [coeff_eq_zero_of_nat_degree_lt hlt, norm_zero] at hn,
-            exfalso, linarith, },
-          { rw [monic, leading_coeff, heq] at hP,
-            rw [hP, norm_one] at hn,
-            linarith, }}},
-      exact lt_csupr_of_lt (spectral_value_terms_bdd_above P) n hn', },
-    linarith, },
-  { simp only [spectral_value_terms],
-    apply csupr_le,
-    intros n,
-    split_ifs with hn,
-    { apply real.rpow_le_one (norm_nonneg _) (h n),
-      rw [one_div_nonneg,sub_nonneg, nat.cast_le],
-      exact le_of_lt hn, },
-    { exact zero_le_one }},
-end
-
 variables {R : Type*} [comm_ring R] [is_domain R] [is_dedekind_domain R] (L : Type*) [field L]
   [algebra R L] [is_fraction_ring R L] (v : height_one_spectrum R)
 
@@ -85,7 +48,7 @@ lemma valuation_base_def {R : Type*} [comm_ring R] [is_domain R] [is_dedekind_do
     (local_ring.residue_field (adic_completion_integers L v))
   then nat.card
     (local_ring.residue_field (adic_completion_integers L v))
-  else 2) :=
+  else 6) :=
 rfl
 
 lemma one_lt_valuation_base {R : Type*} [comm_ring R] [is_domain R] [is_dedekind_domain R]
@@ -153,10 +116,10 @@ variables [hv : is_rank_one
 
 include hv 
 
-instance : 
-  normed_field (is_dedekind_domain.height_one_spectrum.adic_completion L v) :=
+instance : normed_field (is_dedekind_domain.height_one_spectrum.adic_completion L v) :=
 by apply rank_one_valuation.valued_field.to_normed_field
   (is_dedekind_domain.height_one_spectrum.adic_completion L v) ℤₘ₀ 
+
 
 lemma norm_le_one_iff_val_le_one (x : is_dedekind_domain.height_one_spectrum.adic_completion L v) :
   ‖x‖ ≤ 1 ↔ valued.v x ≤ (1 : ℤₘ₀) :=
@@ -164,7 +127,7 @@ rank_one_valuation.norm_le_one_iff_val_le_one x
 
 variables (R)
 
-def int_polynomial {P : (is_dedekind_domain.height_one_spectrum.adic_completion L v)[X]}
+def int_polynomial' {P : (is_dedekind_domain.height_one_spectrum.adic_completion L v)[X]}
   (hP : ∀ n : ℕ , ‖P.coeff n‖ ≤ 1) :
   (is_dedekind_domain.height_one_spectrum.adic_completion_integers L v)[X] := 
 { to_finsupp := 
@@ -176,21 +139,21 @@ def int_polynomial {P : (is_dedekind_domain.height_one_spectrum.adic_completion 
 
 variables {R}
 
-lemma int_polynomial_coeff_eq 
+lemma int_polynomial'_coeff_eq 
   {P : (is_dedekind_domain.height_one_spectrum.adic_completion L v)[X]}
   (hP : ∀ n : ℕ , ‖P.coeff n‖ ≤ 1) (n : ℕ) :
-  ↑((int_polynomial R L v hP).coeff n) = P.coeff n :=
+  ↑((int_polynomial' R L v hP).coeff n) = P.coeff n :=
 rfl
 
-lemma int_polynomial_leading_coeff_eq 
+lemma int_polynomial'_leading_coeff_eq 
   {P : (is_dedekind_domain.height_one_spectrum.adic_completion L v)[X]}
   (hP : ∀ n : ℕ , ‖P.coeff n‖ ≤ 1) :
-  ↑((int_polynomial R L v hP).leading_coeff) = P.leading_coeff :=
+  ↑((int_polynomial' R L v hP).leading_coeff) = P.leading_coeff :=
 rfl
 
-lemma int_polynomial_nat_degree 
+lemma int_polynomial'_nat_degree 
   {P : (is_dedekind_domain.height_one_spectrum.adic_completion L v)[X]}
-  (hP : ∀ n : ℕ , ‖P.coeff n‖ ≤ 1) : (int_polynomial R L v hP).nat_degree = P.nat_degree :=
+  (hP : ∀ n : ℕ , ‖P.coeff n‖ ≤ 1) : (int_polynomial' R L v hP).nat_degree = P.nat_degree :=
 rfl
 
 end is_dedekind_domain
@@ -354,13 +317,13 @@ begin
         (algebra.is_algebraic_of_finite 𝔽_[p]⟮⟮X⟯⟯ K x)),
     rw [norm_on_K, spectral_norm, spectral_value_le_one_iff hmonic] at hx,
     set P : polynomial ((FpX_int_completion p)) := 
-    int_polynomial (polynomial 𝔽_[p]) (ratfunc 𝔽_[p]) (ideal_X 𝔽_[p]) hx with hP,
+    int_polynomial' (polynomial 𝔽_[p]) (ratfunc 𝔽_[p]) (ideal_X 𝔽_[p]) hx with hP,
     rw [mem_ring_of_integers, is_integral, adic_algebra.int_algebra_map_def,
       ring_hom.is_integral_elem],
     use P,
     split,
-    --TODO: extract general lemmas for int_polynomial
-    { rw [monic, subtype.ext_iff, subring.coe_one, int_polynomial_leading_coeff_eq],
+    --TODO: extract general lemmas for int_polynomial'
+    { rw [monic, subtype.ext_iff, subring.coe_one, int_polynomial'_leading_coeff_eq],
       apply hmonic },
     { have h : (eval₂ algebra.to_ring_hom x P) = aeval x (minpoly (FpX_field_completion p) x),
       { rw [aeval_eq_sum_range, eval₂_eq_sum_range],
