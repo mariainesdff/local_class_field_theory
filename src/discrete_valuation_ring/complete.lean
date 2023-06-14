@@ -102,10 +102,10 @@ noncomputable! def max_ideal_of_completion_def : ideal R_v :=
 local_ring.maximal_ideal R_v 
 
 instance : discrete_valuation_ring R_v :=
-disc_valued.discrete_valuation_ring K_v
+discretely_valued.discrete_valuation_ring K_v
 
 
---TODO: clean up
+TODO: clean up
 lemma is_dedekind_domain.height_one_spectrum.valuation_completion_integers_exists_uniformizer : 
   ∃ (π : R_v), valued.v (π : K_v) = of_add (-1 : ℤ) :=
 begin 

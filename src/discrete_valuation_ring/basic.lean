@@ -257,14 +257,12 @@ begin
   { intros x hx,
     by_cases hx₀ : x = 0,
     { simp only [hx₀, ideal.zero_mem] },
-    { sorry,--IT BROKE ONCE I CHANGED NAMESPACES
-      -- obtain ⟨n, ⟨u, hu⟩⟩ := pow_uniformizer v π hx₀,
-      -- have hn : not (is_unit x) := λ h, (local_ring.maximal_ideal.is_maximal _).ne_top
-      --   (eq_top_of_is_unit_mem _ hx h),
-      -- replace hn : n ≠ 0 := λ h, by {rw [hu, h, pow_zero, one_mul] at hn, exact hn u.is_unit},
-      -- simpa [ideal.mem_span_singleton, hu, is_unit.dvd_mul_right, units.is_unit] using
-      --   dvd_pow_self _ hn} 
-      }},
+    { obtain ⟨n, ⟨u, hu⟩⟩ := pow_uniformizer v hx₀ π,
+      have hn : not (is_unit x) := λ h, (local_ring.maximal_ideal.is_maximal _).ne_top
+        (eq_top_of_is_unit_mem _ hx h),
+      replace hn : n ≠ 0 := λ h, by {rw [hu, h, pow_zero, one_mul] at hn, exact hn u.is_unit},
+      simpa [ideal.mem_span_singleton, hu, is_unit.dvd_mul_right, units.is_unit] using
+        dvd_pow_self _ hn }},
 end
 
 lemma uniformizer_of_generator {r : K₀} [hv : is_discrete v]
@@ -276,12 +274,10 @@ begin
     exact ring.ne_bot_of_is_maximal_of_not_is_field (local_ring.maximal_ideal.is_maximal
       v.valuation_subring) (not_is_field v) hr },
   obtain ⟨π, hπ⟩ := exists_uniformizer v,
-  
-  sorry;{--BROKE WHEN MOVED NAMESPACES
-  obtain ⟨n, u, hu⟩ := pow_uniformizer v ⟨π, hπ⟩ hr₀,
+  obtain ⟨n, u, hu⟩ := pow_uniformizer v hr₀ ⟨π, hπ⟩,
   rw [uniformizer_is_generator v ⟨π, hπ⟩, span_singleton_eq_span_singleton] at hr,
   simp only at hr,--remove!
-  sorry,}
+  sorry,
   -- convert uniformizer_of_associated v hπ hr,
 end
 
@@ -293,8 +289,6 @@ lemma pow_uniformizer_of_pow_generator {r : K₀} (hr : local_ring.maximal_ideal
 
 lemma ideal_is_principal (I : ideal K₀) : I.is_principal:=
 begin
-  sorry;--BROKE WHEN CHANGING NAMESPACES
-  {
   classical,
   have π := (uniformizer.nonempty v).some,
   by_cases hI : I = ⊥,
@@ -303,7 +297,7 @@ begin
     let P : ℕ → Prop := λ n, π.1^n ∈ I,
     have H : ∃ n, P n,
     { obtain ⟨x, ⟨hx_mem, hx₀⟩⟩ := submodule.exists_mem_ne_zero_of_ne_bot hI,
-      obtain ⟨n, ⟨u, hu⟩⟩ := pow_uniformizer v π hx₀,
+      obtain ⟨n, ⟨u, hu⟩⟩ := pow_uniformizer v hx₀ π,
       use n,
       simp_rw P,
       rwa [← mul_unit_mem_iff_mem I u.is_unit, ← hu] },
@@ -314,7 +308,7 @@ begin
     { intro hr,
       by_cases hr₀ : r = 0,
       { rw hr₀, exact zero_mem _ },
-      { obtain ⟨m, ⟨u, hu⟩⟩ := pow_uniformizer v π hr₀,
+      { obtain ⟨m, ⟨u, hu⟩⟩ := pow_uniformizer v hr₀ π,
         rw submodule_span_eq,
         rw mem_span_singleton',
         use u * π.1^(m - N),
@@ -327,7 +321,6 @@ begin
       obtain ⟨a, ha⟩ := hr,
       rw ← ha,
       exact I.mul_mem_left a (nat.find_spec H), }},
-  }
 end
 
 lemma is_principal_ideal_ring : is_principal_ideal_ring K₀:= 
@@ -361,7 +354,7 @@ end discrete_valuation
 
 namespace discretely_valued
 
-open valuation
+open valuation discrete_valuation
 
 variables (K : Type*) [field K] [hv : valued K ℤₘ₀] 
 /-When the valuation is defined on a field instead that simply on a (commutative) ring, we use the 
@@ -382,7 +375,7 @@ instance [hv : valued K ℤₘ₀] [is_discrete hv.v] : nonempty (uniformizer K)
 variables [is_discrete hv.v]
 
 instance is_principal_ideal_ring : is_principal_ideal_ring K₀ := 
-valuation.is_principal_ideal_ring hv.v
+  is_principal_ideal_ring hv.v
 
 -- Chapter I, Section 1, Proposition 1 in Serre's Local Fields
 instance discrete_valuation_ring : discrete_valuation_ring K₀ := 
