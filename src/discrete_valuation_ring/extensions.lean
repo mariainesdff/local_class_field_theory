@@ -790,14 +790,13 @@ begin
         by rw [int_polynomial_eval₂_eq, minpoly.aeval]⟩ }
 end
 
--- TODO: Do we want to use valuation_subring in this file?
 section
 
 .
 
 omit hv
 
--- TODO: move
+-- TODO: move to basic
 theorem ring_equiv.discrete_valuation_ring {A  B : Type*} [comm_ring A] [is_domain A]
   [discrete_valuation_ring A] [comm_ring B] [is_domain B] (e : A ≃+* B) :
   discrete_valuation_ring B :=
@@ -826,12 +825,16 @@ begin
   letI hw : valued L ℤₘ₀ := valued.mk' (w K L),
   letI hw_disc : is_discrete hw.v := is_discrete_of_finite K L,
   let e : (w K L).valuation_subring ≃+* (integral_closure hv.v.valuation_subring L) :=
-  { to_fun    := sorry,
-    inv_fun   := sorry,
-    left_inv  := sorry,
-    right_inv := sorry,
-    map_mul'  := sorry,
-    map_add'  := sorry },
+  { to_fun    := λ x, ⟨x.1, by rw [← subalgebra.mem_to_subring, integral_closure_eq_integer];
+      exact x.2⟩,
+    inv_fun   := λ x, ⟨x.1, by rw [← valuation_subring.mem_to_subring, 
+      ← integral_closure_eq_integer]; exact x.2⟩ ,
+    left_inv  := λ x, by simp only [subtype.val_eq_coe, set_like.eta],
+    right_inv := λ x, by simp only [subtype.val_eq_coe, set_like.eta],
+    map_mul'  := λ x y, by simp only [subtype.val_eq_coe, subring.coe_mul, 
+      mul_mem_class.mk_mul_mk],
+    map_add'  := λ x y, by simp only [subtype.val_eq_coe, subring.coe_add, 
+      add_mem_class.mk_add_mk], },
   letI h : discrete_valuation_ring ↥((w K L).valuation_subring) := 
   disc_valued.discrete_valuation_ring L,
   exact ring_equiv.discrete_valuation_ring e,
