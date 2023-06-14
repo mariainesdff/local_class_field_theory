@@ -7,7 +7,7 @@ import with_zero
 
 noncomputable theory
 
-open multiplicative valuation with_zero
+open multiplicative discrete_valuation valuation with_zero
 open_locale discrete_valuation nnreal
 
 namespace multiplicative
@@ -836,7 +836,7 @@ begin
     map_add'  := λ x y, by simp only [subtype.val_eq_coe, subring.coe_add, 
       add_mem_class.mk_add_mk], },
   letI h : discrete_valuation_ring ↥((w K L).valuation_subring) := 
-  disc_valued.discrete_valuation_ring L,
+  discretely_valued.discrete_valuation_ring L,
   exact ring_equiv.discrete_valuation_ring e,
 end
 
