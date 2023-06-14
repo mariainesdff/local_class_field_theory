@@ -375,7 +375,7 @@ end test
 open_locale classical
 
 noncomputable!
-lemma uno' (L : Type*) [field L] --{w : valuation L ℤₘ₀} (x : w.valuation_subring)
+lemma uno'' (L : Type*) [field L] --{w : valuation L ℤₘ₀} (x : w.valuation_subring)
   [w : valued K ℤₘ₀] [is_discrete w.v] (x : w.v.valuation_subring) :
   --[decidable_eq (ideal ↥(w.v.valuation_subring))]
   --[decidable_eq (associates (ideal (↥(w.v.valuation_subring))))]
@@ -394,8 +394,9 @@ sorry
 --   --   (associates.mk (ideal.span {x})).factors))),
 -- end
 
-#exit
-
+lemma uno' (L : Type*) [field L] {w : valuation L ℤₘ₀} (x : w.valuation_subring) (n : ℕ) :
+  w x ≤ multiplicative.of_add (-(n : ℤ)) ↔
+    (local_ring.maximal_ideal (w.valuation_subring)) ^ n ∣ ideal.span {x} := sorry
 
 example {L : Type*} [field L] {w : valuation L ℤₘ₀} :
   is_fraction_ring w.valuation_subring L := infer_instance
@@ -404,34 +405,69 @@ lemma due (L : Type*) [field L] {w : valuation L ℤₘ₀} (a : w.valuation_sub
   (b : non_zero_divisors w.valuation_subring) : 
   w (is_localization.mk' L a b) = w a / w b :=  
 begin
-  sorry,
+  rw [div_eq_mul_inv, ← map_inv₀, ← valuation.map_mul],
+  apply congr_arg,
+  simp only [is_fraction_ring.mk'_eq_div, valuation_subring.algebra_map_apply, _root_.coe_coe, 
+    div_eq_mul_inv],
 end
 
-lemma bar (x : K_v) : v1 R K v x = v2 R K v x :=
+
+#exit
+
+lemma it_works_but_needs_golfing (x : K_v) : v1 R K v x = v2 R K v x :=
 begin
-  classical,
   rw [v1, v2],
-  obtain ⟨a, b, H⟩ : ∃ (a : (v2 R K v).valuation_subring)
-    (b : non_zero_divisors (v2 R K v).valuation_subring), x = is_localization.mk' K_v a b, sorry,
+  obtain ⟨a, b, H⟩ := is_localization.mk'_surjective (non_zero_divisors R_v) x, 
   have h2 := due K_v a b,
   have h1 := @valuation_of_mk' R_v _ _ _ K_v _ _ _ (max_ideal_of_completion R K v) a b,
-  rw ← H at h1 h2,
+  rw H at h1 h2,
   rw h1,
-  dsimp only [v2] at h2,
   rw h2,
   congr,
   { have ha : ¬ a = 0, sorry, --otherwise trivial
-    dsimp only [v2] at ha,
     rw fae_int_valuation_apply,
     apply le_antisymm,
-    { obtain ⟨n, hn⟩ : ∃ n : ℕ, v2 R K v a = of_add (-n : ℤ),sorry,
+    { obtain ⟨n, hn⟩ : ∃ n : ℕ, v2 R K v a = of_add (-n : ℤ), 
+      { replace ha : (v2 R K v) a ≠ 0, sorry,
+        have := (mem_integer (v2 R K v) ↑a).mp a.2,
+        obtain ⟨α, hα⟩ := with_zero.ne_zero_iff_exists.mp ha,
+        rw ← hα at this,
+        rw ← with_zero.coe_one at this,
+        rw ← of_add_zero at this,
+        rw with_zero.coe_le_coe at this,
+        rw [← of_add_to_add α] at this,        
+        rw multiplicative.of_add_le at this,
+        obtain ⟨n, hn⟩ := int.exists_eq_neg_of_nat this,
+        use n,
+        rw ← hα,
+        rw with_zero.coe_inj,
+        rw [← of_add_to_add α],
+        rw hn },
       dsimp only [v2] at hn,
       rw hn,
       rw int_valuation_le_pow_iff_dvd,
-      apply (uno' K_v _ n).mp (le_of_eq hn) },
-    { obtain ⟨m, hm⟩ : ∃ m : ℕ, v1 R K v a = of_add (-m : ℤ), sorry,
-      have triv : (a : K_v) = algebra_map _ K_v a,sorry,
-      rw triv at hm,
+      apply (uno' K_v _ n).mp (le_of_eq hn), },
+    { obtain ⟨m, hm⟩ : ∃ m : ℕ, v1 R K v a = of_add (-m : ℤ),
+      { replace ha : (v1 R K v) a ≠ 0, sorry,
+          dsimp only [v1] at ha ⊢,
+          have : (max_ideal_of_completion R K v).valuation (↑a : K_v) ≤ 1 := valuation_le_one _ _,
+
+          -- have := (mem_integer (v1 R K v) ↑a).mp a.2,
+          obtain ⟨α, hα⟩ := with_zero.ne_zero_iff_exists.mp ha,
+          rw ← hα at this,
+          rw ← with_zero.coe_one at this,
+          rw ← of_add_zero at this,
+          rw with_zero.coe_le_coe at this,
+          rw [← of_add_to_add α] at this,        
+          rw multiplicative.of_add_le at this,
+          obtain ⟨m, hm⟩ := int.exists_eq_neg_of_nat this,
+          use m,
+          rw ← hα,
+          rw with_zero.coe_inj,
+          rw [← of_add_to_add α],
+          rw hm,
+          
+           },
       dsimp only [v1, v2] at hm,
       erw valuation_of_algebra_map at hm,
       rw fae_int_valuation_apply at hm,
@@ -444,6 +480,7 @@ begin
   sorry,
 end
 
+#exit
 
 #check A1
 lemma foo : A2 R K v ≤ A1 R K v :=
