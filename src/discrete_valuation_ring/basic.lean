@@ -125,9 +125,10 @@ def uniformizer.mk' (x : R) (hx : is_uniformizer vR x) : uniformizer vR :=
    exact (le_of_lt with_zero.of_add_neg_one_lt_one)}⟩,
 valuation_eq_neg_one := hx }
 
-def is_discrete_of_exists_uniformizer {K : Type*} [field K] (v : valuation K ℤₘ₀) {π : K}
+lemma is_discrete_of_exists_uniformizer {K : Type*} [field K] (v : valuation K ℤₘ₀) {π : K}
   (hπ : is_uniformizer v π) : is_discrete v :=
-⟨begin
+begin
+  fconstructor,
   intro x,
   apply with_zero.cases_on x,
   { exact ⟨0, valuation.map_zero v⟩ },
@@ -136,7 +137,7 @@ def is_discrete_of_exists_uniformizer {K : Type*} [field K] (v : valuation K ℤ
     use π^(- multiplicative.to_add m),
     rw [map_zpow₀, hπ, ← coe_zpow, coe_inj, ← of_add_zsmul, ← zsmul_neg', neg_neg, zsmul_one,
       int.cast_id, of_add_to_add] }
-end⟩
+end
 
 lemma uniformizer_ne_zero {π : R} (hπ : is_uniformizer vR π) : π ≠ 0 := 
 begin
@@ -163,10 +164,6 @@ end
 lemma uniformizer_valuation_lt_one {π : R} (hπ : is_uniformizer vR π) : vR π < 1 := 
 by {rw is_uniformizer_iff.mp hπ, exact of_add_neg_one_lt_one}
 
-variables {K : Type*} [field K] (v : valuation K ℤₘ₀) (π : uniformizer v) {K}
-
-local notation `K₀` := v.valuation_subring
-
 lemma uniformizer_of_associated {π₁ π₂ : R} (h1 : is_uniformizer vR π₁) (H : associated π₁ π₂) :
   is_uniformizer vR π₂ :=
 begin
@@ -178,7 +175,18 @@ begin
   -- have := integer.is_unit_iff_valuation_eq_one,
 end
 
-lemma pow_uniformizer {r : K₀} (hr : r ≠ 0) : ∃ n : ℕ, ∃ u : K₀ˣ, r = π.1^n * u :=
+end valuation
+
+namespace discrete_valuation
+
+open valuation ideal is_dedekind_domain multiplicative with_zero
+
+variables {K : Type*} [field K] (v : valuation K ℤₘ₀)
+
+local notation `K₀` := v.valuation_subring
+
+lemma pow_uniformizer {r : K₀} (hr : r ≠ 0) (π : uniformizer v) :
+  ∃ n : ℕ, ∃ u : K₀ˣ, r = π.1^n * u :=
 begin
   have hr₀ : v r ≠ 0,
   { rw [ne.def, zero_iff, subring.coe_eq_zero_iff], exact hr},
@@ -249,12 +257,14 @@ begin
   { intros x hx,
     by_cases hx₀ : x = 0,
     { simp only [hx₀, ideal.zero_mem] },
-    { obtain ⟨n, ⟨u, hu⟩⟩ := pow_uniformizer v π hx₀,
-      have hn : not (is_unit x) := λ h, (local_ring.maximal_ideal.is_maximal _).ne_top
-        (eq_top_of_is_unit_mem _ hx h),
-      replace hn : n ≠ 0 := λ h, by {rw [hu, h, pow_zero, one_mul] at hn, exact hn u.is_unit},
-      simpa [ideal.mem_span_singleton, hu, is_unit.dvd_mul_right, units.is_unit] using
-        dvd_pow_self _ hn} },
+    { sorry,--IT BROKE ONCE I CHANGED NAMESPACES
+      -- obtain ⟨n, ⟨u, hu⟩⟩ := pow_uniformizer v π hx₀,
+      -- have hn : not (is_unit x) := λ h, (local_ring.maximal_ideal.is_maximal _).ne_top
+      --   (eq_top_of_is_unit_mem _ hx h),
+      -- replace hn : n ≠ 0 := λ h, by {rw [hu, h, pow_zero, one_mul] at hn, exact hn u.is_unit},
+      -- simpa [ideal.mem_span_singleton, hu, is_unit.dvd_mul_right, units.is_unit] using
+      --   dvd_pow_self _ hn} 
+      }},
 end
 
 lemma uniformizer_of_generator {r : K₀} [hv : is_discrete v]
@@ -266,10 +276,12 @@ begin
     exact ring.ne_bot_of_is_maximal_of_not_is_field (local_ring.maximal_ideal.is_maximal
       v.valuation_subring) (not_is_field v) hr },
   obtain ⟨π, hπ⟩ := exists_uniformizer v,
+  
+  sorry;{--BROKE WHEN MOVED NAMESPACES
   obtain ⟨n, u, hu⟩ := pow_uniformizer v ⟨π, hπ⟩ hr₀,
   rw [uniformizer_is_generator v ⟨π, hπ⟩, span_singleton_eq_span_singleton] at hr,
   simp only at hr,--remove!
-  sorry,
+  sorry,}
   -- convert uniformizer_of_associated v hπ hr,
 end
 
@@ -281,6 +293,8 @@ lemma pow_uniformizer_of_pow_generator {r : K₀} (hr : local_ring.maximal_ideal
 
 lemma ideal_is_principal (I : ideal K₀) : I.is_principal:=
 begin
+  sorry;--BROKE WHEN CHANGING NAMESPACES
+  {
   classical,
   have π := (uniformizer.nonempty v).some,
   by_cases hI : I = ⊥,
@@ -313,14 +327,11 @@ begin
       obtain ⟨a, ha⟩ := hr,
       rw ← ha,
       exact I.mul_mem_left a (nat.find_spec H), }},
+  }
 end
 
 lemma is_principal_ideal_ring : is_principal_ideal_ring K₀:= 
 ⟨λ I, ideal_is_principal v I⟩
-
-end valuation
-
-namespace discrete_valuation
 
 variables {A : Type*} [comm_ring A] [is_domain A] [discrete_valuation_ring A]
 
@@ -348,7 +359,7 @@ is_discrete_of_exists_uniformizer valued.v
 
 end discrete_valuation
 
-namespace disc_valued
+namespace discretely_valued
 
 open valuation
 
@@ -378,4 +389,4 @@ instance discrete_valuation_ring : discrete_valuation_ring K₀ :=
   ((discrete_valuation_ring.tfae K₀ (not_is_field hv.v)).out 0 4).mpr $ 
   (ideal_is_principal hv.v) _
 
-end disc_valued
+end discretely_valued
