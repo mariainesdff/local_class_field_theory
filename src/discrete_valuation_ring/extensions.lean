@@ -119,6 +119,9 @@ open finite_dimensional minpoly discrete_valuation
 
 variables (K : Type*) [field K] [hv : valued K ℤₘ₀]
 
+instance valuation_subring.algebra' (w : valuation K ℤₘ₀) (L : Type*) [field L] [algebra K L] : 
+  algebra w.valuation_subring L := algebra.of_subring w.integer
+
 section is_discrete
 
 variables [is_discrete hv.v] 
@@ -226,30 +229,37 @@ begin
   simp_rw norm_le_one_iff_val_le_one,
 end
 
---TODO: Can the instances be removed from the statement?
-lemma disc_norm_extension_of_integer [ic : is_integrally_closed hv.v.integer] 
-  [fr : is_fraction_ring hv.v.integer K] (h_alg : algebra.is_algebraic K L) 
-  (x : (integral_closure hv.v.integer L)) : 
-  disc_norm_extension h_alg x =
-    spectral_value (polynomial.map (algebra_map hv.v.integer K) (minpoly hv.v.integer x)) :=
+-- TODO : Type class inference doesn't work well on this section (explain in paper).
+lemma disc_norm_extension_of_integer [fr : is_fraction_ring hv.v.valuation_subring.to_subring K] 
+  (h_alg : algebra.is_algebraic K L) (x : (integral_closure hv.v.valuation_subring.to_subring L)) : 
+  disc_norm_extension h_alg x = 
+    spectral_value (polynomial.map (algebra_map hv.v.valuation_subring.to_subring K) 
+      (minpoly hv.v.valuation_subring.to_subring x)) :=
 begin
   letI nf : normed_field K , exact @disc_norm_field K _inst_1 hv _inst_2,
+  letI : valuation_ring hv.v.valuation_subring.to_subring := 
+  hv.v.valuation_subring.valuation_ring,
+  letI : is_bezout hv.v.valuation_subring.to_subring := valuation_ring.is_bezout,
+  letI ic : is_integrally_closed hv.v.valuation_subring.to_subring := 
+  is_bezout.is_integrally_closed,
   have is_minpoly :  minpoly K (x : L) =
-    polynomial.map (algebra_map hv.v.integer K) (minpoly hv.v.integer x),
+    polynomial.map (algebra_map hv.v.valuation_subring.to_subring K) 
+      (minpoly hv.v.valuation_subring.to_subring x),
   { rw eq_comm,
-    exact @minpoly_of_subring K L nf hv.v.integer ic fr _inst_4 _inst_5 x,
+    exact @minpoly_of_subring K L nf hv.v.valuation_subring.to_subring ic fr _inst_4 _inst_5 x,
       },
   have h_app : (spectral_mul_alg_norm h_alg _) ↑x = spectral_norm K L (x : L) := rfl,
   rw [disc_norm_extension, h_app, spectral_norm, ← is_minpoly],
   all_goals { exact norm_is_nonarchimedean K},
 end
 
---TODO: Can the instances be removed from the statement?
-lemma disc_norm_extension_le_one_of_integer [ic : is_integrally_closed hv.v.integer] 
-  [fr : is_fraction_ring hv.v.integer K] (h_alg : algebra.is_algebraic K L)
-  (x : (integral_closure hv.v.integer L)) : disc_norm_extension h_alg x ≤ 1 :=
+lemma disc_norm_extension_le_one_of_integer 
+  [fr : is_fraction_ring hv.v.valuation_subring.to_subring K] (h_alg : algebra.is_algebraic K L) 
+  (x : (integral_closure hv.v.valuation_subring.to_subring L)) : 
+  disc_norm_extension h_alg x ≤ 1 :=
 begin
-  let min_int := minpoly hv.v.integer x,
+  letI ic : is_integrally_closed hv.v.valuation_subring.to_subring, sorry,
+  let min_int := minpoly hv.v.valuation_subring.to_subring x,
   let min_x : polynomial K := polynomial.map (algebra_map _ _) min_int,
   rw disc_norm_extension_of_integer,
   refine csupr_le _,
@@ -708,32 +718,34 @@ open polynomial
 
 open_locale polynomial
 
-def int_polynomial {P : K[X]} (hP : ∀ n : ℕ, (P.coeff n) ∈ hv.v.integer) :
-  hv.v.integer[X] := 
+def int_polynomial {P : K[X]} (hP : ∀ n : ℕ, (P.coeff n) ∈ hv.v.valuation_subring) :
+  hv.v.valuation_subring[X] := 
 { to_finsupp := 
   { support := P.support,
     to_fun := λ n, ⟨P.coeff n, hP n⟩,
     mem_support_to_fun := λ n, by rw [ne.def, ← subring.coe_eq_zero_iff, 
       set_like.coe_mk, polynomial.mem_support_iff] }}
 
-lemma int_polynomial_coeff_eq {P : K[X]} (hP : ∀ n : ℕ, (P.coeff n) ∈ hv.v.integer) (n : ℕ) :
+lemma int_polynomial_coeff_eq {P : K[X]} (hP : ∀ n : ℕ, (P.coeff n) ∈ hv.v.valuation_subring) (n : ℕ) :
   ↑((int_polynomial hP).coeff n) = P.coeff n :=
 rfl
 
-lemma int_polynomial_leading_coeff_eq {P : K[X]} (hP : ∀ n : ℕ, (P.coeff n) ∈ hv.v.integer) :
+lemma int_polynomial_leading_coeff_eq {P : K[X]} 
+  (hP : ∀ n : ℕ, (P.coeff n) ∈ hv.v.valuation_subring) :
   ↑((int_polynomial hP).leading_coeff) = P.leading_coeff :=
 rfl
 
-lemma int_polynomial_leading_monic_iff {P : K[X]} (hP : ∀ n : ℕ, (P.coeff n) ∈ hv.v.integer) :
+lemma int_polynomial_monic_iff {P : K[X]} 
+  (hP : ∀ n : ℕ, (P.coeff n) ∈ hv.v.valuation_subring) :
   (int_polynomial hP).monic ↔ P.monic :=
 by rw [monic, monic, ← int_polynomial_leading_coeff_eq, one_mem_class.coe_eq_one]
 
-lemma int_polynomial_nat_degree {P : K[X]} (hP : ∀ n : ℕ, (P.coeff n) ∈ hv.v.integer) : 
+lemma int_polynomial_nat_degree {P : K[X]} (hP : ∀ n : ℕ, (P.coeff n) ∈ hv.v.valuation_subring) : 
   (int_polynomial hP).nat_degree = P.nat_degree :=
 rfl
 
-lemma int_polynomial_eval₂_eq {P : K[X]} (hP : ∀ n : ℕ, (P.coeff n) ∈ hv.v.integer) (x : L) : 
-  eval₂ (algebra_map ↥(valued.v.integer) L) x (int_polynomial hP) = aeval x P :=
+lemma int_polynomial_eval₂_eq {P : K[X]} (hP : ∀ n : ℕ, (P.coeff n) ∈ hv.v.valuation_subring) (x : L) : 
+  eval₂ (algebra_map ↥(valued.v.valuation_subring) L) x (int_polynomial hP) = aeval x P :=
 begin
   rw [aeval_eq_sum_range, eval₂_eq_sum_range],
   apply finset.sum_congr rfl,
@@ -744,32 +756,32 @@ end
 
 end int_polynomial
 
-lemma valuation_le_one_of_integer [is_integrally_closed hv.v.integer] 
-  [is_fraction_ring hv.v.integer K] [finite_dimensional K L] (x : (integral_closure hv.v.integer L)) : 
+lemma valuation_le_one_of_integer [fr : is_fraction_ring hv.v.valuation_subring K] 
+  [finite_dimensional K L] (x : (integral_closure hv.v.valuation_subring L)) : 
   w K L (x : L) ≤ 1 :=
-(w_le_one_iff_disc_norm_extension_le_one _).mpr (disc_norm_extension_le_one_of_integer _ x)
+begin
+  letI : is_fraction_ring hv.v.valuation_subring.to_subring K := fr,
+  exact (w_le_one_iff_disc_norm_extension_le_one _).mpr (disc_norm_extension_le_one_of_integer _ x)
+end
 
-lemma integral_closure_eq_integer [is_integrally_closed hv.v.integer] 
-  [is_fraction_ring hv.v.integer K] [finite_dimensional K L] :
-  (integral_closure hv.v.integer L).to_subring = (w K L).integer :=
+lemma integral_closure_eq_integer [is_fraction_ring hv.v.valuation_subring K] 
+  [finite_dimensional K L] :
+  (integral_closure hv.v.valuation_subring L).to_subring = (w K L).valuation_subring.to_subring :=
 begin
   classical,
   have h_alg : algebra.is_algebraic K L := algebra.is_algebraic_of_finite K L,
   ext x,
-  have h : x ∈ (integral_closure hv.v.integer L) ↔ is_integral hv.v.integer x,
+  have h : x ∈ (integral_closure hv.v.valuation_subring L) ↔ is_integral hv.v.valuation_subring x,
   { refl }, --TODO: mathlib lemma
-  rw [mem_integer, subalgebra.mem_to_subring, h, is_integral, ring_hom.is_integral_elem],
+  simp only [subalgebra.mem_to_subring, valuation_subring.mem_to_subring, 
+    mem_valuation_subring_iff, h, is_integral, ring_hom.is_integral_elem],
   refine ⟨λ hx, valuation_le_one_of_integer ⟨x, hx⟩, λ hx, _⟩,
   { rw w_le_one_iff_disc_norm_extension_le_one at hx,
     let q := minpoly K x,
-      have hq : ∀ n : ℕ, (q.coeff n) ∈ hv.v.integer,
+      have hq : ∀ n : ℕ, (q.coeff n) ∈ hv.v.valuation_subring,
       { exact (disc_norm_extension_le_one_iff_integral_minpoly _ _).mp hx, },
-      set p : polynomial (hv.v.integer) :=
-      { to_finsupp := { support := q.support,
-        to_fun := λ n, ⟨q.coeff n, hq n⟩,
-        mem_support_to_fun := λ n, by rw [ne.def, ← subring.coe_eq_zero_iff, 
-          set_like.coe_mk, polynomial.mem_support_iff] }},
-      exact ⟨int_polynomial hq, (int_polynomial_leading_monic_iff hq).mpr
+      set p : polynomial (hv.v.valuation_subring) := int_polynomial hq,
+      refine⟨int_polynomial hq, (int_polynomial_monic_iff hq).mpr
         (minpoly.monic (is_algebraic_iff_is_integral.mp (h_alg x))), 
         by rw [int_polynomial_eval₂_eq, minpoly.aeval]⟩ }
 end
@@ -805,11 +817,11 @@ end
 
 --Chapter 2, Section 2, Proposition 3 in Serre's Local Fields
 lemma dvr_of_finite_extension [finite_dimensional K L] : 
-  discrete_valuation_ring (integral_closure hv.v.integer L) := 
+  discrete_valuation_ring (integral_closure hv.v.valuation_subring L) := 
 begin
   letI hw : valued L ℤₘ₀ := valued.mk' (w K L),
   letI hw_disc : is_discrete hw.v := is_discrete_of_finite K L,
-  let e : (w K L).valuation_subring ≃+* (integral_closure hv.v.integer L) :=
+  let e : (w K L).valuation_subring ≃+* (integral_closure hv.v.valuation_subring L) :=
   { to_fun    := sorry,
     inv_fun   := sorry,
     left_inv  := sorry,
@@ -821,18 +833,22 @@ begin
   exact ring_equiv.discrete_valuation_ring e,
 end
 
-lemma integral_closure_finrank :
-  finite_dimensional.finrank hv.v.integer (integral_closure hv.v.integer L) =
-  finite_dimensional.finrank K L :=
+lemma integral_closure_finrank : finite_dimensional.finrank hv.v.valuation_subring 
+  (integral_closure hv.v.valuation_subring L) = finite_dimensional.finrank K L :=
 sorry
 
 variables [finite_dimensional K L] 
 
-local notation `K₀` := hv.v.integer
-local notation `L₀` := (w K L).integer
+local notation `K₀` := hv.v.valuation_subring
+local notation `L₀` := (w K L).valuation_subring
 
-def integer.algebra [is_integrally_closed K₀] [is_fraction_ring K₀ K] : algebra K₀ L₀ :=
-by rw ← integral_closure_eq_integer; exact (integral_closure ↥(valued.v.integer) L).algebra
+def integer.algebra [is_fraction_ring K₀ K] : algebra K₀ L₀ :=
+begin
+  have h : algebra hv.v.valuation_subring (w K L).valuation_subring.to_subring,
+  { rw ← integral_closure_eq_integer,
+    exact (integral_closure ↥(valued.v.valuation_subring) L).algebra},
+  exact h,
+end
 
 end complete
 
