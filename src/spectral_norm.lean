@@ -1,8 +1,49 @@
 --import analysis.special_functions.pow.nnreal
 import from_mathlib.spectral_norm_unique
 
+open_locale nnreal polynomial
 
-open_locale nnreal
+open polynomial
+
+section spectral_value
+
+variables {S : Type*} [normed_division_ring S]
+
+lemma spectral_value_le_one_iff {P : S[X]} (hP : monic P) : 
+  spectral_value P ≤ 1 ↔ ∀ n : ℕ , ‖P.coeff n‖ ≤ 1 :=
+begin
+  rw spectral_value,
+  split; intro h,
+  { intros n,
+    by_contradiction hn,
+    rw not_le at hn,
+    have hsupr : 1 < supr (spectral_value_terms P),
+    { have hn' : 1 < spectral_value_terms P n,
+      { simp only [spectral_value_terms],
+        split_ifs with hPn,
+        { apply real.one_lt_rpow hn,
+          simp only [one_div, inv_pos, sub_pos, nat.cast_lt],
+          exact hPn },
+        { rw [not_lt, le_iff_lt_or_eq] at hPn,
+          cases hPn with hlt heq,
+          { rw [coeff_eq_zero_of_nat_degree_lt hlt, norm_zero] at hn,
+            exfalso, linarith, },
+          { rw [monic, leading_coeff, heq] at hP,
+            rw [hP, norm_one] at hn,
+            linarith, }}},
+      exact lt_csupr_of_lt (spectral_value_terms_bdd_above P) n hn', },
+    linarith, },
+  { simp only [spectral_value_terms],
+    apply csupr_le,
+    intros n,
+    split_ifs with hn,
+    { apply real.rpow_le_one (norm_nonneg _) (h n),
+      rw [one_div_nonneg,sub_nonneg, nat.cast_le],
+      exact le_of_lt hn, },
+    { exact zero_le_one }},
+end
+
+end spectral_value
 
 open finite_dimensional
 
