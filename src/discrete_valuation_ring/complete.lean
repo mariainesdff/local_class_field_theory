@@ -13,7 +13,7 @@ maximal ideal.
 
 ** Main result:
 * `is_discrete` is the instance of the fact that the extension of the adic valuation to the
-  completion is discrete (i.e. surjective onto `ℤₘ₀`).
+  completion is discrete (i.e. surjective onto `ℤₘ₀`)
 * `adic_valuation_equals_completion` is the claim that the valuations coincide
 -/
 
@@ -146,13 +146,13 @@ lemma adic_completion_integers_not_is_field :
   ¬ is_field ↥(height_one_spectrum.adic_completion_integers K v) :=
 begin
   rw ring.not_is_field_iff_exists_ideal_bot_lt_and_lt_top,
-  use max_ideal_of_completion_def R K v,
+  use max_ideal_of_completion_def R v K,
   split,
   { rw [bot_lt_iff_ne_bot, ne.def],
     by_contra h,
     obtain ⟨π, hπ⟩ :=
-    is_dedekind_domain.height_one_spectrum.valuation_completion_integers_exists_uniformizer R K v,
-    have h1 : π ∈ max_ideal_of_completion_def R K v,
+    is_dedekind_domain.height_one_spectrum.valuation_completion_integers_exists_uniformizer R v K,
+    have h1 : π ∈ max_ideal_of_completion_def R v K,
     { rw [max_ideal_of_completion_def, local_ring.mem_maximal_ideal, mem_nonunits_iff,
         valuation.integer.not_is_unit_iff_valuation_lt_one, hπ],
       exact with_zero.of_add_neg_one_lt_one },
@@ -165,25 +165,25 @@ end
 
 
 noncomputable! def max_ideal_of_completion : height_one_spectrum R_v :=
-{ as_ideal := max_ideal_of_completion_def R K v,
+{ as_ideal := max_ideal_of_completion_def R v K,
   is_prime := ideal.is_maximal.is_prime (local_ring.maximal_ideal.is_maximal R_v),
   ne_bot   := begin
     rw [ne.def, max_ideal_of_completion_def, ← local_ring.is_field_iff_maximal_ideal_eq],
-    exact adic_completion_integers_not_is_field R K v,
+    exact adic_completion_integers_not_is_field R v K,
   end }
 
 --#where
 
 noncomputable def adic_int_valuation : _root_.valuation R_v ℤₘ₀ :=
-(max_ideal_of_completion R K v).int_valuation
+(max_ideal_of_completion R v K).int_valuation
 
 noncomputable def adic_valuation : _root_.valuation K_v ℤₘ₀ :=
-(max_ideal_of_completion R K v).valuation
+(max_ideal_of_completion R v K).valuation
 
 
 
 def v1 : valuation K_v ℤₘ₀ := 
-  (@is_dedekind_domain.height_one_spectrum.valuation R_v _ _ _ K_v _ _ _ (max_ideal_of_completion R K v))
+  (@is_dedekind_domain.height_one_spectrum.valuation R_v _ _ _ K_v _ _ _ (max_ideal_of_completion R v K))
 
 def v2 : valuation K_v ℤₘ₀ := valued.v
 
@@ -238,17 +238,17 @@ begin
     div_eq_mul_inv],
 end
 
-lemma aux_for_below (a : R_v) : ((max_ideal_of_completion R K v).int_valuation) 
+lemma aux_for_below (a : R_v) : ((max_ideal_of_completion R v K).int_valuation) 
   a = valued.v (a : K_v) :=
 begin
   by_cases ha : a = 0,
   { simp only [ha, valuation.map_zero, algebra_map.coe_zero] },
   { rw fae_int_valuation_apply,
     apply le_antisymm,
-    { obtain ⟨n, hn⟩ : ∃ n : ℕ, v2 R K v a = of_add (-n : ℤ), 
-      { replace ha : (v2 R K v) a ≠ 0 := by rwa [valuation.ne_zero_iff, ne.def,
+    { obtain ⟨n, hn⟩ : ∃ n : ℕ, v2 R v K a = of_add (-n : ℤ), 
+      { replace ha : (v2 R v K) a ≠ 0 := by rwa [valuation.ne_zero_iff, ne.def,
         subring.coe_eq_zero_iff],
-        have := (mem_integer (v2 R K v) ↑a).mp a.2,
+        have := (mem_integer (v2 R v K) ↑a).mp a.2,
         obtain ⟨α, hα⟩ := with_zero.ne_zero_iff_exists.mp ha,
         rw ← hα at this,
         rw ← with_zero.coe_one at this,
@@ -266,11 +266,11 @@ begin
       rw hn,
       rw int_valuation_le_pow_iff_dvd,
       apply (uno' K_v _ n).mp (le_of_eq hn), },
-    { obtain ⟨m, hm⟩ : ∃ m : ℕ, v1 R K v a = of_add (-m : ℤ),
-      { replace ha : (v1 R K v) a ≠ 0 := by rwa [valuation.ne_zero_iff, ne.def,
+    { obtain ⟨m, hm⟩ : ∃ m : ℕ, v1 R v K a = of_add (-m : ℤ),
+      { replace ha : (v1 R v K) a ≠ 0 := by rwa [valuation.ne_zero_iff, ne.def,
         subring.coe_eq_zero_iff],
           dsimp only [v1] at ha ⊢,
-          have : (max_ideal_of_completion R K v).valuation (↑a : K_v) ≤ 1 := valuation_le_one _ _,
+          have : (max_ideal_of_completion R v K).valuation (↑a : K_v) ≤ 1 := valuation_le_one _ _,
           obtain ⟨α, hα⟩ := with_zero.ne_zero_iff_exists.mp ha,
           rw ← hα at this,
           rw ← with_zero.coe_one at this,
@@ -298,12 +298,12 @@ begin
       apply_instance, }},
 end
 
-lemma adic_valuation_equals_completion (x : K_v) : v1 R K v x = v2 R K v x :=
+lemma adic_valuation_equals_completion (x : K_v) : v1 R v K x = v2 R v K x :=
 begin
   rw [v1, v2],
   obtain ⟨a, b, H⟩ := is_localization.mk'_surjective (non_zero_divisors R_v) x, 
   have h2 := due K_v a b,
-  have h1 := @valuation_of_mk' R_v _ _ _ K_v _ _ _ (max_ideal_of_completion R K v) a b,
+  have h1 := @valuation_of_mk' R_v _ _ _ K_v _ _ _ (max_ideal_of_completion R v K) a b,
   rw H at h1 h2,
   rw [h1, h2],
   congr;

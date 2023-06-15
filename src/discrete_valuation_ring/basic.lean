@@ -282,7 +282,7 @@ begin
         dvd_pow_self _ hn }},
 end
 
-lemma uniformizer_of_generator [hv : is_discrete v] {r : K₀}
+lemma uniformizer_of_generator {r : K₀}
   (hr : maximal_ideal v.valuation_subring = ideal.span {r}) : is_uniformizer v r :=
 begin
   have hr₀ : r ≠ 0,
@@ -300,7 +300,7 @@ lemma pow_uniformizer_is_pow_generator {π : uniformizer v} (n : ℕ) :
   (maximal_ideal v.valuation_subring) ^ n = ideal.span {π.1 ^ n} :=
 by rw [← ideal.span_singleton_pow, uniformizer_is_generator]
 
--- lemma pow_uniformizer_of_pow_generator [hv : is_discrete v] {r : K₀} (n : ℕ) 
+-- lemma pow_uniformizer_of_pow_generator {r : K₀} (n : ℕ) 
 --   (hr : (maximal_ideal v.valuation_subring) ^ n = ideal.span {r ^ n}) : is_uniformizer v r := 
 -- begin
 --   rw [← ideal.span_singleton_pow] at hr,sorry,
@@ -345,8 +345,21 @@ begin
       exact I.mul_mem_left a (nat.find_spec H), }},
 end
 
+/- The lemma below cannot be an instance, in theory, because it relies on `valuation`, but the
+linter does not complain...
+-/
 lemma is_principal_ideal_ring : is_principal_ideal_ring K₀:= 
 ⟨λ I, ideal_is_principal v I⟩
+
+/-- The lemma `dvr_of_is_discrete` cannot be an `instance` because the `valution` is not a class.
+For the case when the field `K` has an `instance` of `valued K`, see the `instance`
+`discretely_valued.discrete_valuation_ring`
+-/
+lemma dvr_of_is_discrete : discrete_valuation_ring K₀ :=
+begin
+  haveI := is_principal_ideal_ring v,
+  exact ((discrete_valuation_ring.tfae K₀ (not_is_field v)).out 0 4).mpr (ideal_is_principal v _),
+end
 
 variables {A : Type*} [comm_ring A] [is_domain A] [discrete_valuation_ring A]
 
@@ -401,5 +414,9 @@ instance is_principal_ideal_ring : is_principal_ideal_ring K₀ :=
 instance discrete_valuation_ring : discrete_valuation_ring K₀ := 
   ((discrete_valuation_ring.tfae K₀ (not_is_field hv.v)).out 0 4).mpr $ 
   (ideal_is_principal hv.v) _
+
+
+/- def rings_are_equal  {A : Type*} [comm_ring A] [is_domain A] [discrete_valuation_ring A] :
+(@valued.v (fraction_ring A) _ ℤₘ₀ _ _).integer ≃+* A :=  -/
 
 end discretely_valued
