@@ -23,7 +23,17 @@ def int.p_height_one_ideal (p : out_param ℕ) [hp : fact (p.prime)] :
     exact hp.1.ne_zero, }}
 open int
 
+section padic
+
+local attribute [-instance] rat.metric_space rat.normed_field 
+  rat.normed_linear_ordered_field rat.densely_normed_field rat.division_ring
+  rat.normed_add_comm_group
+
 variables (p : out_param ℕ) [fact (p.prime)]
+  
+def padic_valued : valued ℚ ℤₘ₀ := (p_height_one_ideal p).adic_valued
+
+local attribute [instance] padic_valued
 
 def padic_pkg : abstract_completion ℚ :=
 { space            := ℚ_[p],
@@ -32,9 +42,15 @@ def padic_pkg : abstract_completion ℚ :=
   complete         := infer_instance,
   separation       := sorry,
   uniform_inducing := sorry,
-  dense            := sorry }
+  dense            := 
+  begin
+    -- Maybe useful: padic.rat_dense, padic.rat_dense',
+    -- Cauchy.dense_range_pure_cauchy,
+    sorry
+  end }
 
 namespace padic'
+
 def Q_p : Type* := adic_completion ℚ (p_height_one_ideal p)
 
 instance : field (Q_p p) := adic_completion.field ℚ (p_height_one_ideal p)
@@ -51,21 +67,24 @@ def padic'_pkg : abstract_completion ℚ :=
   uniform_struct   := infer_instance,
   complete         := infer_instance,
   separation       := infer_instance,
-  uniform_inducing := coe_is_inducing p,
+  uniform_inducing := sorry,
   dense            := begin
-    have := @uniform_space.completion.dense_range_coe,
+    convert @uniform_space.completion.dense_range_coe ℚ _,
+    -- rat.cast_coe = uniform_space.completion.has_coe_t ℚ
     sorry
   end }
 
 def compare : ℚ_[p] ≃ᵤ Q_p p :=
 abstract_completion.compare_equiv (padic_pkg p) (padic'_pkg p) 
 
+instance : char_zero (Q_p p) := sorry
+
 def coe_ring_hom : ℚ →+* (Q_p p) :=
 { to_fun    := (coe : ℚ → (Q_p p)),
-  map_one'  := sorry,
-  map_mul'  := sorry,
-  map_zero' := sorry,
-  map_add'  := sorry }
+  map_one'  := rat.cast_one,
+  map_mul'  := rat.cast_mul,
+  map_zero' := rat.cast_zero,
+  map_add'  := rat.cast_add }
 
 lemma unif_cont_coe : uniform_continuous (coe : ℚ → (Q_p p)) :=
 (uniform_inducing_iff'.1 (coe_is_inducing p)).1
@@ -94,6 +113,8 @@ instance padic.valued : valued ℚ_[p] ℤₘ₀ :=
     is_topological_valuation := sorry,
   ..(infer_instance : uniform_space ℚ_[p]),
   ..non_unital_normed_ring.to_normed_add_comm_group }
+
+end padic
 
 
 #exit
