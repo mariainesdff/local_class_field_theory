@@ -4,10 +4,12 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
 import data.polynomial.eval
+import discrete_valuation_ring.extensions
 import number_theory.padics.padic_integers
 import ring_theory.dedekind_domain.adic_valuation
 import mixed_characteristic.basic
 import from_mathlib.spectral_norm_unique
+import for_mathlib.ring_theory.integral_closure
 
 noncomputable theory
 
@@ -21,7 +23,7 @@ noncomputable theory
 -- * Relate to norm (future)
 -- -/
 
-open is_dedekind_domain nnreal polynomial
+open is_dedekind_domain nnreal polynomial valuation
 open_locale mixed_char_local_field nnreal discrete_valuation
 
 variables {p : out_param ℕ} [fact (p.prime)] 
@@ -164,6 +166,10 @@ def normalized_valuation (K : Type*) [field K] [mixed_char_local_field p K] : va
 instance (K : Type*) [field K] [mixed_char_local_field p K] : valued K ℤₘ₀ :=
 valued.mk' (normalized_valuation K)
 
+instance (K : Type*) [field K] [mixed_char_local_field p K] : 
+  is_discrete (mixed_char_local_field.with_zero.valued K).v :=
+sorry
+
 lemma normalized_valuation_p_ne_zero : (normalized_valuation K) (p : K) ≠ 0 :=
 by {simp only [ne.def, valuation.zero_iff, nat.cast_eq_zero], from nat.prime.ne_zero (fact.out _)}
 
@@ -177,7 +183,7 @@ localized "notation (name := ramification_index)
 
 variable (p)
 
-lemma padic.mem_integers_iff (y : ℚ_[p]) : y ∈ 𝓞 p ℚ_[p] ↔ ‖ y ‖  ≤ 1 :=
+lemma padic.mem_integers_iff (y : ℚ_[p]) : y ∈ 𝓞 p ℚ_[p] ↔ ‖ y ‖ ≤ 1 :=
 begin
   rw [mem_ring_of_integers, is_integrally_closed.is_integral_iff],
   refine ⟨λ h, _, λ h, ⟨⟨y, h⟩, rfl⟩⟩,
@@ -185,6 +191,15 @@ begin
     rw [← hx],
     exact padic_int.norm_le_one _ }
 end
+
+lemma padic.norm_le_one_iff_val_le_one (y : ℚ_[p]) : ‖ y ‖ ≤ 1 ↔ valued.v y ≤ (1 : ℤₘ₀) :=
+begin
+  rw ← rank_one_valuation.norm_le_one_iff_val_le_one y,
+  sorry
+  
+end
+
+#exit
 
 -- Even compiling the statement is slow...
 noncomputable! lemma padic.open_unit_ball_def : 
@@ -229,5 +244,49 @@ begin
   apply congr_arg,
   rw [← with_zero.coe_inj, ← hp, with_zero.coe_unzero],
 end
+
+variable (p)
+def padic_int.equiv_valuation_subring : 
+  ℤ_[p] ≃+* ↥(mixed_char_local_field.with_zero.valued ℚ_[p]).v.valuation_subring := 
+{ to_fun    := λ x,
+  begin
+    use x.1, rw mem_valuation_subring_iff,
+    --exact (padic.mem_integers_iff _ _).mpr x.2,
+    sorry,
+  end,
+  inv_fun   := sorry,
+  left_inv  := sorry,
+  right_inv := sorry,
+  map_mul'  := sorry,
+  map_add'  := sorry }
+
+variable {p}
+
+lemma padic_int.equiv_valuation_subring_comm :
+  (algebra_map ↥(valued.v.valuation_subring) K).comp 
+    (padic_int.equiv_valuation_subring p).to_ring_hom = algebra_map ℤ_[p] K :=
+sorry
+
+instance : discrete_valuation_ring (𝓞 p K) := 
+begin
+  letI : complete_space ℚ_[p] := sorry,
+  letI : discrete_valuation_ring 
+    (integral_closure (mixed_char_local_field.with_zero.valued ℚ_[p]).v.valuation_subring K) :=
+  dvr_of_finite_extension ℚ_[p] K,
+  have heq : (𝓞 p K).to_subring = (integral_closure 
+    (mixed_char_local_field.with_zero.valued ℚ_[p]).v.valuation_subring K).to_subring,
+  { ext x,
+    simp only [subalgebra.mem_to_subring, mem_ring_of_integers, mem_integral_closure_iff],
+    apply is_integral_iff_of_equiv (padic_int.equiv_valuation_subring p)
+      (padic_int.equiv_valuation_subring_comm K), },
+  set φ : (integral_closure 
+    (mixed_char_local_field.with_zero.valued ℚ_[p]).v.valuation_subring K) ≃+* 𝓞 p K :=
+  ring_equiv.subring_congr heq.symm,
+  exact ring_equiv.discrete_valuation_ring φ,
+end
+
+-- TODO : ring of integers is local
+noncomputable!  instance : local_ring (𝓞 p K) :=
+infer_instance
 
 end mixed_char_local_field

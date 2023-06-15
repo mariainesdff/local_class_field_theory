@@ -173,14 +173,14 @@ noncomputable! instance : is_dedekind_domain (𝓞 p K) :=
 is_integral_closure.is_dedekind_domain ℤ_[p] ℚ_[p] K _
 
 -- TODO : ring of integers is local
-noncomputable!  instance : local_ring (𝓞 p K) :=
+/- noncomputable!  instance : local_ring (𝓞 p K) :=
 { exists_pair_ne := ⟨0, 1, zero_ne_one⟩,
   is_unit_or_is_unit_of_add_one := λ a b hab,
   begin
     by_cases ha : is_unit a,
     { exact or.inl ha, },
     { right, sorry }
-  end }
+  end } -/
 
 end ring_of_integers
 
