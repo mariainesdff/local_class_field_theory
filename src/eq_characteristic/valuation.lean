@@ -121,7 +121,7 @@ by apply rank_one_valuation.valued_field.to_normed_field
   (is_dedekind_domain.height_one_spectrum.adic_completion L v) ℤₘ₀ 
 
 
-lemma norm_le_one_iff_val_le_one (x : is_dedekind_domain.height_one_spectrum.adic_completion L v) :
+lemma norm_le_one_iff_val_le_one' (x : is_dedekind_domain.height_one_spectrum.adic_completion L v) :
   ‖x‖ ≤ 1 ↔ valued.v x ≤ (1 : ℤₘ₀) :=
 rank_one_valuation.norm_le_one_iff_val_le_one x
 
@@ -133,7 +133,7 @@ def int_polynomial' {P : (is_dedekind_domain.height_one_spectrum.adic_completion
 { to_finsupp := 
   { support := P.support,
     to_fun := λ n, ⟨P.coeff n, (height_one_spectrum.mem_adic_completion_integers R L v).mp
-       ((norm_le_one_iff_val_le_one L v _).mp (hP n))⟩,
+       ((norm_le_one_iff_val_le_one' L v _).mp (hP n))⟩,
     mem_support_to_fun := λ n, by rw [mem_support_iff, ne.def, not_iff_not, subtype.ext_iff,
       subring.coe_zero, subtype.coe_mk] }}
 

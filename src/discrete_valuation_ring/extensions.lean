@@ -769,6 +769,8 @@ begin
   exact (w_le_one_iff_disc_norm_extension_le_one _).mpr (disc_norm_extension_le_one_of_integer _ x)
 end
 
+variables (K L)
+
 lemma integral_closure_eq_integer [is_fraction_ring hv.v.valuation_subring K] 
   [finite_dimensional K L] :
   (integral_closure hv.v.valuation_subring L).to_subring = (w K L).valuation_subring.to_subring :=
@@ -798,16 +800,7 @@ begin
   letI hw : valued L ℤₘ₀ := valued.mk' (w K L),
   letI hw_disc : is_discrete hw.v := is_discrete_of_finite K L,
   let e : (w K L).valuation_subring ≃+* (integral_closure hv.v.valuation_subring L) :=
-  { to_fun    := λ x, ⟨x.1, by rw [← subalgebra.mem_to_subring, integral_closure_eq_integer];
-      exact x.2⟩,
-    inv_fun   := λ x, ⟨x.1, by rw [← valuation_subring.mem_to_subring, 
-      ← integral_closure_eq_integer]; exact x.2⟩ ,
-    left_inv  := λ x, by simp only [subtype.val_eq_coe, set_like.eta],
-    right_inv := λ x, by simp only [subtype.val_eq_coe, set_like.eta],
-    map_mul'  := λ x y, by simp only [subtype.val_eq_coe, subring.coe_mul, 
-      mul_mem_class.mk_mul_mk],
-    map_add'  := λ x y, by simp only [subtype.val_eq_coe, subring.coe_add, 
-      add_mem_class.mk_add_mk], },
+  ring_equiv.subring_congr (integral_closure_eq_integer K L).symm,
   letI h : discrete_valuation_ring ↥((w K L).valuation_subring) := 
   discretely_valued.discrete_valuation_ring L,
   exact ring_equiv.discrete_valuation_ring e,

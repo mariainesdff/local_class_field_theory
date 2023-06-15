@@ -3,105 +3,33 @@ Copyright (c) 2023 María Inés de Frutos-Fernández, Filippo A. E. Nuccio. All 
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
+import data.polynomial.eval
 import discrete_valuation_ring.extensions
 import number_theory.padics.padic_integers
 import ring_theory.dedekind_domain.adic_valuation
 import mixed_characteristic.basic
-
+import from_mathlib.spectral_norm_unique
+import for_mathlib.ring_theory.integral_closure
 
 noncomputable theory
 
-open is_dedekind_domain is_dedekind_domain.height_one_spectrum nnreal polynomial valuation
+-- /- 
+-- * Topology on K + this is locally compact.
+-- * Define normalized discrete valuation on K.
+-- * Unit ball = ring of integers
+-- * Define ramification index e
+-- * P^e = (p)
+-- -- **TO DO** Define the DVR structure on the unit ball of a local
+-- * Relate to norm (future)
+-- -/
+
+open is_dedekind_domain nnreal polynomial valuation
 open_locale mixed_char_local_field nnreal discrete_valuation
 
-def int.p_height_one_ideal (p : out_param ℕ) [hp : fact (p.prime)] : 
-  height_one_spectrum ℤ :=
-{ as_ideal := ideal.span{(p : ℤ)},
-  is_prime := by { rw ideal.span_singleton_prime, 
-    exacts [nat.prime_iff_prime_int.mp hp.1, nat.cast_ne_zero.mpr hp.1.ne_zero] },
-  ne_bot   := by {simp only [ne.def, ideal.span_singleton_eq_bot, nat.cast_eq_zero],
-    exact hp.1.ne_zero, }}
-open int
-
-variables (p : out_param ℕ) [fact (p.prime)]
-
-def padic_pkg : abstract_completion ℚ :=
-{ space            := ℚ_[p],
-  coe              := coe,
-  uniform_struct   := infer_instance,
-  complete         := infer_instance,
-  separation       := sorry,
-  uniform_inducing := sorry,
-  dense            := sorry }
-
-namespace padic'
-def Q_p (p : out_param ℕ) [hp : fact (p.prime)] : Type* := 
-adic_completion ℚ (p_height_one_ideal p)
-
-instance : field (Q_p p) := adic_completion.field ℚ (p_height_one_ideal p)
-
-instance : valued (Q_p p) ℤₘ₀ := (p_height_one_ideal p).valued_adic_completion ℚ
-
-instance : complete_space (Q_p p) := (p_height_one_ideal p).adic_completion_complete_space ℚ
-
-lemma coe_is_inducing : uniform_inducing (coe : ℚ → (Q_p p)) := sorry
-
-def padic'_pkg : abstract_completion ℚ :=
-{ space            := Q_p p,
-  coe              := coe,
-  uniform_struct   := infer_instance,
-  complete         := sorry,
-  separation       := infer_instance,
-  uniform_inducing := coe_is_inducing p,
-  dense            := sorry }
-
-def compare (p : out_param ℕ) [hp : fact (p.prime)] : 
-  ℚ_[p] ≃ᵤ Q_p p :=
-abstract_completion.compare_equiv (padic_pkg p) (padic'_pkg p) 
-
-def coe_ring_hom (p : out_param ℕ) [hp : fact (p.prime)] : ℚ →+* (Q_p p) :=
-{ to_fun    := (coe : ℚ → (Q_p p)),
-  map_one'  := sorry,
-  map_mul'  := sorry,
-  map_zero' := sorry,
-  map_add'  := sorry }
-
-lemma unif_cont_coe : uniform_continuous (coe : ℚ → (Q_p p)) :=
-(uniform_inducing_iff'.1 (coe_is_inducing p)).1
-
-end padic'
-
-noncomputable!
-def extension_as_ring_hom (p : out_param ℕ) [hp : fact (p.prime)]  := 
-uniform_space.completion.extension_hom (padic'.coe_ring_hom p)
-
-#check padic'.unif_cont_coe p
-
-open padic'
-
-noncomputable! def  padic_ring_equiv : 
-  ring_equiv ℚ_[p] (Q_p p) :=
-{ map_mul' := (extension_as_ring_hom p (unif_cont_coe p).continuous).map_mul',
-  map_add' := (extension_as_ring_hom p (unif_cont_coe p).continuous).map_add',
-  ..(compare p) }
-
-
-instance padic.valued : valued ℚ_[p] ℤₘ₀ :=
-{ v := 
-  { to_fun    := λ x, valued.v (padic'.compare p x),
-    map_zero' := sorry,
-    map_one'  := sorry,
-    map_mul'  := sorry,
-    map_add_le_max' := sorry },--,
-    is_topological_valuation := sorry,
-  ..(infer_instance : uniform_space ℚ_[p]),
-  ..non_unital_normed_ring.to_normed_add_comm_group }
-
-
-#exit
+variables {p : out_param ℕ} [fact (p.prime)] 
+variables {K : Type*} [field K] [mixed_char_local_field p K]
 
 namespace mixed_char_local_field
-
 
 def norm_on_K : K → ℝ := spectral_norm ℚ_[p] K
 
