@@ -5,6 +5,19 @@ import for_mathlib.laurent_series_iso.old_power_series_adic_completion--only to 
 open_locale discrete_valuation
 open multiplicative
 
+/-!
+In this file we prove that starting with a global field and a place, the extension of
+the valuation to the completion agrees with the adic valuation on the local field induced by the 
+maximal ideal.
+
+
+** Main result:
+* `is_discrete` is the instance of the fact that the extension of the adic valuation to the
+  completion is discrete (i.e. surjective onto `ℤₘ₀`).
+* `adic_valuation_equals_completion` is the claim that the valuations coincide
+-/
+
+
 /- TODO list:
 -- move is_localization.at_prime.discrete_valuation_ring_of_dedekind_domain
   (currently in discrete_valuation_ring.basic, or at least there after my PR) to
@@ -26,29 +39,21 @@ open multiplicative
     some chosen valuation.
 -/
 
--- end unramified
-
---#check e(K, L)
-
--- #lint
-
--- #check ideal.ramification_idx (algebra_map : K₀ →+* (hw.v.integer))
---   (local_ring.maximal_ideal K₀) (local_ring.maximal_ideal hw.v.integer)
-
 noncomputable theory
 
 open is_dedekind_domain is_dedekind_domain.height_one_spectrum valuation
 
 namespace is_dedekind_domain.height_one_spectrum.completion
 
-variables (R : Type*) [comm_ring R] [is_domain R] [is_dedekind_domain R]
-  (K : Type*) [field K] [algebra R K] [is_fraction_ring R K]
-  (v : height_one_spectrum R)
+variables (R : Type*) [comm_ring R] [is_domain R] [is_dedekind_domain R] (v : height_one_spectrum R)
+variables (K : Type*) [field K] [algebra R K] [is_fraction_ring R K]
+  
 
 local notation `R_v` := adic_completion_integers K v 
 local notation `K_v` := adic_completion K v
 
-noncomputable! instance : is_discrete (@valued.v K_v _ ℤₘ₀ _ _) := 
+noncomputable!
+instance : is_discrete (@valued.v K_v _ ℤₘ₀ _ _) := 
 begin
   obtain ⟨π, hπ⟩ := valuation_exists_uniformizer K v,
   apply is_discrete_of_exists_uniformizer,
@@ -176,76 +181,42 @@ noncomputable def adic_valuation : _root_.valuation K_v ℤₘ₀ :=
 (max_ideal_of_completion R K v).valuation
 
 
--- open_locale with_zero_topology
 
-/-We are probably trying to prove that starting with a global field and a place, the extension of
-the valuation to the completion agrees with the DVR valuation on the local field induced by the 
-maximal ideal.
--/
-
--- lemma valuations_eq_on_K  (x : K) : (adic_valuation R K v) ↑x = (valued.mk' v.valuation).v x :=
--- begin
---   rw adic_valuation,
---   sorry
--- end
-
--- lemma continuous_adic_valuation : continuous (adic_valuation R K v) :=
--- begin
---   sorry
--- end
-
-
--- lemma valuations_eq' (x : K_v) : adic_valuation R K v x = valued.v x :=
--- begin
--- --   -- rw hope R K v,
--- --  have := hope R K v,
--- --  rw [v1, v2] at this,
--- --  rw ← this,
--- --  refl,
--- -- --  rw this,
--- -- --  convert this,
--- -- end
--- --begin
---   have heq : (adic_valuation R K v).to_fun = valued.v,
---   { letI : valued K ℤₘ₀ := valued.mk' v.valuation,
---     apply uniform_space.completion.ext (continuous_adic_valuation R K v) valued.continuous_extension,
---     intros x,
---     rw valued.extension_extends,
---     exact valuations_eq_on_K R K v x, },
---   rw ← heq,
---   refl,
--- end
-
--- open is_dedekind_domain.height_one_spectrum.
 def v1 : valuation K_v ℤₘ₀ := 
   (@is_dedekind_domain.height_one_spectrum.valuation R_v _ _ _ K_v _ _ _ (max_ideal_of_completion R K v))
 
 def v2 : valuation K_v ℤₘ₀ := valued.v
 
+open local_ring discretely_valued--needed!
 
-open_locale classical --needed?
+-- open_locale classical --needed?
 
 
-lemma uno' (L : Type*) [field L] {w : valuation L ℤₘ₀} [discrete_valuation_ring w.valuation_subring] 
+lemma uno' (L : Type*) [field L] {w : valuation L ℤₘ₀} [is_discrete w]
+  [discrete_valuation_ring w.valuation_subring] --shouldn't this follow from is_discrete?
   (x : w.valuation_subring) (n : ℕ) :  w x ≤ of_add (-(n : ℤ)) ↔
     (local_ring.maximal_ideal (w.valuation_subring)) ^ n ∣ ideal.span {x} :=
 begin
   by_cases hx : x = 0,
   { simp_rw [ideal.span_singleton_eq_bot.mpr hx, hx, algebra_map.coe_zero,
     valuation.map_zero, with_zero.zero_le, true_iff, ← ideal.zero_eq_bot, dvd_zero] },
-  { replace hx : (↑x : L) ≠ 0, sorry,
-    set r := submodule.is_principal.generator (local_ring.maximal_ideal (w.valuation_subring))
+  { set r := submodule.is_principal.generator (local_ring.maximal_ideal (w.valuation_subring))
       with hr,
     
-    have hr₁ : w r = of_add (-(1 : ℤ)), sorry,
-    have hrn : w (r ^ n) = of_add (-(n : ℤ)), sorry,
+    -- have hr₁ : w r = of_add (-(1 : ℤ)), sorry,
+    have hrn : w (r ^ n) = of_add (-(n : ℤ)),
+    { have := submodule.is_principal.span_singleton_generator (maximal_ideal (w.valuation_subring)),
+      rw ← hr at this,
+      replace this := discrete_valuation.uniformizer_of_generator w this.symm,
+      rw is_uniformizer_iff at this,
+      simp only [this, valuation.map_pow, of_add_neg, with_zero.coe_inv, inv_pow, inv_inj, 
+        ← with_zero.coe_pow, ← of_add_nsmul, nat.smul_one_eq_coe],  },
     have := @valuation.integers.le_iff_dvd L ℤₘ₀ _ _ w w.valuation_subring _ _ (
        valuation.integer.integers w) x (r ^ n),
     rw ← hrn,
     erw this,
     rw ← ideal.span_singleton_generator (local_ring.maximal_ideal (w.valuation_subring)),
     rw ← hr,
-    -- haveI : is_dedekind_domain w.valuation_subring, sorry,
     rw ideal.span_singleton_pow,
     rw ideal.dvd_iff_le,
     rw ideal.span_singleton_le_iff_mem,
@@ -267,21 +238,16 @@ begin
     div_eq_mul_inv],
 end
 
-lemma it_works_but_needs_golfing (x : K_v) : v1 R K v x = v2 R K v x :=
+lemma aux_for_below (a : R_v) : ((max_ideal_of_completion R K v).int_valuation) 
+  a = valued.v (a : K_v) :=
 begin
-  rw [v1, v2],
-  obtain ⟨a, b, H⟩ := is_localization.mk'_surjective (non_zero_divisors R_v) x, 
-  have h2 := due K_v a b,
-  have h1 := @valuation_of_mk' R_v _ _ _ K_v _ _ _ (max_ideal_of_completion R K v) a b,
-  rw H at h1 h2,
-  rw h1,
-  rw h2,
-  congr,
-  { have ha : ¬ a = 0, sorry, --otherwise trivial
-    rw fae_int_valuation_apply,
+  by_cases ha : a = 0,
+  { simp only [ha, valuation.map_zero, algebra_map.coe_zero] },
+  { rw fae_int_valuation_apply,
     apply le_antisymm,
     { obtain ⟨n, hn⟩ : ∃ n : ℕ, v2 R K v a = of_add (-n : ℤ), 
-      { replace ha : (v2 R K v) a ≠ 0, sorry,
+      { replace ha : (v2 R K v) a ≠ 0 := by rwa [valuation.ne_zero_iff, ne.def,
+        subring.coe_eq_zero_iff],
         have := (mem_integer (v2 R K v) ↑a).mp a.2,
         obtain ⟨α, hα⟩ := with_zero.ne_zero_iff_exists.mp ha,
         rw ← hα at this,
@@ -301,11 +267,10 @@ begin
       rw int_valuation_le_pow_iff_dvd,
       apply (uno' K_v _ n).mp (le_of_eq hn), },
     { obtain ⟨m, hm⟩ : ∃ m : ℕ, v1 R K v a = of_add (-m : ℤ),
-      { replace ha : (v1 R K v) a ≠ 0, sorry,
+      { replace ha : (v1 R K v) a ≠ 0 := by rwa [valuation.ne_zero_iff, ne.def,
+        subring.coe_eq_zero_iff],
           dsimp only [v1] at ha ⊢,
           have : (max_ideal_of_completion R K v).valuation (↑a : K_v) ≤ 1 := valuation_le_one _ _,
-
-          -- have := (mem_integer (v1 R K v) ↑a).mp a.2,
           obtain ⟨α, hα⟩ := with_zero.ne_zero_iff_exists.mp ha,
           rw ← hα at this,
           rw ← with_zero.coe_one at this,
@@ -330,8 +295,19 @@ begin
       rw uno' K_v _ m,
       apply hm,
       apply_instance,
-    } },
-  sorry,
+      apply_instance, }},
+end
+
+lemma adic_valuation_equals_completion (x : K_v) : v1 R K v x = v2 R K v x :=
+begin
+  rw [v1, v2],
+  obtain ⟨a, b, H⟩ := is_localization.mk'_surjective (non_zero_divisors R_v) x, 
+  have h2 := due K_v a b,
+  have h1 := @valuation_of_mk' R_v _ _ _ K_v _ _ _ (max_ideal_of_completion R K v) a b,
+  rw H at h1 h2,
+  rw [h1, h2],
+  congr;
+  apply aux_for_below,
 end
 
 end is_dedekind_domain.height_one_spectrum.completion
