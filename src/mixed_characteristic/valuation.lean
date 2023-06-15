@@ -35,8 +35,7 @@ def padic_pkg : abstract_completion ℚ :=
   dense            := sorry }
 
 namespace padic'
-def Q_p (p : out_param ℕ) [hp : fact (p.prime)] : Type* := 
-adic_completion ℚ (p_height_one_ideal p)
+def Q_p : Type* := adic_completion ℚ (p_height_one_ideal p)
 
 instance : field (Q_p p) := adic_completion.field ℚ (p_height_one_ideal p)
 
@@ -50,16 +49,18 @@ def padic'_pkg : abstract_completion ℚ :=
 { space            := Q_p p,
   coe              := coe,
   uniform_struct   := infer_instance,
-  complete         := sorry,
+  complete         := infer_instance,
   separation       := infer_instance,
   uniform_inducing := coe_is_inducing p,
-  dense            := sorry }
+  dense            := begin
+    have := @uniform_space.completion.dense_range_coe,
+    sorry
+  end }
 
-def compare (p : out_param ℕ) [hp : fact (p.prime)] : 
-  ℚ_[p] ≃ᵤ Q_p p :=
+def compare : ℚ_[p] ≃ᵤ Q_p p :=
 abstract_completion.compare_equiv (padic_pkg p) (padic'_pkg p) 
 
-def coe_ring_hom (p : out_param ℕ) [hp : fact (p.prime)] : ℚ →+* (Q_p p) :=
+def coe_ring_hom : ℚ →+* (Q_p p) :=
 { to_fun    := (coe : ℚ → (Q_p p)),
   map_one'  := sorry,
   map_mul'  := sorry,
@@ -72,14 +73,11 @@ lemma unif_cont_coe : uniform_continuous (coe : ℚ → (Q_p p)) :=
 end padic'
 
 noncomputable!
-def extension_as_ring_hom (p : out_param ℕ) [hp : fact (p.prime)]  := 
-uniform_space.completion.extension_hom (padic'.coe_ring_hom p)
-
-#check padic'.unif_cont_coe p
+def extension_as_ring_hom := uniform_space.completion.extension_hom (padic'.coe_ring_hom p)
 
 open padic'
 
-noncomputable! def  padic_ring_equiv : 
+noncomputable! def padic_ring_equiv : 
   ring_equiv ℚ_[p] (Q_p p) :=
 { map_mul' := (extension_as_ring_hom p (unif_cont_coe p).continuous).map_mul',
   map_add' := (extension_as_ring_hom p (unif_cont_coe p).continuous).map_add',
@@ -88,7 +86,7 @@ noncomputable! def  padic_ring_equiv :
 
 instance padic.valued : valued ℚ_[p] ℤₘ₀ :=
 { v := 
-  { to_fun    := λ x, valued.v (padic'.compare p x),
+  { to_fun    := λ x, valued.v (padic_ring_equiv p x),
     map_zero' := sorry,
     map_one'  := sorry,
     map_mul'  := sorry,
