@@ -45,26 +45,15 @@ variables (p : ℕ) [fact(nat.prime p)] (K L : Type*) [field K] [hK : algebra �
 include hK
 
 instance to_int_algebra : algebra ℤ_[p] K := algebra.comp ℤ_[p] ℚ_[p] K
---(ring_hom.comp hK.to_ring_hom (@padic_int.coe.ring_hom p _)).to_algebra
 
 @[simp] lemma int_algebra_map_def : algebra_map ℤ_[p] K = 
   (padic_algebra.to_int_algebra p K).to_ring_hom := rfl 
 
 @[priority 10000] instance : is_scalar_tower ℤ_[p] ℚ_[p] K := is_scalar_tower.comp ℤ_[p] ℚ_[p] K
-/- ⟨λ _ _ _, begin
-  simp only [algebra.smul_def, int_algebra_map_def, padic.algebra_map_def, map_mul,
-    ring_hom.comp_apply, ← mul_assoc],
-  refl,
-end⟩ -/
 
 @[priority 1000] instance int_is_scalar_tower [algebra K L] [is_scalar_tower ℚ_[p] K L] :
   is_scalar_tower ℤ_[p] K L := 
 is_scalar_tower.comp' ℤ_[p] ℚ_[p] K L
-/- { smul_assoc := λ x y z,
-  begin
-    nth_rewrite 0 [← one_smul ℚ_[p] y],
-    rw [← one_smul ℚ_[p] (y • z), ← smul_assoc, ← smul_assoc, ← smul_assoc],
-  end } -/
 
 omit hK
 
@@ -87,12 +76,6 @@ instance mixed_char_local_field.to_char_zero (p : out_param(ℕ)) [fact(nat.prim
   (algebra_map ℚ_[p] K).injective.eq_iff, nat.cast_inj] at h⟩
 
 attribute [priority 100, instance] mixed_char_local_field.to_finite_dimensional
-
-/- attribute [nolint dangerous_instance] mixed_char_local_field.to_char_zero
-
--- See note [lower instance priority]
-attribute [priority 100, instance] mixed_char_local_field.to_char_zero
-  mixed_char_local_field.to_finite_dimensional -/
 
 namespace mixed_char_local_field
 
