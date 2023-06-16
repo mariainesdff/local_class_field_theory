@@ -64,44 +64,6 @@ begin
 end
 
 
-lemma valued.add_eq_max_of_ne {S Γ₀ : Type*} [comm_ring S]
-  [linear_ordered_comm_group_with_zero Γ₀] [valued S Γ₀] {a b : S} (hne : valued.v a ≠ valued.v b) :
-  valued.v (a + b) = max (valued.v a) (valued.v b) :=
-begin
-  wlog hle : valued.v b ≤ valued.v a generalizing b a with H,
-  { rw [add_comm, max_comm],
-    exact H hne.symm (le_of_lt (not_le.mp hle)), },
-  { have hlt : valued.v b  < valued.v a, from lt_of_le_of_ne hle hne.symm,
-    have : valued.v a  ≤ max (valued.v (a + b)) (valued.v b), from calc
-      valued.v a = valued.v (a + b + (-b)) : by rw [add_neg_cancel_right]
-                ... ≤ max (valued.v (a + b)) (valued.v (-b)) : valuation.map_add _ _ _
-                ... = max (valued.v (a + b)) (valued.v b ) : by rw valuation.map_neg _ _,
-    have hnge : valued.v b  ≤ valued.v (a + b),
-    { apply le_of_not_gt,
-      intro hgt,
-      rw max_eq_right_of_lt hgt at this,
-      apply not_lt_of_ge this,
-      assumption },
-    have : valued.v a ≤ valued.v (a + b), by rwa [max_eq_left hnge] at this,
-    apply le_antisymm,
-    { exact valuation.map_add _ _ _, },
-    { rw max_eq_left_of_lt hlt,
-      assumption }},
-end
-
-
---already done above?
--- lemma valuation_eq_one_of_is_unit {a : ↥(height_one_spectrum.adic_completion_integers K v)}
---   (ha : is_unit a) : valued.v (a : K_v) = (1 : ℤₘ₀) :=
--- begin
---   rw is_unit_iff_exists_inv at ha,
---   obtain ⟨b, hab⟩ := ha,
---   have hab' : valued.v (a * b : K_v) = (1 : ℤₘ₀),
---   { rw [← subring.coe_mul, hab, subring.coe_one, valuation.map_one] },
---   rw valuation.map_mul at hab',
---   exact eq_one_of_one_le_mul_left a.2 b.2 (le_of_eq hab'.symm),
--- end
-
 
 noncomputable! def max_ideal_of_completion_def : ideal R_v :=
 local_ring.maximal_ideal R_v 

@@ -1,0 +1,44 @@
+\documentclass[sigplan,10pt,anonymous,review]{acmart}\settopmatter{printfolios=true,printccs=false,printacmref=false}
+\include{preamble}
+
+\author[M.~I.~de Frutos Fernández]{María Inés de Frutos Fernández}
+\author[F.~A.~E.~Nuccio]{Filippo Alberto Edoardo Nuccio Mortarino Majno di Capriglio}
+\title{later}
+\begin{document}
+\maketitle
+\section{Introduction}
+\section {Discrete Valuation Rings}
+\subsection{Valuations}
+\begin{itemize}
+\item Properties of valuations valued in $\ZZ_{m0}$, and the \texttt{multiplicative} and \texttt{with\_zero} classes, and clashes with "usual" intuition. Keep in mind that \texttt{with\_zero multiplicative} $\ZZ$ is "the same" as $q^{-\ZZ}\cup \{0\}$.
+\item Difference between \texttt{valued} (which is a class, and carries a topology/uniformity) and \texttt{valuation} that is just a function.
+\item We put \texttt{valued} instances on fields but "never" on rings that are not fields.
+\item There is something called \texttt{valuation\_ring} that has (almost) nothing to do; but \texttt{valuation\_subring} has.
+\end{itemize}
+\subsection{Definition of Discrete Valuation Rings}
+\begin{itemize}
+\item True Math definition and the \texttt{mathlib\_tfae} (in particular, local and PID)
+\item \texttt{is\_discrete} : observe that if the value group were $2\ZZ$ this would still be mathematically "discrete", but we make the choice of surjectivity in coherence with Serre/so that the notion of equivalence collapses to equality: there is a unique normalized one.
+\item \texttt{uniformizer}'s and equivalence of their existence with discreteness
+\item The ring of integers of a field with a discrete valuation (be it valued or not) is a DVR
+\end{itemize}
+\subsection{Extensions of Complete Discrete Valuation Rings}
+\begin{itemize}
+\item 
+\end{itemize}
+\section{Local Fields}
+\subsection{Equal characteristic}
+insert here the iso between Laurent series and the completion
+\subsection{Mixed characteristic}
+\section{Discussion}
+\begin{itemize}
+\item Future work (not too much, but towards LCFT)
+\item Related works
+\end{itemize}
+\subsection{Implementation Details}
+\begin{itemize}
+\item insert here the "double" $Q_p$.
+\item 
+\end{itemize}
+%\section*{Acknowledgement}--LATER (fundings?)
+\end{document}

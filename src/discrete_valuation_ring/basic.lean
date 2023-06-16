@@ -179,6 +179,9 @@ open valuation ideal is_dedekind_domain multiplicative with_zero local_ring
 
 variables {K : Type*} [field K] (v : valuation K ℤₘ₀)
 
+/-When the valuation is defined on a field instead that simply on a (commutative) ring, we use the 
+notion of `valuation_subring` instead of the weaker one of `integer`s.
+-/
 local notation `K₀` := v.valuation_subring
 
 lemma uniformizer_of_associated {π₁ π₂ : K₀} (h1 : is_uniformizer v π₁) (H : associated π₁ π₂) :
@@ -236,6 +239,31 @@ begin
   exact uniformizer_ne_zero' _ π,
 end
 
+/--This proof of the lemma does not need the valuation to be discrete, although the fact that a
+uniformizer exists forces the condition.-/
+lemma uniformizer_is_generator (π : uniformizer v) :
+  maximal_ideal v.valuation_subring = ideal.span {π.1} :=
+begin
+  apply (maximal_ideal.is_maximal _).eq_of_le,
+  { intro h,
+    rw ideal.span_singleton_eq_top at h,
+    apply uniformizer_not_is_unit v π.2 h },
+  { intros x hx,
+    by_cases hx₀ : x = 0,
+    { simp only [hx₀, ideal.zero_mem] },
+    { obtain ⟨n, ⟨u, hu⟩⟩ := pow_uniformizer v hx₀ π,
+      have hn : not (is_unit x) := λ h, (maximal_ideal.is_maximal _).ne_top
+        (eq_top_of_is_unit_mem _ hx h),
+      replace hn : n ≠ 0 := λ h, by {rw [hu, h, pow_zero, one_mul] at hn, exact hn u.is_unit},
+      simpa [ideal.mem_span_singleton, hu, is_unit.dvd_mul_right, units.is_unit] using
+        dvd_pow_self _ hn }},
+end
+
+lemma pow_uniformizer_is_pow_generator {π : uniformizer v} (n : ℕ) :
+  (maximal_ideal v.valuation_subring) ^ n = ideal.span {π.1 ^ n} :=
+by rw [← ideal.span_singleton_pow, uniformizer_is_generator]
+
+
 variable [is_discrete v]
 
 lemma exists_uniformizer : ∃ π : K₀, is_uniformizer v (π : K) := 
@@ -262,25 +290,6 @@ begin
   exact uniformizer_not_is_unit v hπ h,
 end
 
-/--This proof of the lemma does not need the valuation to be discrete, although the fact that a
-uniformizer exists forces the condition.-/
-lemma uniformizer_is_generator (π : uniformizer v) :
-  maximal_ideal v.valuation_subring = ideal.span {π.1} :=
-begin
-  apply (maximal_ideal.is_maximal _).eq_of_le,
-  { intro h,
-    rw ideal.span_singleton_eq_top at h,
-    apply uniformizer_not_is_unit v π.2 h },
-  { intros x hx,
-    by_cases hx₀ : x = 0,
-    { simp only [hx₀, ideal.zero_mem] },
-    { obtain ⟨n, ⟨u, hu⟩⟩ := pow_uniformizer v hx₀ π,
-      have hn : not (is_unit x) := λ h, (maximal_ideal.is_maximal _).ne_top
-        (eq_top_of_is_unit_mem _ hx h),
-      replace hn : n ≠ 0 := λ h, by {rw [hu, h, pow_zero, one_mul] at hn, exact hn u.is_unit},
-      simpa [ideal.mem_span_singleton, hu, is_unit.dvd_mul_right, units.is_unit] using
-        dvd_pow_self _ hn }},
-end
 
 lemma uniformizer_of_generator {r : K₀}
   (hr : maximal_ideal v.valuation_subring = ideal.span {r}) : is_uniformizer v r :=
@@ -296,9 +305,6 @@ begin
   exact uniformizer_of_associated v hπ hr,
 end
 
-lemma pow_uniformizer_is_pow_generator {π : uniformizer v} (n : ℕ) :
-  (maximal_ideal v.valuation_subring) ^ n = ideal.span {π.1 ^ n} :=
-by rw [← ideal.span_singleton_pow, uniformizer_is_generator]
 
 -- lemma pow_uniformizer_of_pow_generator {r : K₀} (n : ℕ) 
 --   (hr : (maximal_ideal v.valuation_subring) ^ n = ideal.span {r ^ n}) : is_uniformizer v r := 
@@ -345,27 +351,19 @@ begin
       exact I.mul_mem_left a (nat.find_spec H), }},
 end
 
-/- The lemma below cannot be an instance, in theory, because it relies on `valuation`, but the
-linter does not complain...
--/
-lemma is_principal_ideal_ring : is_principal_ideal_ring K₀:= 
+lemma integer_is_principal_ideal_ring : is_principal_ideal_ring K₀:= 
 ⟨λ I, ideal_is_principal v I⟩
 
-/-- The lemma `dvr_of_is_discrete` cannot be an `instance` because the `valution` is not a class.
-For the case when the field `K` has an `instance` of `valued K`, see the `instance`
-`discretely_valued.discrete_valuation_ring`
--/
-lemma dvr_of_is_discrete : discrete_valuation_ring K₀ :=
+-- This is Chapter I, Section 1, Proposition 1 in Serre's Local Fields (TODO: proper reference)
+instance dvr_of_is_discrete : discrete_valuation_ring K₀ :=
 begin
-  haveI := is_principal_ideal_ring v,
+  haveI := integer_is_principal_ideal_ring v,
   exact ((discrete_valuation_ring.tfae K₀ (not_is_field v)).out 0 4).mpr (ideal_is_principal v _),
 end
 
-variables {A : Type*} [comm_ring A] [is_domain A] [discrete_valuation_ring A]
+variables (A : Type*) [comm_ring A] [is_domain A] [discrete_valuation_ring A]
 
 open is_dedekind_domain.height_one_spectrum 
-
-variable (A)
 
 def maximal_ideal : height_one_spectrum A :=
 { as_ideal := maximal_ideal A,
@@ -392,9 +390,6 @@ namespace discretely_valued
 open valuation discrete_valuation
 
 variables (K : Type*) [field K] [hv : valued K ℤₘ₀] 
-/-When the valuation is defined on a field instead that simply on a (commutative) ring, we use the 
-notion of `valuation_subring` instead of the weaker one of `integer`s.
--/
 
 local notation `K₀` := hv.v.valuation_subring
 
@@ -404,19 +399,5 @@ def uniformizer := valuation.uniformizer hv.v
 
 instance [hv : valued K ℤₘ₀] [is_discrete hv.v] : nonempty (uniformizer K) := 
 ⟨⟨(exists_uniformizer hv.v).some, (exists_uniformizer hv.v).some_spec⟩⟩
-
-variables [is_discrete hv.v]
-
-instance is_principal_ideal_ring : is_principal_ideal_ring K₀ := 
-  is_principal_ideal_ring hv.v
-
--- Chapter I, Section 1, Proposition 1 in Serre's Local Fields
-instance discrete_valuation_ring : discrete_valuation_ring K₀ := 
-  ((discrete_valuation_ring.tfae K₀ (not_is_field hv.v)).out 0 4).mpr $ 
-  (ideal_is_principal hv.v) _
-
-
-/- def rings_are_equal  {A : Type*} [comm_ring A] [is_domain A] [discrete_valuation_ring A] :
-(@valued.v (fraction_ring A) _ ℤₘ₀ _ _).integer ≃+* A :=  -/
 
 end discretely_valued
