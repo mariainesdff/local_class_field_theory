@@ -14,17 +14,22 @@
 \item Difference between \texttt{valued} (which is a class, and carries a topology/uniformity) and \texttt{valuation} that is just a function.
 \item We put \texttt{valued} instances on fields but "never" on rings that are not fields.
 \item There is something called \texttt{valuation\_ring} that has (almost) nothing to do; but \texttt{valuation\_subring} has.
+\item Comment about the choice of \texttt{.integers} vs. \texttt{.valuation\_subring}
 \end{itemize}
 \subsection{Definition of Discrete Valuation Rings}
 \begin{itemize}
 \item True Math definition and the \texttt{mathlib\_tfae} (in particular, local and PID)
 \item \texttt{is\_discrete} : observe that if the value group were $2\ZZ$ this would still be mathematically "discrete", but we make the choice of surjectivity in coherence with Serre/so that the notion of equivalence collapses to equality: there is a unique normalized one.
 \item \texttt{uniformizer}'s and equivalence of their existence with discreteness
-\item The ring of integers of a field with a discrete valuation (be it valued or not) is a DVR
+\item The ring of integers of a field with a discrete valuation (be it valued or not) is a DVR; and the adic valuation (ref to María Inés' paper) on the field of fractions of a DVR \texttt{is\_discrete}.
 \end{itemize}
 \subsection{Extensions of Complete Discrete Valuation Rings}
 \begin{itemize}
-\item 
+\item Recall (María Inés' paper): there is a norm associated to a valuation; and if the field below is complete and the extension is finite, then this norm is unique (extending the one below).
+\item Speak about the work to define the normalized \texttt{discrete} valuation "above"
+\item [MAYBE] Mention the lemma \texttt{w\_le\_one\_iff\_disc\_norm\_extension\_le\_one}
+\item The proof (from previous project) and instance that a finite extension of a complete field is again complete
+\item The lemma \path{integral_closure_eq_integer} and the theorem \path{dvr_of_finite_extension}
 \end{itemize}
 \section{Local Fields}
 \subsection{Equal characteristic}
@@ -37,8 +42,10 @@ insert here the iso between Laurent series and the completion
 \end{itemize}
 \subsection{Implementation Details}
 \begin{itemize}
+\item bundled vs unbundled \texttt{uniformizer}'s and the choice of having them in K or in R or in R.int\dots
 \item insert here the "double" $Q_p$.
-\item 
+\item the loop forcing the instance \texttt{discretely\_normed\_field} to be only a local one
+\item [MAY BE] Discuss working in $\ZZ_{m0}$ vs in $\RR$ for the DVR\_extension
 \end{itemize}
 %\section*{Acknowledgement}--LATER (fundings?)
 \end{document}

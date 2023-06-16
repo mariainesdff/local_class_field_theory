@@ -170,6 +170,28 @@ end
 lemma uniformizer_valuation_lt_one {π : R} (hπ : is_uniformizer vR π) : vR π < 1 := 
 by {rw is_uniformizer_iff.mp hπ, exact of_add_neg_one_lt_one}
 
+open_locale nnreal
+
+/-- If the residue field is finite, then `valuation_base` is the cardinal of the residue field, and
+otherwise it takes the value `6` which is not a prime power.
+-/
+noncomputable
+def base (K : Type*) [field K] [hv : valued K ℤₘ₀] : ℝ≥0 :=
+if 1 < nat.card (local_ring.residue_field hv.v.valuation_subring)
+  then nat.card (local_ring.residue_field hv.v.valuation_subring)
+  else 6
+
+lemma one_lt_base (K : Type*) [field K] [hv : valued K ℤₘ₀] : 1 < base K :=
+begin
+  rw base,
+  split_ifs with hlt hge,
+  { rw [nat.one_lt_cast], exact hlt },
+  { norm_num }
+end
+
+lemma base_ne_zero (K : Type*) [field K] [hv : valued K ℤₘ₀] : base K ≠ 0 :=
+ne_zero_of_lt (one_lt_base K)
+
 
 end valuation
 
