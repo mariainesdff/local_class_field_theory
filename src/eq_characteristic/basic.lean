@@ -5,6 +5,8 @@ Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
 
 import algebra.char_p.subring
+import discrete_valuation_ring.basic
+import discrete_valuation_ring.complete
 import field_theory.finite.galois_field
 import ring_theory.dedekind_domain.adic_valuation
 import ring_theory.dedekind_domain.integral_closure
@@ -120,6 +122,8 @@ namespace FpX_int_completion
 noncomputable! def isom_power_series : 𝔽_[p]⟦X⟧  ≃+* (power_series 𝔽_[p]) := sorry -- F
 
 variable {p}
+
+instance : discrete_valuation_ring (FpX_int_completion p) := discrete_valuation.dvr_of_is_discrete _
 
 instance is_noetherian_ring :
   is_noetherian_ring ↥(FpX_int_completion p) := 

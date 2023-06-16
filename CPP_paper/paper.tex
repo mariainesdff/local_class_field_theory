@@ -27,7 +27,7 @@
 \begin{itemize}
 \item The completion of a discretely valued field is again discretely valued (and so its ring of integers is a DVR by the above)
 \item The equality of the two valuations (the adic one coming from the max'l ideal, since DVR implies local) and the uniform completion of the valuation we begun with
-\item When viewing $K_v$ as the completion of $K$, its \texttt{valued} instance comes from the completion of the valuation on $K$, and this is of course different from the \texttt{valued} instance on the fraction field of $R_v$, itself isomorphic to $K_v$, that instead comes from the \texttt{discrete_valuation_ring} instance on $R_v$.
+\item When viewing $K_v$ as the completion of $K$, its \texttt{valued} instance comes from the completion of the valuation on $K$, and this is of course different from the \texttt{valued} instance on the fraction field of $R_v$, itself isomorphic to $K_v$, that instead comes from the \path{discrete_valuation_ring} instance on $R_v$.
 \item Still, the isomorphism is known and one can compare the two valuations on $K_v$ which is \emph{a fraction field}; this is done in \path{v_1=v_2}.
 \item Recall (María Inés' paper): there is a norm associated to a valuation; and if the field below is complete and the extension is finite, then this norm is unique (extending the one below).
 \item Speak about the work to define the normalized \texttt{discrete} valuation "above"
@@ -36,9 +36,29 @@
 \item The lemma \path{integral_closure_eq_integer} and the theorem \path{dvr_of_finite_extension}
 \end{itemize}
 \section{Local Fields}
+Give our definition and the claims that \mi{TODO : finite extensions of $\laurentseries$ and of $\QQ_p$ are local fields.}
 \subsection{Equal characteristic}
-insert here the iso between Laurent series and the completion
+\begin{itemize}
+\item Unlike the $p$-adic, the completion of the ring of rational functions had not yet been defined in mathlib.
+\item Put both a valuation and a norm on $\laurentseries$
+\item iso between Laurent series and the completion
+\item Definition of Eq char local field
+\item Our definition of ring of integers is the integral closure of $\powerseries$ in $K$, mainly to adapt to what has been done for number fields.
+\item The definition \path{ring_of_integers_algebra}
+\item $\laurentseries$ is an eq. char. local ring \fil{(and also $\laurentseries[{\FF[q]}]$?)}
+\end{itemize}
 \subsection{Mixed characteristic}
+\begin{itemize}
+\item Definition of Mixed char local field
+\item Our definition of ring of integers is the integral closure of $\ZZ_p$ in $K$, mainly to adapt to what has been done for number fields.
+\item The definition \path{ring_of_integers_algebra}, "equal" to the one for eq. char. local fields
+\item The proof that a $\QQ_p$ is a mixed char local field.
+\item Discussion about the two $\QQ_p$'s from a mathematical point of view.
+\item Say that most of the techniques used for the iso about Laurent series adapted to \path{padic_ring_equiv} IF TRUE
+\item A proof that the ring of integers is a DVR (once $\ZZ_p$ becomes the right $\ZZ_p$ --- so, not only a DVR, which it is, but the \path{valuation_subring} of $\QQ_p$ --- this will follow from the general results about DVR's).
+\end{itemize}
+
+
 \section{Discussion}
 \begin{itemize}
 \item Future work (not too much, but towards LCFT)
@@ -47,10 +67,10 @@ insert here the iso between Laurent series and the completion
 \subsection{Implementation Details}
 \begin{itemize}
 \item bundled vs unbundled \texttt{uniformizer}'s and the choice of having them in K or in R or in R.int\dots
-\item insert here the "double" $Q_p$.
+\item insert here the "double" $Q_p$ in particular the fact we found a \path{metric} instance on $\QQ$.
 \item the loop forcing the instance \texttt{discretely\_normed\_field} to be only a local one
 \item [MAY BE] Discuss working in $\ZZ_{m0}$ vs in $\RR$ for the DVR\_extension
-\item The instance of \path{valued} at the end of basic is defined on THE fraction ring and not on A fraction field because otherwise this would get into a diamond. Look at the examples in \path{extension}. Observe that \path{height_one_spectrum.valued_adic_completion K v} takes as argument $K$ (that is A fraction ring of $R$), whereas \path{discrete_valuation.with_zero.valued} takes as argument a DVR (in this case, $R_v$). Since the completion at $v$ of the fraction ring $frac R$ is not equal to $K_v$, this lead to no problem.
+\item The instance of \path{valued} at the end of basic is defined on THE fraction ring and not on A fraction field because otherwise this would get into a diamond. Look at the examples in \path{extension}. Observe that \path{height_one_spectrum.valued_adic_completion K v} takes as argument $K$ (that is A fraction ring of $R$), whereas \path{discrete_valuation.with_zero.valued} takes as argument a DVR (in this case, $R_v$). Since the completion at $v$ of the fraction ring $frac R$ is not equal to $K_v$, this leads to no problem.
 \end{itemize}
 %\section*{Acknowledgement}--LATER (fundings?)
 \end{document}

@@ -164,6 +164,8 @@ begin
   exact hinj x hx, 
 end
 
+-- `[FAE]` Probably the two things below can disappear if we can prove that 𝒪 p K is a DVR
+
 /-- The ring of integers of a mixed characteristic local field is not a field. -/
 lemma not_is_field : ¬ is_field (𝓞 p K) :=
 by simpa [← (is_integral_closure.is_integral_algebra ℤ_[p] K).is_field_iff_is_field
