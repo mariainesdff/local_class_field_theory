@@ -68,10 +68,14 @@ end
 noncomputable! def max_ideal_of_completion_def : ideal R_v :=
 local_ring.maximal_ideal R_v 
 
+instance : discrete_valuation_ring R_v := discrete_valuation.dvr_of_is_discrete _
 
-instance : discrete_valuation_ring R_v := discretely_valued.discrete_valuation_ring K_v
-
-
+/- When viewing `K_v` as the completion of `K`, its `valued` instance comes from the completion of 
+the valuation on `K`, and this is of course different from the `valued` instance on the fraction
+field of `R_v`, itself isomorphic to `K_v`, that instead comes from the `discrete_valuation_ring`
+instance on `R_v`. -/
+example : valued K_v ℤₘ₀ := height_one_spectrum.valued_adic_completion K v
+example : valued (fraction_ring R_v) ℤₘ₀ := discrete_valuation.with_zero.valued
 
 -- TODO: clean up
 lemma is_dedekind_domain.height_one_spectrum.valuation_completion_integers_exists_uniformizer : 
@@ -100,7 +104,8 @@ lemma is_dedekind_domain.height_one_spectrum.valuation_completion_exists_uniform
 begin
   obtain ⟨x, hx⟩ := is_dedekind_domain.height_one_spectrum.valuation_exists_uniformizer K v,
   use ↑x,
-  rw [is_dedekind_domain.height_one_spectrum.valued_adic_completion_def, ← hx, valued.extension_extends],
+  rw [is_dedekind_domain.height_one_spectrum.valued_adic_completion_def, ← hx,
+    valued.extension_extends],
   refl,
 end
 
@@ -187,8 +192,6 @@ begin
     tauto },
 end
 
-example {L : Type*} [field L] {w : valuation L ℤₘ₀} :
-  is_fraction_ring w.valuation_subring L := infer_instance
 
 lemma due (L : Type*) [field L] {w : valuation L ℤₘ₀} (a : w.valuation_subring)
   (b : non_zero_divisors w.valuation_subring) : 

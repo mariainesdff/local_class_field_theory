@@ -397,6 +397,10 @@ def maximal_ideal : height_one_spectrum A :=
 
 variable {A}
 
+-- This gives problems
+-- noncomputable instance {L : Type*} [field L] [algebra A L] [fraction_ring A]: valued L ℤₘ₀ := 
+-- (maximal_ideal A).adic_valued
+
 noncomputable instance : valued (fraction_ring A) ℤₘ₀ := 
 (maximal_ideal A).adic_valued
 

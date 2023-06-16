@@ -23,8 +23,12 @@
 \item \texttt{uniformizer}'s and equivalence of their existence with discreteness
 \item The ring of integers of a field with a discrete valuation (be it valued or not) is a DVR; and the adic valuation (ref to María Inés' paper) on the field of fractions of a DVR \texttt{is\_discrete}.
 \end{itemize}
-\subsection{Extensions of Complete Discrete Valuation Rings}
+\subsection{Complete Discrete Valuation Rings and their Extensions}
 \begin{itemize}
+\item The completion of a discretely valued field is again discretely valued (and so its ring of integers is a DVR by the above)
+\item The equality of the two valuations (the adic one coming from the max'l ideal, since DVR implies local) and the uniform completion of the valuation we begun with
+\item When viewing $K_v$ as the completion of $K$, its \texttt{valued} instance comes from the completion of the valuation on $K$, and this is of course different from the \texttt{valued} instance on the fraction field of $R_v$, itself isomorphic to $K_v$, that instead comes from the \texttt{discrete_valuation_ring} instance on $R_v$.
+\item Still, the isomorphism is known and one can compare the two valuations on $K_v$ which is \emph{a fraction field}; this is done in \path{v_1=v_2}.
 \item Recall (María Inés' paper): there is a norm associated to a valuation; and if the field below is complete and the extension is finite, then this norm is unique (extending the one below).
 \item Speak about the work to define the normalized \texttt{discrete} valuation "above"
 \item [MAYBE] Mention the lemma \texttt{w\_le\_one\_iff\_disc\_norm\_extension\_le\_one}
@@ -46,6 +50,7 @@ insert here the iso between Laurent series and the completion
 \item insert here the "double" $Q_p$.
 \item the loop forcing the instance \texttt{discretely\_normed\_field} to be only a local one
 \item [MAY BE] Discuss working in $\ZZ_{m0}$ vs in $\RR$ for the DVR\_extension
+\item The instance of \path{valued} at the end of basic is defined on THE fraction ring and not on A fraction field because otherwise this would get into a diamond. Look at the examples in \path{extension}. Observe that \path{height_one_spectrum.valued_adic_completion K v} takes as argument $K$ (that is A fraction ring of $R$), whereas \path{discrete_valuation.with_zero.valued} takes as argument a DVR (in this case, $R_v$). Since the completion at $v$ of the fraction ring $frac R$ is not equal to $K_v$, this lead to no problem.
 \end{itemize}
 %\section*{Acknowledgement}--LATER (fundings?)
 \end{document}
