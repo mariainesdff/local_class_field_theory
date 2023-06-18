@@ -682,7 +682,8 @@ disc_normed_field_extension_uniform_space h_alg
   @complete_space L (uniform_space_extension (algebra.is_algebraic_of_finite K L)) := 
 begin
   letI : nontrivially_normed_field K := discretely_norm_field' K,
-  exact spectral_norm_complete_space (algebra.is_algebraic_of_finite K L) (norm_is_nonarchimedean K),
+  exact spectral_norm_complete_space (algebra.is_algebraic_of_finite K L) 
+    (norm_is_nonarchimedean K),
 end
 
 lemma extension_is_complete [finite_dimensional K L] : 

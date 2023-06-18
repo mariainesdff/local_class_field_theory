@@ -5,166 +5,42 @@ Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
 
 import discrete_valuation_ring.extensions
-import discrete_valuation_ring.global_to_local
 import eq_characteristic.basic
-import for_mathlib.rank_one_valuation
-import from_mathlib.normed_valued
-import spectral_norm
 
 noncomputable theory
-
--- /- 
--- * Topology on K + this is locally compact.
--- * Define normalized discrete valuation on K, using topological nilpotent elements.
--- * Unit ball = ring of integers
--- * Top. nilp. elements are a maximal ideal P in O_K
--- * Define ramification index e
--- * P^e = (p)
--- * Relate to norm (future)
--- -/
 
 open is_dedekind_domain nnreal polynomial ratfunc
 open_locale eq_char_local_field nnreal discrete_valuation
 
-section is_dedekind_domain
+variables (p : out_param (ℕ)) [fact (p.prime)] 
 
-open_locale polynomial
+namespace eq_char_local_field
 
-variables {R : Type*} [comm_ring R] [is_domain R] [is_dedekind_domain R] (L : Type*) [field L]
-  [algebra R L] [is_fraction_ring R L] (v : height_one_spectrum R)
+.
 
-open_locale classical
+variables (K : Type*) [field K] [eq_char_local_field p K]
 
-namespace is_dedekind_domain.height_one_spectrum
+-- TODO: come back after fixing the names in `dvr.extensions`
 
-def valuation_base (R : Type*) [comm_ring R] [is_domain R] [is_dedekind_domain R] (L : Type*)
-  [field L] [algebra R L] [is_fraction_ring R L] (v : height_one_spectrum R) : ℝ≥0 :=
-@discrete_valuation.valuation_base (adic_completion L v) _ 
-  (v.valued_adic_completion L) _
+-- NOTE: There is a diamond on 𝔽_[p]⟮⟮X⟯⟯, but by setting this priority lower, it seems
+-- that Lean finds the correct instance.
+@[priority 100] instance : valued K ℤₘ₀ := valued.mk' (w 𝔽_[p]⟮⟮X⟯⟯ K)
 
-lemma valuation_base_def {R : Type*} [comm_ring R] [is_domain R] [is_dedekind_domain R] (L : Type*)
-  [field L] [algebra R L] [is_fraction_ring R L] (v : height_one_spectrum R) :
-  valuation_base R L v = (if 1 < nat.card
-    (local_ring.residue_field (adic_completion_integers L v))
-  then nat.card
-    (local_ring.residue_field (adic_completion_integers L v))
-  else 6) :=
-rfl
+instance : valuation.is_discrete 
+  (eq_char_local_field.with_zero.valued p K).v := 
+is_discrete_of_finite 𝔽_[p]⟮⟮X⟯⟯ K
 
-lemma one_lt_valuation_base {R : Type*} [comm_ring R] [is_domain R] [is_dedekind_domain R]
-  (L : Type*) [field L] [algebra R L] [is_fraction_ring R L] (v : height_one_spectrum R) : 
-  1 < valuation_base R L v :=
-@discrete_valuation.one_lt_valuation_base (adic_completion L v) _ (v.valued_adic_completion L) _
-
-lemma valuation_base_ne_zero {R : Type*} [comm_ring R] [is_domain R] [is_dedekind_domain R]
-  (L : Type*) [field L] [algebra R L] [is_fraction_ring R L] (v : height_one_spectrum R) : 
-  valuation_base R L v ≠ 0:=
-@discrete_valuation.valuation_base_ne_zero (adic_completion L v) _ (v.valued_adic_completion L) _
-
-end is_dedekind_domain.height_one_spectrum
-
-open is_dedekind_domain is_dedekind_domain.height_one_spectrum
-
-def is_dedekind_domain.height_one_spectrum.valuation_is_rank_one :
-  is_rank_one  (@valued.v L _ ℤₘ₀ _ v.adic_valued) := 
-{ hom         := with_zero_mult_int_to_nnreal (valuation_base_ne_zero L v),
-  strict_mono := with_zero_mult_int_to_nnreal_strict_mono (one_lt_valuation_base L v),
-  nontrivial  := begin
-    obtain ⟨x, hxv, hx0⟩ := submodule.exists_mem_ne_zero_of_ne_bot v.ne_bot,
-    use algebra_map L _ (algebra_map R L x),
-    split,
-    { rw [ne.def, valuation.zero_iff, _root_.map_eq_zero, ← map_zero (algebra_map R L), ←ne.def, 
-        function.injective.ne_iff (no_zero_smul_divisors.algebra_map_injective R L)],
-      exact hx0 },
-    { apply ne_of_lt,
-      erw is_dedekind_domain.height_one_spectrum.valuation_lt_one_iff_dvd,
-      rw [ideal.dvd_span_singleton],
-      exact hxv }
-  end }
-
-lemma is_dedekind_domain.height_one_spectrum.valuation_is_rank_one_hom_def :
-  (@is_rank_one.hom L _ ℤₘ₀ _ (@valued.v L _ ℤₘ₀ _ v.adic_valued) 
-    (is_dedekind_domain.height_one_spectrum.valuation_is_rank_one L v)) =
-  with_zero_mult_int_to_nnreal (valuation_base_ne_zero L v) :=
-rfl
-
-def is_dedekind_domain.height_one_spectrum.valuation_completion_is_rank_one
-  (hL : is_rank_one  (@valued.v L _ ℤₘ₀ _ v.adic_valued)) :
-  is_rank_one  (@valued.v (is_dedekind_domain.height_one_spectrum.adic_completion L v) _ ℤₘ₀ _ _) := 
-{ hom         := with_zero_mult_int_to_nnreal (valuation_base_ne_zero L v),
-  strict_mono := with_zero_mult_int_to_nnreal_strict_mono (one_lt_valuation_base L v),
-  nontrivial  := begin
-    obtain ⟨x, hx0, hx1⟩ := hL.nontrivial,
-    use algebra_map L _ x,
-    split;
-    rw [height_one_spectrum.valued_adic_completion_def,
-        is_dedekind_domain.height_one_spectrum.algebra_map_adic_completion,
-        valued.extension_extends],
-    exacts [hx0, hx1],
-  end }
-
-lemma is_dedekind_domain.height_one_spectrum.valuation_completion_is_rank_one_hom_def :
-  (@is_rank_one.hom (is_dedekind_domain.height_one_spectrum.adic_completion L v) _ ℤₘ₀ _ 
-  (@valued.v (is_dedekind_domain.height_one_spectrum.adic_completion L v) _ ℤₘ₀ _ _)
-    (is_dedekind_domain.height_one_spectrum.valuation_completion_is_rank_one L v
-      (is_dedekind_domain.height_one_spectrum.valuation_is_rank_one L v))) =
-  with_zero_mult_int_to_nnreal (valuation_base_ne_zero L v) :=
-rfl
-
-variables [hv : is_rank_one 
-  (@valued.v (is_dedekind_domain.height_one_spectrum.adic_completion L v) _ ℤₘ₀ _ _)]
-
-include hv 
-
-instance : normed_field (is_dedekind_domain.height_one_spectrum.adic_completion L v) :=
-by apply rank_one_valuation.valued_field.to_normed_field
-  (is_dedekind_domain.height_one_spectrum.adic_completion L v) ℤₘ₀ 
+-- Without the `by apply`, it times out
+instance : discrete_valuation_ring (𝓞 p K) :=
+by apply dvr_of_finite_extension 𝔽_[p]⟮⟮X⟯⟯ K
 
 
-lemma norm_le_one_iff_val_le_one' (x : is_dedekind_domain.height_one_spectrum.adic_completion L v) :
-  ‖x‖ ≤ 1 ↔ valued.v x ≤ (1 : ℤₘ₀) :=
-rank_one_valuation.norm_le_one_iff_val_le_one x
-
-variables (R)
-
-def int_polynomial' {P : (is_dedekind_domain.height_one_spectrum.adic_completion L v)[X]}
-  (hP : ∀ n : ℕ , ‖P.coeff n‖ ≤ 1) :
-  (is_dedekind_domain.height_one_spectrum.adic_completion_integers L v)[X] := 
-{ to_finsupp := 
-  { support := P.support,
-    to_fun := λ n, ⟨P.coeff n, (height_one_spectrum.mem_adic_completion_integers R L v).mp
-       ((norm_le_one_iff_val_le_one' L v _).mp (hP n))⟩,
-    mem_support_to_fun := λ n, by rw [mem_support_iff, ne.def, not_iff_not, subtype.ext_iff,
-      subring.coe_zero, subtype.coe_mk] }}
-
-variables {R}
-
-lemma int_polynomial'_coeff_eq 
-  {P : (is_dedekind_domain.height_one_spectrum.adic_completion L v)[X]}
-  (hP : ∀ n : ℕ , ‖P.coeff n‖ ≤ 1) (n : ℕ) :
-  ↑((int_polynomial' R L v hP).coeff n) = P.coeff n :=
-rfl
-
-lemma int_polynomial'_leading_coeff_eq 
-  {P : (is_dedekind_domain.height_one_spectrum.adic_completion L v)[X]}
-  (hP : ∀ n : ℕ , ‖P.coeff n‖ ≤ 1) :
-  ↑((int_polynomial' R L v hP).leading_coeff) = P.leading_coeff :=
-rfl
-
-lemma int_polynomial'_nat_degree 
-  {P : (is_dedekind_domain.height_one_spectrum.adic_completion L v)[X]}
-  (hP : ∀ n : ℕ , ‖P.coeff n‖ ≤ 1) : (int_polynomial' R L v hP).nat_degree = P.nat_degree :=
-rfl
-
-end is_dedekind_domain
-
-variables {p : ℕ} [fact (p.prime)] 
+end eq_char_local_field
 
 namespace FpX_field_completion
 
-instance : is_rank_one (@FpX_field_completion.with_zero.valued p _).v :=
-is_dedekind_domain.height_one_spectrum.valuation_completion_is_rank_one _ _
-  (is_dedekind_domain.height_one_spectrum.valuation_is_rank_one _ _)
+noncomputable! instance : is_rank_one (@FpX_field_completion.with_zero.valued p _).v :=
+sorry
 
 instance : normed_field 𝔽_[p]⟮⟮X⟯⟯ := rank_one_valuation.valued_field.to_normed_field _ _
 
@@ -175,18 +51,8 @@ begin
   sorry
 end
 
-.
-
 open is_dedekind_domain is_dedekind_domain.height_one_spectrum
 
-lemma valuation_base_eq_char : 
-  @valuation_base (polynomial 𝔽_[p]) _ _ _ (ratfunc 𝔽_[p]) _ _ _ (ideal_X 𝔽_[p]) = p :=
-begin
-  rw [valuation_base, discrete_valuation.valuation_base, if_pos],
-  { sorry /- exact nat.cast_inj.mpr residue_field_card_eq_char,  -/},
-  { sorry/-  erw residue_field_card_eq_char, 
-    exact (fact.out (nat.prime p)).one_lt  -/},
-end
 
 variable (p)
 def X := algebra_map 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ (FpX_int_completion.X p)
@@ -197,7 +63,8 @@ variable {p}
 
 lemma norm_X : ‖ X p ‖ = 1/(p : ℝ) :=
 begin
-  have hv : valued.v (X p) = multiplicative.of_add (-1 : ℤ),
+  sorry
+  /- have hv : valued.v (X p) = multiplicative.of_add (-1 : ℤ),
   { rw [← val_X_eq_one 𝔽_[p], height_one_spectrum.valued_adic_completion_def,
       FpX_field_completion.X_eq_coe, valued.extension_extends], refl, },
   have hX : ‖X p‖ = is_rank_one.hom  _ (valued.v (X p)) := rfl,
@@ -208,7 +75,7 @@ begin
   rw dif_neg,
   { simp only [with_zero.unzero_coe, to_add_of_add, zpow_one],
     rw valuation_base_eq_char, simp only [nnreal.coe_nat_cast], },
-  { simp only [with_zero.coe_ne_zero, with_zero_mult_int_to_nnreal_strict_mono, not_false_iff] }
+  { simp only [with_zero.coe_ne_zero, with_zero_mult_int_to_nnreal_strict_mono, not_false_iff] } -/
 end
 
 lemma norm_X_pos : 0 < ‖ X p ‖ :=
@@ -220,7 +87,7 @@ by rw [norm_X, one_div]; exact inv_lt_one (nat.one_lt_cast.mpr (_inst_1.out).one
 lemma X_mem_int_completion : X p ∈ FpX_int_completion p :=
 begin
   rw [mem_FpX_int_completion, ← norm_le_one_iff_val_le_one],
-  exact le_of_lt norm_X_lt_one, 
+  sorry --exact le_of_lt norm_X_lt_one, 
 end
 
 instance : nontrivially_normed_field 𝔽_[p]⟮⟮X⟯⟯ :=
@@ -237,19 +104,50 @@ rank_one_valuation.norm_def_is_nonarchimedean _ _
 end FpX_field_completion
 
 namespace FpX_int_completion
+
+--TODO: Filippo, do we still need this?
 --`[FAE]` The following `instance` will probably be PR'd soon in greater generality for all
 -- integrally closed domains: see 
 -- [https://leanprover.zulipchat.com/#narrow/stream/116395-maths/topic/.E2.9C.94.20gcd_monoid]
 noncomputable! instance  : normalized_gcd_monoid 𝔽_[p]⟦X⟧  :=
 sorry
 
+lemma FpX_int_completion.X_ne_zero : FpX_int_completion.X p ≠ 0 :=
+begin
+  have h0 : (0 : FpX_int_completion p) = ⟨(0 : FpX_field_completion p), subring.zero_mem _⟩,
+  { refl },
+  rw [FpX_int_completion.X, ne.def, h0, subtype.mk_eq_mk, _root_.map_eq_zero],
+  exact ratfunc.X_ne_zero,
+end
+
+variables (K : Type*) [field K] [eq_char_local_field p K]
+
+lemma FpX_int_completion.X_coe_ne_zero :
+  ¬(algebra_map (FpX_int_completion p) (𝓞 p K)) (FpX_int_completion.X p) = 0 :=
+begin
+  sorry/- intro h,
+  exact FpX_int_completion.X_ne_zero
+    ((injective_iff_map_eq_zero _).mp (ring_of_integers.algebra_map_injective p K) _ h), -/
+end
+
+--TODO: move
+instance : algebra (ratfunc 𝔽_[p]) K := algebra.comp (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯ K
+
+
 end FpX_int_completion
+
+#exit
+
+
+
 
 variables {K : Type*} [field K] [eq_char_local_field p K]
 
 namespace eq_char_local_field
 
-def norm_on_K : K → ℝ := spectral_norm 𝔽_[p]⟮⟮X⟯⟯ K
+def norm_on_K : K → ℝ := disc_norm_extension (algebra.is_algebraic_of_finite 𝔽_[p]⟮⟮X⟯⟯ K)
+
+--def norm_on_K : K → ℝ := spectral_norm 𝔽_[p]⟮⟮X⟯⟯ K
 
 lemma norm_on_FpX_field_completion :
   ((norm_on_K ) : 𝔽_[p]⟮⟮X⟯⟯ → ℝ) = (norm : 𝔽_[p]⟮⟮X⟯⟯ → ℝ) := 
@@ -337,92 +235,8 @@ end
 
 variables (K)
 
-instance : complete_space 𝔽_[p]⟮⟮X⟯⟯ := uniform_space.completion.complete_space _
-
-
 .
 
---TODO: move to basic file
-lemma FpX_int_completion.X_ne_zero : FpX_int_completion.X p ≠ 0 :=
-begin
-  have h0 : (0 : FpX_int_completion p) = ⟨(0 : FpX_field_completion p), subring.zero_mem _⟩,
-  { refl },
-  rw [FpX_int_completion.X, ne.def, h0, subtype.mk_eq_mk, _root_.map_eq_zero],
-  exact ratfunc.X_ne_zero,
-end
-
-lemma FpX_int_completion.X_coe_ne_zero :
-  ¬(algebra_map (FpX_int_completion p) (𝓞 p K)) (FpX_int_completion.X p) = 0 :=
-begin
-  intro h,
-  exact FpX_int_completion.X_ne_zero
-    ((injective_iff_map_eq_zero _).mp (ring_of_integers.algebra_map_injective p K) _ h),
-end
-
-noncomputable! def open_unit_ball : height_one_spectrum (𝓞 p K) :=
-{ as_ideal := 
-  { carrier   := { x : 𝓞 p K | norm_on_K (x : K) < 1},
-    add_mem'  := λ x y hx hy,
-    begin
-      rw [set.mem_set_of_eq, norm_on_K] at hx hy ⊢,
-      refine lt_of_le_of_lt (spectral_norm_is_nonarchimedean 
-        (algebra.is_algebraic_of_finite _ K) _ (x : K)
-        (y : K)) (max_lt_iff.mpr ⟨hx, hy⟩),
-        exact FpX_field_completion.norm_is_nonarchimedean,
-    end,  
-    zero_mem' := 
-    begin
-      rw [set.mem_set_of_eq, zero_mem_class.coe_zero, norm_on_K, spectral_norm_zero],
-      exact zero_lt_one,
-    end,
-    smul_mem' := λ k x hx,
-    begin
-      rw [norm_on_K, smul_eq_mul, set.mem_set_of_eq, mul_mem_class.coe_mul,
-        ← spectral_alg_norm_def (algebra.is_algebraic_of_finite 𝔽_[p]⟮⟮X⟯⟯ K)
-          FpX_field_completion.norm_is_nonarchimedean,
-        spectral_norm_is_mul (algebra.is_algebraic_of_finite 𝔽_[p]⟮⟮X⟯⟯ K) _ (k : K) (x : K)],
-      exact mul_lt_one_of_nonneg_of_lt_one_right (norm_of_int_le_one k)
-        (spectral_norm_nonneg _) hx, 
-    end },
-  is_prime := 
-  begin
-    rw ideal.is_prime_iff,
-    split,
-    { rw ideal.ne_top_iff_one,
-      simp only [set.mem_set_of_eq, submodule.mem_mk, one_mem_class.coe_one, not_lt],
-      exact le_of_eq (norm_on_K_one).symm, },
-    { intros x y hxy,
-      simp only [set.mem_set_of_eq, submodule.mem_mk, mul_mem_class.coe_mul] at hxy ⊢,
-      rw [norm_on_K, ← spectral_alg_norm_def (algebra.is_algebraic_of_finite 𝔽_[p]⟮⟮X⟯⟯ K) 
-        FpX_field_completion.norm_is_nonarchimedean, 
-        spectral_norm_is_mul (algebra.is_algebraic_of_finite 𝔽_[p]⟮⟮X⟯⟯ K) 
-        FpX_field_completion.norm_is_nonarchimedean] at hxy, 
-      contrapose! hxy,
-      exact one_le_mul_of_one_le_of_one_le hxy.1 hxy.2 }
-  end,
-  ne_bot   := --TODO: golf
-  begin
-    apply ne_of_gt,
-    split,
-    { simp only [submodule.bot_coe, submodule.coe_set_mk, set.singleton_subset_iff,
-        set.mem_set_of_eq, zero_mem_class.coe_zero, norm_on_K, spectral_norm_zero],
-      exact zero_lt_one, }, 
-    { simp only [submodule.coe_set_mk, submodule.bot_coe, set.subset_singleton_iff,
-        set.mem_set_of_eq, not_forall, exists_prop], 
-      refine ⟨algebra_map _ _ (FpX_int_completion.X p), _, FpX_int_completion.X_coe_ne_zero K⟩,
-      { have : ((algebra_map (FpX_int_completion p) (𝓞 p K)) (FpX_int_completion.X p) : K) =
-        (algebra_map (FpX_field_completion p) K) (FpX_field_completion.X p),
-        { refl },
-        rw [norm_on_K, this, spectral_norm_extends], exact FpX_field_completion.norm_X_lt_one } }
-  end }
-
-def normalized_valuation (K : Type*) [field K] [eq_char_local_field p K] : valuation K ℤₘ₀ :=
-(open_unit_ball K).valuation
-
-@[priority 100] instance (K : Type*) [field K] [eq_char_local_field p K] : valued K ℤₘ₀ :=
-  valued.mk' (normalized_valuation K)
-
-instance : algebra (ratfunc 𝔽_[p]) K := algebra.comp (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯ K
 
 lemma normalized_valuation_X_ne_zero [eq_char_local_field p K] :
   (normalized_valuation K) (algebra_map (ratfunc 𝔽_[p]) _ X) ≠ 0 :=
@@ -520,73 +334,5 @@ end
  -/
 
 end FpX_field_completion
-
-section ring_of_integers
-
-. 
-
-open eq_char_local_field is_dedekind_domain.height_one_spectrum
-
---instance [eq_char_local_field p K] : valued K ℤₘ₀ := infer_instance
-
-instance : is_rank_one (@eq_char_local_field.with_zero.valued p _ K _ _).v  := 
-is_dedekind_domain.height_one_spectrum.valuation_is_rank_one K _
-
-
---TODO: Fix (can't find valued instance)
-/- lemma eq_char_local_field.is_rank_one_hom_def :
-  (is_rank_one.hom (@valued.v K _ ℤₘ₀ _ _)) =
-  with_zero_mult_int_to_nnreal (valuation_base_ne_zero K (open_unit_ball K)) :=
-sorry -/
-
-.
-
---TODO: Is this needed?
---NOT TRUE (but eq. to a power is enough)
-lemma function_extends_norm [eq_char_local_field p K] : 
-  function_extends (norm : 𝔽_[p]⟮⟮X⟯⟯ → ℝ) (rank_one_valuation.mul_ring_norm_def K ℤₘ₀) :=
-begin
-  rw function_extends,
-  intros x,
-  simp only [rank_one_valuation.mul_ring_norm_def, rank_one_valuation.norm_def],
-  change (((is_rank_one.hom valued.v) (valued.v ((algebra_map (FpX_field_completion p) K) x))) : ℝ)
-    = ‖ x ‖,
-  rw ←_root_.coe_nnnorm,
-  rw nnreal.coe_eq,
-  sorry
-  /- rw eq_char_local_field.is_rank_one_hom_def,
-  simp only [with_zero_mult_int_to_nnreal', with_zero_mult_int_to_nnreal_def', 
-    monoid_with_zero_hom.coe_mk],
-  by_cases hx : x = 0,
-  { simp only [hx, map_zero, dif_pos, nnnorm_zero] },
-  { rw dif_neg,
-    sorry,
-    sorry } -/
-end
-
---fix
-lemma ring_of_integers_eq_adic_completion_integers' [eq_char_local_field p K] :
-  (𝓞 p K).to_subring = (@valued.v K _ ℤₘ₀ _ _).valuation_subring.to_subring :=
-begin
-sorry
-{
-  ext x,
-  rw [subalgebra.mem_to_subring],
-  rw eq_char_local_field.mem_ring_of_integers_iff_norm_le_one,
-  simp only [valuation_subring.mem_to_subring, valuation.mem_valuation_subring_iff],
-  rw ← is_dedekind_domain.height_one_spectrum.norm_le_one_iff_val_le_one,
-  have hx : rank_one_valuation.norm_def x = norm_on_K x,
-  { set N : mul_ring_norm K := rank_one_valuation.mul_ring_norm_def K ℤₘ₀ with hN,
-    have hrfl: rank_one_valuation.norm_def x = N x := rfl,
-    rw [hrfl, norm_on_K],
-    apply spectral_norm_unique_field_norm_ext
-      (algebra.is_algebraic_of_finite (FpX_field_completion p) K) function_extends_norm
-      FpX_field_completion.norm_is_nonarchimedean },
-  rw hx,
-}
-end
-
-
-end ring_of_integers
 
 --#lint
