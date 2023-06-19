@@ -25,38 +25,62 @@ open int
 
 section padic
 
-local attribute [-instance] rat.metric_space rat.normed_field 
-  rat.normed_linear_ordered_field rat.densely_normed_field rat.division_ring
-  rat.normed_add_comm_group
+open padic
 
 variables (p : out_param ℕ) [fact (p.prime)]
   
 include p
 
-instance : separated_space ℚ_[p], sorry,
+local attribute [-instance] rat.metric_space rat.normed_field 
+  rat.normed_linear_ordered_field rat.densely_normed_field rat.division_ring rat.normed_add_comm_group
+
+instance : separated_space ℚ_[p] := metric_space.to_separated
 
 def padic_valued : valued ℚ ℤₘ₀ := (p_height_one_ideal p).adic_valued
 
 local attribute [instance] padic_valued
 
+lemma padic_norm_eq_val_norm (x : ℚ) : ((padic_norm p x) : ℝ)  =
+  with_zero_mult_int_to_nnreal (ne_zero.ne p) (valued.v x) := sorry
+
+lemma uniform_inducing_coe : uniform_inducing (coe : ℚ → ℚ_[p]) :=
+begin
+  apply uniform_inducing.mk',
+  simp_rw @metric.mem_uniformity_dist ℚ_[p] _ _,
+  refine (λ S, ⟨λ hS, _, _⟩),
+  { obtain ⟨m, ⟨-, hM_sub⟩⟩ := (valued.has_basis_uniformity ℚ ℤₘ₀).mem_iff.mp hS,
+    set M := (with_zero_mult_int_to_nnreal (ne_zero.ne p) m.1).1 with hM,
+    refine ⟨{p : ℚ_[p] × ℚ_[p] | dist p.1 p.2 < M}, ⟨⟨M, ⟨_, λ a b h, h⟩⟩, _⟩⟩,
+    { exact with_zero_mult_int_to_nnreal_pos _ (is_unit_iff_ne_zero.mp (units.is_unit m)) },
+    { intros x y h,
+      apply hM_sub,
+      simp only [set.mem_set_of_eq, dist] at h ⊢,
+      rwa [← padic.coe_sub, padic_norm_e.eq_padic_norm', padic_norm_eq_val_norm, hM,
+        units.val_eq_coe, val_eq_coe, nnreal.coe_lt_coe,
+        (with_zero_mult_int_to_nnreal_strict_mono _).lt_iff_lt, ← neg_sub, valuation.map_neg] at h,
+      simpa only [nat.one_lt_cast] using nat.prime.one_lt (fact.out _) }},
+  { rw (valued.has_basis_uniformity ℚ ℤₘ₀).mem_iff,
+    sorry,
+  },
+end
+
+lemma dense_coe : dense_range  (coe : ℚ → ℚ_[p]) := sorry
+-- Maybe useful: padic.rat_dense, padic.rat_dense',
+    -- Cauchy.dense_range_pure_cauchy,
+
 def padic_pkg : abstract_completion ℚ :=
 { space            := ℚ_[p],
-  coe              := 
-  begin 
-    use (@rat.cast_coe _ _).1,
-  end,
+  coe              := coe,
   uniform_struct   := infer_instance,
   complete         := infer_instance,
   separation       := infer_instance,
-  uniform_inducing := sorry,
-  dense            := 
-  begin
-    -- Maybe useful: padic.rat_dense, padic.rat_dense',
-    -- Cauchy.dense_range_pure_cauchy,
-    sorry
-  end }
+  uniform_inducing := uniform_inducing_coe p,
+  dense            := dense_coe p,
+}
 
 namespace padic'
+
+local attribute [- instance] rat.cast_coe
 
 def Q_p : Type* := adic_completion ℚ (p_height_one_ideal p)
 
@@ -66,78 +90,64 @@ instance : valued (Q_p p) ℤₘ₀ := (p_height_one_ideal p).valued_adic_comple
 
 instance : complete_space (Q_p p) := (p_height_one_ideal p).adic_completion_complete_space ℚ
 
+instance : has_coe_t ℚ (Q_p p) := uniform_space.completion.has_coe_t ℚ
+
+def of_Q : ℚ → (Q_p p) := (@rat.cast_coe _ _).1
 
 def padic'_pkg : abstract_completion ℚ :=
 { space            := Q_p p,
-  coe              := 
-  begin 
-    use (@rat.cast_coe _ _).1,
-  end,
+  coe              := coe,
   uniform_struct   := infer_instance,
   complete         := infer_instance,
   separation       := infer_instance,
-  uniform_inducing := sorry,
-  dense            := begin
-    convert @uniform_space.completion.dense_range_coe ℚ _,
-    -- rat.cast_coe = uniform_space.completion.has_coe_t ℚ
-    sorry
-  end }
+  uniform_inducing := (uniform_space.completion.uniform_embedding_coe ℚ).1,
+  dense            := uniform_space.completion.dense_range_coe,
+}
+
+end padic'
+
+open padic'
 
 def compare : Q_p p ≃ᵤ ℚ_[p] :=
 abstract_completion.compare_equiv (padic'_pkg p) (padic_pkg p)
 
 
-lemma uniform_cont_compare : uniform_continuous (compare p) := sorry
--- instance : char_zero (Q_p p) := sorry
-
 def coe_ring_hom : ℚ →+* ℚ_[p] :=
-{ to_fun    := --rat.cast_coe _,
-  begin 
-    use (@rat.cast_coe _ _).1,
-  end,
+{ to_fun    := (padic_pkg p).2,
   map_one'  := rat.cast_one,
   map_mul'  := rat.cast_mul,
   map_zero' := rat.cast_zero,
   map_add'  := rat.cast_add }
 
-lemma coe_is_inducing : uniform_inducing (coe : ℚ → ℚ_[p]) := sorry
 
+/-`[FAE]` The lemmas `coe_is_inducing` and `uniform_continuous_coe` seem to create problems
+related to the fact that `metric_space.completion` and `uniform_space.completion` are not defeq.
+First close the goals in `padic_pkg`. Also, `extension_as_ring_hom_to_fun` and its siblings might be
+redundant
+-/
 
 lemma uniform_continuous_coe : uniform_continuous (coe : ℚ → ℚ_[p]) :=
-(uniform_inducing_iff'.1 (coe_is_inducing p)).1
+(uniform_inducing_iff'.1 (uniform_inducing_coe p)).1
 
 
-noncomputable!
-def extension_as_ring_hom : Q_p p →+* ℚ_[p] := uniform_space.completion.extension_hom
-  (coe_ring_hom p) (uniform_continuous_coe p).continuous
+definition extension_as_ring_hom : Q_p p →+* ℚ_[p] := 
+uniform_space.completion.extension_hom (coe_ring_hom p) (uniform_continuous_coe p).continuous
 
-#check uniform_space.completion.extension (coe : ℚ → ℚ_[p])
 
 @[simp]
 lemma extension_as_ring_hom_to_fun : (extension_as_ring_hom p).to_fun =
   uniform_space.completion.extension (coe : ℚ → ℚ_[p]) := rfl
 
 
-
-lemma aux (a : ℚ) : (a : ℚ_[p]) = compare p ↑a := --sorry
--- begin  ((abstract_completion.compare_coe (padic_pkg p) (padic'_pkg p) a)).symm
-begin
-  -- simp [compare p],
-  convert (abstract_completion.compare_coe (padic'_pkg p) (padic_pkg p) a),
-  sorry,
-  -- simp,
-end
-
 lemma extension_eq_compare : (extension_as_ring_hom p).to_fun = (compare p).to_fun :=
 begin
-  simp,
-  have := uniform_space.completion.extension_unique (uniform_continuous_coe p)
-    (uniform_cont_compare p),
-  apply this,
+  simp only [extension_as_ring_hom_to_fun, equiv.to_fun_as_coe, uniform_equiv.coe_to_equiv],
+  apply uniform_space.completion.extension_unique (uniform_continuous_coe p)
+    ((padic'_pkg p).uniform_continuous_compare_equiv (padic_pkg p)),
   intro a,
-  have := abstract_completion.extend_coe (padic_pkg p) (uniform_continuous_coe p) a,
-  rw ← this,
-  sorry
+  have : (padic_pkg p).coe a = (↑a : ℚ_[p]) := rfl,
+  rw [← this, ← abstract_completion.compare_coe],
+  refl,
 end
 
 
