@@ -842,10 +842,10 @@ is_scalar_tower.subsemiring hv.v.valuation_subring.to_subsemiring
   end }
 --is_scalar_tower.comp' hv.v.valuation_subring K L E
 
-lemma algebra_map_injective (E : Type*) [field E] [algebra hv.v.valuation_subring E] 
-  [algebra K E] [is_scalar_tower hv.v.valuation_subring K E] : 
+lemma algebra_map_injective : 
   function.injective ⇑(algebra_map hv.v.valuation_subring E) :=
-algebra_map_injective' hv.v.valuation_subring K E
+function.injective.comp (algebra_map K E).injective
+  (is_fraction_ring.injective ↥(valued.v.valuation_subring) K)
 
 end discrete_valuation
 
@@ -878,7 +878,7 @@ lemma algebra_map_injective : function.injective
   (algebra_map hv.v.valuation_subring (integral_closure hv.v.valuation_subring L)) := 
 begin
   have hinj : function.injective ⇑(algebra_map hv.v.valuation_subring L),
-  { exact algebra_map_injective' hv.v.valuation_subring K L},
+  { exact discrete_valuation.algebra_map_injective K L},
   rw injective_iff_map_eq_zero (algebra_map hv.v.valuation_subring
     ↥(integral_closure hv.v.valuation_subring L)),
   intros x hx,
