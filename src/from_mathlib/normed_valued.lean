@@ -112,7 +112,7 @@ def norm_def : L → ℝ := λ x : L, hv.hom (valued.v x)
 
 lemma norm_def_nonneg (x : L) : 0 ≤ norm_def x := by simp only [norm_def, nnreal.zero_le_coe]
 
-lemma norm_def_add_le  (x y : L) : 
+lemma norm_def_add_le (x y : L) : 
   norm_def (x + y) ≤ max (norm_def x) (norm_def y) := 
 begin
   simp only [norm_def, nnreal.coe_le_coe, le_max_iff, strict_mono.le_iff_le hv.strict_mono],
@@ -126,7 +126,7 @@ by simpa [norm_def, nnreal.coe_eq_zero, is_rank_one_hom_eq_zero_iff, valuation.z
 variables (L) (Γ₀)
 
 /-- The normed field structure determined by a rank one valuation. -/
-def valued_field.to_normed_field [h : nontrivial Γ₀ˣ] : normed_field L := 
+def valued_field.to_normed_field : normed_field L := 
 { norm               := norm_def,
   dist               := λ x y, norm_def (x - y),
   dist_self          := λ x, by simp only [sub_self, norm_def, valuation.map_zero, 
@@ -161,7 +161,9 @@ def valued_field.to_normed_field [h : nontrivial Γ₀ˣ] : normed_field L :=
         simp only [set.mem_set_of_eq, norm_def, hδ, nnreal.val_eq_coe, nnreal.coe_lt_coe] at hx,
         rw [set.mem_set_of, ← neg_sub, valuation.map_neg],
         exact hv.strict_mono.lt_iff_lt.mp hx },
-      { obtain ⟨r, hr_pos, hr⟩ := h,
+      { letI : nontrivial Γ₀ˣ := (nontrivial_iff_exists_ne (1 : Γ₀ˣ)).mpr 
+          ⟨is_rank_one_unit val.v, is_rank_one_unit_ne_one val.v⟩,
+        obtain ⟨r, hr_pos, hr⟩ := h,
         obtain ⟨u, hu⟩ := real.exists_strict_mono_lt hv.strict_mono hr_pos,
         use u,
         apply subset_trans _ hr,
