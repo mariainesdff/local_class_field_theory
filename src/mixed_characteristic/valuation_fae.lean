@@ -46,37 +46,34 @@ lemma padic_norm_eq_val_norm (x : ℚ) : ((padic_norm p x) : ℝ)  =
 
 lemma uniform_inducing_coe : uniform_inducing (coe : ℚ → ℚ_[p]) :=
 begin
+  have hp_one : (1 : ℝ≥0) < p := nat.one_lt_cast.mpr (nat.prime.one_lt (fact.out _)),
   apply uniform_inducing.mk',
   simp_rw @metric.mem_uniformity_dist ℚ_[p] _ _,
   refine (λ S, ⟨λ hS, _, _⟩),
   { obtain ⟨m, ⟨-, hM_sub⟩⟩ := (valued.has_basis_uniformity ℚ ℤₘ₀).mem_iff.mp hS,
     set M := (with_zero_mult_int_to_nnreal (ne_zero.ne p) m.1).1 with hM,
-    refine ⟨{p : ℚ_[p] × ℚ_[p] | dist p.1 p.2 < M}, ⟨⟨M, ⟨_, λ a b h, h⟩⟩, _⟩⟩,
+    refine ⟨{p : ℚ_[p] × ℚ_[p] | dist p.1 p.2 < M}, ⟨⟨M, ⟨_, λ a b h, h⟩⟩, λ x y h, _⟩⟩,
     { exact with_zero_mult_int_to_nnreal_pos _ (is_unit_iff_ne_zero.mp (units.is_unit m)) },
-    { intros x y h,
-      apply hM_sub,
+    { apply hM_sub,
       simp only [set.mem_set_of_eq, dist] at h ⊢,
       rwa [← padic.coe_sub, padic_norm_e.eq_padic_norm', padic_norm_eq_val_norm, hM,
         units.val_eq_coe, val_eq_coe, nnreal.coe_lt_coe,
-        (with_zero_mult_int_to_nnreal_strict_mono _).lt_iff_lt, ← neg_sub, valuation.map_neg] at h,
-      simpa only [nat.one_lt_cast] using nat.prime.one_lt (fact.out _) }},
+        (with_zero_mult_int_to_nnreal_strict_mono hp_one).lt_iff_lt,
+        ← neg_sub, valuation.map_neg] at h }},
   { rw (valued.has_basis_uniformity ℚ ℤₘ₀).mem_iff,
     rintros ⟨T, ⟨ε, ⟨hε, H⟩⟩, h⟩,
-    obtain ⟨M, hM⟩ := (real.exists_strict_mono_lt _ (with_zero_mult_int_to_nnreal_strict_mono _) hε),
+    obtain ⟨M, hM⟩ := (real.exists_strict_mono_lt (with_zero_mult_int_to_nnreal_strict_mono
+      hp_one) hε),
     { refine ⟨M, by triv, λ q hq, _⟩,
       simp only [set.mem_set_of_eq, dist] at H hq,
-      have temp : (↑q.fst, ↑q.snd) ∈ T,
+      have : (↑q.fst, ↑q.snd) ∈ T,
       { apply H,
-        rw [← padic.coe_sub, padic_norm_e.eq_padic_norm', padic_norm_eq_val_norm],
-        apply lt_trans,
-
-      },
-      specialize h q.1 q.2 temp,
-      rwa prod.mk.eta at h },
-    sorry,
-    sorry,
-    use p,
-    use [nat.one_lt_cast.mpr $ nat.prime.one_lt (fact.out _)], },
+        rw [← padic.coe_sub, padic_norm_e.eq_padic_norm', padic_norm_eq_val_norm, ← neg_sub,
+          valuation.map_neg],
+        exact (nnreal.coe_lt_coe.mpr
+          ((with_zero_mult_int_to_nnreal_strict_mono hp_one).lt_iff_lt.mpr hq)).trans hM,},
+      specialize h q.1 q.2 this,
+      rwa prod.mk.eta at h }},
 end
 
 lemma dense_coe : dense_range  (coe : ℚ → ℚ_[p]) := sorry
