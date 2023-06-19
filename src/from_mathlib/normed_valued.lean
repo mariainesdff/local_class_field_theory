@@ -70,9 +70,10 @@ variables {L : Type*} [hL : field L] {Γ₀ : Type*} [linear_ordered_comm_group_
 
 /-- If `Γ₀ˣ` is nontrivial and `f : Γ₀ →*₀ ℝ≥0` is a strict monomorphism, then for any positive
   `r : ℝ≥0`, there exists `d : Γ₀ˣ` with `f d < r`. -/
-lemma nnreal.exists_strict_mono_lt {g : Γ₀ˣ} (hg1 : g ≠ 1) {f : Γ₀ →*₀ ℝ≥0} (hf : strict_mono f) 
-  {r : ℝ≥0} (hr : 0 < r) :  ∃ d : Γ₀ˣ, f d < r :=
+lemma nnreal.exists_strict_mono_lt [h : nontrivial Γ₀ˣ] {f : Γ₀ →*₀ ℝ≥0} 
+  (hf : strict_mono f) {r : ℝ≥0} (hr : 0 < r) :  ∃ d : Γ₀ˣ, f d < r :=
 begin
+  obtain ⟨g, hg1⟩ := (nontrivial_iff_exists_ne (1 : Γ₀ˣ)).mp h,
   set u : Γ₀ˣ := if g < 1 then g else g⁻¹ with hu,
   have hfu : f u < 1, 
   { rw hu,
@@ -94,12 +95,12 @@ end
 
 /-- If `Γ₀ˣ` is nontrivial and `f : Γ₀ →*₀ ℝ≥0` is a strict monomorphism, then for any positive
   real `r`, there exists `d : Γ₀ˣ` with `f d < r`. -/
-lemma real.exists_strict_mono_lt {g : Γ₀ˣ} (hg1 : g ≠ 1) {f : Γ₀ →*₀ ℝ≥0} (hf : strict_mono f) 
+lemma real.exists_strict_mono_lt [h : nontrivial Γ₀ˣ] {f : Γ₀ →*₀ ℝ≥0} (hf : strict_mono f) 
   {r : ℝ} (hr : 0 < r) :  ∃ d : Γ₀ˣ, (f d : ℝ) < r :=
 begin
   set s : nnreal := ⟨r, le_of_lt hr⟩,
   have hs : 0 < s := hr,
-  exact nnreal.exists_strict_mono_lt hg1 hf hs,
+  exact nnreal.exists_strict_mono_lt hf hs,
 end
 
 include hL val hv
@@ -125,7 +126,7 @@ by simpa [norm_def, nnreal.coe_eq_zero, is_rank_one_hom_eq_zero_iff, valuation.z
 variables (L) (Γ₀)
 
 /-- The normed field structure determined by a rank one valuation. -/
-def valued_field.to_normed_field : normed_field L := 
+def valued_field.to_normed_field [h : nontrivial Γ₀ˣ] : normed_field L := 
 { norm               := norm_def,
   dist               := λ x y, norm_def (x - y),
   dist_self          := λ x, by simp only [sub_self, norm_def, valuation.map_zero, 
@@ -161,8 +162,7 @@ def valued_field.to_normed_field : normed_field L :=
         rw [set.mem_set_of, ← neg_sub, valuation.map_neg],
         exact hv.strict_mono.lt_iff_lt.mp hx },
       { obtain ⟨r, hr_pos, hr⟩ := h,
-        obtain ⟨u, hu⟩ :=
-        real.exists_strict_mono_lt (is_rank_one_unit_ne_one val.v) hv.strict_mono hr_pos,
+        obtain ⟨u, hu⟩ := real.exists_strict_mono_lt hv.strict_mono hr_pos,
         use u,
         apply subset_trans _ hr,
         intros x hx,
