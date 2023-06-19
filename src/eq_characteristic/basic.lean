@@ -12,7 +12,7 @@ import ring_theory.dedekind_domain.adic_valuation
 import ring_theory.dedekind_domain.integral_closure
 
 import for_mathlib.laurent_series_iso.power_series_adic_completion
-
+import discrete_valuation_ring.extensions
 import ring_theory.laurent_series
 
 /-!
@@ -49,14 +49,12 @@ variables (p : ℕ) [fact(nat.prime p)]
 notation (name := prime_galois_field)
   `𝔽_[` p `]` := galois_field p 1
 
-def FpX_field_completion :=
- (ideal_X 𝔽_[p]).adic_completion (ratfunc 𝔽_[p])
+def FpX_completion := (ideal_X 𝔽_[p]).adic_completion (ratfunc 𝔽_[p])
 
-notation (name := FpX_field_completion)
-  `𝔽_[` p `]⟮⟮` X `⟯⟯` := FpX_field_completion p
+notation (name := FpX_completion)
+  `𝔽_[` p `]⟮⟮` X `⟯⟯` := FpX_completion p
 
-def FpX_int_completion :=
-(ideal_X 𝔽_[p]).adic_completion_integers (ratfunc 𝔽_[p])
+def FpX_int_completion := (ideal_X 𝔽_[p]).adic_completion_integers (ratfunc 𝔽_[p])
 
 notation (name := FpX_int_completion)
   `𝔽_[` p `]⟦` X `⟧` := FpX_int_completion p
@@ -64,7 +62,7 @@ notation (name := FpX_int_completion)
 instance ratfunc.char_p : char_p (ratfunc 𝔽_[p]) p := 
 char_p_of_injective_algebra_map ((algebra_map 𝔽_[p] (ratfunc 𝔽_[p])).injective) p
 
-namespace FpX_field_completion
+namespace FpX_completion
 
 variable {p}
 
@@ -78,7 +76,7 @@ instance : has_coe (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯ := ⟨algebra_map (r
 lemma algebra_map_eq_coe (f : ratfunc 𝔽_[p]) : 
   algebra_map (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯ f = coe f := rfl
 
-instance FpX_field_completion.char_p : char_p 𝔽_[p]⟮⟮X⟯⟯ p := 
+instance char_p : char_p 𝔽_[p]⟮⟮X⟯⟯ p := 
 char_p_of_injective_algebra_map ((algebra_map (ratfunc (galois_field p 1)) 𝔽_[p]⟮⟮X⟯⟯).injective) p 
 
 instance : valued 𝔽_[p]⟮⟮X⟯⟯ ℤₘ₀ := 
@@ -92,31 +90,65 @@ lemma valuation_X :
     multiplicative.of_add (-1 : ℤ) :=
 begin
   rw [valued_adic_completion_def],
-  erw [FpX_field_completion.algebra_map_eq_coe, valued.extension_extends, val_X_eq_one],
+  erw [FpX_completion.algebra_map_eq_coe, valued.extension_extends, val_X_eq_one],
 end
 
 lemma mem_FpX_int_completion {x : 𝔽_[p]⟮⟮X⟯⟯} : x ∈ 𝔽_[p]⟦X⟧ ↔ (valued.v x : ℤₘ₀) ≤ 1 := iff.rfl
 
-instance : inhabited 𝔽_[p]⟮⟮X⟯⟯ := ⟨(0 : 𝔽_[p]⟮⟮X⟯⟯)⟩
-
 lemma X_mem_FpX_int_completion : algebra_map (ratfunc 𝔽_[p]) _ X ∈ 𝔽_[p]⟦X⟧ :=
 begin
-  erw [FpX_field_completion.mem_FpX_int_completion, FpX_field_completion.valuation_X],
+  erw [FpX_completion.mem_FpX_int_completion, FpX_completion.valuation_X],
   rw [← with_zero.coe_one, with_zero.coe_le_coe, ← of_add_zero, of_add_le],
   linarith,
 end
+
+instance : inhabited 𝔽_[p]⟮⟮X⟯⟯ := ⟨(0 : 𝔽_[p]⟮⟮X⟯⟯)⟩
+
+instance : is_rank_one (@FpX_completion.with_zero.valued p _).v :=
+discrete_valuation.is_rank_one valued.v
+
+instance : normed_field 𝔽_[p]⟮⟮X⟯⟯ := discretely_normed_field 𝔽_[p]⟮⟮X⟯⟯
+
+lemma mem_FpX_int_completion' {x : FpX_completion p} :
+  x ∈ FpX_int_completion p ↔ ‖ x ‖  ≤ 1 :=
+by rw [FpX_completion.mem_FpX_int_completion, norm_le_one_iff_val_le_one]
 
 variable (p)
 -- Upgrade to (ratfunc Fp)-algebra iso
 def isom_laurent : 𝔽_[p]⟮⟮X⟯⟯  ≃+* (laurent_series 𝔽_[p]) := 
 completion_laurent_series.laurent_series_ring_equiv 𝔽_[p]
 
-end FpX_field_completion
+end FpX_completion
 
 namespace FpX_int_completion
 
 -- Upgrade to (ratfunc Fp)-algebra iso
 noncomputable! def isom_power_series : 𝔽_[p]⟦X⟧  ≃+* (power_series 𝔽_[p]) := sorry -- F
+
+variable {p}
+noncomputable! lemma residue_field_card_eq_char :
+  nat.card (local_ring.residue_field 𝔽_[p]⟦X⟧) = p :=
+begin
+  rw FpX_int_completion,
+  sorry
+end
+
+end FpX_int_completion
+
+namespace FpX_completion
+
+lemma valuation_base_eq_char : 
+  valuation.base 𝔽_[p]⟮⟮X⟯⟯ valued.v = p :=
+begin
+  rw [valuation.base, if_pos],
+  { exact nat.cast_inj.mpr FpX_int_completion.residue_field_card_eq_char, },
+  { erw FpX_int_completion.residue_field_card_eq_char, 
+    exact (fact.out (nat.prime p)).one_lt },
+end
+
+end FpX_completion
+
+namespace FpX_int_completion
 
 variable {p}
 
@@ -138,7 +170,86 @@ variable (p)
 instance : is_integral_closure 𝔽_[p]⟦X⟧ 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ := 
 is_integrally_closed.is_integral_closure
 
-def X : 𝔽_[p]⟦X⟧ := ⟨algebra_map (ratfunc 𝔽_[p]) _ X, FpX_field_completion.X_mem_FpX_int_completion⟩
+def X : 𝔽_[p]⟦X⟧ := ⟨algebra_map (ratfunc 𝔽_[p]) _ X, FpX_completion.X_mem_FpX_int_completion⟩
+
+end FpX_int_completion
+
+namespace FpX_completion
+
+def X := algebra_map 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ (FpX_int_completion.X p)
+
+lemma X_eq_coe : X p = ↑(@ratfunc.X 𝔽_[p] _ _) := rfl
+
+lemma norm_X : ‖ X p ‖ = 1/(p : ℝ) :=
+begin
+  have hv : valued.v (X p) = multiplicative.of_add (-1 : ℤ),
+  { rw [← val_X_eq_one 𝔽_[p], height_one_spectrum.valued_adic_completion_def,
+      FpX_completion.X_eq_coe, valued.extension_extends], refl, },
+  have hX : ‖X p‖ = is_rank_one.hom  _ (valued.v (X p)) := rfl,
+  rw [hX, hv, discrete_valuation.is_rank_one_hom_def],
+  simp only [of_add_neg, with_zero.coe_inv, map_inv₀, nonneg.coe_inv, one_div, inv_inj],
+  simp only [ with_zero_mult_int_to_nnreal, with_zero_mult_int_to_nnreal_def, 
+    monoid_with_zero_hom.coe_mk], 
+  rw dif_neg,
+  { simp only [with_zero.unzero_coe, to_add_of_add, zpow_one],
+    rw valuation_base_eq_char,simp only [nnreal.coe_nat_cast], },
+  { simp only [with_zero.coe_ne_zero, with_zero_mult_int_to_nnreal_strict_mono, not_false_iff] },
+end
+
+variable {p}
+
+lemma norm_X_pos : 0 < ‖ X p ‖ :=
+by rw [norm_X, one_div, inv_pos, nat.cast_pos]; exact (_inst_1.out).pos
+
+lemma norm_X_lt_one : ‖ X p ‖ < 1 :=
+by rw [norm_X, one_div]; exact inv_lt_one (nat.one_lt_cast.mpr (_inst_1.out).one_lt)
+
+instance : nontrivially_normed_field 𝔽_[p]⟮⟮X⟯⟯ :=
+{ non_trivial := begin
+    use (X p)⁻¹,
+    rw [norm_inv],
+    exact one_lt_inv norm_X_pos norm_X_lt_one ,
+  end,
+  ..(by apply_instance: normed_field 𝔽_[p]⟮⟮X⟯⟯) }
+
+lemma X_mem_int_completion : X p ∈ FpX_int_completion p :=
+begin
+  rw [mem_FpX_int_completion, ← norm_le_one_iff_val_le_one],
+  exact le_of_lt norm_X_lt_one,
+end
+
+lemma norm_is_nonarchimedean : is_nonarchimedean (norm : 𝔽_[p]⟮⟮X⟯⟯ → ℝ) := 
+norm_is_nonarchimedean _ 
+
+end FpX_completion
+
+namespace FpX_int_completion
+
+variables (p) 
+
+lemma X_ne_zero : FpX_int_completion.X p ≠ 0 :=
+begin
+  have h0 : (0 : FpX_int_completion p) = ⟨(0 : FpX_completion p), subring.zero_mem _⟩,
+  { refl },
+  rw [FpX_int_completion.X, ne.def, h0, subtype.mk_eq_mk, _root_.map_eq_zero],
+  exact ratfunc.X_ne_zero,
+end
+
+lemma norm_lt_one_iff_dvd (f : 𝔽_[p]⟦X⟧) : ‖(f : 𝔽_[p]⟮⟮X⟯⟯)‖ < 1 ↔ ((FpX_int_completion.X p) ∣ f) := 
+begin
+  sorry
+end
+-- begin
+--   have hf : ‖(f : 𝔽_[p]⟮⟮X⟯⟯)‖ = rank_one_valuation.norm_def (f : 𝔽_[p]⟮⟮X⟯⟯) := rfl,
+--   rw [hf, height_one_spectrum.norm_lt_one_iff_val_lt_one],
+--   rw height_one_spectrum.valued_adic_completion_def,
+
+--   rw ← ideal.mem_span_singleton,
+
+--   --rw ← height_one_spectrum.valuation_lt_one_iff_dvd, --not for completion
+--   sorry
+-- end
+
 
 end FpX_int_completion
 
@@ -178,9 +289,6 @@ namespace eq_char_local_field
 
 variables (p) (K L : Type*) [field K] [eq_char_local_field p K] [field L] [eq_char_local_field p L]
 
--- We need to mark this one with high priority to avoid timeouts. (TODO: Check)
---@[priority 100000] instance : is_scalar_tower 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K := sorry infer_instance
-
 protected lemma is_algebraic : algebra.is_algebraic 𝔽_[p]⟮⟮X⟯⟯ K := algebra.is_algebraic_of_finite _ _
 
 @[priority 100] instance char_p : char_p K p := 
@@ -195,7 +303,7 @@ localized "notation (name := ring_of_integers)
 
 lemma mem_ring_of_integers (x : K) : x ∈ 𝓞 p K ↔ is_integral 𝔽_[p]⟦X⟧ x := iff.rfl
 
--- TODO: Same proof as in mixed char case
+-- TODO: Generalize (Same proof as in mixed char case)
 lemma is_integral_of_mem_ring_of_integers {x : K} (hx : x ∈ 𝓞 p K) :
   is_integral 𝔽_[p]⟦X⟧ (⟨x, hx⟩ : 𝓞 p K) :=
 begin
@@ -205,7 +313,7 @@ begin
     polynomial.aeval_def,  subtype.coe_mk, hP],
 end
 
--- TODO: Same proof as in mixed char case
+-- TODO: Generalize: Same proof as in mixed char case
 /-- Given an algebra between two local fields over 𝔽_[p]⟮⟮X⟯⟯, create an algebra between their two
   rings of integers. For now, this is not an instance by default as it creates an
   equal-but-not-defeq diamond with `algebra.id` when `K = L`. This is caused by `x = ⟨x, x.prop⟩`
@@ -230,12 +338,6 @@ instance : is_fraction_ring (𝓞 p K) K :=
 
 instance : is_integral_closure (𝓞 p K) 𝔽_[p]⟦X⟧ K := integral_closure.is_integral_closure _ _
 
--- Making FpX_int_completion.is_fraction_ring explicit speeds out the proof
-
-instance is_integrally_closed : is_integrally_closed (𝓞 p K) :=
-@integral_closure.is_integrally_closed_of_finite_extension _ _ 𝔽_[p]⟮⟮X⟯⟯ _ _ _
-  FpX_int_completion.is_fraction_ring _ _ _ _ _ _
-
 -- These two instances speed up the proof of `equiv` a bit.
 instance : algebra 𝔽_[p]⟦X⟧ (𝓞 p K) := infer_instance
 
@@ -243,6 +345,7 @@ instance : is_scalar_tower 𝔽_[p]⟦X⟧ (𝓞 p K) K := infer_instance
 
 lemma is_integral_coe (x : 𝓞 p K) : is_integral 𝔽_[p]⟦X⟧ (x : K) := x.2
 
+--TODO: Generalize
 /-- The ring of integers of `K` is equivalent to any integral closure of `𝔽_[p]⟦X⟧` in `K` -/
 protected def equiv (R : Type*) [comm_ring R] [algebra 𝔽_[p]⟦X⟧ R] [algebra R K]
   [is_scalar_tower 𝔽_[p]⟦X⟧ R K] [is_integral_closure R 𝔽_[p]⟦X⟧ K] : 𝓞 p K ≃+* R :=
@@ -252,7 +355,7 @@ variables (K)
 
 instance : char_p (𝓞 p K) p := char_p.subring' K p (𝓞 p K).to_subring
 
--- Same proof skeleton
+-- TODO: Generalize Same proof skeleton
 noncomputable! lemma algebra_map_injective :
   function.injective ⇑(algebra_map 𝔽_[p]⟦X⟧ (ring_of_integers p K)) := 
 begin
@@ -269,9 +372,10 @@ end ring_of_integers
 
 end eq_char_local_field
 
-namespace FpX_field_completion
+namespace FpX_completion
 
 open eq_char_local_field
+open_locale eq_char_local_field
 
 -- TODO: change comment
 instance eq_char_local_field (p : ℕ) [fact(nat.prime p)] : 
@@ -291,8 +395,32 @@ def ring_of_integers_equiv (p : ℕ) [fact(nat.prime p)] :
 begin  --1.3s
   have h := @ring_of_integers.equiv p _ 𝔽_[p]⟮⟮X⟯⟯ _ _ 𝔽_[p]⟦X⟧ _ _ (FpX_int_completion p).algebra
     (is_scalar_tower.left 𝔽_[p]⟦X⟧), 
-  have h1 := FpX_int_completion.FpX_field_completion.is_integral_closure p,
+  have h1 := FpX_int_completion.FpX_completion.is_integral_closure p,
   exact @h h1,
 end
 
-end FpX_field_completion
+.
+
+lemma open_unit_ball_def : 
+  local_ring.maximal_ideal 𝔽_[p]⟦X⟧ = ideal.span {FpX_int_completion.X p} :=
+by apply discrete_valuation.is_uniformizer_is_generator; exact valuation_X
+
+end FpX_completion
+
+namespace FpX_int_completion
+
+variables (K : Type*) [field K] [eq_char_local_field p K]
+
+open eq_char_local_field
+open_locale eq_char_local_field
+
+lemma X_coe_ne_zero : ¬(algebra_map (FpX_int_completion p) (𝓞 p K)) (FpX_int_completion.X p) = 0 :=
+begin
+  intro h,
+  exact FpX_int_completion.X_ne_zero p
+    ((injective_iff_map_eq_zero _).mp (ring_of_integers.algebra_map_injective p K) _ h)
+end
+
+instance : algebra (ratfunc 𝔽_[p]) K := algebra.comp (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯ K
+
+end FpX_int_completion

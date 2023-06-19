@@ -21,7 +21,7 @@
 \item True Math definition and the \texttt{mathlib\_tfae} (in particular, local and PID)
 \item \texttt{is\_discrete} : observe that if the value group were $2\ZZ$ this would still be mathematically "discrete", but we make the choice of surjectivity in coherence with Serre/so that the notion of equivalence collapses to equality: there is a unique normalized one.
 \item \texttt{uniformizer}'s and equivalence of their existence with discreteness
-\item The ring of integers of a field with a discrete valuation (be it valued or not) is a DVR; and the adic valuation (ref to María Inés' paper) on the field of fractions of a DVR \texttt{is\_discrete}.
+\item The unit ball of a field with a discrete valuation (be it valued or not) is a DVR; and the adic valuation (ref to María Inés' paper) on the field of fractions of a DVR \texttt{is\_discrete}.
 \end{itemize}
 \subsection{Complete Discrete Valuation Rings and their Extensions}
 \begin{itemize}
@@ -34,9 +34,12 @@
 \item [MAYBE] Mention the lemma \texttt{w\_le\_one\_iff\_disc\_norm\_extension\_le\_one}
 \item The proof (from previous project) and instance that a finite extension of a complete field is again complete
 \item The lemma \path{integral_closure_eq_integer} and the theorem \path{dvr_of_finite_extension}
+\item The extension of the valuation is not a valued instance because this would create a diamond for every valued field K. But we do get a DVR instance on the integral closure of the integers.
 \end{itemize}
 \section{Local Fields}
-Give our definition and the claims that \mi{TODO : finite extensions of $\laurentseries$ and of $\QQ_p$ are local fields.}
+Give our definition and the claims that \mi{TODO : finite extensions of $\laurentseries$ and of $\QQ_p$ are local fields.}\\
+The valued instance on a mixed/equal characteristic local field causes a diamond on $\QQ_p$ or
+$\laurentseries$.
 \subsection{Equal characteristic}
 \begin{itemize}
 \item Unlike the $p$-adic, the completion of the ring of rational functions had not yet been defined in mathlib.
@@ -46,6 +49,7 @@ Give our definition and the claims that \mi{TODO : finite extensions of $\lauren
 \item Our definition of ring of integers is the integral closure of $\powerseries$ in $K$, mainly to adapt to what has been done for number fields.
 \item The definition \path{ring_of_integers_algebra}
 \item $\laurentseries$ is an eq. char. local ring \fil{(and also $\laurentseries[{\FF[q]}]$?)}
+
 \end{itemize}
 \subsection{Mixed characteristic}
 \begin{itemize}

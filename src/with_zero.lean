@@ -70,7 +70,7 @@ set.inj_on.eq_iff (zpow_left_inj_on hn) (set.mem_Ioi.mpr (zero_lt_iff.mpr ha))
 
 end with_zero
 
-def with_zero_mult_int_to_nnreal_def (e : nnreal)  : ℤₘ₀ → ℝ≥0 := 
+def with_zero_mult_int_to_nnreal_def (e : nnreal) : ℤₘ₀ → ℝ≥0 := 
 λ x, if hx : x = 0 then 0 else e^(multiplicative.to_add (with_zero.unzero hx))
 
 open with_zero

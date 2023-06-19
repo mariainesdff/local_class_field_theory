@@ -2,9 +2,7 @@ import number_theory.ramification_inertia
 import discrete_valuation_ring.basic
 import for_mathlib.discrete_valuation_ring
 import from_mathlib.normed_valued
-import for_mathlib.rank_one_valuation
 import spectral_norm
-import with_zero
 
 noncomputable theory
 
@@ -74,23 +72,6 @@ by rw eq_comm; apply (minpoly.is_integrally_closed_eq_field_fractions K L
 
 end normed_field
 
-section is_rank_one
-
-variables {K : Type*} [field K] 
-
-def is_rank_one_of_is_discrete (v : valuation K ℤₘ₀) [is_discrete v] {e : ℝ≥0} (he0 : e ≠ 0) 
-  (he1 : 1 < e) : is_rank_one v :=
-{ hom         := with_zero_mult_int_to_nnreal he0,
-  strict_mono := with_zero_mult_int_to_nnreal_strict_mono he1,
-  nontrivial  := 
-  begin
-    obtain ⟨π, hπ⟩ := exists_uniformizer v,
-    exact ⟨π, ne_of_gt (uniformizer_valuation_pos v hπ),
-      ne_of_lt (uniformizer_valuation_lt_one v hπ)⟩,
-  end }
-
-end is_rank_one
-
 section extension
 
 open finite_dimensional minpoly discrete_valuation
@@ -104,33 +85,30 @@ section is_discrete
 
 variables [is_discrete hv.v] 
 
-instance rk1 : is_rank_one hv.v := is_rank_one_of_is_discrete hv.v (base_ne_zero K) 
-  (one_lt_base K)
-
 include hv
 
-definition discretely_norm_field : normed_field K :=
+definition discretely_normed_field : normed_field K :=
 rank_one_valuation.valued_field.to_normed_field K ℤₘ₀
 
-local attribute [priority 100, instance] discretely_norm_field
+local attribute [priority 100, instance] discretely_normed_field
 
-def discretely_norm_field' : nontrivially_normed_field K :=
+def discretely_normed_field' : nontrivially_normed_field K :=
 { non_trivial := 
   begin
     obtain ⟨x, hx⟩ := exists_uniformizer hv.v,
     use x.1⁻¹,
-    erw [@norm_inv K (@normed_field.to_normed_division_ring K (discretely_norm_field K)),
+    erw [@norm_inv K (@normed_field.to_normed_division_ring K (discretely_normed_field K)),
       one_lt_inv_iff, rank_one_valuation.norm_lt_one_iff_val_lt_one,
       rank_one_valuation.norm_pos_iff_val_pos],
     exact ⟨uniformizer_valuation_pos hv.v hx, uniformizer_valuation_lt_one hv.v hx⟩,
   end,
-  ..(@rank_one_valuation.valued_field.to_normed_field K _ ℤₘ₀ _ _ (rk1 K))  } 
+  ..(@rank_one_valuation.valued_field.to_normed_field K _ ℤₘ₀ _ _
+      (discrete_valuation.is_rank_one _)) } 
 
-local attribute [priority 100, instance] discretely_norm_field'
+local attribute [priority 100, instance] discretely_normed_field'
 
 lemma norm_is_nonarchimedean : is_nonarchimedean (norm : K → ℝ) := 
 λ x y, rank_one_valuation.norm_def_add_le x y
-
 
 lemma norm_le_one_iff_val_le_one (x : K) : ‖x‖ ≤ 1 ↔ valued.v x ≤ (1 : ℤₘ₀) :=
 rank_one_valuation.norm_le_one_iff_val_le_one x
@@ -155,25 +133,25 @@ lemma disc_norm_extension_zero (h_alg : algebra.is_algebraic K L) :
 spectral_norm_zero
 
 lemma disc_norm_extension_eq_root_zero_coeff (h_alg : algebra.is_algebraic K L) (x : L) :
-  disc_norm_extension h_alg x = 
-  ((rk1 K).hom (valued.v ((minpoly K x).coeff 0)))^(1/(minpoly K x).nat_degree : ℝ) :=
+  disc_norm_extension h_alg x = ((discrete_valuation.is_rank_one hv.v).hom 
+    (valued.v ((minpoly K x).coeff 0)))^(1/(minpoly K x).nat_degree : ℝ) :=
 spectral_norm_eq_root_zero_coeff h_alg (norm_is_nonarchimedean K) x
 
 lemma disc_norm_extension_eq_root_zero_coeff' (h_alg : algebra.is_algebraic K L) (x : L) :
-  disc_norm_extension h_alg x = (with_zero_mult_int_to_nnreal (base_ne_zero K)
+  disc_norm_extension h_alg x = (with_zero_mult_int_to_nnreal (base_ne_zero K hv.v)
     (valued.v ((minpoly K x).coeff 0)))^(1/(minpoly K x).nat_degree : ℝ) :=
 spectral_norm_eq_root_zero_coeff h_alg (norm_is_nonarchimedean K) x
 
 lemma pow_disc_norm_extension_eq_pow_root_zero_coeff' (h_alg : algebra.is_algebraic K L) (x : L)
   (n : ℕ) : 
-  (disc_norm_extension h_alg x)^n = (with_zero_mult_int_to_nnreal (base_ne_zero K) 
+  (disc_norm_extension h_alg x)^n = (with_zero_mult_int_to_nnreal (base_ne_zero K hv.v) 
     (valued.v ((minpoly K x).coeff 0)) ^ (n/(minpoly K x).nat_degree : ℝ)) :=
 by  rw [div_eq_inv_mul, real.rpow_mul nnreal.zero_le_coe, disc_norm_extension_eq_root_zero_coeff',
     inv_eq_one_div, real.rpow_nat_cast]
 
 lemma pow_disc_norm_extension_eq_pow_root_zero_coeff (h_alg : algebra.is_algebraic K L) (x : L)
   {n : ℕ} (hn : (minpoly K x).nat_degree ∣ n) : 
-  (disc_norm_extension h_alg x)^n = (with_zero_mult_int_to_nnreal (base_ne_zero K) 
+  (disc_norm_extension h_alg x)^n = (with_zero_mult_int_to_nnreal (base_ne_zero K hv.v) 
     (valued.v ((minpoly K x).coeff 0)) ^ (n/(minpoly K x).nat_degree)) :=
 begin
   nth_rewrite 1 [← real.rpow_nat_cast],
@@ -212,7 +190,7 @@ lemma disc_norm_extension_of_integer [fr : is_fraction_ring hv.v.valuation_subri
     spectral_value (polynomial.map (algebra_map hv.v.valuation_subring.to_subring K) 
       (minpoly hv.v.valuation_subring.to_subring x)) :=
 begin
-  letI nf : normed_field K , exact @discretely_norm_field K _inst_1 hv _inst_2,
+  letI nf : normed_field K , exact @discretely_normed_field K _inst_1 hv _inst_2,
   letI : valuation_ring hv.v.valuation_subring.to_subring := 
   hv.v.valuation_subring.valuation_ring,
   letI : is_bezout hv.v.valuation_subring.to_subring := valuation_ring.is_bezout,
@@ -257,7 +235,7 @@ begin
   { exact zero_le_one },
 end
 
-local attribute [-instance] discretely_norm_field'
+local attribute [-instance] discretely_normed_field'
 
 end is_discrete
 
@@ -290,9 +268,9 @@ open function
 variables [is_discrete hv.v]
 
 lemma aux_pow_div [finite_dimensional K L] (x : Lˣ) : 
-  (with_zero_mult_int_to_nnreal (base_ne_zero K)) 
+  (with_zero_mult_int_to_nnreal (base_ne_zero K hv.v)) 
     (valued.v ((minpoly K (x : L)).coeff 0) ^ (finrank K L / (minpoly K (x : L)).nat_degree)) =
-  ((with_zero_mult_int_to_nnreal (base_ne_zero K)) 
+  ((with_zero_mult_int_to_nnreal (base_ne_zero K hv.v)) 
     (valued.v ((minpoly K (x : L)).coeff 0)) ^ 
     (1 / ((minpoly K (x : L)).nat_degree : ℝ))) ^ (finrank K L : ℝ) :=
 begin
@@ -316,8 +294,8 @@ lemma map_mul_aux [finite_dimensional K L] (x y : Lˣ) :
   * valued.v ((minpoly K (y : L)).coeff 0) ^ (finrank K L / (minpoly K (y : L)).nat_degree) :=
 begin
   have h_alg : algebra.is_algebraic K L := algebra.is_algebraic_of_finite K L,
-  have hinj : injective (with_zero_mult_int_to_nnreal (base_ne_zero K)),
-  { exact (with_zero_mult_int_to_nnreal_strict_mono (one_lt_base K)).injective, },
+  have hinj : injective (with_zero_mult_int_to_nnreal (base_ne_zero K hv.v)),
+  { exact (with_zero_mult_int_to_nnreal_strict_mono (one_lt_base K hv.v)).injective, },
   rw [← function.injective.eq_iff hinj, _root_.map_mul, ← units.coe_mul, aux_pow_div,
     aux_pow_div, aux_pow_div, ← mul_rpow,
     rpow_eq_rpow_iff (nat.cast_ne_zero.mpr (ne_of_gt finrank_pos))],
@@ -474,8 +452,8 @@ begin
         { exact mul_ne_zero hx hy, },
         simp only [w_def_apply],
         rw [dif_neg hx, dif_neg hy, dif_neg (mul_ne_zero hx hy)],
-        have hinj : injective (with_zero_mult_int_to_nnreal (base_ne_zero K)),
-        { exact (with_zero_mult_int_to_nnreal_strict_mono (one_lt_base K)).injective },
+        have hinj : injective (with_zero_mult_int_to_nnreal (base_ne_zero K hv.v)),
+        { exact (with_zero_mult_int_to_nnreal_strict_mono (one_lt_base K hv.v)).injective },
         rw [← function.injective.eq_iff hinj, ← pow_left_inj _ _ aux_d_pos, ← nnreal.coe_eq,
           _root_.map_mul, mul_pow, ← _root_.map_pow,
           (aux_w K (is_unit_iff_ne_zero.mpr hxy).unit).some_spec, nnreal.coe_mul],
@@ -561,7 +539,7 @@ def w [finite_dimensional K L] : valuation L ℤₘ₀ :=
           (aux_w K (is_unit_iff_ne_zero.mpr hxy).unit).some_spec,
           (aux_w K (is_unit_iff_ne_zero.mpr hy).unit).some_spec],
         simp only [← (with_zero_mult_int_to_nnreal_strict_mono 
-          (one_lt_base K)).le_iff_le, ← nnreal.coe_le_coe],
+          (one_lt_base K hv.v)).le_iff_le, ← nnreal.coe_le_coe],
         rw [_root_.map_pow, nnreal.coe_pow, ← real.rpow_nat_cast, nat.cast_div,
           ← pow_disc_norm_extension_eq_pow_root_zero_coeff' h_alg], --x + y
         rw [_root_.map_pow, nnreal.coe_pow, ← real.rpow_nat_cast _
@@ -613,8 +591,8 @@ begin
      ← _root_.map_pow],
     erw ← (aux_w K (is_unit_iff_ne_zero.mpr hx).unit).some_spec,
     rw [← hn_def, ← nnreal.coe_one, nnreal.coe_le_coe, 
-      ← _root_.map_one (with_zero_mult_int_to_nnreal (base_ne_zero K)),
-      (with_zero_mult_int_to_nnreal_strict_mono (one_lt_base K)).le_iff_le,
+      ← _root_.map_one (with_zero_mult_int_to_nnreal (base_ne_zero K hv.v)),
+      (with_zero_mult_int_to_nnreal_strict_mono (one_lt_base K hv.v)).le_iff_le,
       ← with_zero.coe_one, ← with_zero.coe_zpow, with_zero.coe_le_coe, ← with_zero.coe_pow, 
       with_zero.coe_le_coe, ← zpow_coe_nat, ← int.of_add_mul, ← int.of_add_mul, ← of_add_zero,
       of_add_le, of_add_le],
@@ -677,11 +655,59 @@ variables {L : Type*} [field L] [algebra K L] [complete_space K]
 def uniform_space_extension (h_alg : algebra.is_algebraic K L) : 
   uniform_space L := 
 disc_normed_field_extension_uniform_space h_alg
+/- begin
+  letI : valued L ℤₘ₀ := valued.mk' (w K L),
+  exact valued.to_uniform_space,
+end -/
+
+variables (K L)
+
+-- TODO: Diamond?
+def extension_normed_field [finite_dimensional K L] : normed_field L :=
+begin
+  have h_alg := algebra.is_algebraic_of_finite K L,
+  letI : nontrivially_normed_field K := discretely_normed_field' K,
+  exact spectral_norm_to_normed_field h_alg (norm_is_nonarchimedean K),
+end
+
+def extension_valued [finite_dimensional K L] : valued L ℤₘ₀ := --valued.mk' (w 𝔽_[p]⟮⟮X⟯⟯ K)
+begin
+  letI : normed_field L := extension_normed_field K L,
+  exact { v := w K L,
+  is_topological_valuation := λ U,
+  begin
+    rw metric.mem_nhds_iff,
+    refine ⟨λ h, _, λ h, _⟩, 
+    { obtain ⟨ε, hε, h⟩ := h,
+      sorry
+      /- use units.mk0 ⟨ε, le_of_lt hε⟩ (ne_of_gt hε),
+      intros x hx,
+      exact h (mem_ball_zero_iff.mpr hx)  -/},
+    { obtain ⟨ε, hε⟩ := h,
+      sorry
+      /- use [(ε : ℝ), nnreal.coe_pos.mpr (units.zero_lt _)],
+      intros x hx,
+      exact hε  (mem_ball_zero_iff.mp hx) -/ },
+
+    /- rw metric.mem_nhds_iff,
+    refine ⟨λ h, _, λ h, _⟩, 
+    { obtain ⟨ε, hε, h⟩ := h,
+      use units.mk0 ⟨ε, le_of_lt hε⟩ (ne_of_gt hε),
+      intros x hx,
+      exact h (mem_ball_zero_iff.mpr hx) },
+    { obtain ⟨ε, hε⟩ := h,
+      use [(ε : ℝ), nnreal.coe_pos.mpr (units.zero_lt _)],
+      intros x hx,
+      exact hε  (mem_ball_zero_iff.mp hx) }, -/
+  end,
+  ..(uniform_space_extension (algebra.is_algebraic_of_finite K L)),
+  ..non_unital_normed_ring.to_normed_add_comm_group}
+end
 
 @[priority 100] instance extension_complete [finite_dimensional K L] : 
   @complete_space L (uniform_space_extension (algebra.is_algebraic_of_finite K L)) := 
 begin
-  letI : nontrivially_normed_field K := discretely_norm_field' K,
+  letI : nontrivially_normed_field K := discretely_normed_field' K,
   exact spectral_norm_complete_space (algebra.is_algebraic_of_finite K L) 
     (norm_is_nonarchimedean K),
 end
@@ -692,6 +718,8 @@ begin
   rw ← complete_space_iff_is_complete_univ,
   apply_instance,
 end
+
+variables {K L}
 
 section int_polynomial
 
@@ -770,7 +798,7 @@ begin
 end
 
 --Chapter 2, Section 2, Proposition 3 in Serre's Local Fields
-theorem dvr_of_finite_extension [finite_dimensional K L] : 
+instance dvr_of_finite_extension [finite_dimensional K L] : 
   discrete_valuation_ring (integral_closure hv.v.valuation_subring L) := 
 begin
   letI hw : valued L ℤₘ₀ := valued.mk' (w K L),

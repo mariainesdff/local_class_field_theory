@@ -13,7 +13,10 @@ import ring_theory.valuation.valuation_subring
 import topology.algebra.valued_field
 import topology.algebra.with_zero_topology
 
-open_locale discrete_valuation
+import for_mathlib.rank_one_valuation
+import with_zero
+
+open_locale discrete_valuation nnreal
 
 namespace with_zero
 
@@ -176,12 +179,12 @@ open_locale nnreal
 otherwise it takes the value `6` which is not a prime power.
 -/
 noncomputable
-def base (K : Type*) [field K] [hv : valued K ℤₘ₀] : ℝ≥0 :=
-if 1 < nat.card (local_ring.residue_field hv.v.valuation_subring)
-  then nat.card (local_ring.residue_field hv.v.valuation_subring)
+def base (K : Type*) [field K] (v : valuation K ℤₘ₀) : ℝ≥0 :=
+if 1 < nat.card (local_ring.residue_field v.valuation_subring)
+  then nat.card (local_ring.residue_field v.valuation_subring)
   else 6
 
-lemma one_lt_base (K : Type*) [field K] [hv : valued K ℤₘ₀] : 1 < base K :=
+lemma one_lt_base (K : Type*) [field K] (v : valuation K ℤₘ₀) : 1 < base K v :=
 begin
   rw base,
   split_ifs with hlt hge,
@@ -189,9 +192,8 @@ begin
   { norm_num }
 end
 
-lemma base_ne_zero (K : Type*) [field K] [hv : valued K ℤₘ₀] : base K ≠ 0 :=
-ne_zero_of_lt (one_lt_base K)
-
+lemma base_ne_zero (K : Type*) [field K] (v : valuation K ℤₘ₀) : base K v ≠ 0 :=
+ne_zero_of_lt (one_lt_base K v)
 
 end valuation
 
@@ -281,6 +283,10 @@ begin
         dvd_pow_self _ hn }},
 end
 
+lemma is_uniformizer_is_generator {π : v.valuation_subring } (hπ : is_uniformizer v π) :
+  maximal_ideal v.valuation_subring = ideal.span {π} :=
+uniformizer_is_generator _ ⟨π, hπ⟩
+
 lemma pow_uniformizer_is_pow_generator {π : uniformizer v} (n : ℕ) :
   (maximal_ideal v.valuation_subring) ^ n = ideal.span {π.1 ^ n} :=
 by rw [← ideal.span_singleton_pow, uniformizer_is_generator]
@@ -326,6 +332,26 @@ begin
   rw [uniformizer_is_generator v ⟨π, hπ⟩, span_singleton_eq_span_singleton] at hr,
   exact uniformizer_of_associated v hπ hr,
 end
+
+section rank_one
+
+variables {K}
+
+noncomputable instance is_rank_one : is_rank_one v := 
+{ hom         := with_zero_mult_int_to_nnreal (base_ne_zero K v),
+  strict_mono := with_zero_mult_int_to_nnreal_strict_mono (one_lt_base K v),
+  nontrivial  := 
+  begin
+    obtain ⟨π, hπ⟩ := exists_uniformizer v,
+    exact ⟨π, ne_of_gt (uniformizer_valuation_pos v hπ),
+      ne_of_lt (uniformizer_valuation_lt_one v hπ)⟩,
+  end }
+
+lemma is_rank_one_hom_def :
+  is_rank_one.hom v = with_zero_mult_int_to_nnreal (base_ne_zero K v) :=
+rfl
+
+end rank_one
 
 
 -- lemma pow_uniformizer_of_pow_generator {r : K₀} (n : ℕ) 
