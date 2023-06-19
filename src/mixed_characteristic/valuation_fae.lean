@@ -3,6 +3,7 @@ Copyright (c) 2023 María Inés de Frutos-Fernández, Filippo A. E. Nuccio. All 
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
+import from_mathlib.normed_valued
 import discrete_valuation_ring.extensions
 import number_theory.padics.padic_integers
 import ring_theory.dedekind_domain.adic_valuation
@@ -60,8 +61,22 @@ begin
         (with_zero_mult_int_to_nnreal_strict_mono _).lt_iff_lt, ← neg_sub, valuation.map_neg] at h,
       simpa only [nat.one_lt_cast] using nat.prime.one_lt (fact.out _) }},
   { rw (valued.has_basis_uniformity ℚ ℤₘ₀).mem_iff,
+    rintros ⟨T, ⟨ε, ⟨hε, H⟩⟩, h⟩,
+    obtain ⟨M, hM⟩ := (real.exists_strict_mono_lt _ (with_zero_mult_int_to_nnreal_strict_mono _) hε),
+    { refine ⟨M, by triv, λ q hq, _⟩,
+      simp only [set.mem_set_of_eq, dist] at H hq,
+      have temp : (↑q.fst, ↑q.snd) ∈ T,
+      { apply H,
+        rw [← padic.coe_sub, padic_norm_e.eq_padic_norm', padic_norm_eq_val_norm],
+        apply lt_trans,
+
+      },
+      specialize h q.1 q.2 temp,
+      rwa prod.mk.eta at h },
     sorry,
-  },
+    sorry,
+    use p,
+    use [nat.one_lt_cast.mpr $ nat.prime.one_lt (fact.out _)], },
 end
 
 lemma dense_coe : dense_range  (coe : ℚ → ℚ_[p]) := sorry
@@ -80,6 +95,7 @@ def padic_pkg : abstract_completion ℚ :=
 
 namespace padic'
 
+--`toDO`  do we really need to remove it?
 local attribute [- instance] rat.cast_coe
 
 def Q_p : Type* := adic_completion ℚ (p_height_one_ideal p)
