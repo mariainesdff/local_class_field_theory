@@ -97,14 +97,14 @@ def with_zero_mult_int_to_nnreal {e : nnreal} (he : e ≠ 0)  : ℤₘ₀ →*�
       rw [← with_zero.coe_inj, with_zero.coe_mul, coe_unzero hx,coe_unzero hy, coe_unzero hxy] },
   end }
 
-lemma with_zero_mult_int_to_nnreal_nonzero {e : nnreal} {m : ℤₘ₀} (he : e ≠ 0) (hm : m ≠ 0) :
-with_zero_mult_int_to_nnreal he m ≠ 0 :=
+lemma with_zero_mult_int_to_nnreal_ne_zero {e : nnreal} {m : ℤₘ₀} (he : e ≠ 0) (hm : m ≠ 0) :
+  with_zero_mult_int_to_nnreal he m ≠ 0 :=
 by simpa only [with_zero_mult_int_to_nnreal, with_zero_mult_int_to_nnreal_def,
   monoid_with_zero_hom.coe_mk, dif_neg hm] using zpow_ne_zero _ he
 
 lemma with_zero_mult_int_to_nnreal_pos {e : nnreal} {m : ℤₘ₀} (he : e ≠ 0) (hm : m ≠ 0) :
-0 < with_zero_mult_int_to_nnreal he m :=
-lt_of_le_of_ne zero_le' (with_zero_mult_int_to_nnreal_nonzero he hm).symm
+  0 < with_zero_mult_int_to_nnreal he m :=
+lt_of_le_of_ne zero_le' (with_zero_mult_int_to_nnreal_ne_zero he hm).symm
 
 lemma with_zero_mult_int_to_nnreal_strict_mono {e : nnreal} (he : 1 < e) : 
   strict_mono (with_zero_mult_int_to_nnreal (ne_zero_of_lt he))  := 
