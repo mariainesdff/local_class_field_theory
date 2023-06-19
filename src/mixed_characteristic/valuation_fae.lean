@@ -76,9 +76,7 @@ begin
       rwa prod.mk.eta at h }},
 end
 
-lemma dense_coe : dense_range  (coe : ℚ → ℚ_[p]) := sorry
--- Maybe useful: padic.rat_dense, padic.rat_dense',
-    -- Cauchy.dense_range_pure_cauchy,
+lemma dense_coe : dense_range  (coe : ℚ → ℚ_[p]) := metric.dense_range_iff.mpr (padic.rat_dense p)
 
 def padic_pkg : abstract_completion ℚ :=
 { space            := ℚ_[p],
@@ -93,7 +91,7 @@ def padic_pkg : abstract_completion ℚ :=
 namespace padic'
 
 --`toDO`  do we really need to remove it?
-local attribute [- instance] rat.cast_coe
+-- local attribute [- instance] rat.cast_coe
 
 def Q_p : Type* := adic_completion ℚ (p_height_one_ideal p)
 
@@ -123,7 +121,6 @@ open padic'
 
 def compare : Q_p p ≃ᵤ ℚ_[p] :=
 abstract_completion.compare_equiv (padic'_pkg p) (padic_pkg p)
-
 
 def coe_ring_hom : ℚ →+* ℚ_[p] :=
 { to_fun    := (padic_pkg p).2,
@@ -164,12 +161,43 @@ begin
 end
 
 
-noncomputable! def padic_ring_equiv : 
-  ring_equiv (Q_p p) ℚ_[p] :=
+noncomputable!
+definition padic_ring_equiv : (Q_p p) ≃+* ℚ_[p] :=
 { map_mul' := by {rw ← extension_eq_compare p, use (extension_as_ring_hom p).map_mul'},
   map_add' := by {rw ← extension_eq_compare p, exact (extension_as_ring_hom p).map_add'},
   ..(compare p) 
   }
+
+local notation `Z_p` p := (@valued.v (Q_p p) _ ℤₘ₀ _ _).valuation_subring
+
+/- The lemma `padic_int_ring_equiv_mem` states that an element `x ∈ ℚ_[p]` is in `ℤ_[p]` if and
+only if it is in the image of `Z_p p` via the ring equivalence `padic_ring_equiv p`. See
+`padic_int_ring_equiv` for an upgrade of this statement to a ring equivalence `Z_p p ≃+* ℤ_[p]`-/
+
+
+lemma padic_int_ring_equiv_mem (x : ℚ_[p]) :
+  x ∈ ((Z_p p).map (padic_ring_equiv p).to_ring_hom) ↔ x ∈ padic_int.subring p :=
+begin
+  split,
+  { intro h,
+    rw padic_int.mem_subring_iff,
+    obtain ⟨z, hz_val, hzx⟩ := h,
+    rw ← hzx,
+    sorry
+  },
+  { intro h,
+    rw padic_int.mem_subring_iff at h,
+    sorry,
+  },
+end
+
+lemma padic_int_ring_equiv_range :
+  (Z_p p).map (padic_ring_equiv p).to_ring_hom = padic_int.subring p :=
+by {ext, rw padic_int_ring_equiv_mem}
+
+noncomputable!
+definition padic_int_ring_equiv :  (Z_p p) ≃+* ℤ_[p] :=
+(ring_equiv.subring_map _).trans (ring_equiv.subring_congr (padic_int_ring_equiv_range p))
 
 
 instance padic.valued : valued ℚ_[p] ℤₘ₀ :=
