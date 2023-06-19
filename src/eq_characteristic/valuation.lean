@@ -12,129 +12,70 @@ noncomputable theory
 open is_dedekind_domain nnreal polynomial ratfunc
 open_locale eq_char_local_field nnreal discrete_valuation
 
-variables (p : out_param (ℕ)) [fact (p.prime)] 
 
 namespace eq_char_local_field
 
 .
 
+variables (p : out_param (ℕ)) [hp : fact (p.prime)] 
+
+include hp
 variables (K : Type*) [field K] [eq_char_local_field p K]
 
 -- TODO: come back after fixing the names in `dvr.extensions`
 
+--TODO: How can I put this inside the proof of `valued`?
+def foo : normed_field K := extension_normed_field 𝔽_[p]⟮⟮X⟯⟯ K
+
+local attribute [instance] foo
+
 -- NOTE: There is a diamond on 𝔽_[p]⟮⟮X⟯⟯, but by setting this priority lower, it seems
 -- that Lean finds the correct instance.
-@[priority 100] instance : valued K ℤₘ₀ := valued.mk' (w 𝔽_[p]⟮⟮X⟯⟯ K)
+@[priority 100] instance : valued K ℤₘ₀ := --valued.mk' (w 𝔽_[p]⟮⟮X⟯⟯ K)
+{ v := w 𝔽_[p]⟮⟮X⟯⟯ K,
+  is_topological_valuation := λ U,
+  begin
+    rw metric.mem_nhds_iff,
+    refine ⟨λ h, _, λ h, _⟩, 
+    { obtain ⟨ε, hε, h⟩ := h,
+      sorry
+      /- use units.mk0 ⟨ε, le_of_lt hε⟩ (ne_of_gt hε),
+      intros x hx,
+      exact h (mem_ball_zero_iff.mpr hx)  -/},
+    { obtain ⟨ε, hε⟩ := h,
+      sorry
+      /- use [(ε : ℝ), nnreal.coe_pos.mpr (units.zero_lt _)],
+      intros x hx,
+      exact hε  (mem_ball_zero_iff.mp hx) -/ },
 
-instance : valuation.is_discrete 
-  (eq_char_local_field.with_zero.valued p K).v := 
+    /- rw metric.mem_nhds_iff,
+    refine ⟨λ h, _, λ h, _⟩, 
+    { obtain ⟨ε, hε, h⟩ := h,
+      use units.mk0 ⟨ε, le_of_lt hε⟩ (ne_of_gt hε),
+      intros x hx,
+      exact h (mem_ball_zero_iff.mpr hx) },
+    { obtain ⟨ε, hε⟩ := h,
+      use [(ε : ℝ), nnreal.coe_pos.mpr (units.zero_lt _)],
+      intros x hx,
+      exact hε  (mem_ball_zero_iff.mp hx) }, -/
+  end,
+  ..(uniform_space_extension (algebra.is_algebraic_of_finite 𝔽_[p]⟮⟮X⟯⟯ K)),
+  ..non_unital_normed_ring.to_normed_add_comm_group }
+
+local attribute [-instance] foo
+
+--TODO: FIX!
+
+instance : complete_space K := extension_complete 𝔽_[p]⟮⟮X⟯⟯ K
+
+instance : valuation.is_discrete (eq_char_local_field.with_zero.valued p K).v := 
 is_discrete_of_finite 𝔽_[p]⟮⟮X⟯⟯ K
 
 -- Without the `by apply`, it times out
-instance : discrete_valuation_ring (𝓞 p K) :=
-by apply dvr_of_finite_extension 𝔽_[p]⟮⟮X⟯⟯ K
-
+instance : discrete_valuation_ring (𝓞 p K) := by apply dvr_of_finite_extension 𝔽_[p]⟮⟮X⟯⟯ K
 
 end eq_char_local_field
 
-namespace FpX_field_completion
-
-noncomputable! instance : is_rank_one (@FpX_field_completion.with_zero.valued p _).v :=
-sorry
-
-instance : normed_field 𝔽_[p]⟮⟮X⟯⟯ := rank_one_valuation.valued_field.to_normed_field _ _
-
-noncomputable! lemma residue_field_card_eq_char :
-  nat.card (local_ring.residue_field 𝔽_[p]⟦X⟧) = p :=
-begin
-  rw FpX_int_completion,
-  sorry
-end
-
-open is_dedekind_domain is_dedekind_domain.height_one_spectrum
-
-
-variable (p)
-def X := algebra_map 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ (FpX_int_completion.X p)
-
-lemma X_eq_coe : X p = ↑(@ratfunc.X 𝔽_[p] _ _) := rfl
-
-variable {p}
-
-lemma norm_X : ‖ X p ‖ = 1/(p : ℝ) :=
-begin
-  sorry
-  /- have hv : valued.v (X p) = multiplicative.of_add (-1 : ℤ),
-  { rw [← val_X_eq_one 𝔽_[p], height_one_spectrum.valued_adic_completion_def,
-      FpX_field_completion.X_eq_coe, valued.extension_extends], refl, },
-  have hX : ‖X p‖ = is_rank_one.hom  _ (valued.v (X p)) := rfl,
-  rw [hX, is_dedekind_domain.height_one_spectrum.valuation_completion_is_rank_one_hom_def, hv],
-  simp only [of_add_neg, with_zero.coe_inv, map_inv₀, nonneg.coe_inv, one_div, inv_inj],
-  simp only [ with_zero_mult_int_to_nnreal, with_zero_mult_int_to_nnreal_def, 
-    monoid_with_zero_hom.coe_mk], 
-  rw dif_neg,
-  { simp only [with_zero.unzero_coe, to_add_of_add, zpow_one],
-    rw valuation_base_eq_char, simp only [nnreal.coe_nat_cast], },
-  { simp only [with_zero.coe_ne_zero, with_zero_mult_int_to_nnreal_strict_mono, not_false_iff] } -/
-end
-
-lemma norm_X_pos : 0 < ‖ X p ‖ :=
-by rw [norm_X, one_div, inv_pos, nat.cast_pos]; exact (_inst_1.out).pos
-
-lemma norm_X_lt_one : ‖ X p ‖ < 1 :=
-by rw [norm_X, one_div]; exact inv_lt_one (nat.one_lt_cast.mpr (_inst_1.out).one_lt)
-
-lemma X_mem_int_completion : X p ∈ FpX_int_completion p :=
-begin
-  rw [mem_FpX_int_completion, ← norm_le_one_iff_val_le_one],
-  sorry --exact le_of_lt norm_X_lt_one, 
-end
-
-instance : nontrivially_normed_field 𝔽_[p]⟮⟮X⟯⟯ :=
-{ non_trivial := begin
-    use (X p)⁻¹,
-    rw [norm_inv],
-    exact one_lt_inv norm_X_pos norm_X_lt_one,
-  end,
-  ..(by apply_instance: normed_field 𝔽_[p]⟮⟮X⟯⟯) }
-
-lemma norm_is_nonarchimedean : is_nonarchimedean (norm : 𝔽_[p]⟮⟮X⟯⟯ → ℝ) := 
-rank_one_valuation.norm_def_is_nonarchimedean _ _
-
-end FpX_field_completion
-
-namespace FpX_int_completion
-
---TODO: Filippo, do we still need this?
---`[FAE]` The following `instance` will probably be PR'd soon in greater generality for all
--- integrally closed domains: see 
--- [https://leanprover.zulipchat.com/#narrow/stream/116395-maths/topic/.E2.9C.94.20gcd_monoid]
-noncomputable! instance  : normalized_gcd_monoid 𝔽_[p]⟦X⟧  :=
-sorry
-
-lemma FpX_int_completion.X_ne_zero : FpX_int_completion.X p ≠ 0 :=
-begin
-  have h0 : (0 : FpX_int_completion p) = ⟨(0 : FpX_field_completion p), subring.zero_mem _⟩,
-  { refl },
-  rw [FpX_int_completion.X, ne.def, h0, subtype.mk_eq_mk, _root_.map_eq_zero],
-  exact ratfunc.X_ne_zero,
-end
-
-variables (K : Type*) [field K] [eq_char_local_field p K]
-
-lemma FpX_int_completion.X_coe_ne_zero :
-  ¬(algebra_map (FpX_int_completion p) (𝓞 p K)) (FpX_int_completion.X p) = 0 :=
-begin
-  sorry/- intro h,
-  exact FpX_int_completion.X_ne_zero
-    ((injective_iff_map_eq_zero _).mp (ring_of_integers.algebra_map_injective p K) _ h), -/
-end
-
---TODO: move
-instance : algebra (ratfunc 𝔽_[p]) K := algebra.comp (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯ K
-
-
-end FpX_int_completion
 
 #exit
 
