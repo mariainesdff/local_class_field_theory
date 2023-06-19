@@ -110,6 +110,10 @@ is_rank_one_of_is_discrete _ (nat.cast_ne_zero.mpr (nat.prime.ne_zero _inst_1.1)
 
 instance : normed_field 𝔽_[p]⟮⟮X⟯⟯ := rank_one_valuation.valued_field.to_normed_field _ _
 
+lemma mem_FpX_int_completion' {x : FpX_field_completion p} :
+  x ∈ FpX_int_completion p ↔ ‖ x ‖  ≤ 1 :=
+sorry --by rw [FpX_field_completion.mem_FpX_int_completion, norm_le_one_iff_val_le_one]
+
 noncomputable! lemma residue_field_card_eq_char :
   nat.card (local_ring.residue_field 𝔽_[p]⟦X⟧) = p :=
 begin
@@ -207,13 +211,29 @@ namespace FpX_int_completion
 
 variables (p) 
 
-lemma FpX_int_completion.X_ne_zero : FpX_int_completion.X p ≠ 0 :=
+lemma X_ne_zero : FpX_int_completion.X p ≠ 0 :=
 begin
   have h0 : (0 : FpX_int_completion p) = ⟨(0 : FpX_field_completion p), subring.zero_mem _⟩,
   { refl },
   rw [FpX_int_completion.X, ne.def, h0, subtype.mk_eq_mk, _root_.map_eq_zero],
   exact ratfunc.X_ne_zero,
 end
+
+lemma norm_lt_one_iff_dvd (f : 𝔽_[p]⟦X⟧) : ‖(f : 𝔽_[p]⟮⟮X⟯⟯)‖ < 1 ↔ ((FpX_int_completion.X p) ∣ f) := 
+begin
+  sorry
+end
+-- begin
+--   have hf : ‖(f : 𝔽_[p]⟮⟮X⟯⟯)‖ = rank_one_valuation.norm_def (f : 𝔽_[p]⟮⟮X⟯⟯) := rfl,
+--   rw [hf, height_one_spectrum.norm_lt_one_iff_val_lt_one],
+--   rw height_one_spectrum.valued_adic_completion_def,
+
+--   rw ← ideal.mem_span_singleton,
+
+--   --rw ← height_one_spectrum.valuation_lt_one_iff_dvd, --not for completion
+--   sorry
+-- end
+
 
 end FpX_int_completion
 
@@ -370,6 +390,43 @@ begin  --1.3s
   exact @h h1,
 end
 
+/- 
+-- set_option profiler true --7.26s ([FAE] 15.9 s on Jun8th)
+-- Even compiling the statement is slow...
+noncomputable! lemma open_unit_ball_def : (open_unit_ball 𝔽_[p]⟮⟮X⟯⟯).as_ideal =
+  ideal.span {(algebra_map 𝔽_[p]⟦X⟧ (𝓞 p 𝔽_[p]⟮⟮X⟯⟯) (FpX_int_completion.X p))}
+  /- ideal.span {(FpX_field_completion.ring_of_integers_equiv p).symm (FpX_int_completion.X p)} -/ := 
+begin
+  have hiff : ∀ (y : 𝔽_[p]⟮⟮X⟯⟯), y ∈ 𝓞 p 𝔽_[p]⟮⟮X⟯⟯ ↔ y ∈ 𝔽_[p]⟦X⟧, -- we should extract this to a lemma
+  { intro y, rw mem_ring_of_integers,
+    rw is_integrally_closed.is_integral_iff,
+    refine ⟨λ h, _, λ h, ⟨⟨y, h⟩, rfl⟩⟩,
+    { obtain ⟨x, hx⟩ := h,
+      rw [← hx],
+      exact x.2, }},
+  simp only [open_unit_ball],
+  ext ⟨x, hx⟩,
+  have hx' : x = (⟨x, (hiff x).mp hx⟩ : 𝔽_[p]⟦X⟧) := rfl,
+  rw [submodule.mem_mk, set.mem_set_of_eq, ideal.mem_span_singleton,
+    norm_on_FpX_field_completion, set_like.coe_mk],
+  conv_lhs {rw hx'},
+  rw [FpX_int_completion.norm_lt_one_iff_dvd, dvd_iff_exists_eq_mul_left,
+    dvd_iff_exists_eq_mul_left],
+  refine ⟨λ h, _, λ h, _⟩,
+  { obtain ⟨⟨c, hc⟩, hcx⟩ := h, 
+    use algebra_map 𝔽_[p]⟦X⟧ _ ⟨c, hc⟩,
+    rw [← map_mul, ← hcx],
+    refl },
+  { obtain ⟨⟨c, hc⟩, hcx⟩ := h, 
+    use ⟨c, (hiff c).mp hc⟩,
+    have h1 : FpX_int_completion.X p = ⟨FpX_field_completion.X p, X_mem_int_completion⟩ := rfl,
+    rw [h1,mul_mem_class.mk_mul_mk, subtype.mk_eq_mk],
+    have h2 : algebra_map 𝔽_[p]⟦X⟧ ↥(𝓞 p 𝔽_[p]⟮⟮X⟯⟯)(FpX_int_completion.X p) =
+      ⟨FpX_field_completion.X p, (hiff _).mpr X_mem_int_completion⟩ := rfl,
+    rw [h2, mul_mem_class.mk_mul_mk, subtype.mk_eq_mk] at hcx,
+    exact hcx },
+end -/
+
 end FpX_field_completion
 
 namespace FpX_int_completion
@@ -378,8 +435,7 @@ variables (K : Type*) [field K] [eq_char_local_field p K]
 
 open_locale eq_char_local_field
 
-lemma FpX_int_completion.X_coe_ne_zero :
-  ¬(algebra_map (FpX_int_completion p) (𝓞 p K)) (FpX_int_completion.X p) = 0 :=
+lemma X_coe_ne_zero : ¬(algebra_map (FpX_int_completion p) (𝓞 p K)) (FpX_int_completion.X p) = 0 :=
 begin
   sorry/- intro h,
   exact FpX_int_completion.X_ne_zero

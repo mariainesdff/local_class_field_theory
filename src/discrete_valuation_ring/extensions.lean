@@ -131,7 +131,6 @@ local attribute [priority 100, instance] discretely_norm_field'
 lemma norm_is_nonarchimedean : is_nonarchimedean (norm : K → ℝ) := 
 λ x y, rank_one_valuation.norm_def_add_le x y
 
-
 lemma norm_le_one_iff_val_le_one (x : K) : ‖x‖ ≤ 1 ↔ valued.v x ≤ (1 : ℤₘ₀) :=
 rank_one_valuation.norm_le_one_iff_val_le_one x
 
@@ -677,6 +676,20 @@ variables {L : Type*} [field L] [algebra K L] [complete_space K]
 def uniform_space_extension (h_alg : algebra.is_algebraic K L) : 
   uniform_space L := 
 disc_normed_field_extension_uniform_space h_alg
+/- begin
+  letI : valued L ℤₘ₀ := valued.mk' (w K L),
+  exact valued.to_uniform_space,
+end -/
+
+variables (K L)
+
+-- TODO: Diamond?
+def extension_normed_field [finite_dimensional K L] : normed_field L :=
+begin
+  have h_alg := algebra.is_algebraic_of_finite K L,
+  letI : nontrivially_normed_field K := discretely_norm_field' K,
+  exact spectral_norm_to_normed_field h_alg (norm_is_nonarchimedean K),
+end
 
 @[priority 100] instance extension_complete [finite_dimensional K L] : 
   @complete_space L (uniform_space_extension (algebra.is_algebraic_of_finite K L)) := 
@@ -692,6 +705,8 @@ begin
   rw ← complete_space_iff_is_complete_univ,
   apply_instance,
 end
+
+variables {K L}
 
 section int_polynomial
 
