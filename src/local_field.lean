@@ -1,5 +1,4 @@
 import eq_characteristic.valuation
-import for_mathlib.residue_ring_def
 import mixed_characteristic.valuation
 import from_mathlib.rank_one_valuation
 
@@ -10,7 +9,8 @@ open_locale discrete_valuation
 class local_field (K : Type*) [field K] extends valued K ℤₘ₀ :=
 (complete : complete_space K)
 (is_discrete : is_discrete (@valued.v K _ ℤₘ₀ _ _))
-(finite_residue_field : fintype (residue_ring K))
+(finite_residue_field :
+  fintype (local_ring.residue_field ((@valued.v K _ ℤₘ₀ _ _).valuation_subring)))
 
 namespace eq_char_local_field
 
