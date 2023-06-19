@@ -3,6 +3,7 @@ import discrete_valuation_ring.basic
 import for_mathlib.discrete_valuation_ring
 import from_mathlib.normed_valued
 import spectral_norm
+--import for_mathlib.algebra_comp
 
 noncomputable theory
 
@@ -79,7 +80,8 @@ open finite_dimensional minpoly discrete_valuation
 variables (K : Type*) [field K] [hv : valued K ℤₘ₀]
 
 instance valuation_subring.algebra' (w : valuation K ℤₘ₀) (L : Type*) [field L] [algebra K L] : 
-  algebra w.valuation_subring L := algebra.of_subring w.integer
+  algebra w.valuation_subring L := algebra.of_subring w.valuation_subring.to_subring
+--algebra.comp w.valuation_subring K L
 
 section is_discrete
 
@@ -806,6 +808,83 @@ begin
   let e : (w K L).valuation_subring ≃+* (integral_closure hv.v.valuation_subring L) :=
   ring_equiv.subring_congr (integral_closure_eq_integer K L).symm,
   exact ring_equiv.discrete_valuation_ring e,
+end
+
+lemma is_integral_of_mem_ring_of_integers {x : L} 
+  (hx : x ∈ integral_closure hv.v.valuation_subring L) :
+  is_integral hv.v.valuation_subring (⟨x, hx⟩ : integral_closure hv.v.valuation_subring L) :=
+begin
+  obtain ⟨P, hPm, hP⟩ := hx,
+  refine ⟨P, hPm, _⟩,
+  rw [← polynomial.aeval_def, ← subalgebra.coe_eq_zero, polynomial.aeval_subalgebra_coe,
+    polynomial.aeval_def,  subtype.coe_mk, hP],
+end
+
+section algebra_instances
+
+namespace discrete_valuation
+
+variables (E : Type*) [field E] [algebra K E] [algebra L E]
+
+@[simp] lemma int_algebra_map_def : algebra_map hv.v.valuation_subring L = 
+  (valuation_subring.algebra' K hv.v L).to_ring_hom := rfl 
+
+@[priority 10000] instance : is_scalar_tower hv.v.valuation_subring K L :=
+is_scalar_tower.subsemiring hv.v.valuation_subring.to_subsemiring
+--is_scalar_tower.comp hv.v.valuation_subring K L
+
+@[priority 1000] instance int_is_scalar_tower [is_scalar_tower K L E] :
+  is_scalar_tower hv.v.valuation_subring L E :=
+{ smul_assoc := λ x y z,
+  begin
+    nth_rewrite 0 [← one_smul K y],
+    rw [← one_smul K (y • z), ← smul_assoc, ← smul_assoc, ← smul_assoc],
+  end }
+--is_scalar_tower.comp' hv.v.valuation_subring K L E
+
+lemma algebra_map_injective (E : Type*) [field E] [algebra hv.v.valuation_subring E] 
+  [algebra K E] [is_scalar_tower hv.v.valuation_subring K E] : 
+  function.injective ⇑(algebra_map hv.v.valuation_subring E) :=
+algebra_map_injective' hv.v.valuation_subring K E
+
+end discrete_valuation
+
+end algebra_instances
+
+/-- Given an algebra between two local fields over 𝔽_[p]⟮⟮X⟯⟯, create an algebra between their two
+  rings of integers. For now, this is not an instance by default as it creates an
+  equal-but-not-defeq diamond with `algebra.id` when `K = L`. This is caused by `x = ⟨x, x.prop⟩`
+  not being defeq on subtypes. This will likely change in Lean 4. -/
+def ring_of_integers_algebra (E : Type*) [field E] [algebra K E] [algebra L E] 
+  [is_scalar_tower K L E] :
+  algebra (integral_closure hv.v.valuation_subring L) (integral_closure hv.v.valuation_subring E) := 
+ring_hom.to_algebra
+{ to_fun := λ k, ⟨algebra_map L E k, is_integral.algebra_map k.2⟩,
+  map_zero' := subtype.ext $ by simp only [subtype.coe_mk, subalgebra.coe_zero, _root_.map_zero],
+  map_one'  := subtype.ext $ by simp only [subtype.coe_mk, subalgebra.coe_one,  _root_.map_one],
+  map_add'  := λ x y, subtype.ext $ 
+    by simp only [ _root_.map_add, subalgebra.coe_add, subtype.coe_mk],
+  map_mul'  := λ x y, subtype.ext $ 
+    by simp only [subalgebra.coe_mul,  _root_.map_mul, subtype.coe_mk] }
+
+protected def discrete_valuation.equiv (R : Type*) [comm_ring R] [algebra hv.v.valuation_subring R] 
+  [algebra R L] [is_scalar_tower hv.v.valuation_subring R L] 
+  [is_integral_closure R hv.v.valuation_subring L] : 
+  integral_closure hv.v.valuation_subring L ≃+* R :=
+(is_integral_closure.equiv hv.v.valuation_subring R L 
+  (integral_closure hv.v.valuation_subring L)).symm.to_ring_equiv
+
+lemma algebra_map_injective : function.injective 
+  (algebra_map hv.v.valuation_subring (integral_closure hv.v.valuation_subring L)) := 
+begin
+  have hinj : function.injective ⇑(algebra_map hv.v.valuation_subring L),
+  { exact algebra_map_injective' hv.v.valuation_subring K L},
+  rw injective_iff_map_eq_zero (algebra_map hv.v.valuation_subring
+    ↥(integral_closure hv.v.valuation_subring L)),
+  intros x hx,
+  rw [← subtype.coe_inj, subalgebra.coe_zero] at hx,
+  rw injective_iff_map_eq_zero (algebra_map hv.v.valuation_subring L) at hinj,
+  exact hinj x hx, 
 end
 
 --FROM NOW ON WE SHOULD THINK IF WE WANT TO KEEP THESE RESULTS

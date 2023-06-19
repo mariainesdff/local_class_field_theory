@@ -253,26 +253,32 @@ end
 
 end FpX_int_completion
 
+--TODO: Which version to keep?
 -- For instances and lemmas that only need `K` to be an `𝔽_[p]⟮⟮X⟯⟯`-algebra
 namespace adic_algebra
 
 variables {p} (K L : Type*) [field K] [algebra 𝔽_[p]⟮⟮X⟯⟯ K] [field L] [algebra 𝔽_[p]⟮⟮X⟯⟯ L]
 
-instance to_int_algebra : algebra 𝔽_[p]⟦X⟧ K := algebra.comp 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K
+instance to_int_algebra : algebra 𝔽_[p]⟦X⟧ K := 
+by apply valuation_subring.algebra' 𝔽_[p]⟮⟮X⟯⟯ _ K
+--algebra.comp 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K
 
 @[simp] lemma int_algebra_map_def : algebra_map 𝔽_[p]⟦X⟧ K = 
   (adic_algebra.to_int_algebra K).to_ring_hom := rfl 
 
 @[priority 10000] instance : is_scalar_tower 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K :=
-is_scalar_tower.comp 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K
+by apply discrete_valuation.is_scalar_tower
+--is_scalar_tower.comp 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K
 
 @[priority 1000] instance int_is_scalar_tower [algebra K L] [is_scalar_tower 𝔽_[p]⟮⟮X⟯⟯ K L] :
   is_scalar_tower 𝔽_[p]⟦X⟧ K L :=
-is_scalar_tower.comp' 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K L
+by apply discrete_valuation.int_is_scalar_tower 𝔽_[p]⟮⟮X⟯⟯ K L
+--is_scalar_tower.comp' 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K L
 
-lemma algebra_map_injective {E : Type*} [field E] [algebra 𝔽_[p]⟦X⟧ E] [algebra 𝔽_[p]⟮⟮X⟯⟯ E]
+lemma algebra_map_injective {E : Type*} [field E] [algebra 𝔽_[p]⟮⟮X⟯⟯ E]
   [is_scalar_tower 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ E] : function.injective ⇑(algebra_map 𝔽_[p]⟦X⟧ E) :=
-algebra_map_injective' 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ E
+--algebra_map_injective' 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ E
+by apply discrete_valuation.algebra_map_injective 𝔽_[p]⟮⟮X⟯⟯ E
 
 end adic_algebra
 
@@ -303,29 +309,27 @@ localized "notation (name := ring_of_integers)
 
 lemma mem_ring_of_integers (x : K) : x ∈ 𝓞 p K ↔ is_integral 𝔽_[p]⟦X⟧ x := iff.rfl
 
--- TODO: Generalize (Same proof as in mixed char case)
+-- TODO: Delete? Has been generalized.
 lemma is_integral_of_mem_ring_of_integers {x : K} (hx : x ∈ 𝓞 p K) :
   is_integral 𝔽_[p]⟦X⟧ (⟨x, hx⟩ : 𝓞 p K) :=
-begin
-  obtain ⟨P, hPm, hP⟩ := hx,
-  refine ⟨P, hPm, _⟩,
-  rw [← polynomial.aeval_def, ← subalgebra.coe_eq_zero, polynomial.aeval_subalgebra_coe,
-    polynomial.aeval_def,  subtype.coe_mk, hP],
-end
+by apply is_integral_of_mem_ring_of_integers 𝔽_[p]⟮⟮X⟯⟯ K
 
--- TODO: Generalize: Same proof as in mixed char case
+
+-- TODO: Has been generalized. Is this a good def?
 /-- Given an algebra between two local fields over 𝔽_[p]⟮⟮X⟯⟯, create an algebra between their two
   rings of integers. For now, this is not an instance by default as it creates an
   equal-but-not-defeq diamond with `algebra.id` when `K = L`. This is caused by `x = ⟨x, x.prop⟩`
   not being defeq on subtypes. This will likely change in Lean 4. -/
 def ring_of_integers_algebra [algebra K L] [is_scalar_tower 𝔽_[p]⟮⟮X⟯⟯ K L] :
   algebra (𝓞 p K) (𝓞 p L) := 
-ring_hom.to_algebra
+by apply ring_of_integers_algebra 𝔽_[p]⟮⟮X⟯⟯ K L
+/- ring_hom.to_algebra
 { to_fun := λ k, ⟨algebra_map K L k, is_integral.algebra_map k.2⟩,
   map_zero' := subtype.ext $ by simp only [subtype.coe_mk, subalgebra.coe_zero, map_zero],
   map_one'  := subtype.ext $ by simp only [subtype.coe_mk, subalgebra.coe_one, map_one],
   map_add'  := λ x y, subtype.ext $ by simp only [map_add, subalgebra.coe_add, subtype.coe_mk],
   map_mul'  := λ x y, subtype.ext $ by simp only [subalgebra.coe_mul, map_mul, subtype.coe_mk] }
+ -/
 
 namespace ring_of_integers
 
@@ -345,28 +349,26 @@ instance : is_scalar_tower 𝔽_[p]⟦X⟧ (𝓞 p K) K := infer_instance
 
 lemma is_integral_coe (x : 𝓞 p K) : is_integral 𝔽_[p]⟦X⟧ (x : K) := x.2
 
---TODO: Generalize
 /-- The ring of integers of `K` is equivalent to any integral closure of `𝔽_[p]⟦X⟧` in `K` -/
+-- TODO: go back to old proof?
 protected def equiv (R : Type*) [comm_ring R] [algebra 𝔽_[p]⟦X⟧ R] [algebra R K]
   [is_scalar_tower 𝔽_[p]⟦X⟧ R K] [is_integral_closure R 𝔽_[p]⟦X⟧ K] : 𝓞 p K ≃+* R :=
-(is_integral_closure.equiv 𝔽_[p]⟦X⟧ R K (𝓞 p K)).symm.to_ring_equiv
+begin
+  letI : algebra (valued.v.valuation_subring ) R := _inst_7,
+  letI : is_integral_closure R ↥(valued.v.valuation_subring) K := _inst_10,
+  letI : is_scalar_tower ↥(valued.v.valuation_subring) R K := _inst_9,
+  apply discrete_valuation.equiv 𝔽_[p]⟮⟮X⟯⟯ K R,
+end
+--(is_integral_closure.equiv 𝔽_[p]⟦X⟧ R K (𝓞 p K)).symm.to_ring_equiv
 
 variables (K)
 
 instance : char_p (𝓞 p K) p := char_p.subring' K p (𝓞 p K).to_subring
 
--- TODO: Generalize Same proof skeleton
-noncomputable! lemma algebra_map_injective :
+-- TODO: Keep?
+lemma algebra_map_injective :
   function.injective ⇑(algebra_map 𝔽_[p]⟦X⟧ (ring_of_integers p K)) := 
-begin
-  have hinj : function.injective ⇑(algebra_map 𝔽_[p]⟦X⟧ K),
-  { exact algebra_map_injective' 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K},
-  rw injective_iff_map_eq_zero (algebra_map 𝔽_[p]⟦X⟧ ↥(𝓞 p K)),
-  intros x hx,
-  rw [← subtype.coe_inj, subalgebra.coe_zero] at hx,
-  rw injective_iff_map_eq_zero (algebra_map 𝔽_[p]⟦X⟧ K) at hinj,
-  exact hinj x hx, 
-end
+algebra_map_injective 𝔽_[p]⟮⟮X⟯⟯ K
 
 end ring_of_integers
 
@@ -418,7 +420,7 @@ lemma X_coe_ne_zero : ¬(algebra_map (FpX_int_completion p) (𝓞 p K)) (FpX_int
 begin
   intro h,
   exact FpX_int_completion.X_ne_zero p
-    ((injective_iff_map_eq_zero _).mp (ring_of_integers.algebra_map_injective p K) _ h)
+    ((injective_iff_map_eq_zero _).mp (ring_of_integers.algebra_map_injective p K) _ h),
 end
 
 instance : algebra (ratfunc 𝔽_[p]) K := algebra.comp (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯ K
