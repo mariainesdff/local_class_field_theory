@@ -107,26 +107,30 @@ variables [is_discrete hv.v]
 instance rk1 : is_rank_one hv.v := is_rank_one_of_is_discrete hv.v (base_ne_zero K) 
   (one_lt_base K)
 
+lemma is_rank_one_hom_def :
+  is_rank_one.hom hv.v = with_zero_mult_int_to_nnreal (base_ne_zero K) :=
+rfl
+
 include hv
 
-definition discretely_norm_field : normed_field K :=
+definition discretely_normed_field : normed_field K :=
 rank_one_valuation.valued_field.to_normed_field K ℤₘ₀
 
-local attribute [priority 100, instance] discretely_norm_field
+local attribute [priority 100, instance] discretely_normed_field
 
-def discretely_norm_field' : nontrivially_normed_field K :=
+def discretely_normed_field' : nontrivially_normed_field K :=
 { non_trivial := 
   begin
     obtain ⟨x, hx⟩ := exists_uniformizer hv.v,
     use x.1⁻¹,
-    erw [@norm_inv K (@normed_field.to_normed_division_ring K (discretely_norm_field K)),
+    erw [@norm_inv K (@normed_field.to_normed_division_ring K (discretely_normed_field K)),
       one_lt_inv_iff, rank_one_valuation.norm_lt_one_iff_val_lt_one,
       rank_one_valuation.norm_pos_iff_val_pos],
     exact ⟨uniformizer_valuation_pos hv.v hx, uniformizer_valuation_lt_one hv.v hx⟩,
   end,
   ..(@rank_one_valuation.valued_field.to_normed_field K _ ℤₘ₀ _ _ (rk1 K))  } 
 
-local attribute [priority 100, instance] discretely_norm_field'
+local attribute [priority 100, instance] discretely_normed_field'
 
 lemma norm_is_nonarchimedean : is_nonarchimedean (norm : K → ℝ) := 
 λ x y, rank_one_valuation.norm_def_add_le x y
@@ -211,7 +215,7 @@ lemma disc_norm_extension_of_integer [fr : is_fraction_ring hv.v.valuation_subri
     spectral_value (polynomial.map (algebra_map hv.v.valuation_subring.to_subring K) 
       (minpoly hv.v.valuation_subring.to_subring x)) :=
 begin
-  letI nf : normed_field K , exact @discretely_norm_field K _inst_1 hv _inst_2,
+  letI nf : normed_field K , exact @discretely_normed_field K _inst_1 hv _inst_2,
   letI : valuation_ring hv.v.valuation_subring.to_subring := 
   hv.v.valuation_subring.valuation_ring,
   letI : is_bezout hv.v.valuation_subring.to_subring := valuation_ring.is_bezout,
@@ -256,7 +260,7 @@ begin
   { exact zero_le_one },
 end
 
-local attribute [-instance] discretely_norm_field'
+local attribute [-instance] discretely_normed_field'
 
 end is_discrete
 
@@ -687,14 +691,14 @@ variables (K L)
 def extension_normed_field [finite_dimensional K L] : normed_field L :=
 begin
   have h_alg := algebra.is_algebraic_of_finite K L,
-  letI : nontrivially_normed_field K := discretely_norm_field' K,
+  letI : nontrivially_normed_field K := discretely_normed_field' K,
   exact spectral_norm_to_normed_field h_alg (norm_is_nonarchimedean K),
 end
 
 @[priority 100] instance extension_complete [finite_dimensional K L] : 
   @complete_space L (uniform_space_extension (algebra.is_algebraic_of_finite K L)) := 
 begin
-  letI : nontrivially_normed_field K := discretely_norm_field' K,
+  letI : nontrivially_normed_field K := discretely_normed_field' K,
   exact spectral_norm_complete_space (algebra.is_algebraic_of_finite K L) 
     (norm_is_nonarchimedean K),
 end

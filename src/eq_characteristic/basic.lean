@@ -108,17 +108,26 @@ instance : is_rank_one (@FpX_field_completion.with_zero.valued p _).v :=
 is_rank_one_of_is_discrete _ (nat.cast_ne_zero.mpr (nat.prime.ne_zero _inst_1.1))
   (nat.one_lt_cast.mpr (nat.prime.one_lt _inst_1.1))
 
-instance : normed_field 𝔽_[p]⟮⟮X⟯⟯ := rank_one_valuation.valued_field.to_normed_field _ _
+instance : normed_field 𝔽_[p]⟮⟮X⟯⟯ := discretely_normed_field 𝔽_[p]⟮⟮X⟯⟯
 
 lemma mem_FpX_int_completion' {x : FpX_field_completion p} :
   x ∈ FpX_int_completion p ↔ ‖ x ‖  ≤ 1 :=
-sorry --by rw [FpX_field_completion.mem_FpX_int_completion, norm_le_one_iff_val_le_one]
+by rw [FpX_field_completion.mem_FpX_int_completion, norm_le_one_iff_val_le_one]
 
 noncomputable! lemma residue_field_card_eq_char :
   nat.card (local_ring.residue_field 𝔽_[p]⟦X⟧) = p :=
 begin
   rw FpX_int_completion,
   sorry
+end
+
+lemma valuation_base_eq_char : 
+  valuation.base 𝔽_[p]⟮⟮X⟯⟯ = p :=
+begin
+  rw [valuation.base, if_pos],
+  { exact nat.cast_inj.mpr residue_field_card_eq_char, },
+  { erw residue_field_card_eq_char, 
+    exact (fact.out (nat.prime p)).one_lt },
 end
 
 variable (p)
@@ -163,24 +172,23 @@ def X := algebra_map 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ (FpX_int_completion.X
 
 lemma X_eq_coe : X p = ↑(@ratfunc.X 𝔽_[p] _ _) := rfl
 
-variable {p}
-
 lemma norm_X : ‖ X p ‖ = 1/(p : ℝ) :=
 begin
-  sorry
-  /- have hv : valued.v (X p) = multiplicative.of_add (-1 : ℤ),
+  have hv : valued.v (X p) = multiplicative.of_add (-1 : ℤ),
   { rw [← val_X_eq_one 𝔽_[p], height_one_spectrum.valued_adic_completion_def,
       FpX_field_completion.X_eq_coe, valued.extension_extends], refl, },
   have hX : ‖X p‖ = is_rank_one.hom  _ (valued.v (X p)) := rfl,
-  rw [hX, is_dedekind_domain.height_one_spectrum.valuation_completion_is_rank_one_hom_def, hv],
+  rw [hX, hv, is_rank_one_hom_def],
   simp only [of_add_neg, with_zero.coe_inv, map_inv₀, nonneg.coe_inv, one_div, inv_inj],
   simp only [ with_zero_mult_int_to_nnreal, with_zero_mult_int_to_nnreal_def, 
     monoid_with_zero_hom.coe_mk], 
   rw dif_neg,
   { simp only [with_zero.unzero_coe, to_add_of_add, zpow_one],
-    rw valuation_base_eq_char, simp only [nnreal.coe_nat_cast], },
-  { simp only [with_zero.coe_ne_zero, with_zero_mult_int_to_nnreal_strict_mono, not_false_iff] } -/
+    rw valuation_base_eq_char,simp only [nnreal.coe_nat_cast], },
+  { simp only [with_zero.coe_ne_zero, with_zero_mult_int_to_nnreal_strict_mono, not_false_iff] },
 end
+
+variable {p}
 
 lemma norm_X_pos : 0 < ‖ X p ‖ :=
 by rw [norm_X, one_div, inv_pos, nat.cast_pos]; exact (_inst_1.out).pos
@@ -188,22 +196,22 @@ by rw [norm_X, one_div, inv_pos, nat.cast_pos]; exact (_inst_1.out).pos
 lemma norm_X_lt_one : ‖ X p ‖ < 1 :=
 by rw [norm_X, one_div]; exact inv_lt_one (nat.one_lt_cast.mpr (_inst_1.out).one_lt)
 
-lemma X_mem_int_completion : X p ∈ FpX_int_completion p :=
-begin
-  rw [mem_FpX_int_completion, ← norm_le_one_iff_val_le_one],
-  sorry --exact le_of_lt norm_X_lt_one, 
-end
-
 instance : nontrivially_normed_field 𝔽_[p]⟮⟮X⟯⟯ :=
 { non_trivial := begin
     use (X p)⁻¹,
     rw [norm_inv],
-    exact one_lt_inv norm_X_pos norm_X_lt_one,
+    exact one_lt_inv norm_X_pos norm_X_lt_one ,
   end,
   ..(by apply_instance: normed_field 𝔽_[p]⟮⟮X⟯⟯) }
 
+lemma X_mem_int_completion : X p ∈ FpX_int_completion p :=
+begin
+  rw [mem_FpX_int_completion, ← norm_le_one_iff_val_le_one],
+  exact le_of_lt norm_X_lt_one,
+end
+
 lemma norm_is_nonarchimedean : is_nonarchimedean (norm : 𝔽_[p]⟮⟮X⟯⟯ → ℝ) := 
-rank_one_valuation.norm_def_is_nonarchimedean _ _
+norm_is_nonarchimedean _ 
 
 end FpX_field_completion
 
@@ -272,9 +280,6 @@ attribute [priority 100, instance] eq_char_local_field.to_finite_dimensional
 namespace eq_char_local_field
 
 variables (p) (K L : Type*) [field K] [eq_char_local_field p K] [field L] [eq_char_local_field p L]
-
--- We need to mark this one with high priority to avoid timeouts. (TODO: Check)
---@[priority 100000] instance : is_scalar_tower 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ K := sorry infer_instance
 
 protected lemma is_algebraic : algebra.is_algebraic 𝔽_[p]⟮⟮X⟯⟯ K := algebra.is_algebraic_of_finite _ _
 
@@ -367,6 +372,7 @@ end eq_char_local_field
 namespace FpX_field_completion
 
 open eq_char_local_field
+open_locale eq_char_local_field
 
 -- TODO: change comment
 instance eq_char_local_field (p : ℕ) [fact(nat.prime p)] : 
@@ -390,6 +396,9 @@ begin  --1.3s
   exact @h h1,
 end
 
+lemma open_unit_ball_def : 
+  local_ring.maximal_ideal 𝔽_[p]⟦X⟧ = ideal.span {FpX_int_completion.X p} :=
+sorry
 /- 
 -- set_option profiler true --7.26s ([FAE] 15.9 s on Jun8th)
 -- Even compiling the statement is slow...
@@ -433,13 +442,14 @@ namespace FpX_int_completion
 
 variables (K : Type*) [field K] [eq_char_local_field p K]
 
+open eq_char_local_field
 open_locale eq_char_local_field
 
 lemma X_coe_ne_zero : ¬(algebra_map (FpX_int_completion p) (𝓞 p K)) (FpX_int_completion.X p) = 0 :=
 begin
-  sorry/- intro h,
-  exact FpX_int_completion.X_ne_zero
-    ((injective_iff_map_eq_zero _).mp (ring_of_integers.algebra_map_injective p K) _ h), -/
+  intro h,
+  exact FpX_int_completion.X_ne_zero p
+    ((injective_iff_map_eq_zero _).mp (ring_of_integers.algebra_map_injective p K) _ h)
 end
 
 instance : algebra (ratfunc 𝔽_[p]) K := algebra.comp (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯ K
