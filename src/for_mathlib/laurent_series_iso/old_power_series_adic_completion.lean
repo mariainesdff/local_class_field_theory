@@ -340,6 +340,9 @@ variable {K}
 variable (K)
 
 open unique_factorization_monoid
+
+/- TODO: This lemma is now in the file `ring_theory.dedekind_domain.ideal`.
+  The hypothesis `[unique_factorization_monoid R]` should be removed. -/
 lemma count_normalized_factors_eq_count_normalized_factors_span {R : Type*} [comm_ring R]
   [is_domain R] [is_principal_ideal_ring R] [normalization_monoid R] [unique_factorization_monoid R] 
     {r X : R} (hr : r ≠ 0) (hX₀ : X ≠ 0) (hX₁ : norm_unit X = 1 )(hX : prime X) : 
@@ -370,6 +373,8 @@ lemma count_normalized_factors_eq_associates_count' {I J : ideal (power_series K
   (hJ : J.is_prime ) (hJ₀ : J ≠ ⊥) : multiset.count J (normalized_factors I) =
   (associates.mk J).count (associates.mk I).factors := sorry
 
+/- TODO: This lemma is now in the file `ring_theory.dedekind_domain.ideal`.
+  Moreover, there `polynomial K` is replaced by a Dedekind domain `R`. -/
 lemma count_normalized_factors_eq_associates_count {I J : ideal (polynomial K)} (hI : I ≠ 0)
   (hJ : J.is_prime ) (hJ₀ : J ≠ ⊥) :
   multiset.count J (normalized_factors I) = (associates.mk J).count (associates.mk I).factors :=
