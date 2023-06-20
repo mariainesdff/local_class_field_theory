@@ -187,7 +187,7 @@ begin
   },
   { intro h,
     rw padic_int.mem_subring_iff at h,
-    sorry,
+    sorry,  
   },
 end
 
