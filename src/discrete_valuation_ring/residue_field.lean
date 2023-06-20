@@ -9,7 +9,7 @@ import number_theory.ramification_inertia
 import ring_theory.dedekind_domain.integral_closure
 
 --
-
+--Use `module.fintype_of_fintype` and `ideal.factors.finite_dimensional_quotient `
 .
 
 open local_ring valuation --discrete_valuation
