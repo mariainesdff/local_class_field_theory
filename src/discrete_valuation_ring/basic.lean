@@ -208,6 +208,8 @@ notion of `valuation_subring` instead of the weaker one of `integer`s.
 -/
 local notation `K₀` := v.valuation_subring
 
+-- localized "notation `K₀` := v.valuation_subring" in discrete_valuation
+
 lemma uniformizer_of_associated {π₁ π₂ : K₀} (h1 : is_uniformizer v π₁) (H : associated π₁ π₂) :
   is_uniformizer v π₂ :=
 begin
@@ -442,8 +444,6 @@ namespace discretely_valued
 open valuation discrete_valuation
 
 variables (K : Type*) [field K] [hv : valued K ℤₘ₀] 
-
-local notation `K₀` := hv.v.valuation_subring
 
 def is_uniformizer := valuation.is_uniformizer hv.v
 

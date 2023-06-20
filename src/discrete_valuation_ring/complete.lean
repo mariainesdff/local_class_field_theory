@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2023 María Inés de Frutos-Fernández, Filippo A. E. Nuccio. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
+-/
+
 import ring_theory.dedekind_domain.adic_valuation
 import discrete_valuation_ring.basic
 import for_mathlib.laurent_series_iso.old_power_series_adic_completion--only to have fae_int_valuation_apply
