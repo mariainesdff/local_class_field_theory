@@ -4,17 +4,26 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
 
-import ring_theory.valuation.basic
+import algebra.group.with_one.units
 import data.real.nnreal
+import logic.equiv.transfer_instance
+import ring_theory.valuation.basic
+
 
 
 noncomputable theory
 
 open_locale discrete_valuation nnreal
 
-open multiplicative with_zero
+open multiplicative with_zero equiv
 
 namespace with_zero
+
+instance : nontrivial (ℤₘ₀ˣ) :=
+begin
+  haveI : nontrivial (multiplicative ℤ) := multiplicative.nontrivial,
+  exact (units_with_zero_equiv).to_equiv.nontrivial,
+end
 
 theorem one_lt_zpow' {α : Type*} [linear_ordered_comm_group_with_zero α] {a : α} 
   (ha : 1 < a) {k : ℤ} (hk : 0 < k) : 1 < a ^ k :=

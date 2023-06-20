@@ -46,42 +46,37 @@ lemma padic_norm_eq_val_norm (x : ℚ) : ((padic_norm p x) : ℝ)  =
 
 lemma uniform_inducing_coe : uniform_inducing (coe : ℚ → ℚ_[p]) :=
 begin
+  have hp_one : (1 : ℝ≥0) < p := nat.one_lt_cast.mpr (nat.prime.one_lt (fact.out _)),
   apply uniform_inducing.mk',
   simp_rw @metric.mem_uniformity_dist ℚ_[p] _ _,
   refine (λ S, ⟨λ hS, _, _⟩),
   { obtain ⟨m, ⟨-, hM_sub⟩⟩ := (valued.has_basis_uniformity ℚ ℤₘ₀).mem_iff.mp hS,
     set M := (with_zero_mult_int_to_nnreal (ne_zero.ne p) m.1).1 with hM,
-    refine ⟨{p : ℚ_[p] × ℚ_[p] | dist p.1 p.2 < M}, ⟨⟨M, ⟨_, λ a b h, h⟩⟩, _⟩⟩,
+    refine ⟨{p : ℚ_[p] × ℚ_[p] | dist p.1 p.2 < M}, ⟨⟨M, ⟨_, λ a b h, h⟩⟩, λ x y h, _⟩⟩,
     { exact with_zero_mult_int_to_nnreal_pos _ (is_unit_iff_ne_zero.mp (units.is_unit m)) },
-    { intros x y h,
-      apply hM_sub,
+    { apply hM_sub,
       simp only [set.mem_set_of_eq, dist] at h ⊢,
       rwa [← padic.coe_sub, padic_norm_e.eq_padic_norm', padic_norm_eq_val_norm, hM,
         units.val_eq_coe, val_eq_coe, nnreal.coe_lt_coe,
-        (with_zero_mult_int_to_nnreal_strict_mono _).lt_iff_lt, ← neg_sub, valuation.map_neg] at h,
-      simpa only [nat.one_lt_cast] using nat.prime.one_lt (fact.out _) }},
+        (with_zero_mult_int_to_nnreal_strict_mono hp_one).lt_iff_lt,
+        ← neg_sub, valuation.map_neg] at h }},
   { rw (valued.has_basis_uniformity ℚ ℤₘ₀).mem_iff,
     rintros ⟨T, ⟨ε, ⟨hε, H⟩⟩, h⟩,
-    obtain ⟨M, hM⟩ := (real.exists_strict_mono_lt _ (with_zero_mult_int_to_nnreal_strict_mono _) hε),
+    obtain ⟨M, hM⟩ := (real.exists_strict_mono_lt (with_zero_mult_int_to_nnreal_strict_mono
+      hp_one) hε),
     { refine ⟨M, by triv, λ q hq, _⟩,
       simp only [set.mem_set_of_eq, dist] at H hq,
-      have temp : (↑q.fst, ↑q.snd) ∈ T,
+      have : (↑q.fst, ↑q.snd) ∈ T,
       { apply H,
-        rw [← padic.coe_sub, padic_norm_e.eq_padic_norm', padic_norm_eq_val_norm],
-        apply lt_trans,
-
-      },
-      specialize h q.1 q.2 temp,
-      rwa prod.mk.eta at h },
-    sorry,
-    sorry,
-    use p,
-    use [nat.one_lt_cast.mpr $ nat.prime.one_lt (fact.out _)], },
+        rw [← padic.coe_sub, padic_norm_e.eq_padic_norm', padic_norm_eq_val_norm, ← neg_sub,
+          valuation.map_neg],
+        exact (nnreal.coe_lt_coe.mpr
+          ((with_zero_mult_int_to_nnreal_strict_mono hp_one).lt_iff_lt.mpr hq)).trans hM,},
+      specialize h q.1 q.2 this,
+      rwa prod.mk.eta at h }},
 end
 
-lemma dense_coe : dense_range  (coe : ℚ → ℚ_[p]) := sorry
--- Maybe useful: padic.rat_dense, padic.rat_dense',
-    -- Cauchy.dense_range_pure_cauchy,
+lemma dense_coe : dense_range  (coe : ℚ → ℚ_[p]) := metric.dense_range_iff.mpr (padic.rat_dense p)
 
 def padic_pkg : abstract_completion ℚ :=
 { space            := ℚ_[p],
@@ -96,7 +91,7 @@ def padic_pkg : abstract_completion ℚ :=
 namespace padic'
 
 --`toDO`  do we really need to remove it?
-local attribute [- instance] rat.cast_coe
+-- local attribute [- instance] rat.cast_coe
 
 def Q_p : Type* := adic_completion ℚ (p_height_one_ideal p)
 
@@ -126,7 +121,6 @@ open padic'
 
 def compare : Q_p p ≃ᵤ ℚ_[p] :=
 abstract_completion.compare_equiv (padic'_pkg p) (padic_pkg p)
-
 
 def coe_ring_hom : ℚ →+* ℚ_[p] :=
 { to_fun    := (padic_pkg p).2,
@@ -167,12 +161,43 @@ begin
 end
 
 
-noncomputable! def padic_ring_equiv : 
-  ring_equiv (Q_p p) ℚ_[p] :=
+noncomputable!
+definition padic_ring_equiv : (Q_p p) ≃+* ℚ_[p] :=
 { map_mul' := by {rw ← extension_eq_compare p, use (extension_as_ring_hom p).map_mul'},
   map_add' := by {rw ← extension_eq_compare p, exact (extension_as_ring_hom p).map_add'},
   ..(compare p) 
   }
+
+local notation `Z_p` p := (@valued.v (Q_p p) _ ℤₘ₀ _ _).valuation_subring
+
+/- The lemma `padic_int_ring_equiv_mem` states that an element `x ∈ ℚ_[p]` is in `ℤ_[p]` if and
+only if it is in the image of `Z_p p` via the ring equivalence `padic_ring_equiv p`. See
+`padic_int_ring_equiv` for an upgrade of this statement to a ring equivalence `Z_p p ≃+* ℤ_[p]`-/
+
+
+lemma padic_int_ring_equiv_mem (x : ℚ_[p]) :
+  x ∈ ((Z_p p).map (padic_ring_equiv p).to_ring_hom) ↔ x ∈ padic_int.subring p :=
+begin
+  split,
+  { intro h,
+    rw padic_int.mem_subring_iff,
+    obtain ⟨z, hz_val, hzx⟩ := h,
+    rw ← hzx,
+    sorry
+  },
+  { intro h,
+    rw padic_int.mem_subring_iff at h,
+    sorry,
+  },
+end
+
+lemma padic_int_ring_equiv_range :
+  (Z_p p).map (padic_ring_equiv p).to_ring_hom = padic_int.subring p :=
+by {ext, rw padic_int_ring_equiv_mem}
+
+noncomputable!
+definition padic_int_ring_equiv :  (Z_p p) ≃+* ℤ_[p] :=
+(ring_equiv.subring_map _).trans (ring_equiv.subring_congr (padic_int_ring_equiv_range p))
 
 
 instance padic.valued : valued ℚ_[p] ℤₘ₀ :=
