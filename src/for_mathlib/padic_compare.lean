@@ -298,30 +298,121 @@ def Z_p := (@valued.v (Q_p p) _ ℤₘ₀ _ _).valuation_subring
 only if it is in the image of `Z_p p` via the ring equivalence `padic_ring_equiv p`. See
 `padic_int_ring_equiv` for an upgrade of this statement to a ring equivalence `Z_p p ≃+* ℤ_[p]`-/
 
+set_option profiler true
 
-lemma padic_int_ring_equiv_mem (x : ℚ_[p]) :
-  x ∈ ((Z_p p).map (padic_ring_equiv p).to_ring_hom) ↔ x ∈ padic_int.subring p :=
+def padic_int.valuation_subring : valuation_subring ℚ_[p] :=
+{ to_subring := padic_int.subring p,
+  mem_or_inv_mem' :=
 begin
+  have not_field : ¬is_field ℤ_[p] := (discrete_valuation_ring.not_is_field _),
+  have := ((discrete_valuation_ring.tfae ℤ_[p] not_field).out 0 1).mp
+    padic_int.discrete_valuation_ring,
+  have cc := (valuation_ring.iff_is_integer_or_is_integer ℤ_[p] ℚ_[p]).mp this,
+  intros x,
+  specialize cc x,
+  cases cc with hx hx,
+  { apply or.intro_left,
+    obtain ⟨y, hy⟩ := hx,
+    rw ← hy,
+    simp only [padic_int.algebra_map_apply, subring.mem_carrier, padic_int.mem_subring_iff,
+      padic_int.padic_norm_e_of_padic_int],
+    apply padic_int.norm_le_one,
+    },
+  { apply or.intro_right,
+    obtain ⟨y, hy⟩ := hx,
+    rw ← hy,
+    simp only [padic_int.algebra_map_apply, subring.mem_carrier, padic_int.mem_subring_iff,
+      padic_int.padic_norm_e_of_padic_int],
+    apply padic_int.norm_le_one,
+    },
+end }
+ 
+open filter
+open_locale filter topology
+
+def another_subring : valuation_subring ℚ_[p] :=
+valuation_subring.comap (Z_p p) (padic_ring_equiv p).symm.to_ring_hom
+
+lemma padic_int.nonunit_mem_iff_top_nilpotent (x : ℚ_[p]) :
+  x ∈ (padic_int.valuation_subring p).nonunits ↔ filter.tendsto (λ n : ℕ, x ^ n) at_top (𝓝 0) :=
+sorry
+
+lemma unit_ball.nonunit_mem_iff_top_nilpotent (x : (Q_p p)) :
+  x ∈ (Z_p p).nonunits ↔ filter.tendsto (λ n : ℕ, x ^ n) at_top (𝓝 0) :=
+sorry
+
+lemma mem_nonunits_iff_comap (x : (Q_p p)) :
+  x ∈ (Z_p p).nonunits ↔ (padic_ring_equiv p) x ∈ (another_subring p).nonunits :=
+sorry
+
+lemma key : padic_int.valuation_subring p = another_subring p :=
+begin
+  rw ← valuation_subring.nonunits_inj,
+  ext x,
   split,
-  { intro h,
-    rw padic_int.mem_subring_iff,
-    obtain ⟨z, hz_val, hzx⟩ := h,
-    rw ← hzx,
-    sorry
-  },
-  { intro h,
-    rw padic_int.mem_subring_iff at h,
-    sorry,  
-  },
+  { intro hx,
+    rw padic_int.nonunit_mem_iff_top_nilpotent at hx,
+    sorry,},
+  { intro hx,
+    sorry,  },
 end
 
+
+--TODO: Golf proof!
 lemma padic_int_ring_equiv_range :
   (Z_p p).map (padic_ring_equiv p).to_ring_hom = padic_int.subring p :=
-by {ext, rw padic_int_ring_equiv_mem}
+begin
+  have : (another_subring p).to_subring = (padic_int.valuation_subring p).to_subring,
+  rw ← key,
+  convert this,
+  ext x,
+  rw another_subring,
+  -- rw ← subring.mem_carrier,
+  -- rw ← subring.mem_carrier,
+  simp only [subring.mem_carrier, subring.mem_map, --valuation_subring.mem_to_subring, 
+  mem_valuation_subring_iff, 
+  exists_prop, valuation_subring.mem_comap],
+  split,
+  { rintros ⟨y, ⟨hy, H⟩⟩,
+    rw ← H,
+    simp only [valuation_subring.mem_to_subring, valuation_subring.mem_comap,
+      ring_equiv.symm_to_ring_hom_apply_to_ring_hom_apply,
+    mem_valuation_subring_iff] at hy ⊢,
+    exact hy, },
+  { intro hx,
+    simp at hx,
+    use (padic_ring_equiv p).symm.to_ring_hom x,
+    split,
+    { simp only [valuation_subring.mem_to_subring, mem_valuation_subring_iff],
+      exact hx },
+    simp only [ring_equiv.to_ring_hom_apply_symm_to_ring_hom_apply],  },
+end
+
+-- lemma padic_int_ring_equiv_mem (x : ℚ_[p]) :
+--   x ∈ ((Z_p p).map (padic_ring_equiv p).to_ring_hom) ↔ x ∈ padic_int.subring p :=
+-- begin
+--   split,
+--   { intro h,
+--     rw padic_int.mem_subring_iff,
+--     obtain ⟨z, hz_val, hzx⟩ := h,
+--     rw ← hzx,
+--     sorry
+--   },
+--   { intro h,
+--     rw padic_int.mem_subring_iff at h,
+--     sorry,  
+--   },
+-- end
+
+-- lemma padic_int_ring_equiv_range' :
+--   (Z_p p).map (padic_ring_equiv p).to_ring_hom = padic_int.subring p :=
+-- by {ext, rw padic_int_ring_equiv_mem}
 
 noncomputable!
 definition padic_int_ring_equiv :  (Z_p p) ≃+* ℤ_[p] :=
 (ring_equiv.subring_map _).trans (ring_equiv.subring_congr (padic_int_ring_equiv_range p))
+
+
 
 
 -- instance padic.valued : valued ℚ_[p] ℤₘ₀ :=
