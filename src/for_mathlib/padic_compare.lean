@@ -102,8 +102,6 @@ namespace padic'
 @[reducible]
 def Q_p : Type* := adic_completion ℚ (p_height_one_ideal p)
 
-instance : char_zero (Q_p p) := sorry
-
 instance : is_discrete (@valued.v (Q_p p) _ ℤₘ₀ _ _) := sorry
 
 -- instance : field (Q_p p) := adic_completion.field ℚ (p_height_one_ideal p)
@@ -167,6 +165,8 @@ definition padic_ring_equiv : (Q_p p) ≃+* ℚ_[p] :=
   map_add' := by {rw ← extension_eq_compare p, exact (extension_as_ring_hom p).map_add'},
   ..(compare p) 
   }
+
+instance : char_zero (Q_p p) := (padic_ring_equiv p).to_ring_hom.char_zero
 
 -- local notation `Z_p` p := (@valued.v (Q_p p) _ ℤₘ₀ _ _).valuation_subring
 @[reducible]
