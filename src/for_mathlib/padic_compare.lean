@@ -162,8 +162,6 @@ begin
     { convert padic_norm_of_int_eq_val_norm p _, erw valuation_of_algebra_map }},
 end
 
-#exit
-
 lemma uniform_inducing_coe : uniform_inducing (coe : ℚ → ℚ_[p]) :=
 begin
   have hp_one : (1 : ℝ≥0) < p := nat.one_lt_cast.mpr (nat.prime.one_lt (fact.out _)),
@@ -333,6 +331,11 @@ open_locale filter topology
 def another_subring : valuation_subring ℚ_[p] :=
 valuation_subring.comap (Z_p p) (padic_ring_equiv p).symm.to_ring_hom
 
+-- def to_be_sure : (Z_p p) ≃+* (another_subring p) :=
+-- begin
+  
+-- end
+
 lemma padic_int.nonunit_mem_iff_top_nilpotent (x : ℚ_[p]) :
   x ∈ (padic_int.valuation_subring p).nonunits ↔ filter.tendsto (λ n : ℕ, x ^ n) at_top (𝓝 0) :=
 sorry
@@ -344,6 +347,7 @@ sorry
 lemma mem_nonunits_iff_comap (x : (Q_p p)) :
   x ∈ (Z_p p).nonunits ↔ (padic_ring_equiv p) x ∈ (another_subring p).nonunits :=
 sorry
+--maybe use valuation_subring.coe_mem_nonunits_iff
 
 lemma key : padic_int.valuation_subring p = another_subring p :=
 begin
