@@ -10,6 +10,7 @@ import ring_theory.dedekind_domain.integral_closure
 
 --
 --Use `module.fintype_of_fintype` and `ideal.factors.finite_dimensional_quotient `
+--and also `local_ring.residue_field.map_equiv`
 .
 
 open local_ring valuation --discrete_valuation

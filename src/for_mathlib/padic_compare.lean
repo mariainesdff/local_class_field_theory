@@ -279,13 +279,13 @@ end
 
 
 noncomputable!
-definition padic_ring_equiv : (Q_p p) ≃+* ℚ_[p] :=
+definition padic_equiv : (Q_p p) ≃+* ℚ_[p] :=
 { map_mul' := by {rw ← extension_eq_compare p, use (extension_as_ring_hom p).map_mul'},
   map_add' := by {rw ← extension_eq_compare p, exact (extension_as_ring_hom p).map_add'},
   ..(compare p) 
   }
 
-instance : char_zero (Q_p p) := (padic_ring_equiv p).to_ring_hom.char_zero
+instance : char_zero (Q_p p) := (padic_equiv p).to_ring_hom.char_zero
 
 -- local notation `Z_p` p := (@valued.v (Q_p p) _ ℤₘ₀ _ _).valuation_subring
 @[reducible]
@@ -293,7 +293,7 @@ def Z_p := (@valued.v (Q_p p) _ ℤₘ₀ _ _).valuation_subring
 
 
 /- The lemma `padic_int_ring_equiv_mem` states that an element `x ∈ ℚ_[p]` is in `ℤ_[p]` if and
-only if it is in the image of `Z_p p` via the ring equivalence `padic_ring_equiv p`. See
+only if it is in the image of `Z_p p` via the ring equivalence `padic_equiv p`. See
 `padic_int_ring_equiv` for an upgrade of this statement to a ring equivalence `Z_p p ≃+* ℤ_[p]`-/
 
 set_option profiler true
@@ -303,12 +303,11 @@ def padic_int.valuation_subring : valuation_subring ℚ_[p] :=
   mem_or_inv_mem' :=
 begin
   have not_field : ¬is_field ℤ_[p] := (discrete_valuation_ring.not_is_field _),
+-- Marking `not_field` as a separate assumption makes the computation faster
   have := ((discrete_valuation_ring.tfae ℤ_[p] not_field).out 0 1).mp
     padic_int.discrete_valuation_ring,
-  have cc := (valuation_ring.iff_is_integer_or_is_integer ℤ_[p] ℚ_[p]).mp this,
-  intros x,
-  specialize cc x,
-  cases cc with hx hx,
+  intro x,
+  rcases (valuation_ring.iff_is_integer_or_is_integer ℤ_[p] ℚ_[p]).mp this x with hx | hx,
   { apply or.intro_left,
     obtain ⟨y, hy⟩ := hx,
     rw ← hy,
@@ -328,14 +327,15 @@ end }
 open filter
 open_locale filter topology
 
-def another_subring : valuation_subring ℚ_[p] :=
-valuation_subring.comap (Z_p p) (padic_ring_equiv p).symm.to_ring_hom
+@[reducible]
+def comap_Zp : valuation_subring ℚ_[p] :=
+valuation_subring.comap (Z_p p) (padic_equiv p).symm.to_ring_hom
 
--- def to_be_sure : (Z_p p) ≃+* (another_subring p) :=
--- begin
-  
--- end
 
+
+/-`FAE` For the two lemmas below, use `tendsto_pow_at_top_nhds_0_of_abs_lt_1` and
+`tendsto_pow_at_top_nhds_0_of_norm_lt_1`
+-/
 lemma padic_int.nonunit_mem_iff_top_nilpotent (x : ℚ_[p]) :
   x ∈ (padic_int.valuation_subring p).nonunits ↔ filter.tendsto (λ n : ℕ, x ^ n) at_top (𝓝 0) :=
 sorry
@@ -344,33 +344,55 @@ lemma unit_ball.nonunit_mem_iff_top_nilpotent (x : (Q_p p)) :
   x ∈ (Z_p p).nonunits ↔ filter.tendsto (λ n : ℕ, x ^ n) at_top (𝓝 0) :=
 sorry
 
-lemma mem_nonunits_iff_comap (x : (Q_p p)) :
-  x ∈ (Z_p p).nonunits ↔ (padic_ring_equiv p) x ∈ (another_subring p).nonunits :=
-sorry
---maybe use valuation_subring.coe_mem_nonunits_iff
+lemma mem_nonunits_tfae (x : (Q_p p)) :
+  x ∈ (Z_p p).nonunits ↔ (padic_equiv p) x ∈ (comap_Zp p).nonunits :=
+begin
+  -- -- rw valuation_subring.mem_comap,
+  refine ⟨λ hx, _, λ hx, _⟩,
+  { obtain ⟨H, y⟩ := valuation_subring.mem_nonunits_iff_exists_mem_maximal_ideal.mp hx,
+    have := is_local_ring_hom_equiv (padic_equiv p),
+    rw valuation_subring.mem_nonunits_iff_exists_mem_maximal_ideal,
+    simp_rw valuation_subring.mem_comap,
+    have : ((padic_equiv p).symm.to_ring_hom) ((padic_equiv p) x) = x,
+    sorry
+    -- simp,
+  },
+end
 
-lemma key : padic_int.valuation_subring p = another_subring p :=
+
+lemma valuation_subrings_eq : padic_int.valuation_subring p = comap_Zp p :=
 begin
   rw ← valuation_subring.nonunits_inj,
   ext x,
-  split,
-  { intro hx,
-    rw padic_int.nonunit_mem_iff_top_nilpotent at hx,
-    sorry,},
-  { intro hx,
-    sorry,  },
+  refine ⟨λ hx, _, λ hx, _⟩,
+  { rw [← (padic_equiv p).apply_symm_apply x], 
+    rw [← mem_nonunits_tfae, 
+      unit_ball.nonunit_mem_iff_top_nilpotent, ← _root_.map_zero (padic_equiv p).symm],
+    simp_rw [← _root_.map_pow (padic_equiv p).symm],
+    apply (@continuous.continuous_at _ _ _ _ _ 0 (compare p).3.continuous).tendsto.comp,
+    rwa ← padic_int.nonunit_mem_iff_top_nilpotent },
+  { rw [←  (padic_equiv p).apply_symm_apply x, ← mem_nonunits_tfae, 
+      unit_ball.nonunit_mem_iff_top_nilpotent] at hx,
+    replace hx := @tendsto.comp ℕ (Q_p p) ℚ_[p] (λ n, ((padic_equiv p).symm x) ^ n) (padic_equiv p)
+      at_top (𝓝 0) (𝓝 0) _ hx,
+    -- We postpone the verification of the first assumption in `tendsto.comp`
+    { simp_rw [← _root_.map_pow (padic_equiv p).symm x, function.comp, ring_equiv.apply_symm_apply]
+      at hx,
+      rwa padic_int.nonunit_mem_iff_top_nilpotent },
+    { rw [← _root_.map_zero (padic_equiv p)],
+      apply continuous.tendsto (compare p).symm.3.continuous 0}},
 end
 
 
 --TODO: Golf proof!
 lemma padic_int_ring_equiv_range :
-  (Z_p p).map (padic_ring_equiv p).to_ring_hom = padic_int.subring p :=
+  (Z_p p).map (padic_equiv p).to_ring_hom = padic_int.subring p :=
 begin
-  have : (another_subring p).to_subring = (padic_int.valuation_subring p).to_subring,
-  rw ← key,
+  have : (comap_Zp p).to_subring = (padic_int.valuation_subring p).to_subring,
+  rw ← valuation_subrings_eq,
   convert this,
   ext x,
-  rw another_subring,
+  -- rw comap_Zp,
   -- rw ← subring.mem_carrier,
   -- rw ← subring.mem_carrier,
   simp only [subring.mem_carrier, subring.mem_map, --valuation_subring.mem_to_subring, 
@@ -385,7 +407,7 @@ begin
     exact hy, },
   { intro hx,
     simp at hx,
-    use (padic_ring_equiv p).symm.to_ring_hom x,
+    use (padic_equiv p).symm.to_ring_hom x,
     split,
     { simp only [valuation_subring.mem_to_subring, mem_valuation_subring_iff],
       exact hx },
@@ -393,7 +415,7 @@ begin
 end
 
 -- lemma padic_int_ring_equiv_mem (x : ℚ_[p]) :
---   x ∈ ((Z_p p).map (padic_ring_equiv p).to_ring_hom) ↔ x ∈ padic_int.subring p :=
+--   x ∈ ((Z_p p).map (padic_equiv p).to_ring_hom) ↔ x ∈ padic_int.subring p :=
 -- begin
 --   split,
 --   { intro h,
@@ -409,7 +431,7 @@ end
 -- end
 
 -- lemma padic_int_ring_equiv_range' :
---   (Z_p p).map (padic_ring_equiv p).to_ring_hom = padic_int.subring p :=
+--   (Z_p p).map (padic_equiv p).to_ring_hom = padic_int.subring p :=
 -- by {ext, rw padic_int_ring_equiv_mem}
 
 noncomputable!
@@ -421,7 +443,7 @@ definition padic_int_ring_equiv :  (Z_p p) ≃+* ℤ_[p] :=
 
 -- instance padic.valued : valued ℚ_[p] ℤₘ₀ :=
 -- { v := 
---   { to_fun    := λ x, valued.v ((padic_ring_equiv p).symm x),
+--   { to_fun    := λ x, valued.v ((padic_equiv p).symm x),
 --     map_zero' := sorry,
 --     map_one'  := sorry,
 --     map_mul'  := sorry,
