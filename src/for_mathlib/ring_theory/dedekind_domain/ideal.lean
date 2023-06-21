@@ -2,6 +2,8 @@ import ring_theory.dedekind_domain.ideal
 
 open unique_factorization_monoid
 
+namespace normalization_monoid
+
 lemma count_normalized_factors_eq_count_normalized_factors_span {R : Type*} [comm_ring R]
   [is_domain R] [is_principal_ideal_ring R] [normalization_monoid R] [decidable_eq R] 
   [decidable_eq (ideal R)] {r X : R} (hr : r ≠ 0) 
@@ -22,6 +24,10 @@ begin
   { rwa ideal.span_singleton_prime hX₀ },
   { rwa [ne.def, ideal.zero_eq_bot, ideal.span_singleton_eq_bot] },
 end
+
+end normalization_monoid
+
+namespace is_dedekind_domain
 
 open_locale classical --TODO: it would be better if we could put decidable instances instead
 
@@ -64,3 +70,5 @@ begin
       associates.prime_pow_dvd_iff_le hI hJ'],
     linarith },
 end
+
+end is_dedekind_domain
