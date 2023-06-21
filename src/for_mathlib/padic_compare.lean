@@ -8,6 +8,8 @@ import discrete_valuation_ring.basic
 import number_theory.padics.padic_integers
 import ring_theory.dedekind_domain.adic_valuation
 
+import for_mathlib.ring_theory.dedekind_domain.ideal
+
 --TODO: remove (put needed lemmas in a separate file)
 --import for_mathlib.laurent_series_iso.old_power_series_adic_completion
 
@@ -15,6 +17,7 @@ import ring_theory.dedekind_domain.adic_valuation
 noncomputable theory
 
 open is_dedekind_domain is_dedekind_domain.height_one_spectrum nnreal polynomial valuation
+  normalization_monoid
 open_locale nnreal discrete_valuation
 
 def int.p_height_one_ideal (p : out_param ℕ) [hp : fact (p.prime)] : 
@@ -30,56 +33,13 @@ open unique_factorization_monoid
 
 open_locale classical
 
-
-lemma count_normalized_factors_eq_count_normalized_factors_span {R : Type*} [comm_ring R]
-  [is_domain R] [is_principal_ideal_ring R] [normalization_monoid R] 
-    {r X : R} (hr : r ≠ 0) (hX₀ : X ≠ 0) (hX₁ : norm_unit X = 1 )(hX : prime X) : 
-  multiset.count X (normalized_factors r) =
-    multiset.count (ideal.span {X} : ideal R ) (normalized_factors (ideal.span {r})) :=
-begin
-  replace hX₁ : X = normalize X, 
-  { simp only [normalize_apply, hX₁, units.coe_one, mul_one] },
-  have : (ideal.span {normalize X} : ideal  R) = normalize (ideal.span {X}),
-  { simp only [normalize_apply, normalize_eq],
-    apply ideal.span_singleton_mul_right_unit (units.is_unit _) },
-  rw [← part_enat.coe_inj, hX₁, ← multiplicity_eq_count_normalized_factors hX.irreducible hr, this, 
-    ← multiplicity_eq_multiplicity_span, ← multiplicity_eq_count_normalized_factors],
-  refine prime.irreducible (ideal.prime_of_is_prime _ _),
-  {rwa [ne.def, ideal.span_singleton_eq_bot] },
-  {rwa ideal.span_singleton_prime hX₀ },
-  {rwa [ne.def, ideal.zero_eq_bot, ideal.span_singleton_eq_bot] },
-end
- --TODO: move
-lemma count_normalized_factors_eq_associates_count {I J : ideal ℤ} (hI : I ≠ 0)
-  (hJ : J.is_prime) (hJ₀ : J ≠ ⊥) :
-  multiset.count J (normalized_factors I) = (associates.mk J).count (associates.mk I).factors :=
-begin
-  replace hI : associates.mk I ≠ 0,
-  { apply associates.mk_ne_zero.mpr hI },
-  have hJ' : irreducible (associates.mk J),
-  { rw associates.irreducible_mk,
-    apply prime.irreducible,
-    apply ideal.prime_of_is_prime hJ₀ hJ },
-  apply ideal.count_normalized_factors_eq,
-  rw [← ideal.dvd_iff_le, ← associates.mk_dvd_mk, associates.mk_pow],
-  rw associates.dvd_eq_le,
-  rw associates.prime_pow_dvd_iff_le hI hJ',
-  { rw ← ideal.dvd_iff_le,
-    rw ← associates.mk_dvd_mk,
-    rw associates.mk_pow,
-    rw associates.dvd_eq_le,
-    rw associates.prime_pow_dvd_iff_le hI hJ',
-    linarith,
-  },
-end
-
 section padic
 
 open padic
 
 variables (p : out_param ℕ) [fact (p.prime)]
   
-include p
+--include p
 
 local attribute [-instance] rat.metric_space rat.normed_field rat.densely_normed_field
   /- rat.normed_linear_ordered_field -/  rat.division_ring rat.normed_add_comm_group
@@ -97,67 +57,43 @@ begin
   by_cases hx : x = 0,
   { simp only [hx, padic_norm.zero, algebra_map.coe_zero, _root_.map_zero] },
   { have hx0 : ¬(x : ℚ) = 0 := cast_ne_zero.mpr hx,
-    rw padic_norm.eq_zpow_of_nonzero hx0,
-    simp only [with_zero_mult_int_to_nnreal, with_zero_mult_int_to_nnreal_def, zero_iff,
-      rat.cast_zpow, rat.cast_coe_nat, monoid_with_zero_hom.coe_mk],
-    rw dif_neg hx0,
-    simp only [coe_zpow, nnreal.coe_nat_cast],
-    apply congr_arg,
     have hv0 : valued.v (x : ℚ) ≠ (0 : ℤₘ₀),
     { rw [ne.def, zero_iff], exact hx0 },
     have heq : multiplicative.of_add (-(associates.mk (p_height_one_ideal p).as_ideal).count 
       (associates.mk (ideal.span {x} : ideal ℤ)).factors : ℤ) = (with_zero.unzero hv0),
-    { rw ← with_zero.coe_inj, rw ← int_valuation_def_if_neg _ hx, 
-      rw [with_zero.coe_unzero], 
-      erw valuation_of_algebra_map, 
-      refl, },
-
-    rw ← heq,
-    rw padic_val_rat.of_int_multiplicity _ hx,
-    rw to_add_of_add,
-    rw neg_inj,
-    rw nat.cast_inj,
-    rw ← part_enat.coe_inj, 
-    simp only [nat_abs, part_enat.coe_get],
-    rw [multiplicity_eq_count_normalized_factors _ hx],
-
-    --squeeze_simp,
-    /-  (hI : I ≠ 0)
-  (hJ : J.is_prime) (hJ₀ : J ≠ ⊥)-/
-    rw int.normalize_coe_nat,
-    have hp0 : (p : ℤ) ≠0, sorry,
-    have hp1 : norm_unit (p : ℤ) = 1, sorry,
-    have hp : prime (p : ℤ) := sorry,
-    rw part_enat.coe_inj,
-    convert count_normalized_factors_eq_count_normalized_factors_span hx hp0 hp1 hp,
-    rw count_normalized_factors_eq_associates_count,
-    refl,
-
-    
-    --simp only [with_zero.unzero_coe],
-    --rw with_zero.unzero_coe,
-    --simp only [zpow_neg, rat.cast_inv, rat.cast_zpow, rat.cast_coe_nat, monoid_with_zero_hom.coe_mk],
-    sorry,      sorry, sorry, sorry, sorry,
-    
-    },
+    { erw [← with_zero.coe_inj, ← int_valuation_def_if_neg _ hx, with_zero.coe_unzero, 
+        valuation_of_algebra_map], refl, },
+    have hx' : (ideal.span {x} : ideal ℤ) ≠ 0,
+    { rwa [ideal.zero_eq_bot, ne.def, ideal.span_singleton_eq_bot] },
+    have hp : prime (p : ℤ),
+    { exact nat.prime_iff_prime_int.mp _inst_1.1 },
+    have hp' : (ideal.span {(p : ℤ)} : ideal ℤ).is_prime,
+    { rwa ideal.span_singleton_prime (ne_zero.ne (p : ℤ)), },
+    have hpne : (ideal.span {(p : ℤ)} : ideal ℤ) ≠ ⊥,
+    { rw [ne.def, ideal.span_singleton_eq_bot], exact ne_zero.ne (p : ℤ) }, 
+    simp only [padic_norm.eq_zpow_of_nonzero hx0, with_zero_mult_int_to_nnreal, 
+      with_zero_mult_int_to_nnreal_def, zero_iff,
+      rat.cast_zpow, rat.cast_coe_nat, monoid_with_zero_hom.coe_mk, dif_neg hx0, coe_zpow, 
+      nnreal.coe_nat_cast],
+    apply congr_arg,
+    rw [← heq, padic_val_rat.of_int_multiplicity (nat.prime.ne_one _inst_1.1) hx,
+      to_add_of_add, neg_inj, nat.cast_inj, ← part_enat.coe_inj, part_enat.coe_get,
+      multiplicity_eq_count_normalized_factors hp.irreducible hx, int.normalize_coe_nat,
+      part_enat.coe_inj, count_normalized_factors_eq_count_normalized_factors_span hx 
+        (ne_zero.ne p) rfl hp, count_normalized_factors_eq_associates_count hx' hp' hpne],
+    refl },
 end
-
 
 lemma padic_norm_eq_val_norm (z : ℚ) : ((padic_norm p z) : ℝ) =
   with_zero_mult_int_to_nnreal (ne_zero.ne p) (valued.v z) := 
 begin
   by_cases hz : z = 0,
   { simp only [hz, padic_norm.zero, algebra_map.coe_zero, _root_.map_zero] },
-  { obtain ⟨x, y, H⟩ := is_localization.mk'_surjective (non_zero_divisors ℤ) z, 
-    rw ← H,
-    erw valuation_of_mk',
-
+  { obtain ⟨x, y, hxy⟩ := is_localization.mk'_surjective (non_zero_divisors ℤ) z,
     have hz : is_localization.mk' ℚ x y = x/y,
-    { simp only [is_fraction_ring.mk'_eq_div, eq_int_cast, _root_.coe_coe]},
-    rw hz,
-    rw padic_norm.div,
-    
-    simp only [_root_.coe_coe, rat.cast_div, map_div₀, nonneg.coe_div],
+    { simp only [is_fraction_ring.mk'_eq_div, eq_int_cast, _root_.coe_coe] },
+    erw [← hxy, valuation_of_mk', hz, padic_norm.div,_root_.coe_coe, rat.cast_div, map_div₀, 
+      nonneg.coe_div],
     apply congr_arg2;
     { convert padic_norm_of_int_eq_val_norm p _, erw valuation_of_algebra_map }},
 end
@@ -295,8 +231,6 @@ def Z_p := (@valued.v (Q_p p) _ ℤₘ₀ _ _).valuation_subring
 /- The lemma `padic_int_ring_equiv_mem` states that an element `x ∈ ℚ_[p]` is in `ℤ_[p]` if and
 only if it is in the image of `Z_p p` via the ring equivalence `padic_equiv p`. See
 `padic_int_ring_equiv` for an upgrade of this statement to a ring equivalence `Z_p p ≃+* ℤ_[p]`-/
-
-set_option profiler true
 
 def padic_int.valuation_subring : valuation_subring ℚ_[p] :=
 { to_subring := padic_int.subring p,

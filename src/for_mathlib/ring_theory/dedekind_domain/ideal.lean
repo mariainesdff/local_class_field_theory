@@ -2,6 +2,8 @@ import ring_theory.dedekind_domain.ideal
 
 open unique_factorization_monoid
 
+namespace normalization_monoid
+
 lemma count_normalized_factors_eq_count_normalized_factors_span {R : Type*} [comm_ring R]
   [is_domain R] [is_principal_ideal_ring R] [normalization_monoid R] [decidable_eq R] 
   [decidable_eq (ideal R)] {r X : R} (hr : r ≠ 0) 
@@ -23,9 +25,33 @@ begin
   { rwa [ne.def, ideal.zero_eq_bot, ideal.span_singleton_eq_bot] },
 end
 
+end normalization_monoid
+
+namespace is_dedekind_domain
+
 open_locale classical --TODO: it would be better if we could put decidable instances instead
 
-set_option profiler true
+
+/- instance foo (R : Type*) [comm_ring R] [is_domain R] [is_dedekind_domain R] :
+  cancel_comm_monoid_with_zero (ideal R) := infer_instance
+
+instance bar (R : Type*) [comm_ring R] [is_domain R] [is_dedekind_domain R] :
+  normalization_monoid (ideal R) := infer_instance
+
+instance asdf (R : Type*) [comm_ring R] [is_domain R] [is_dedekind_domain R] :
+  unique_factorization_monoid (ideal R) := infer_instance -/
+
+/- TODO: It would be good to know why this is so slow. Making the instances explicit only makes it 
+  worse-/
+  /- 
+  lemma count_normalized_factors_eq_associates_count 
+  {R : Type*} [comm_ring R] [is_domain R] [is_dedekind_domain R] [dec: decidable_eq (ideal R)]
+  [dec' : decidable_eq (associates (ideal R))]
+  [dec_p : Π (p : associates (ideal R)), decidable (irreducible p)]
+  {I J : ideal R} (hI : I ≠ 0) (hJ : J.is_prime) (hJ₀ : J ≠ ⊥) :
+  multiset.count J (@normalized_factors (ideal R) (foo R) dec (bar R) (asdf R) I) = 
+  (@associates.count (ideal R) (foo R) dec_p dec' (associates.mk J)) 
+  (@associates.factors (ideal R) (foo R) (asdf R) dec dec' (associates.mk I)) -/ 
 lemma count_normalized_factors_eq_associates_count 
   {R : Type*} [comm_ring R] [is_domain R] [is_dedekind_domain R]
   {I J : ideal R} (hI : I ≠ 0) (hJ : J.is_prime) (hJ₀ : J ≠ ⊥) :
@@ -38,14 +64,11 @@ begin
     apply prime.irreducible,
     apply ideal.prime_of_is_prime hJ₀ hJ },
   apply ideal.count_normalized_factors_eq,
-  rw [← ideal.dvd_iff_le, ← associates.mk_dvd_mk, associates.mk_pow],
-  rw associates.dvd_eq_le,
-  rw associates.prime_pow_dvd_iff_le hI hJ',
-  { rw ← ideal.dvd_iff_le,
-    rw ← associates.mk_dvd_mk,
-    rw associates.mk_pow,
-    rw associates.dvd_eq_le,
-    rw associates.prime_pow_dvd_iff_le hI hJ',
-    linarith,
-  },
+  rw [← ideal.dvd_iff_le, ← associates.mk_dvd_mk, associates.mk_pow,
+    associates.dvd_eq_le, associates.prime_pow_dvd_iff_le hI hJ'],
+  { rw [← ideal.dvd_iff_le, ← associates.mk_dvd_mk, associates.mk_pow, associates.dvd_eq_le,
+      associates.prime_pow_dvd_iff_le hI hJ'],
+    linarith },
 end
+
+end is_dedekind_domain
