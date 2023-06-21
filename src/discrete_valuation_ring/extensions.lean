@@ -7,77 +7,16 @@ Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 import number_theory.ramification_inertia
 import discrete_valuation_ring.basic
 import for_mathlib.discrete_valuation_ring
+import for_mathlib.field_theory.minpoly.normal
+import for_mathlib.group_theory.subgroup.zpowers
 import from_mathlib.normed_valued
 import spectral_norm
---import for_mathlib.algebra_comp
+import with_zero
 
 noncomputable theory
 
 open multiplicative discrete_valuation valuation with_zero
 open_locale discrete_valuation nnreal
-
-namespace multiplicative
-
-lemma of_add_pow_comm (a b : ℤ) : (of_add a)^b = (of_add b)^a :=
-by rw [← int.of_add_mul, mul_comm, int.of_add_mul]
-
-lemma of_add_inj {x y : multiplicative ℤ} (hxy : of_add x = of_add y) : x = y := hxy
-
-end multiplicative
-
-namespace with_zero
---TODO: rename
-lemma of_add_zpow (n : ℤ) : (of_add n : ℤₘ₀) = (of_add (1 : ℤ))^n :=
-by rw [← with_zero.coe_zpow, with_zero.coe_inj, ← int.of_add_mul, one_mul]
-
-lemma of_add_pow_pow_comm (a b c : ℤ) : 
-  ((of_add (a : ℤ) : ℤₘ₀) ^ b) ^ c =  ((of_add (a : ℤ)) ^ c) ^ b :=
-begin
-  simp only [ ← with_zero.coe_zpow],
-  rw [← zpow_mul,  mul_comm, zpow_mul],
-end
-
-lemma of_add_neg_one_pow_comm (a : ℤ) (n : ℕ) : 
-  ((of_add (-1 : ℤ) : ℤₘ₀) ^ (-a)) ^ n =  ((of_add (n : ℤ)) ^ a) :=
-by rw [with_zero.of_add_zpow (-1), ← zpow_mul, neg_mul, one_mul, neg_neg, ← zpow_coe_nat,
-  of_add_pow_pow_comm 1 a, ← with_zero.coe_zpow,  ← int.of_add_mul, one_mul]
-
-end with_zero
-
-namespace add_subgroup
-
-lemma closure_singleton_eq_zmultiples {A : Type*} [add_group A] (a : A) :
-  closure {a} = zmultiples a :=
-by ext n; rw [mem_closure_singleton, mem_zmultiples_iff]
-
-end add_subgroup
-
-namespace minpoly
-
-theorem degree_dvd {K : Type*} [field K] {L : Type*} [field L] [algebra K L] {x : L}
-  [finite_dimensional K L] (hx : is_integral K x) :
-  (minpoly K x).nat_degree ∣ (finite_dimensional.finrank K L) :=
-begin
-  rw [dvd_iff_exists_eq_mul_left, ← intermediate_field.adjoin.finrank hx],
-  use finite_dimensional.finrank ↥K⟮x⟯ L,
-  rw [eq_comm, mul_comm],
-  exact finite_dimensional.finrank_mul_finrank _ _ _,
-end
-
-end minpoly
-
-section normed_field
-
---TODO: Zulip question
-variables (K L : Type*) [normed_field K] (R : subring K) [is_integrally_closed R]
-  [is_fraction_ring R K] [field L] [algebra K L]  --(x : integral_closure R L)
- 
-lemma minpoly_of_subring (x : integral_closure R L) :
-  polynomial.map (algebra_map R K) (minpoly R x) = (minpoly K (x : L)) :=
-by rw eq_comm; apply (minpoly.is_integrally_closed_eq_field_fractions K L
-      (is_integral_closure.is_integral R L x))
-
-end normed_field
 
 section extension
 
@@ -208,8 +147,8 @@ begin
     polynomial.map (algebra_map hv.v.valuation_subring.to_subring K) 
       (minpoly hv.v.valuation_subring.to_subring x),
   { rw eq_comm,
-    exact @minpoly_of_subring K L nf hv.v.valuation_subring.to_subring ic fr _inst_4 _inst_5 x,
-      },
+    exact @minpoly_of_subring K L nf.to_field _inst_4 _inst_5 hv.v.valuation_subring.to_subring ic 
+      fr x },
   have h_app : (spectral_mul_alg_norm h_alg _) ↑x = spectral_norm K L (x : L) := rfl,
   rw [disc_norm_extension, h_app, spectral_norm, ← is_minpoly],
   all_goals { exact norm_is_nonarchimedean K},

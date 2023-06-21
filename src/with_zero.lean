@@ -17,7 +17,31 @@ open_locale discrete_valuation nnreal
 
 open multiplicative with_zero equiv
 
+namespace multiplicative
+
+lemma of_add_pow_comm (a b : ℤ) : (of_add a)^b = (of_add b)^a :=
+by rw [← int.of_add_mul, mul_comm, int.of_add_mul]
+
+lemma of_add_inj {x y : multiplicative ℤ} (hxy : of_add x = of_add y) : x = y := hxy
+
+end multiplicative
+
 namespace with_zero
+--TODO: rename
+lemma of_add_zpow (n : ℤ) : (of_add n : ℤₘ₀) = (of_add (1 : ℤ))^n :=
+by rw [← with_zero.coe_zpow, with_zero.coe_inj, ← int.of_add_mul, one_mul]
+
+lemma of_add_pow_pow_comm (a b c : ℤ) : 
+  ((of_add (a : ℤ) : ℤₘ₀) ^ b) ^ c =  ((of_add (a : ℤ)) ^ c) ^ b :=
+begin
+  simp only [ ← with_zero.coe_zpow],
+  rw [← zpow_mul,  mul_comm, zpow_mul],
+end
+
+lemma of_add_neg_one_pow_comm (a : ℤ) (n : ℕ) : 
+  ((of_add (-1 : ℤ) : ℤₘ₀) ^ (-a)) ^ n =  ((of_add (n : ℤ)) ^ a) :=
+by rw [with_zero.of_add_zpow (-1), ← zpow_mul, neg_mul, one_mul, neg_neg, ← zpow_coe_nat,
+  of_add_pow_pow_comm 1 a, ← with_zero.coe_zpow,  ← int.of_add_mul, one_mul]
 
 instance : nontrivial (ℤₘ₀ˣ) :=
 begin
