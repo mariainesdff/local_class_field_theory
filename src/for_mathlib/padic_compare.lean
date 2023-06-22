@@ -10,7 +10,6 @@ import ring_theory.dedekind_domain.adic_valuation
 
 import for_mathlib.ring_theory.dedekind_domain.ideal
 
---TODO: remove (put needed lemmas in a separate file)
 --import for_mathlib.laurent_series_iso.old_power_series_adic_completion
 
 
@@ -33,7 +32,7 @@ open unique_factorization_monoid
 
 open_locale classical
 
-section padic
+namespace padic_comparison
 
 open padic
 
@@ -272,25 +271,38 @@ valuation_subring.comap (Z_p p) (padic_equiv p).symm.to_ring_hom
 -/
 lemma padic_int.nonunit_mem_iff_top_nilpotent (x : ℚ_[p]) :
   x ∈ (padic_int.valuation_subring p).nonunits ↔ filter.tendsto (λ n : ℕ, x ^ n) at_top (𝓝 0) :=
-sorry
+begin
+  sorry
+end
 
 lemma unit_ball.nonunit_mem_iff_top_nilpotent (x : (Q_p p)) :
   x ∈ (Z_p p).nonunits ↔ filter.tendsto (λ n : ℕ, x ^ n) at_top (𝓝 0) :=
 sorry
 
-lemma mem_nonunits_tfae (x : (Q_p p)) :
+lemma mem_nonunits_iff (x : (Q_p p)) :
   x ∈ (Z_p p).nonunits ↔ (padic_equiv p) x ∈ (comap_Zp p).nonunits :=
 begin
-  -- -- rw valuation_subring.mem_comap,
+  let φ : (Z_p p) ≃+* (comap_Zp p),
+  { have :=  (Z_p p).to_subring.comap_equiv_eq_map_symm (padic_equiv p).symm,
+    replace this := ring_equiv.subring_congr this.symm,
+    use (@ring_equiv.subring_map _ _ _ _  (Z_p p).to_subring (padic_equiv p)).trans this, },
   refine ⟨λ hx, _, λ hx, _⟩,
-  { obtain ⟨H, y⟩ := valuation_subring.mem_nonunits_iff_exists_mem_maximal_ideal.mp hx,
-    have := is_local_ring_hom_equiv (padic_equiv p),
-    rw valuation_subring.mem_nonunits_iff_exists_mem_maximal_ideal,
-    simp_rw valuation_subring.mem_comap,
-    have : ((padic_equiv p).symm.to_ring_hom) ((padic_equiv p) x) = x,
-    sorry
-    -- simp,
-  },
+  all_goals { rw valuation_subring.mem_nonunits_iff_exists_mem_maximal_ideal at hx,
+    rw valuation_subring.mem_nonunits_iff_exists_mem_maximal_ideal},
+    { refine ⟨_, map_nonunit (↑φ : ((Z_p p) →+* (comap_Zp p))) _ hx.some_spec⟩ },
+    { rcases hx with ⟨h1, h2⟩,
+      have h3 := valuation_subring.mem_comap.mp h1,
+      have : ((padic_equiv p).symm.to_ring_hom) ((padic_equiv p) x) = 
+        ((padic_equiv p).symm.to_ring_hom) ((padic_equiv p).to_ring_hom x) := rfl,
+      simp_rw [this, ← ring_hom.comp_apply,
+        ring_equiv.symm_to_ring_hom_comp_to_ring_hom, ring_hom.id_apply] at h3,
+      have h4 : (φ.symm) (⟨(padic_equiv p) x, h1⟩ : {z // z ∈ comap_Zp p}) = ⟨x, h3⟩,
+      { set b : ℚ_[p] := φ ⟨x, h3⟩ with hb,
+        have : b = (padic_equiv p) x := rfl,
+        simp_rw [← this, hb, set_like.eta, ring_equiv.symm_apply_apply], },
+      replace h2 := map_nonunit (↑φ.symm : ((comap_Zp p) →+* (Z_p p))) _ h2,
+      erw h4 at h2,
+      refine ⟨_, h2⟩ },
 end
 
 
@@ -300,12 +312,12 @@ begin
   ext x,
   refine ⟨λ hx, _, λ hx, _⟩,
   { rw [← (padic_equiv p).apply_symm_apply x], 
-    rw [← mem_nonunits_tfae, 
+    rw [← mem_nonunits_iff, 
       unit_ball.nonunit_mem_iff_top_nilpotent, ← _root_.map_zero (padic_equiv p).symm],
     simp_rw [← _root_.map_pow (padic_equiv p).symm],
     apply (@continuous.continuous_at _ _ _ _ _ 0 (compare p).3.continuous).tendsto.comp,
     rwa ← padic_int.nonunit_mem_iff_top_nilpotent },
-  { rw [←  (padic_equiv p).apply_symm_apply x, ← mem_nonunits_tfae, 
+  { rw [←  (padic_equiv p).apply_symm_apply x, ← mem_nonunits_iff, 
       unit_ball.nonunit_mem_iff_top_nilpotent] at hx,
     replace hx := @tendsto.comp ℕ (Q_p p) ℚ_[p] (λ n, ((padic_equiv p).symm x) ^ n) (padic_equiv p)
       at_top (𝓝 0) (𝓝 0) _ hx,
@@ -386,4 +398,4 @@ definition padic_int_ring_equiv :  (Z_p p) ≃+* ℤ_[p] :=
 --   ..(infer_instance : uniform_space ℚ_[p]),
 --   ..non_unital_normed_ring.to_normed_add_comm_group }
 
-end padic
+end padic_comparison
