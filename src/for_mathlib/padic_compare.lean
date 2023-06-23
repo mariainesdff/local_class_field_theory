@@ -272,7 +272,21 @@ valuation_subring.comap (Z_p p) (padic_equiv p).symm.to_ring_hom
 lemma padic_int.nonunit_mem_iff_top_nilpotent (x : ℚ_[p]) :
   x ∈ (padic_int.valuation_subring p).nonunits ↔ filter.tendsto (λ n : ℕ, x ^ n) at_top (𝓝 0) :=
 begin
-  sorry
+  have aux : ∀ n : ℕ, ‖ x^n ‖ = ‖ x ‖ ^ n,-- := λ n, norm_pow ‖ x ‖ n,
+  { exact λ n, norm_pow _ n},
+  rw [tendsto_zero_iff_norm_tendsto_zero, filter.tendsto_congr aux],
+  refine ⟨λ H, _, λ H, _⟩,
+  { obtain ⟨h1, h2⟩ := valuation_subring.mem_nonunits_iff_exists_mem_maximal_ideal.mp H,
+    exact _root_.tendsto_pow_at_top_nhds_0_of_lt_1 (norm_nonneg _)
+       (padic_int.mem_nonunits.mp $ (local_ring.mem_maximal_ideal _).mp h2) },
+  { have : ‖ x ‖ < 1,
+    { sorry,
+
+    },
+    apply valuation_subring.mem_nonunits_iff_exists_mem_maximal_ideal.mpr,
+    exact ⟨(padic_int.mem_subring_iff p).mpr (le_of_lt this), (local_ring.mem_maximal_ideal _).mpr
+      (padic_int.mem_nonunits.mpr this)⟩,
+  },
 end
 
 lemma unit_ball.nonunit_mem_iff_top_nilpotent (x : (Q_p p)) :
