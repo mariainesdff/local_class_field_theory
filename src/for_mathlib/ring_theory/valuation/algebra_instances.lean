@@ -1,8 +1,6 @@
 import algebra.order.group.type_tags
 import ring_theory.valuation.valuation_subring
 
-import topology.algebra.valued_field
-
 open function valuation
 
 open_locale discrete_valuation
@@ -10,9 +8,6 @@ open_locale discrete_valuation
 variables {K : Type*} [field K] (v : valuation K ℤₘ₀) (L : Type*) [field L] [algebra K L]
 
 namespace valuation_subring
-
-instance algebra'' [hv : valued K ℤₘ₀] : algebra hv.v.valuation_subring L := 
-algebra.of_subring hv.v.valuation_subring.to_subring
 
 instance algebra' : algebra v.valuation_subring L := 
 algebra.of_subring v.valuation_subring.to_subring
