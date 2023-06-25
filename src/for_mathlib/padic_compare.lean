@@ -264,7 +264,37 @@ open_locale filter topology
 def comap_Zp : valuation_subring ℚ_[p] :=
 valuation_subring.comap (Z_p p) (padic_equiv p).symm.to_ring_hom
 
+-- TODO: Ask on Zulip if it exists and move it to another file/folder
+lemma nnreal.lt_one_of_tendsto_pow_0 (a : ℝ≥0) (h : tendsto (λ n : ℕ, a^n) at_top (𝓝 0)) : a < 1 :=
+begin
+  by_cases ha₀ : a = 0,
+  {rw ha₀, exact zero_lt_one,},
+  { by_contradiction ha_le,
+    rw not_lt at ha_le,
+    by_cases ha : a = 1,
+    { simp only [ha, one_pow] at h,
+      exact zero_ne_one (tendsto_nhds_unique h tendsto_const_nhds) },
+    { replace h : tendsto (λ n : ℕ, (a : ennreal) ^n) at_top (𝓝 0),
+      { rw ← ennreal.coe_zero,
+        simp_rw [← ennreal.coe_pow, ennreal.tendsto_coe],
+        exact h, },
+      set b : ennreal := ↑(a⁻¹) with hb,
+      replace h : tendsto (λ n : ℕ, b ^ n) at_top (𝓝 ⊤),
+      { rw [hb, ennreal.coe_inv ha₀],
+        convert (@ennreal.tendsto_inv_iff ℕ at_top (λ n, (↑a) ^ n) 0).mpr h,
+        { funext n, exact ennreal.inv_pow.symm, },
+        { simp only [ennreal.inv_zero] }},
+      have hb₁ : b < 1,
+      { rw [hb, ← ennreal.coe_one, ennreal.coe_lt_coe],
+        exact inv_lt_one (lt_of_le_of_ne ha_le (ne.symm ha)) },
+      exact ennreal.zero_ne_top (tendsto_nhds_unique
+        (ennreal.tendsto_pow_at_top_nhds_0_of_lt_1 hb₁) h)}},
+  end
 
+-- lemma real.lt_one_of_tendsto_pow_0 (a : ℝ) (h : tendsto (λ n : ℕ, a^n) at_top (𝓝 0)) : | a | < 1 :=
+-- begin
+--   sorry
+-- end
 
 /-`FAE` For the two lemmas below, use `tendsto_pow_at_top_nhds_0_of_abs_lt_1` and
 `tendsto_pow_at_top_nhds_0_of_norm_lt_1`
@@ -272,7 +302,7 @@ valuation_subring.comap (Z_p p) (padic_equiv p).symm.to_ring_hom
 lemma padic_int.nonunit_mem_iff_top_nilpotent (x : ℚ_[p]) :
   x ∈ (padic_int.valuation_subring p).nonunits ↔ filter.tendsto (λ n : ℕ, x ^ n) at_top (𝓝 0) :=
 begin
-  have aux : ∀ n : ℕ, ‖ x^n ‖ = ‖ x ‖ ^ n,-- := λ n, norm_pow ‖ x ‖ n,
+  have aux : ∀ n : ℕ, ‖ x^n ‖ = ‖ x ‖ ^ n,
   { exact λ n, norm_pow _ n},
   rw [tendsto_zero_iff_norm_tendsto_zero, filter.tendsto_congr aux],
   refine ⟨λ H, _, λ H, _⟩,
@@ -280,18 +310,39 @@ begin
     exact _root_.tendsto_pow_at_top_nhds_0_of_lt_1 (norm_nonneg _)
        (padic_int.mem_nonunits.mp $ (local_ring.mem_maximal_ideal _).mp h2) },
   { have : ‖ x ‖ < 1,
-    { sorry,
-
-    },
+    { suffices : (⟨‖ x ‖, norm_nonneg _⟩ : ℝ≥0) < 1,
+      { rwa [← nnreal.coe_lt_coe, nnreal.coe_one, ← subtype.val_eq_coe] at this },
+      apply nnreal.lt_one_of_tendsto_pow_0,
+      rwa [← nnreal.tendsto_coe, nnreal.coe_zero] },
     apply valuation_subring.mem_nonunits_iff_exists_mem_maximal_ideal.mpr,
     exact ⟨(padic_int.mem_subring_iff p).mpr (le_of_lt this), (local_ring.mem_maximal_ideal _).mpr
-      (padic_int.mem_nonunits.mpr this)⟩,
-  },
+      (padic_int.mem_nonunits.mpr this)⟩ },
 end
 
 lemma unit_ball.nonunit_mem_iff_top_nilpotent (x : (Q_p p)) :
   x ∈ (Z_p p).nonunits ↔ filter.tendsto (λ n : ℕ, x ^ n) at_top (𝓝 0) :=
-sorry
+begin
+sorry;
+  {have aux : ∀ n : ℕ, ‖ x^n ‖ = ‖ x ‖ ^ n,
+  { exact λ n, norm_pow _ n},
+  rw [tendsto_zero_iff_norm_tendsto_zero, filter.tendsto_congr aux],
+  refine ⟨λ H, _, λ H, _⟩,
+  { obtain ⟨h1, h2⟩ := valuation_subring.mem_nonunits_iff_exists_mem_maximal_ideal.mp H,
+    exact _root_.tendsto_pow_at_top_nhds_0_of_lt_1 (norm_nonneg _)
+       (padic_int.mem_nonunits.mp $ (local_ring.mem_maximal_ideal _).mp h2) },
+  { have : ‖ x ‖ < 1,
+    { suffices : (⟨‖ x ‖, norm_nonneg _⟩ : ℝ≥0) < 1,
+      { rwa [← nnreal.coe_lt_coe, nnreal.coe_one, ← subtype.val_eq_coe] at this },
+      apply nnreal.lt_one_of_tendsto_pow_0,
+      simp_rw ← nnreal.coe_zero, 
+      convert H using 0,
+      sorry,
+        },
+    apply valuation_subring.mem_nonunits_iff_exists_mem_maximal_ideal.mpr,
+    exact ⟨(padic_int.mem_subring_iff p).mpr (le_of_lt this), (local_ring.mem_maximal_ideal _).mpr
+      (padic_int.mem_nonunits.mpr this)⟩ },
+  }
+end
 
 lemma mem_nonunits_iff (x : (Q_p p)) :
   x ∈ (Z_p p).nonunits ↔ (padic_equiv p) x ∈ (comap_Zp p).nonunits :=
