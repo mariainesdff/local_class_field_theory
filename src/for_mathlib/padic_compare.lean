@@ -291,13 +291,10 @@ begin
         (ennreal.tendsto_pow_at_top_nhds_0_of_lt_1 hb₁) h)}},
   end
 
--- lemma real.lt_one_of_tendsto_pow_0 (a : ℝ) (h : tendsto (λ n : ℕ, a^n) at_top (𝓝 0)) : | a | < 1 :=
--- begin
---   sorry
--- end
 
-/-`FAE` For the two lemmas below, use `tendsto_pow_at_top_nhds_0_of_abs_lt_1` and
-`tendsto_pow_at_top_nhds_0_of_norm_lt_1`
+/-`FAE` The two lemmas below have basically the same proof, except from the fact that in one we
+ use that `x : ℚ_[p]` satisfies ‖ x ‖ < 1 iff `p ∣ x` and in the other that `x : (Q_p p)` has
+ ‖ x ‖ < 1 iff it belongs to the maximal ideal...
 -/
 lemma padic_int.nonunit_mem_iff_top_nilpotent (x : ℚ_[p]) :
   x ∈ (padic_int.valuation_subring p).nonunits ↔ filter.tendsto (λ n : ℕ, x ^ n) at_top (𝓝 0) :=
@@ -322,26 +319,26 @@ end
 lemma unit_ball.nonunit_mem_iff_top_nilpotent (x : (Q_p p)) :
   x ∈ (Z_p p).nonunits ↔ filter.tendsto (λ n : ℕ, x ^ n) at_top (𝓝 0) :=
 begin
-sorry;
-  {have aux : ∀ n : ℕ, ‖ x^n ‖ = ‖ x ‖ ^ n,
+  letI : normed_field (Q_p p) := rank_one_valuation.valued_field.to_normed_field (Q_p p) ℤₘ₀,
+  have aux : ∀ n : ℕ, ‖ x^n ‖ = ‖ x ‖ ^ n,
   { exact λ n, norm_pow _ n},
   rw [tendsto_zero_iff_norm_tendsto_zero, filter.tendsto_congr aux],
   refine ⟨λ H, _, λ H, _⟩,
-  { obtain ⟨h1, h2⟩ := valuation_subring.mem_nonunits_iff_exists_mem_maximal_ideal.mp H,
+  { simp_rw norm_pow,
+    have h3 : valued.v x < (1 : ℤₘ₀), sorry,
     exact _root_.tendsto_pow_at_top_nhds_0_of_lt_1 (norm_nonneg _)
-       (padic_int.mem_nonunits.mp $ (local_ring.mem_maximal_ideal _).mp h2) },
+      ((rank_one_valuation.norm_lt_one_iff_val_lt_one _ ).mpr h3), },
   { have : ‖ x ‖ < 1,
     { suffices : (⟨‖ x ‖, norm_nonneg _⟩ : ℝ≥0) < 1,
       { rwa [← nnreal.coe_lt_coe, nnreal.coe_one, ← subtype.val_eq_coe] at this },
       apply nnreal.lt_one_of_tendsto_pow_0,
-      simp_rw ← nnreal.coe_zero, 
-      convert H using 0,
-      sorry,
-        },
+      rwa [← nnreal.tendsto_coe, nnreal.coe_zero] },
     apply valuation_subring.mem_nonunits_iff_exists_mem_maximal_ideal.mpr,
-    exact ⟨(padic_int.mem_subring_iff p).mpr (le_of_lt this), (local_ring.mem_maximal_ideal _).mpr
-      (padic_int.mem_nonunits.mpr this)⟩ },
-  }
+    sorry,
+    -- exact ⟨(padic_int.mem_subring_iff p).mpr (le_of_lt this), (local_ring.mem_maximal_ideal _).mpr
+    --   (padic_int.mem_nonunits.mpr this)⟩ 
+      
+      },
 end
 
 lemma mem_nonunits_iff (x : (Q_p p)) :
