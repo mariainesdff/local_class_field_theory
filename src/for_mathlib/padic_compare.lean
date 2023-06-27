@@ -5,9 +5,9 @@ Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
 
 import discrete_valuation_ring.basic
+import discrete_valuation_ring.complete
 import number_theory.padics.padic_integers
 import ring_theory.dedekind_domain.adic_valuation
-
 import for_mathlib.ring_theory.dedekind_domain.ideal
 
 --import for_mathlib.laurent_series_iso.old_power_series_adic_completion
@@ -265,7 +265,8 @@ def comap_Zp : valuation_subring ℚ_[p] :=
 valuation_subring.comap (Z_p p) (padic_equiv p).symm.to_ring_hom
 
 -- TODO: Ask on Zulip if it exists and move it to another file/folder
-lemma nnreal.lt_one_of_tendsto_pow_0 (a : ℝ≥0) (h : tendsto (λ n : ℕ, a^n) at_top (𝓝 0)) : a < 1 :=
+lemma nnreal.lt_one_of_tendsto_pow_0 (a : ℝ≥0) (h : tendsto (λ n : ℕ, a^n) at_top (𝓝 0)) :
+  a < 1 :=
 begin
   by_cases ha₀ : a = 0,
   {rw ha₀, exact zero_lt_one,},
@@ -325,7 +326,13 @@ begin
   rw [tendsto_zero_iff_norm_tendsto_zero, filter.tendsto_congr aux],
   refine ⟨λ H, _, λ H, _⟩,
   { simp_rw norm_pow,
-    have h3 : valued.v x < (1 : ℤₘ₀), sorry,
+    have h3 : valued.v x < (1 : ℤₘ₀),
+    { obtain ⟨y, hy⟩ : ∃ y : (Z_p p), ↑y =x, sorry,
+      rw ← hy,
+      have := @valuation_lt_one_iff_dvd (Z_p p) _ _ _ (Q_p p) _ _ _ (Z_p p).maximal_ideal y,
+      
+      
+     },
     exact _root_.tendsto_pow_at_top_nhds_0_of_lt_1 (norm_nonneg _)
       ((rank_one_valuation.norm_lt_one_iff_val_lt_one _ ).mpr h3), },
   { have : ‖ x ‖ < 1,
