@@ -1,4 +1,4 @@
-import discrete_valuation_ring.basic
+import ring_theory.discrete_valuation_ring
 
 theorem ring_equiv.discrete_valuation_ring {A  B : Type*} [comm_ring A] [is_domain A]
   [discrete_valuation_ring A] [comm_ring B] [is_domain B] (e : A ≃+* B) :
