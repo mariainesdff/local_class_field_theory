@@ -4,14 +4,10 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
 
-import number_theory.ramification_inertia
 import for_mathlib.ring_theory.valuation.algebra_instances
 import for_mathlib.discrete_valuation_ring
 import for_mathlib.field_theory.minpoly.normal
-import for_mathlib.group_theory.subgroup.zpowers
-import from_mathlib.normed_valued
 import spectral_norm
-import with_zero
 
 noncomputable theory
 
@@ -284,7 +280,7 @@ lemma aux_d_prop [finite_dimensional K L] :
   subgroup.to_add_subgroup (subgroup.map (aux_hom K L) ⊤) =
     add_subgroup.closure {(aux_d K L : ℤ)} := 
 by rw [(int.subgroup_cyclic (subgroup.map (aux_hom K L) ⊤).to_add_subgroup).some_spec,
-    add_subgroup.closure_singleton_eq_zmultiples, add_subgroup.closure_singleton_eq_zmultiples,
+    ← add_subgroup.zmultiples_eq_closure, ← add_subgroup.zmultiples_eq_closure,
     aux_d, int.zmultiples_nat_abs]
 
 lemma aux_d_ne_zero [finite_dimensional K L] : aux_d K L ≠ 0 :=
