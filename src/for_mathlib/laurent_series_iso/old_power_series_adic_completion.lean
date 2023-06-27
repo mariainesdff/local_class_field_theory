@@ -8,6 +8,7 @@ import algebra.order.hom.monoid
 import for_mathlib.polynomial
 import for_mathlib.power_series
 import ring_theory.dedekind_domain.adic_valuation
+import ring_theory.dedekind_domain.ideal
 import ring_theory.laurent_series
 import ring_theory.power_series.well_known
 
@@ -341,26 +342,28 @@ variable (K)
 
 open unique_factorization_monoid
 
-/- TODO: This lemma is now in the file `ring_theory.dedekind_domain.ideal`.
-  The hypothesis `[unique_factorization_monoid R]` should be removed. -/
-lemma count_normalized_factors_eq_count_normalized_factors_span {R : Type*} [comm_ring R]
-  [is_domain R] [is_principal_ideal_ring R] [normalization_monoid R] [unique_factorization_monoid R] 
-    {r X : R} (hr : r ≠ 0) (hX₀ : X ≠ 0) (hX₁ : norm_unit X = 1 )(hX : prime X) : 
-  multiset.count X (normalized_factors r) =
-    multiset.count (ideal.span {X} : ideal R ) (normalized_factors (ideal.span {r})) :=
-begin
-  replace hX₁ : X = normalize X, 
-  { simp only [normalize_apply, hX₁, units.coe_one, mul_one] },
-  have : (ideal.span {normalize X} : ideal  R) = normalize (ideal.span {X}),
-  { simp only [normalize_apply, normalize_eq],
-    apply ideal.span_singleton_mul_right_unit (units.is_unit _) },
-  rw [← part_enat.coe_inj, hX₁, ← multiplicity_eq_count_normalized_factors hX.irreducible hr, this, 
-    ← multiplicity_eq_multiplicity_span, ← multiplicity_eq_count_normalized_factors],
-  refine prime.irreducible (ideal.prime_of_is_prime _ _),
-  {rwa [ne.def, ideal.span_singleton_eq_bot] },
-  {rwa ideal.span_singleton_prime hX₀ },
-  {rwa [ne.def, ideal.zero_eq_bot, ideal.span_singleton_eq_bot] },
-end
+#where
+
+-- /- TODO: This lemma is now in the file `ring_theory.dedekind_domain.ideal`, probably line 1446
+--   The hypothesis `[unique_factorization_monoid R]` should be removed. -/
+-- lemma count_normalized_factors_eq_count_normalized_factors_span {R : Type*} [comm_ring R]
+--   [is_domain R] [is_principal_ideal_ring R] [normalization_monoid R] [unique_factorization_monoid R] 
+--     {r X : R} (hr : r ≠ 0) (hX₀ : X ≠ 0) (hX₁ : norm_unit X = 1 )(hX : prime X) : 
+--   multiset.count X (normalized_factors r) =
+--     multiset.count (ideal.span {X} : ideal R ) (normalized_factors (ideal.span {r})) :=
+-- begin
+--   replace hX₁ : X = normalize X, 
+--   { simp only [normalize_apply, hX₁, units.coe_one, mul_one] },
+--   have : (ideal.span {normalize X} : ideal  R) = normalize (ideal.span {X}),
+--   { simp only [normalize_apply, normalize_eq],
+--     apply ideal.span_singleton_mul_right_unit (units.is_unit _) },
+--   rw [← part_enat.coe_inj, hX₁, ← multiplicity_eq_count_normalized_factors hX.irreducible hr, this, 
+--     ← multiplicity_eq_multiplicity_span, ← multiplicity_eq_count_normalized_factors],
+--   refine prime.irreducible (ideal.prime_of_is_prime _ _),
+--   {rwa [ne.def, ideal.span_singleton_eq_bot] },
+--   {rwa ideal.span_singleton_prime hX₀ },
+--   {rwa [ne.def, ideal.zero_eq_bot, ideal.span_singleton_eq_bot] },
+-- end
 
 --GOLF BOTH AND UNIFY THEM **USED** in `power_series_adic_completion`!
 lemma count_normalized_factors_eq_associates_count'' {R : Type*} [comm_ring R]

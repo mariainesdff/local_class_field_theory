@@ -5,12 +5,11 @@ Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
 
 import discrete_valuation_ring.basic
+import discrete_valuation_ring.complete
 import number_theory.padics.padic_integers
 import ring_theory.dedekind_domain.adic_valuation
-
 import for_mathlib.ring_theory.dedekind_domain.ideal
 
---TODO: remove (put needed lemmas in a separate file)
 --import for_mathlib.laurent_series_iso.old_power_series_adic_completion
 
 
@@ -33,7 +32,7 @@ open unique_factorization_monoid
 
 open_locale classical
 
-section padic
+namespace padic_comparison
 
 open padic
 
@@ -215,13 +214,13 @@ end
 
 
 noncomputable!
-definition padic_ring_equiv : (Q_p p) ≃+* ℚ_[p] :=
+definition padic_equiv : (Q_p p) ≃+* ℚ_[p] :=
 { map_mul' := by {rw ← extension_eq_compare p, use (extension_as_ring_hom p).map_mul'},
   map_add' := by {rw ← extension_eq_compare p, exact (extension_as_ring_hom p).map_add'},
   ..(compare p) 
   }
 
-instance : char_zero (Q_p p) := (padic_ring_equiv p).to_ring_hom.char_zero
+instance : char_zero (Q_p p) := (padic_equiv p).to_ring_hom.char_zero
 
 -- local notation `Z_p` p := (@valued.v (Q_p p) _ ℤₘ₀ _ _).valuation_subring
 @[reducible]
@@ -229,7 +228,7 @@ def Z_p := (@valued.v (Q_p p) _ ℤₘ₀ _ _).valuation_subring
 
 
 /- The lemma `padic_int_ring_equiv_mem` states that an element `x ∈ ℚ_[p]` is in `ℤ_[p]` if and
-only if it is in the image of `Z_p p` via the ring equivalence `padic_ring_equiv p`. See
+only if it is in the image of `Z_p p` via the ring equivalence `padic_equiv p`. See
 `padic_int_ring_equiv` for an upgrade of this statement to a ring equivalence `Z_p p ≃+* ℤ_[p]`-/
 
 def padic_int.valuation_subring : valuation_subring ℚ_[p] :=
@@ -237,12 +236,11 @@ def padic_int.valuation_subring : valuation_subring ℚ_[p] :=
   mem_or_inv_mem' :=
 begin
   have not_field : ¬is_field ℤ_[p] := (discrete_valuation_ring.not_is_field _),
+-- Marking `not_field` as a separate assumption makes the computation faster
   have := ((discrete_valuation_ring.tfae ℤ_[p] not_field).out 0 1).mp
     padic_int.discrete_valuation_ring,
-  have cc := (valuation_ring.iff_is_integer_or_is_integer ℤ_[p] ℚ_[p]).mp this,
-  intros x,
-  specialize cc x,
-  cases cc with hx hx,
+  intro x,
+  rcases (valuation_ring.iff_is_integer_or_is_integer ℤ_[p] ℚ_[p]).mp this x with hx | hx,
   { apply or.intro_left,
     obtain ⟨y, hy⟩ := hx,
     rw ← hy,
@@ -262,49 +260,154 @@ end }
 open filter
 open_locale filter topology
 
-def another_subring : valuation_subring ℚ_[p] :=
-valuation_subring.comap (Z_p p) (padic_ring_equiv p).symm.to_ring_hom
+@[reducible]
+def comap_Zp : valuation_subring ℚ_[p] :=
+valuation_subring.comap (Z_p p) (padic_equiv p).symm.to_ring_hom
 
--- def to_be_sure : (Z_p p) ≃+* (another_subring p) :=
--- begin
-  
--- end
+-- TODO: Ask on Zulip if it exists and move it to another file/folder
+lemma nnreal.lt_one_of_tendsto_pow_0 (a : ℝ≥0) (h : tendsto (λ n : ℕ, a^n) at_top (𝓝 0)) :
+  a < 1 :=
+begin
+  by_cases ha₀ : a = 0,
+  {rw ha₀, exact zero_lt_one,},
+  { by_contradiction ha_le,
+    rw not_lt at ha_le,
+    by_cases ha : a = 1,
+    { simp only [ha, one_pow] at h,
+      exact zero_ne_one (tendsto_nhds_unique h tendsto_const_nhds) },
+    { replace h : tendsto (λ n : ℕ, (a : ennreal) ^n) at_top (𝓝 0),
+      { rw ← ennreal.coe_zero,
+        simp_rw [← ennreal.coe_pow, ennreal.tendsto_coe],
+        exact h, },
+      set b : ennreal := ↑(a⁻¹) with hb,
+      replace h : tendsto (λ n : ℕ, b ^ n) at_top (𝓝 ⊤),
+      { rw [hb, ennreal.coe_inv ha₀],
+        convert (@ennreal.tendsto_inv_iff ℕ at_top (λ n, (↑a) ^ n) 0).mpr h,
+        { funext n, exact ennreal.inv_pow.symm, },
+        { simp only [ennreal.inv_zero] }},
+      have hb₁ : b < 1,
+      { rw [hb, ← ennreal.coe_one, ennreal.coe_lt_coe],
+        exact inv_lt_one (lt_of_le_of_ne ha_le (ne.symm ha)) },
+      exact ennreal.zero_ne_top (tendsto_nhds_unique
+        (ennreal.tendsto_pow_at_top_nhds_0_of_lt_1 hb₁) h)}},
+  end
 
+
+/-`FAE` The two lemmas below have basically the same proof, except from the fact that in one we
+ use that `x : ℚ_[p]` satisfies ‖ x ‖ < 1 iff `p ∣ x` and in the other that `x : (Q_p p)` has
+ ‖ x ‖ < 1 iff it belongs to the maximal ideal...
+-/
 lemma padic_int.nonunit_mem_iff_top_nilpotent (x : ℚ_[p]) :
   x ∈ (padic_int.valuation_subring p).nonunits ↔ filter.tendsto (λ n : ℕ, x ^ n) at_top (𝓝 0) :=
-sorry
+begin
+  have aux : ∀ n : ℕ, ‖ x^n ‖ = ‖ x ‖ ^ n,
+  { exact λ n, norm_pow _ n},
+  rw [tendsto_zero_iff_norm_tendsto_zero, filter.tendsto_congr aux],
+  refine ⟨λ H, _, λ H, _⟩,
+  { obtain ⟨h1, h2⟩ := valuation_subring.mem_nonunits_iff_exists_mem_maximal_ideal.mp H,
+    exact _root_.tendsto_pow_at_top_nhds_0_of_lt_1 (norm_nonneg _)
+       (padic_int.mem_nonunits.mp $ (local_ring.mem_maximal_ideal _).mp h2) },
+  { have : ‖ x ‖ < 1,
+    { suffices : (⟨‖ x ‖, norm_nonneg _⟩ : ℝ≥0) < 1,
+      { rwa [← nnreal.coe_lt_coe, nnreal.coe_one, ← subtype.val_eq_coe] at this },
+      apply nnreal.lt_one_of_tendsto_pow_0,
+      rwa [← nnreal.tendsto_coe, nnreal.coe_zero] },
+    apply valuation_subring.mem_nonunits_iff_exists_mem_maximal_ideal.mpr,
+    exact ⟨(padic_int.mem_subring_iff p).mpr (le_of_lt this), (local_ring.mem_maximal_ideal _).mpr
+      (padic_int.mem_nonunits.mpr this)⟩ },
+end
 
 lemma unit_ball.nonunit_mem_iff_top_nilpotent (x : (Q_p p)) :
   x ∈ (Z_p p).nonunits ↔ filter.tendsto (λ n : ℕ, x ^ n) at_top (𝓝 0) :=
-sorry
+begin
+  letI : normed_field (Q_p p) := rank_one_valuation.valued_field.to_normed_field (Q_p p) ℤₘ₀,
+  have aux : ∀ n : ℕ, ‖ x^n ‖ = ‖ x ‖ ^ n,
+  { exact λ n, norm_pow _ n},
+  rw [tendsto_zero_iff_norm_tendsto_zero, filter.tendsto_congr aux],
+  refine ⟨λ H, _, λ H, _⟩,
+  { simp_rw norm_pow,
+    have h3 : valued.v x < (1 : ℤₘ₀),
+    { obtain ⟨y, hy⟩ : ∃ y : (Z_p p), ↑y =x, sorry,
+      rw ← hy,
+      have := @valuation_lt_one_iff_dvd (Z_p p) _ _ _ (Q_p p) _ _ _ (Z_p p).maximal_ideal y,
+      
+      
+     },
+    exact _root_.tendsto_pow_at_top_nhds_0_of_lt_1 (norm_nonneg _)
+      ((rank_one_valuation.norm_lt_one_iff_val_lt_one _ ).mpr h3), },
+  { have : ‖ x ‖ < 1,
+    { suffices : (⟨‖ x ‖, norm_nonneg _⟩ : ℝ≥0) < 1,
+      { rwa [← nnreal.coe_lt_coe, nnreal.coe_one, ← subtype.val_eq_coe] at this },
+      apply nnreal.lt_one_of_tendsto_pow_0,
+      rwa [← nnreal.tendsto_coe, nnreal.coe_zero] },
+    apply valuation_subring.mem_nonunits_iff_exists_mem_maximal_ideal.mpr,
+    sorry,
+    -- exact ⟨(padic_int.mem_subring_iff p).mpr (le_of_lt this), (local_ring.mem_maximal_ideal _).mpr
+    --   (padic_int.mem_nonunits.mpr this)⟩ 
+      
+      },
+end
 
-lemma mem_nonunits_iff_comap (x : (Q_p p)) :
-  x ∈ (Z_p p).nonunits ↔ (padic_ring_equiv p) x ∈ (another_subring p).nonunits :=
-sorry
---maybe use valuation_subring.coe_mem_nonunits_iff
+lemma mem_nonunits_iff (x : (Q_p p)) :
+  x ∈ (Z_p p).nonunits ↔ (padic_equiv p) x ∈ (comap_Zp p).nonunits :=
+begin
+  let φ : (Z_p p) ≃+* (comap_Zp p),
+  { have :=  (Z_p p).to_subring.comap_equiv_eq_map_symm (padic_equiv p).symm,
+    replace this := ring_equiv.subring_congr this.symm,
+    use (@ring_equiv.subring_map _ _ _ _  (Z_p p).to_subring (padic_equiv p)).trans this, },
+  refine ⟨λ hx, _, λ hx, _⟩,
+  all_goals { rw valuation_subring.mem_nonunits_iff_exists_mem_maximal_ideal at hx,
+    rw valuation_subring.mem_nonunits_iff_exists_mem_maximal_ideal},
+    { refine ⟨_, map_nonunit (↑φ : ((Z_p p) →+* (comap_Zp p))) _ hx.some_spec⟩ },
+    { rcases hx with ⟨h1, h2⟩,
+      have h3 := valuation_subring.mem_comap.mp h1,
+      have : ((padic_equiv p).symm.to_ring_hom) ((padic_equiv p) x) = 
+        ((padic_equiv p).symm.to_ring_hom) ((padic_equiv p).to_ring_hom x) := rfl,
+      simp_rw [this, ← ring_hom.comp_apply,
+        ring_equiv.symm_to_ring_hom_comp_to_ring_hom, ring_hom.id_apply] at h3,
+      have h4 : (φ.symm) (⟨(padic_equiv p) x, h1⟩ : {z // z ∈ comap_Zp p}) = ⟨x, h3⟩,
+      { set b : ℚ_[p] := φ ⟨x, h3⟩ with hb,
+        have : b = (padic_equiv p) x := rfl,
+        simp_rw [← this, hb, set_like.eta, ring_equiv.symm_apply_apply], },
+      replace h2 := map_nonunit (↑φ.symm : ((comap_Zp p) →+* (Z_p p))) _ h2,
+      erw h4 at h2,
+      refine ⟨_, h2⟩ },
+end
 
-lemma key : padic_int.valuation_subring p = another_subring p :=
+
+lemma valuation_subrings_eq : padic_int.valuation_subring p = comap_Zp p :=
 begin
   rw ← valuation_subring.nonunits_inj,
   ext x,
-  split,
-  { intro hx,
-    rw padic_int.nonunit_mem_iff_top_nilpotent at hx,
-    sorry,},
-  { intro hx,
-    sorry,  },
+  refine ⟨λ hx, _, λ hx, _⟩,
+  { rw [← (padic_equiv p).apply_symm_apply x], 
+    rw [← mem_nonunits_iff, 
+      unit_ball.nonunit_mem_iff_top_nilpotent, ← _root_.map_zero (padic_equiv p).symm],
+    simp_rw [← _root_.map_pow (padic_equiv p).symm],
+    apply (@continuous.continuous_at _ _ _ _ _ 0 (compare p).3.continuous).tendsto.comp,
+    rwa ← padic_int.nonunit_mem_iff_top_nilpotent },
+  { rw [←  (padic_equiv p).apply_symm_apply x, ← mem_nonunits_iff, 
+      unit_ball.nonunit_mem_iff_top_nilpotent] at hx,
+    replace hx := @tendsto.comp ℕ (Q_p p) ℚ_[p] (λ n, ((padic_equiv p).symm x) ^ n) (padic_equiv p)
+      at_top (𝓝 0) (𝓝 0) _ hx,
+    -- We postpone the verification of the first assumption in `tendsto.comp`
+    { simp_rw [← _root_.map_pow (padic_equiv p).symm x, function.comp, ring_equiv.apply_symm_apply]
+      at hx,
+      rwa padic_int.nonunit_mem_iff_top_nilpotent },
+    { rw [← _root_.map_zero (padic_equiv p)],
+      apply continuous.tendsto (compare p).symm.3.continuous 0}},
 end
 
 
 --TODO: Golf proof!
 lemma padic_int_ring_equiv_range :
-  (Z_p p).map (padic_ring_equiv p).to_ring_hom = padic_int.subring p :=
+  (Z_p p).map (padic_equiv p).to_ring_hom = padic_int.subring p :=
 begin
-  have : (another_subring p).to_subring = (padic_int.valuation_subring p).to_subring,
-  rw ← key,
+  have : (comap_Zp p).to_subring = (padic_int.valuation_subring p).to_subring,
+  rw ← valuation_subrings_eq,
   convert this,
   ext x,
-  rw another_subring,
+  -- rw comap_Zp,
   -- rw ← subring.mem_carrier,
   -- rw ← subring.mem_carrier,
   simp only [subring.mem_carrier, subring.mem_map, --valuation_subring.mem_to_subring, 
@@ -319,7 +422,7 @@ begin
     exact hy, },
   { intro hx,
     simp at hx,
-    use (padic_ring_equiv p).symm.to_ring_hom x,
+    use (padic_equiv p).symm.to_ring_hom x,
     split,
     { simp only [valuation_subring.mem_to_subring, mem_valuation_subring_iff],
       exact hx },
@@ -327,7 +430,7 @@ begin
 end
 
 -- lemma padic_int_ring_equiv_mem (x : ℚ_[p]) :
---   x ∈ ((Z_p p).map (padic_ring_equiv p).to_ring_hom) ↔ x ∈ padic_int.subring p :=
+--   x ∈ ((Z_p p).map (padic_equiv p).to_ring_hom) ↔ x ∈ padic_int.subring p :=
 -- begin
 --   split,
 --   { intro h,
@@ -343,7 +446,7 @@ end
 -- end
 
 -- lemma padic_int_ring_equiv_range' :
---   (Z_p p).map (padic_ring_equiv p).to_ring_hom = padic_int.subring p :=
+--   (Z_p p).map (padic_equiv p).to_ring_hom = padic_int.subring p :=
 -- by {ext, rw padic_int_ring_equiv_mem}
 
 noncomputable!
@@ -355,7 +458,7 @@ definition padic_int_ring_equiv :  (Z_p p) ≃+* ℤ_[p] :=
 
 -- instance padic.valued : valued ℚ_[p] ℤₘ₀ :=
 -- { v := 
---   { to_fun    := λ x, valued.v ((padic_ring_equiv p).symm x),
+--   { to_fun    := λ x, valued.v ((padic_equiv p).symm x),
 --     map_zero' := sorry,
 --     map_one'  := sorry,
 --     map_mul'  := sorry,
@@ -364,4 +467,4 @@ definition padic_int_ring_equiv :  (Z_p p) ≃+* ℤ_[p] :=
 --   ..(infer_instance : uniform_space ℚ_[p]),
 --   ..non_unital_normed_ring.to_normed_add_comm_group }
 
-end padic
+end padic_comparison
