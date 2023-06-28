@@ -10,8 +10,8 @@ import for_mathlib.ring_theory.valuation.minpoly
 
 noncomputable theory
 
-open discrete_valuation discrete_valuation.discrete_norm_extension function multiplicative nnreal 
-  finite_dimensional minpoly polynomial valuation with_zero
+open add_subgroup discrete_valuation discrete_valuation.discrete_norm_extension function 
+  multiplicative nnreal finite_dimensional minpoly polynomial subgroup valuation with_zero
 
 open_locale discrete_valuation nnreal
 
@@ -59,28 +59,24 @@ def pow_extension_on_units [finite_dimensional K L] :
     exact map_mul_aux x y,
   end } 
 
-variables {K L}
-
 lemma pow_extension_on_units_apply [finite_dimensional K L] (x : Lˣ) : 
   pow_extension_on_units K L x = with_zero.unzero (valuation.unit_pow_ne_zero hv.v x) :=
 rfl
 
-open multiplicative
+def exp_extension_on_units [finite_dimensional K L] : ℕ :=
+int.nat_abs (int.subgroup_cyclic (map (pow_extension_on_units K L) ⊤).to_add_subgroup).some
 
-variables (K L)
+variables {K L}
 
-def aux_d [finite_dimensional K L] : ℕ :=
-int.nat_abs (int.subgroup_cyclic (subgroup.map (pow_extension_on_units K L) ⊤).to_add_subgroup).some
+--TODO : can we get rid of this?
+lemma exp_extension_on_units_generates_range' [finite_dimensional K L] : 
+  to_add_subgroup (map (pow_extension_on_units K L) ⊤) =
+    closure {(exp_extension_on_units K L : ℤ)} := 
+by rw [(int.subgroup_cyclic (map (pow_extension_on_units K L) 
+  ⊤).to_add_subgroup).some_spec, ← zmultiples_eq_closure, ← zmultiples_eq_closure, 
+  exp_extension_on_units, int.zmultiples_nat_abs]
 
-variables {K L} 
-lemma aux_d_prop [finite_dimensional K L] : 
-  subgroup.to_add_subgroup (subgroup.map (pow_extension_on_units K L) ⊤) =
-    add_subgroup.closure {(aux_d K L : ℤ)} := 
-by rw [(int.subgroup_cyclic (subgroup.map (pow_extension_on_units K L) ⊤).to_add_subgroup).some_spec,
-    ← add_subgroup.zmultiples_eq_closure, ← add_subgroup.zmultiples_eq_closure,
-    aux_d, int.zmultiples_nat_abs]
-
-lemma aux_d_ne_zero [finite_dimensional K L] : aux_d K L ≠ 0 :=
+lemma exp_extension_on_units_ne_zero [finite_dimensional K L] : exp_extension_on_units K L ≠ 0 :=
 begin
   have h_alg : algebra.is_algebraic K L := algebra.is_algebraic_of_finite K L,
   obtain ⟨x, hx⟩ := exists_uniformizer hv.v,
@@ -89,11 +85,11 @@ begin
   set z : Lˣ := units.map (algebra_map K L).to_monoid_hom (is_unit.unit hx_unit) with hz,
   rw is_uniformizer at hx,
   by_contradiction h0,
-  have h := aux_d_prop,
-  rw [h0, zmod.nat_cast_self, add_subgroup.closure_singleton_zero, map_eq_bot_iff,
+  have h := exp_extension_on_units_generates_range',
+  rw [h0, zmod.nat_cast_self, closure_singleton_zero, _root_.map_eq_bot_iff,
     subgroup.map_eq_bot_iff, top_le_iff] at h,
   have hz1 : pow_extension_on_units K L z = 1,
-  { rw [← monoid_hom.mem_ker, h], exact subgroup.mem_top _ },
+  { rw [← monoid_hom.mem_ker, h], exact mem_top _ },
   have hzne1 : pow_extension_on_units K L z ≠ 1,
   { have hv : valued.v ((minpoly K ((units.map (algebra_map K L).to_monoid_hom) 
     hx_unit.unit).val).coeff 0) = valued.v (x : K),
@@ -108,52 +104,54 @@ begin
   exact hzne1 hz1,
 end
 
-lemma aux_d_pos [finite_dimensional K L] : 0 < aux_d K L := nat.pos_of_ne_zero aux_d_ne_zero
+lemma exp_extension_on_units_pos [finite_dimensional K L] : 0 < exp_extension_on_units K L := 
+nat.pos_of_ne_zero exp_extension_on_units_ne_zero
 
 -- This proof is ridiculous (TODO: golf)
-lemma range_eq_aux_d_pow [finite_dimensional K L] :
-  (subgroup.map (pow_extension_on_units K L) ⊤) = subgroup.closure {of_add (aux_d K L : ℤ)} :=
+lemma exp_extension_on_units_generates_range [finite_dimensional K L] :
+  (map (pow_extension_on_units K L) ⊤) = 
+    closure {of_add (exp_extension_on_units K L : ℤ)} :=
 begin
-  have h' : add_subgroup.to_subgroup (subgroup.to_add_subgroup (subgroup.map (pow_extension_on_units K L) ⊤)) =
-    add_subgroup.to_subgroup (add_subgroup.closure {(aux_d K L : ℤ)}),
-  { rw aux_d_prop, },
+  have h' : to_subgroup (to_add_subgroup (map (pow_extension_on_units K L) ⊤)) =
+      to_subgroup (closure {(exp_extension_on_units K L : ℤ)}),
+  { rw exp_extension_on_units_generates_range', },
   convert h',
   { ext x,
-    have hx : x ∈ subgroup.zpowers (of_add (aux_d K L : ℤ)) ↔ 
-    x ∈ (subgroup.zpowers (of_add (aux_d K L : ℤ)) : set (multiplicative ℤ)),
+    have hx : x ∈ zpowers (of_add (exp_extension_on_units K L : ℤ)) ↔ 
+    x ∈ (zpowers (of_add (exp_extension_on_units K L : ℤ)) : set (multiplicative ℤ)),
     { refl },
-    have hx' : x ∈ (add_subgroup.to_subgroup (add_subgroup.closure {(aux_d K L : ℤ)})) ↔
-      x.to_add ∈ (add_subgroup.closure {(aux_d K L : ℤ)}),
-    { simp only [add_subgroup.to_subgroup, rel_iso.coe_fn_mk, equiv.coe_fn_mk,
-        add_submonoid.to_submonoid, add_subgroup.coe_to_add_submonoid],
+    have hx' : x ∈ (to_subgroup (closure {(exp_extension_on_units K L : ℤ)})) ↔
+      x.to_add ∈ (add_subgroup.closure {(exp_extension_on_units K L : ℤ)}),
+    { simp only [to_subgroup, rel_iso.coe_fn_mk, equiv.coe_fn_mk,
+        add_submonoid.to_submonoid, coe_to_add_submonoid],
       rw ← subgroup.mem_carrier,
-      change x ∈ to_add ⁻¹' (↑(add_subgroup.closure {(aux_d K L : ℤ)}) : set ℤ)
-      ↔ to_add x ∈ add_subgroup.closure {(aux_d K L : ℤ)},
+      change x ∈ to_add ⁻¹' (↑(add_subgroup.closure {(exp_extension_on_units K L : ℤ)}) : set ℤ)
+      ↔ to_add x ∈ add_subgroup.closure {(exp_extension_on_units K L : ℤ)},
       rw set.mem_preimage,
       refl,},
-    have hx'' : x ∈ of_add '' (add_subgroup.zmultiples (aux_d K L : ℤ) : set ℤ) ↔
-      x.to_add ∈ ↑(add_subgroup.zmultiples (aux_d K L : ℤ)),
+    have hx'' : x ∈ of_add '' (zmultiples (exp_extension_on_units K L : ℤ) : set ℤ) ↔
+      x.to_add ∈ ↑(zmultiples (exp_extension_on_units K L : ℤ)),
     { simp only [set.mem_image, set_like.mem_coe],
       split,
       { rintros ⟨n, hn, hnx⟩, rw ← hnx, exact hn, },
       { intro h, exact ⟨to_add x, h, rfl⟩, }, },
-    rw [subgroup.mem_closure_singleton, ← subgroup.mem_zpowers_iff, hx,
+    rw [subgroup.mem_closure_singleton, ← mem_zpowers_iff, hx,
       ← of_add_image_zmultiples_eq_zpowers_of_add, hx', hx'', 
-      add_subgroup.mem_closure_singleton, ← add_subgroup.mem_zmultiples_iff],
+      add_subgroup.mem_closure_singleton, ← mem_zmultiples_iff],
     refl, },
 end
 
 variable (K)
 
 lemma aux_w [finite_dimensional K L] (x : Lˣ) : 
-  ∃ (n : ℤ), (((of_add (-1 : ℤ))^n)^(aux_d K L) : ℤₘ₀) =
+  ∃ (n : ℤ), (((of_add (-1 : ℤ))^n)^(exp_extension_on_units K L) : ℤₘ₀) =
   (valued.v ((minpoly K (x : L)).coeff 0))^((finrank K L)/((minpoly K (x : L)).nat_degree)) :=
 begin
   set y := (with_zero.unzero (valuation.unit_pow_ne_zero hv.v x)),
   have h_mem : (with_zero.unzero (valuation.unit_pow_ne_zero hv.v x)) ∈ 
-    subgroup.closure ({of_add (aux_d K L : ℤ)} : set (multiplicative ℤ)),
-  { rw [← range_eq_aux_d_pow, subgroup.mem_map],
-    exact ⟨x, subgroup.mem_top x, rfl⟩ },
+    subgroup.closure ({of_add (exp_extension_on_units K L : ℤ)} : set (multiplicative ℤ)),
+  { rw [← exp_extension_on_units_generates_range, subgroup.mem_map],
+    exact ⟨x, mem_top x, rfl⟩ },
   rw subgroup.mem_closure_singleton at h_mem,
   obtain ⟨n, hn⟩ := h_mem,
   use - n,
@@ -161,37 +159,37 @@ begin
   exact with_zero.coe_unzero _,
 end
 
-def w_def [finite_dimensional K L] : L → ℤₘ₀ :=
+def extension_def [finite_dimensional K L] : L → ℤₘ₀ :=
 λ x, by classical; exact if hx : x = 0 then 0 else 
   (of_add (-1 : ℤ))^(aux_w K  (is_unit_iff_ne_zero.mpr hx).unit).some
 
 variable {K}
 
-lemma w_def_apply [finite_dimensional K L]  (x : L) :
-w_def K x = (if hx : x = 0 then 0 else 
+lemma extension_def_apply [finite_dimensional K L]  (x : L) :
+extension_def K x = (if hx : x = 0 then 0 else 
   (of_add (-1 : ℤ))^(aux_w K (is_unit_iff_ne_zero.mpr hx).unit).some) := rfl
 
-lemma w_def_mul [finite_dimensional K L] (x y : L) :
-  w_def K (x * y) = w_def K x * w_def K y :=
+lemma extension_def_mul [finite_dimensional K L] (x y : L) :
+  extension_def K (x * y) = extension_def K x * extension_def K y :=
 begin
   have h_alg : algebra.is_algebraic K L := algebra.is_algebraic_of_finite K L,
   by_cases hx : x = 0,
   { have hxy : x * y = 0,
     { rw [hx, zero_mul] },
-    rw [w_def_apply, dif_pos hxy, w_def_apply, dif_pos hx, zero_mul] },
+    rw [extension_def_apply, dif_pos hxy, extension_def_apply, dif_pos hx, zero_mul] },
     { by_cases hy : y = 0,
       { have hxy : x * y = 0,
         { rw [hy, mul_zero] },
-        simp only [w_def_apply],
+        simp only [extension_def_apply],
         rw [dif_pos hxy, dif_pos hy, mul_zero] },
       { have hxy : x * y ≠ 0,
         { exact mul_ne_zero hx hy, },
-        simp only [w_def_apply],
+        simp only [extension_def_apply],
         rw [dif_neg hx, dif_neg hy, dif_neg (mul_ne_zero hx hy)],
         have hinj : injective (with_zero_mult_int_to_nnreal (base_ne_zero K hv.v)),
         { exact (with_zero_mult_int_to_nnreal_strict_mono (one_lt_base K hv.v)).injective },
-        rw [← function.injective.eq_iff hinj, ← pow_left_inj _ _ aux_d_pos, ← nnreal.coe_eq,
-          _root_.map_mul, mul_pow, ← _root_.map_pow,
+        rw [← function.injective.eq_iff hinj, ← pow_left_inj _ _ exp_extension_on_units_pos, 
+          ← nnreal.coe_eq, _root_.map_mul, mul_pow, ← _root_.map_pow,
           (aux_w K (is_unit_iff_ne_zero.mpr hxy).unit).some_spec, nnreal.coe_mul],
         nth_rewrite 1 ← _root_.map_pow,
         rw (aux_w K (is_unit_iff_ne_zero.mpr hx).unit).some_spec,
@@ -209,15 +207,15 @@ end
 variables (K L)
 
 --set_option trace.class_instances true
-def w [finite_dimensional K L] : valuation L ℤₘ₀ := 
-{ to_fun    := w_def K,
-  map_zero' := by rw [w_def_apply, dif_pos rfl],
+def extension [finite_dimensional K L] : valuation L ℤₘ₀ := 
+{ to_fun    := extension_def K,
+  map_zero' := by rw [extension_def_apply, dif_pos rfl],
   map_one'  := 
   begin
-    rw [w_def_apply, dif_neg one_ne_zero],
+    rw [extension_def_apply, dif_neg one_ne_zero],
     have h1 : (1 : L) ≠ 0 := one_ne_zero, 
     set u := (aux_w K (is_unit_iff_ne_zero.mpr h1).unit).some with hu_def,
-    have hu : (↑(of_add (-1 : ℤ)) ^ u) ^ aux_d K L = 
+    have hu : (↑(of_add (-1 : ℤ)) ^ u) ^ exp_extension_on_units K L = 
       valued.v ((minpoly K ↑((is_unit_iff_ne_zero.mpr h1).unit)).coeff 0) ^ 
         (finrank K L / (minpoly K ((is_unit_iff_ne_zero.mpr h1).unit : L)).nat_degree) := 
     (aux_w K (is_unit_iff_ne_zero.mpr h1).unit).some_spec,
@@ -230,39 +228,39 @@ def w [finite_dimensional K L] : valuation L ℤₘ₀ :=
     rw or_eq_of_eq_false_right at hu',
     rw [← hu_def, ← with_zero.coe_one, ← of_add_zero, ← with_zero.coe_zpow, with_zero.coe_inj, 
       ← int.of_add_mul, hu'],
-    { simp only [aux_d_ne_zero, nat.cast_eq_zero] },
+    { simp only [exp_extension_on_units_ne_zero, nat.cast_eq_zero] },
     { exact ne_zero.one L },
   end,
-  map_mul'  := w_def_mul,
+  map_mul'  := extension_def_mul,
   map_add_le_max' := λ x y,
   begin
     have h_alg : algebra.is_algebraic K L := algebra.is_algebraic_of_finite K L,
     by_cases hx : x = 0,
     { have hxy : x + y = y,
       { rw [hx, zero_add] },
-      simp only [w_def_apply, dif_pos hx, hxy],
+      simp only [extension_def_apply, dif_pos hx, hxy],
       rw max_eq_right, 
       exact le_refl _,
       { exact zero_le' }},
     { by_cases hy : y = 0,
       { have hxy : x + y = x,
         { rw [hy, add_zero] },
-          simp only [w_def_apply, dif_pos hy, hxy],
+          simp only [extension_def_apply, dif_pos hy, hxy],
           rw max_eq_left, 
           exact le_refl _,
         { exact zero_le' }},
       { by_cases hxy : x + y = 0,
-        { simp only [w_def_apply, dif_pos hxy, zero_le'] },
-        { simp only [w_def_apply, dif_neg hx, dif_neg hy, dif_neg hxy],
+        { simp only [extension_def_apply, dif_pos hxy, zero_le'] },
+        { simp only [extension_def_apply, dif_neg hx, dif_neg hy, dif_neg hxy],
           set ux := (aux_w K (is_unit_iff_ne_zero.mpr hx).unit).some with hux_def,
           set uy := (aux_w K (is_unit_iff_ne_zero.mpr hy).unit).some with huy_def,
           set uxy := (aux_w K (is_unit_iff_ne_zero.mpr hxy).unit).some with huxy_def,
           rw [← hux_def, ← huy_def, ← huxy_def],
         rw _root_.le_max_iff,
         simp only [← with_zero.coe_zpow, coe_le_coe],
-        have hd : 0 < (aux_d K L: ℤ), 
+        have hd : 0 < (exp_extension_on_units K L: ℤ), 
         { rw [int.coe_nat_pos],
-          exact nat.pos_of_ne_zero aux_d_ne_zero, },
+          exact nat.pos_of_ne_zero exp_extension_on_units_ne_zero, },
         rw [← zpow_le_zpow_iff' hd, zpow_coe_nat, zpow_coe_nat, ← coe_le_coe, 
           with_zero.coe_pow, with_zero.coe_zpow,
           (aux_w K (is_unit_iff_ne_zero.mpr hxy).unit).some_spec],
@@ -297,22 +295,25 @@ def w [finite_dimensional K L] : valuation L ℤₘ₀ :=
           exact ne_of_gt (minpoly.nat_degree_pos (is_algebraic_iff_is_integral.mp (h_alg _))) }}}}
   end }
 
+namespace extension
+
 variables {K L}
 
-lemma w_apply [finite_dimensional K L] (x : L) : 
-   w K L x = (if hx : x = 0 then 0 else 
+lemma apply [finite_dimensional K L] (x : L) : 
+   extension K L x = (if hx : x = 0 then 0 else 
     (of_add (-1 : ℤ))^(aux_w K (is_unit_iff_ne_zero.mpr hx).unit).some) :=
 rfl
 
-lemma w_apply_if_neg [finite_dimensional K L] {x : L} (hx : x ≠ 0) :
-  w K L x = ((of_add (-1 : ℤ))^(aux_w K (is_unit_iff_ne_zero.mpr hx).unit).some) :=
-by rw [w_apply, dif_neg hx]
+lemma apply_if_neg [finite_dimensional K L] {x : L} (hx : x ≠ 0) :
+  extension K L x = ((of_add (-1 : ℤ))^(aux_w K (is_unit_iff_ne_zero.mpr hx).unit).some) :=
+by rw [apply, dif_neg hx]
 
-lemma w_le_one_iff_discrete_norm_extension_le_one [finite_dimensional K L] (x : L) :
-  w K L x ≤ (1 : ℤₘ₀) ↔ discrete_norm_extension (algebra.is_algebraic_of_finite K L) x ≤ 1 :=
+lemma le_one_iff_discrete_norm_extension_le_one [finite_dimensional K L] (x : L) :
+  extension K L x ≤ (1 : ℤₘ₀) ↔ 
+    discrete_norm_extension (algebra.is_algebraic_of_finite K L) x ≤ 1 :=
 begin
   set h_alg := algebra.is_algebraic_of_finite K L,
-  rw [w_apply],
+  rw [apply],
   split_ifs with hx,
   { simp only [hx, _root_.map_zero, zero_le_one] },
   { have h_le_iff : discrete_norm_extension h_alg x ≤ 1 ↔ 
@@ -331,7 +332,7 @@ begin
       with_zero.coe_le_coe, ← zpow_coe_nat, ← int.of_add_mul, ← int.of_add_mul, ← of_add_zero,
       of_add_le, of_add_le],
     exact ⟨λ h, mul_nonpos_of_nonpos_of_nonneg h (nat.cast_nonneg _), 
-      λ h, nonpos_of_mul_nonpos_left h (nat.cast_pos.mpr aux_d_pos)⟩ }
+      λ h, nonpos_of_mul_nonpos_left h (nat.cast_pos.mpr exp_extension_on_units_pos)⟩ }
 end
 
 
@@ -339,11 +340,12 @@ variables (K L)
 
 --TODO: Probably change the name because we already use uniformizer a lot
 lemma exists_uniformizer' [finite_dimensional K L] :
-  ∃ (x : Lˣ), pow_extension_on_units K L x = of_add (-aux_d K L : ℤ) :=
+  ∃ (x : Lˣ), pow_extension_on_units K L x = of_add (-exp_extension_on_units K L : ℤ) :=
 begin
-  have h_mem : of_add (aux_d K L : ℤ) ∈ subgroup.closure {of_add (aux_d K L : ℤ)},
+  have h_mem : of_add (exp_extension_on_units K L : ℤ) ∈ 
+    subgroup.closure {of_add (exp_extension_on_units K L : ℤ)},
   { exact subgroup.mem_closure_singleton.mpr ⟨1, by rw zpow_one⟩,},
-  rw [← range_eq_aux_d_pow, subgroup.mem_map] at h_mem,
+  rw [← exp_extension_on_units_generates_range, subgroup.mem_map] at h_mem,
   obtain ⟨x, _, hx⟩ := h_mem,
   use x⁻¹,
   rw [map_inv, hx],
@@ -351,25 +353,26 @@ begin
 end
 
 instance is_discrete_of_finite [finite_dimensional K L]  :
-  is_discrete (w K L) := 
+  is_discrete (extension K L) := 
 begin
   set x := (exists_uniformizer' K L).some,
   have hx := (exists_uniformizer' K L).some_spec,
   rw ←  with_zero.coe_inj at hx,
-  simp only [pow_extension_on_units, units.val_eq_coe, monoid_hom.coe_mk, coe_unzero, of_add_neg_nat] at hx,
-  have hπ1 : w K L x = (multiplicative.of_add (-1 : ℤ)),
-  { rw [w_apply_if_neg, ← with_zero.zpow_left_inj _ with_zero.coe_ne_zero 
-      (nat.cast_ne_zero.mpr aux_d_ne_zero)],
+  simp only [pow_extension_on_units, units.val_eq_coe, monoid_hom.coe_mk, coe_unzero,
+    of_add_neg_nat] at hx,
+  have hπ1 : extension K L x = (multiplicative.of_add (-1 : ℤ)),
+  { rw [extension.apply_if_neg, ← with_zero.zpow_left_inj _ with_zero.coe_ne_zero 
+      (nat.cast_ne_zero.mpr exp_extension_on_units_ne_zero)],
     { have hx0 : (x : L) ≠ 0, { exact units.ne_zero _ },
       rw [zpow_coe_nat, zpow_coe_nat, ← hx],
       erw (aux_w K x).some_spec,
       refl, },
     { exact zpow_ne_zero _ with_zero.coe_ne_zero,
     exact units.ne_zero _ }},
-  set π : (w K L).valuation_subring := ⟨(exists_uniformizer' K L).some, 
+  set π : (extension K L).valuation_subring := ⟨(exists_uniformizer' K L).some, 
     by rw [mem_valuation_subring_iff, hπ1]; exact le_of_lt with_zero.of_add_neg_one_lt_one⟩, 
-  have hπ : w K L (π : L) = (multiplicative.of_add (-1 : ℤ)) := hπ1,
-  apply is_discrete_of_exists_uniformizer (w K L) hπ,
+  have hπ : extension K L (π : L) = (multiplicative.of_add (-1 : ℤ)) := hπ1,
+  apply is_discrete_of_exists_uniformizer (extension K L) hπ,
 end
 
 variables {K L}
@@ -379,10 +382,6 @@ variables {K L}
 def uniform_space_extension (h_alg : algebra.is_algebraic K L) : 
   uniform_space L := 
 discretely_normed_field_extension_uniform_space h_alg
-/- begin
-  letI : valued L ℤₘ₀ := valued.mk' (w K L),
-  exact valued.to_uniform_space,
-end -/
 
 variables (K L)
 
@@ -397,7 +396,7 @@ end
 def extension_valued [finite_dimensional K L] : valued L ℤₘ₀ := --valued.mk' (w 𝔽_[p]⟮⟮X⟯⟯ K)
 begin
   letI : normed_field L := extension_normed_field K L,
-  exact { v := w K L,
+  exact { v := extension K L,
   is_topological_valuation := λ U,
   begin
     rw metric.mem_nhds_iff,
@@ -447,17 +446,18 @@ variables {K L}
 
 lemma valuation_le_one_of_integer [fr : is_fraction_ring hv.v.valuation_subring K] 
   [finite_dimensional K L] (x : (integral_closure hv.v.valuation_subring L)) : 
-  w K L (x : L) ≤ 1 :=
+  extension K L (x : L) ≤ 1 :=
 begin
   letI : is_fraction_ring hv.v.valuation_subring.to_subring K := fr,
-  exact (w_le_one_iff_discrete_norm_extension_le_one _).mpr (le_one_of_integer _ x)
+  exact (extension.le_one_iff_discrete_norm_extension_le_one _).mpr (le_one_of_integer _ x)
 end
 
 variables (K L)
 
 lemma integral_closure_eq_integer [is_fraction_ring hv.v.valuation_subring K] 
   [finite_dimensional K L] :
-  (integral_closure hv.v.valuation_subring L).to_subring = (w K L).valuation_subring.to_subring :=
+  (integral_closure hv.v.valuation_subring L).to_subring = 
+    (extension K L).valuation_subring.to_subring :=
 begin
   classical,
   have h_alg : algebra.is_algebraic K L := algebra.is_algebraic_of_finite K L,
@@ -467,7 +467,7 @@ begin
   simp only [subalgebra.mem_to_subring, valuation_subring.mem_to_subring, 
     mem_valuation_subring_iff, h, is_integral, ring_hom.is_integral_elem],
   refine ⟨λ hx, valuation_le_one_of_integer ⟨x, hx⟩, λ hx, _⟩,
-  { rw w_le_one_iff_discrete_norm_extension_le_one at hx,
+  { rw extension.le_one_iff_discrete_norm_extension_le_one at hx,
     let q := minpoly K x,
       have hq : ∀ n : ℕ, (q.coeff n) ∈ hv.v.valuation_subring,
       { exact (le_one_iff_integral_minpoly _ _).mp hx, },
@@ -477,31 +477,39 @@ begin
         by rw [int_polynomial.eval₂_eq, minpoly.aeval]⟩ }
 end
 
+end extension
+
+open extension
+
+namespace integral_closure
+
 --Chapter 2, Section 2, Proposition 3 in Serre's Local Fields
-instance dvr_of_finite_extension [finite_dimensional K L] : 
+instance discrete_valuation_ring_of_finite_extension [finite_dimensional K L] : 
   discrete_valuation_ring (integral_closure hv.v.valuation_subring L) := 
 begin
-  letI hw : valued L ℤₘ₀ := valued.mk' (w K L),
-  letI hw_disc : is_discrete hw.v := discrete_valuation.is_discrete_of_finite K L,
-  let e : (w K L).valuation_subring ≃+* (integral_closure hv.v.valuation_subring L) :=
+  letI hw : valued L ℤₘ₀ := valued.mk' (extension K L),
+  letI hw_disc : is_discrete hw.v := extension.is_discrete_of_finite K L,
+  let e : (extension K L).valuation_subring ≃+* (integral_closure hv.v.valuation_subring L) :=
   ring_equiv.subring_congr (integral_closure_eq_integer K L).symm,
   exact ring_equiv.discrete_valuation_ring e,
 end
 
 --FROM NOW ON WE SHOULD THINK IF WE WANT TO KEEP THESE RESULTS
 
-lemma integral_closure_finrank : finite_dimensional.finrank hv.v.valuation_subring 
+lemma finrank_eq : finite_dimensional.finrank hv.v.valuation_subring 
   (integral_closure hv.v.valuation_subring L) = finite_dimensional.finrank K L :=
 sorry
+
+end integral_closure
 
 variables [finite_dimensional K L] 
 
 local notation `K₀` := hv.v.valuation_subring
-local notation `L₀` := (w K L).valuation_subring
+local notation `L₀` := (extension K L).valuation_subring
 
-def integer.algebra [is_fraction_ring K₀ K] : algebra K₀ L₀ :=
+def valuation_subring.algebra [is_fraction_ring K₀ K] : algebra K₀ L₀ :=
 begin
-  have h : algebra hv.v.valuation_subring (w K L).valuation_subring.to_subring,
+  have h : algebra hv.v.valuation_subring (extension K L).valuation_subring.to_subring,
   { rw ← integral_closure_eq_integer,
     exact (integral_closure ↥(valued.v.valuation_subring) L).algebra},
   exact h,
