@@ -61,56 +61,35 @@ def nontrivially_discretely_normed_field : nontrivially_normed_field K :=
   ..(@rank_one_valuation.valued_field.to_normed_field K _ ℤₘ₀ _ _
       (discrete_valuation.is_rank_one _)) } 
 
-def has_discrete_norm : has_norm K :=begin
-  letI : nontrivially_normed_field K := nontrivially_discretely_normed_field K,
-  apply_instance,
-end
+local attribute [priority 100, instance] nontrivially_discretely_normed_field
 
-def discretely_semi_normed_comm_ring : semi_normed_comm_ring K :=
-begin
-  letI : nontrivially_normed_field K := nontrivially_discretely_normed_field K,
-  apply_instance,
-end
-
-def discretely_semi_normed_ring : semi_normed_ring K :=
-begin
-  letI : nontrivially_normed_field K := nontrivially_discretely_normed_field K,
-  apply_instance,
-end
-
-lemma norm_is_nonarchimedean : is_nonarchimedean (@norm K (has_discrete_norm K)) := 
+lemma norm_is_nonarchimedean : is_nonarchimedean (norm : K → ℝ) := 
 λ x y, rank_one_valuation.norm_def_add_le x y
 
-lemma norm_le_one_iff_val_le_one (x : K) : 
-  (@norm K (has_discrete_norm K)) x ≤ 1 ↔ valued.v x ≤ (1 : ℤₘ₀) :=
+lemma norm_le_one_iff_val_le_one (x : K) : ‖x‖ ≤ 1 ↔ valued.v x ≤ (1 : ℤₘ₀) :=
 rank_one_valuation.norm_le_one_iff_val_le_one x
 
 variables {K} [complete_space K] {L : Type*} [field L] [algebra K L] 
 
-def discrete_norm_extension (h_alg : algebra.is_algebraic K L) : 
-  @mul_algebra_norm K (discretely_semi_normed_comm_ring K) L _ _ :=
-@spectral_mul_alg_norm K (nontrivially_discretely_normed_field K) L _ _ h_alg _ 
-  (norm_is_nonarchimedean K)
+def discrete_norm_extension (h_alg : algebra.is_algebraic K L) : mul_algebra_norm K L :=
+spectral_mul_alg_norm h_alg (norm_is_nonarchimedean K)
 
 def discretely_normed_field_extension (h_alg : algebra.is_algebraic K L) : normed_field L :=
-@spectral_norm_to_normed_field K (nontrivially_discretely_normed_field K) L _ _ _ h_alg 
-  (norm_is_nonarchimedean K)
+spectral_norm_to_normed_field h_alg (norm_is_nonarchimedean K)
 
 def discretely_normed_field_extension_uniform_space (h_alg : algebra.is_algebraic K L) : 
   uniform_space L :=
 by haveI := discretely_normed_field_extension h_alg; apply_instance
 
-
 namespace discrete_norm_extension
 
 lemma zero (h_alg : algebra.is_algebraic K L) : discrete_norm_extension h_alg 0 = 0 :=
-@spectral_norm_zero K (discretely_normed_field K) L _ _
+spectral_norm_zero
 
 lemma eq_root_zero_coeff (h_alg : algebra.is_algebraic K L) (x : L) :
   discrete_norm_extension h_alg x = (with_zero_mult_int_to_nnreal (base_ne_zero K hv.v)
     (valued.v ((minpoly K x).coeff 0)))^(1/(minpoly K x).nat_degree : ℝ) :=
-@spectral_norm_eq_root_zero_coeff K (nontrivially_discretely_normed_field K) _ L _ _ h_alg
-  (norm_is_nonarchimedean K) x
+spectral_norm_eq_root_zero_coeff h_alg (norm_is_nonarchimedean K) x
 
 lemma pow_eq_pow_root_zero_coeff' (h_alg : algebra.is_algebraic K L) (x : L) (n : ℕ) : 
   (discrete_norm_extension h_alg x)^n = (with_zero_mult_int_to_nnreal (base_ne_zero K hv.v) 
@@ -131,23 +110,20 @@ begin
 end
 
 lemma nonneg (h_alg : algebra.is_algebraic K L) (x : L) : 0 ≤ discrete_norm_extension h_alg x :=
-@spectral_norm_nonneg K (discretely_normed_field K) L _ _ _
+spectral_norm_nonneg _
 
 lemma is_nonarchimedean (h_alg : algebra.is_algebraic K L) :
   is_nonarchimedean (discrete_norm_extension h_alg) :=
-@spectral_norm_is_nonarchimedean K (discretely_normed_field K) L _ _ h_alg 
-  (norm_is_nonarchimedean K)
+spectral_norm_is_nonarchimedean h_alg (norm_is_nonarchimedean K)
 
 lemma mul (h_alg : algebra.is_algebraic K L) (x y : L) : (discrete_norm_extension h_alg (x * y)) = 
   (discrete_norm_extension h_alg x) * (discrete_norm_extension h_alg y) :=
-@spectral_norm_is_mul K (nontrivially_discretely_normed_field K) L _ _ h_alg _ 
-  (norm_is_nonarchimedean K) x y
+spectral_norm_is_mul h_alg (norm_is_nonarchimedean K) x y
 
 lemma le_one_iff_integral_minpoly (h_alg : algebra.is_algebraic K L) (x : L) : 
   discrete_norm_extension h_alg x ≤ 1 ↔ (∀ n : ℕ , hv.v ((minpoly K x).coeff n) ≤ 1) :=
 begin
-  letI := nontrivially_discretely_normed_field K,
-  have h : spectral_mul_alg_norm h_alg _ x = spectral_norm K L x, refl,
+  have h : (spectral_mul_alg_norm h_alg _) x = spectral_norm K L x, refl,
   rw [discrete_norm_extension, h, spectral_norm,
     spectral_value_le_one_iff (minpoly.monic (is_algebraic_iff_is_integral.mp (h_alg x)))],
   simp_rw norm_le_one_iff_val_le_one,
@@ -156,18 +132,22 @@ end
 -- TODO : Type class inference doesn't work well on this section (explain in paper).
 lemma of_integer [fr : is_fraction_ring hv.v.valuation_subring.to_subring K] 
   (h_alg : algebra.is_algebraic K L) (x : (integral_closure hv.v.valuation_subring.to_subring L)) : 
-  discrete_norm_extension h_alg x =  @spectral_value K (discretely_semi_normed_ring K) 
-    (polynomial.map (algebra_map hv.v.valuation_subring.to_subring K) 
+  discrete_norm_extension h_alg x = 
+    spectral_value (polynomial.map (algebra_map hv.v.valuation_subring.to_subring K) 
       (minpoly hv.v.valuation_subring.to_subring x)) :=
 begin
-  letI := nontrivially_discretely_normed_field K,
+  letI nf : normed_field K , exact @discretely_normed_field K _inst_1 hv _inst_2,
   letI : valuation_ring hv.v.valuation_subring.to_subring := 
   hv.v.valuation_subring.valuation_ring,
+  letI : is_bezout hv.v.valuation_subring.to_subring := valuation_ring.is_bezout,
+  letI ic : is_integrally_closed hv.v.valuation_subring.to_subring := 
+  is_bezout.is_integrally_closed,
   have is_minpoly :  minpoly K (x : L) =
     polynomial.map (algebra_map hv.v.valuation_subring.to_subring K) 
       (minpoly hv.v.valuation_subring.to_subring x),
   { rw eq_comm,
-    exact minpoly_of_subring K L hv.v.valuation_subring.to_subring x, },
+    exact @minpoly_of_subring K L nf.to_field _inst_4 _inst_5 hv.v.valuation_subring.to_subring ic 
+      fr x },
   have h_app : (spectral_mul_alg_norm h_alg _) ↑x = spectral_norm K L (x : L) := rfl,
   rw [discrete_norm_extension, h_app, spectral_norm, ← is_minpoly],
   all_goals { exact norm_is_nonarchimedean K},
@@ -177,9 +157,11 @@ lemma le_one_of_integer [fr : is_fraction_ring hv.v.valuation_subring.to_subring
   (h_alg : algebra.is_algebraic K L) (x : (integral_closure hv.v.valuation_subring.to_subring L)) : 
   discrete_norm_extension h_alg x ≤ 1 :=
 begin
-  letI := nontrivially_discretely_normed_field K,
   letI : valuation_ring hv.v.valuation_subring.to_subring := 
   hv.v.valuation_subring.valuation_ring,
+  letI : is_bezout hv.v.valuation_subring.to_subring := valuation_ring.is_bezout,
+  letI ic : is_integrally_closed hv.v.valuation_subring.to_subring := 
+  is_bezout.is_integrally_closed,
   let min_int := minpoly hv.v.valuation_subring.to_subring x,
   let min_x : polynomial K := polynomial.map (algebra_map _ _) min_int,
   rw of_integer,
@@ -199,6 +181,8 @@ begin
 end
 
 end discrete_norm_extension
+
+local attribute [-instance] nontrivially_discretely_normed_field
 
 end discrete_norm
 
