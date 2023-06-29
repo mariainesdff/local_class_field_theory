@@ -58,8 +58,8 @@ variables (K : Type*) [field K] [algebra R K] [is_fraction_ring R K]
 local notation `R_v` := adic_completion_integers K v 
 local notation `K_v` := adic_completion K v
 
-noncomputable!
-instance : is_discrete (@valued.v K_v _ ℤₘ₀ _ _) := 
+instance is_dedekind_domain.height_one_spectrum.completion.is_discrete : 
+  is_discrete (@valued.v K_v _ ℤₘ₀ _ _) := 
 begin
   obtain ⟨π, hπ⟩ := valuation_exists_uniformizer K v,
   apply is_discrete_of_exists_uniformizer,
@@ -69,9 +69,7 @@ begin
   convert @valued.extension_extends K _ _ _ (valued.mk' v.valuation) π,
 end
 
-
-
-noncomputable! def max_ideal_of_completion_def : ideal R_v :=
+def max_ideal_of_completion_def : ideal R_v :=
 local_ring.maximal_ideal R_v 
 
 instance : discrete_valuation_ring R_v := discrete_valuation.dvr_of_is_discrete _
@@ -137,7 +135,7 @@ begin
 end
 
 
-noncomputable! def max_ideal_of_completion : height_one_spectrum R_v :=
+def max_ideal_of_completion : height_one_spectrum R_v :=
 { as_ideal := max_ideal_of_completion_def R v K,
   is_prime := ideal.is_maximal.is_prime (local_ring.maximal_ideal.is_maximal R_v),
   ne_bot   := begin
@@ -147,13 +145,11 @@ noncomputable! def max_ideal_of_completion : height_one_spectrum R_v :=
 
 --#where
 
-noncomputable def adic_int_valuation : _root_.valuation R_v ℤₘ₀ :=
+def adic_int_valuation : _root_.valuation R_v ℤₘ₀ :=
 (max_ideal_of_completion R v K).int_valuation
 
-noncomputable def adic_valuation : _root_.valuation K_v ℤₘ₀ :=
+def adic_valuation : _root_.valuation K_v ℤₘ₀ :=
 (max_ideal_of_completion R v K).valuation
-
-
 
 def v1 : valuation K_v ℤₘ₀ := 
   (@is_dedekind_domain.height_one_spectrum.valuation R_v _ _ _ K_v _ _ _ (max_ideal_of_completion R v K))
