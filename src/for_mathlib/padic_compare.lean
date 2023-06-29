@@ -4,8 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
 
-import discrete_valuation_ring.basic
---import discrete_valuation_ring.complete
+import discrete_valuation_ring.complete
 import number_theory.padics.padic_integers
 import ring_theory.dedekind_domain.adic_valuation
 import for_mathlib.ring_theory.dedekind_domain.ideal
@@ -38,8 +37,6 @@ open padic
 
 variables (p : out_param ℕ) [fact (p.prime)]
   
---include p
-
 local attribute [-instance] rat.metric_space rat.normed_field rat.densely_normed_field
   /- rat.normed_linear_ordered_field -/  rat.division_ring rat.normed_add_comm_group
 
@@ -156,19 +153,10 @@ namespace padic'
 @[reducible]
 def Q_p : Type* := adic_completion ℚ (p_height_one_ideal p)
 
-instance : is_discrete (@valued.v (Q_p p) _ ℤₘ₀ _ _) := sorry
+instance : is_discrete (@valued.v (Q_p p) _ ℤₘ₀ _ _) := 
+completion.is_discrete _ _ _
 
 instance : normed_field (Q_p p) := rank_one_valuation.valued_field.to_normed_field (Q_p p) ℤₘ₀
-
--- instance : field (Q_p p) := adic_completion.field ℚ (p_height_one_ideal p)
-
--- instance : valued (Q_p p) ℤₘ₀ := (p_height_one_ideal p).valued_adic_completion ℚ
-
--- instance : complete_space (Q_p p) := (p_height_one_ideal p).adic_completion_complete_space ℚ
-
--- instance : has_coe_t ℚ (Q_p p) := uniform_space.completion.has_coe_t ℚ
-
--- def of_Q : ℚ → (Q_p p) := (@rat.cast_coe _ _).1
 
 def padic'_pkg : abstract_completion ℚ :=
 { space            := Q_p p,
@@ -215,18 +203,48 @@ begin
 end
 
 
-noncomputable!
 definition padic_equiv : (Q_p p) ≃+* ℚ_[p] :=
 { map_mul' := by {rw ← extension_eq_compare p, use (extension_as_ring_hom p).map_mul'},
   map_add' := by {rw ← extension_eq_compare p, exact (extension_as_ring_hom p).map_add'},
-  ..(compare p) 
-  }
+  ..(compare p) }
 
 instance : char_zero (Q_p p) := (padic_equiv p).to_ring_hom.char_zero
 
 -- local notation `Z_p` p := (@valued.v (Q_p p) _ ℤₘ₀ _ _).valuation_subring
 @[reducible]
 def Z_p := (@valued.v (Q_p p) _ ℤₘ₀ _ _).valuation_subring
+
+def padic'_int.p_height_one_ideal (p : out_param ℕ) [hp : fact (p.prime)] : 
+  height_one_spectrum (Z_p p) :=
+{ as_ideal := local_ring.maximal_ideal (Z_p p),
+  is_prime := ideal.is_maximal.is_prime (local_ring.maximal_ideal.is_maximal _),
+  ne_bot   := begin
+    rw [ne.def, ← local_ring.is_field_iff_maximal_ideal_eq],
+    exact discrete_valuation.not_is_field _
+  end }
+
+noncomputable! lemma padic.open_unit_ball_def : 
+  (padic'_int.p_height_one_ideal p).as_ideal = ideal.span {(p : Z_p p)} := 
+begin
+  sorry/- have hiff : ∀ (y : ℚ_[p]), y ∈ 𝓞 p ℚ_[p] ↔ ‖ y ‖  ≤ 1 := padic.mem_integers_iff p,
+  simp only [open_unit_ball],
+  ext ⟨x, hx⟩,
+  have hx' : x = (⟨x, (hiff x).mp hx⟩ : ℤ_[p]) := rfl,
+  rw [submodule.mem_mk, set.mem_set_of_eq, ideal.mem_span_singleton, norm_on_padic, 
+    set_like.coe_mk],
+  conv_lhs {rw hx'},
+  rw [← padic_int.norm_def, padic_int.norm_lt_one_iff_dvd, dvd_iff_exists_eq_mul_left,
+    dvd_iff_exists_eq_mul_left],
+  refine ⟨λ h, _, λ h, _⟩,
+  { obtain ⟨⟨c, hc⟩, hcx⟩ := h, 
+    use ⟨c, (hiff c).mpr hc⟩,
+    rw subtype.ext_iff at hcx ⊢,
+    exact hcx },
+  { obtain ⟨⟨c, hc⟩, hcx⟩ := h, 
+    use ⟨c, (hiff c).mp hc⟩,
+    rw subtype.ext_iff at hcx ⊢,
+    exact hcx }, -/
+end
 
 
 /- The lemma `padic_int_ring_equiv_mem` states that an element `x ∈ ℚ_[p]` is in `ℤ_[p]` if and
@@ -237,7 +255,7 @@ def padic_int.valuation_subring : valuation_subring ℚ_[p] :=
 { to_subring := padic_int.subring p,
   mem_or_inv_mem' :=
 begin
-  have not_field : ¬is_field ℤ_[p] := (discrete_valuation_ring.not_is_field _),
+  have not_field : ¬ is_field ℤ_[p] := (discrete_valuation_ring.not_is_field _),
 -- Marking `not_field` as a separate assumption makes the computation faster
   have := ((discrete_valuation_ring.tfae ℤ_[p] not_field).out 0 1).mp
     padic_int.discrete_valuation_ring,
@@ -248,8 +266,7 @@ begin
     rw ← hy,
     simp only [padic_int.algebra_map_apply, subring.mem_carrier, padic_int.mem_subring_iff,
       padic_int.padic_norm_e_of_padic_int],
-    apply padic_int.norm_le_one,
-    },
+    apply padic_int.norm_le_one },
   { apply or.intro_right,
     obtain ⟨y, hy⟩ := hx,
     rw ← hy,
@@ -328,17 +345,15 @@ begin
   refine ⟨λ H, _, λ H, _⟩,
   { simp_rw norm_pow,
     obtain ⟨h, x_mem⟩ := valuation_subring.mem_nonunits_iff_exists_mem_maximal_ideal.mp H,
-    have := (@valuation_lt_one_iff_dvd (Z_p p) _ _ _ (Q_p p) _ _ _ _ ⟨x, h⟩).mpr,
-    swap,
-    { use (local_ring.maximal_ideal ↥(Z_p p)),
-      apply ideal.is_maximal.is_prime,
-      apply local_ring.maximal_ideal.is_maximal,
-      sorry },--this is just the proof that `Z_p p` is not a field
-    simp only [ideal.dvd_span_singleton, mem_nonunits_iff, valuation_subring.algebra_map_apply,
+    have := (@valuation_lt_one_iff_dvd (Z_p p) _ _ _ (Q_p p) _ _ _ (padic'_int.p_height_one_ideal p)
+      ⟨x, h⟩).mpr,
+    have hp : (padic'_int.p_height_one_ideal p).as_ideal = (local_ring.maximal_ideal ↥(Z_p p)),
+    { refl },
+    simp only [hp, ideal.dvd_span_singleton, mem_nonunits_iff, valuation_subring.algebra_map_apply,
       set_like.coe_mk, x_mem, forall_true_left] at this,
     replace this : valued.v x < (1 : ℤₘ₀),
-    { convert this,
-      sorry},--this is the equality between two valuations
+    { convert this using 1,
+      exact (completion.adic_valuation_equals_completion ℤ (int.p_height_one_ideal p) ℚ x).symm },
     exact _root_.tendsto_pow_at_top_nhds_0_of_lt_1 (norm_nonneg _)
       ((rank_one_valuation.norm_lt_one_iff_val_lt_one _ ).mpr this), },
   { have : ‖ x ‖ < 1,
