@@ -8,7 +8,20 @@ import for_mathlib.padic_compare
 import mixed_characteristic.basic
 import from_mathlib.normed_valued
 
+open discrete_valuation is_dedekind_domain multiplicative nnreal polynomial ratfunc 
+open_locale mixed_char_local_field nnreal discrete_valuation
+
 namespace mixed_char_local_field
+
+variables (p : out_param (ℕ)) [hp : fact (p.prime)] 
+
+include hp
+variables (K : Type*) [field K] [mixed_char_local_field p K]
+
+-- NOTE: There is a diamond on 𝔽_[p]⟮⟮X⟯⟯, but by setting this priority lower, it seems
+-- that Lean finds the correct instance.
+@[priority 100] instance : valued K ℤₘ₀ :=
+extension.valued 𝔽_[p]⟮⟮X⟯⟯ K
 
 #exit
 

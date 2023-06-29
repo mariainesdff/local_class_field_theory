@@ -5,8 +5,6 @@ Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
 import discrete_valuation_ring.basic
 import for_mathlib.field_theory.minpoly.normal
---import for_mathlib.ring_theory.valuation.int_polynomial
---import for_mathlib.ring_theory.valuation.minpoly
 import spectral_norm
 
 noncomputable theory
