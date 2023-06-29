@@ -51,9 +51,9 @@ is_principal_ideal_ring A := by refine discrete_valuation_ring.to_is_principal_i
 noncomputable! lemma finite_dimensional_residue_field_of_integral_closure (L : Type*) [field L] 
   [algebra K L] [finite_dimensional K L] [is_separable K L] : false :=
 begin
-  letI := alg K L,
+  /- letI := alg K L,
   letI h3 : discrete_valuation_ring (integral_closure K₀ L) :=
-  dvr_of_finite_extension K L,
+  integral_closure.discrete_valuation_ring_of_finite_extension K L,
   letI h2 : is_principal_ideal_ring (integral_closure K₀ L) :=
   discrete_valuation_ring.to_is_principal_ideal_ring,
   letI h1 : is_dedekind_domain (integral_closure K₀ L) :=
@@ -67,7 +67,7 @@ begin
     (K₀ ⧸ local_ring.maximal_ideal K₀) 
     ((integral_closure K₀ L) ⧸ (prime_factor K L : ideal (integral_closure K₀ L))) _ _ _ :=
   @ideal.factors.finite_dimensional_quotient K₀ _ (integral_closure K₀ L) _
-    (local_ring.maximal_ideal K₀) _ _ _ _ _ (prime_factor K L),
+    (local_ring.maximal_ideal K₀) _ _ _ _ _ (prime_factor K L), -/
   
   sorry
 end

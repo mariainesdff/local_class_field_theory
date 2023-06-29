@@ -5,7 +5,7 @@ Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
 
 import discrete_valuation_ring.basic
-import discrete_valuation_ring.complete
+--import discrete_valuation_ring.complete
 import number_theory.padics.padic_integers
 import ring_theory.dedekind_domain.adic_valuation
 import for_mathlib.ring_theory.dedekind_domain.ideal
@@ -329,8 +329,8 @@ begin
     have h3 : valued.v x < (1 : ℤₘ₀),
     { obtain ⟨y, hy⟩ : ∃ y : (Z_p p), ↑y =x, sorry,
       rw ← hy,
-      have := @valuation_lt_one_iff_dvd (Z_p p) _ _ _ (Q_p p) _ _ _ (Z_p p).maximal_ideal y,
-      
+      --have := @valuation_lt_one_iff_dvd (Z_p p) _ _ _ (Q_p p) _ _ _ (Z_p p).maximal_ideal y,
+      sorry
       
      },
     exact _root_.tendsto_pow_at_top_nhds_0_of_lt_1 (norm_nonneg _)

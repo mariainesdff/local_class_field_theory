@@ -10,6 +10,8 @@ import from_mathlib.normed_valued
 
 namespace mixed_char_local_field
 
+#exit
+
 
 def norm_on_K : K → ℝ := spectral_norm ℚ_[p] K
 
