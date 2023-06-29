@@ -13,6 +13,7 @@ import ring_theory.laurent_series
 import ring_theory.power_series.well_known
 
 import for_mathlib.algebra_comp
+import for_mathlib.ring_theory.dedekind_domain.ideal
 
 open polynomial is_dedekind_domain.height_one_spectrum topological_space ratfunc
   sequentially_complete filter
@@ -342,7 +343,7 @@ variable (K)
 
 open unique_factorization_monoid
 
-#where
+--#where
 
 -- /- TODO: This lemma is now in the file `ring_theory.dedekind_domain.ideal`, probably line 1446
 --   The hypothesis `[unique_factorization_monoid R]` should be removed. -/
@@ -421,7 +422,8 @@ begin
     _ _ _ _ _ _ polynomial.X f (irreducible_X) hf],
   simp only [normalize_apply, coe_norm_unit, leading_coeff_X, norm_unit_one, units.coe_one, map_one,
     mul_one, part_enat.get_coe'],
-  rw count_normalized_factors_eq_count_normalized_factors_span hf X_ne_zero _ prime_X,
+  rw normalization_monoid.count_normalized_factors_eq_count_normalized_factors_span hf X_ne_zero _ 
+    prime_X,
   { have span_ne_zero : (ideal.span {f} : ideal (polynomial K)) ≠ 0 ∧
     (ideal.span {polynomial.X} : ideal (polynomial K)) ≠ 0 := by simp only [ideal.zero_eq_bot,
     ne.def, ideal.span_singleton_eq_bot, hf, polynomial.X_ne_zero, not_false_iff, and_self],
