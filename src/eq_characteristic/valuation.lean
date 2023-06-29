@@ -9,7 +9,7 @@ import eq_characteristic.basic
 
 noncomputable theory
 
-open is_dedekind_domain nnreal polynomial ratfunc multiplicative
+open discrete_valuation is_dedekind_domain multiplicative nnreal polynomial ratfunc 
 open_locale eq_char_local_field nnreal discrete_valuation
 
 namespace eq_char_local_field
@@ -24,15 +24,16 @@ variables (K : Type*) [field K] [eq_char_local_field p K]
 -- NOTE: There is a diamond on 𝔽_[p]⟮⟮X⟯⟯, but by setting this priority lower, it seems
 -- that Lean finds the correct instance.
 @[priority 100] instance : valued K ℤₘ₀ := --valued.mk' (w 𝔽_[p]⟮⟮X⟯⟯ K)
-extension_valued 𝔽_[p]⟮⟮X⟯⟯ K
+extension.valued 𝔽_[p]⟮⟮X⟯⟯ K
 
-@[priority 100] instance : complete_space K := extension_complete 𝔽_[p]⟮⟮X⟯⟯ K
+@[priority 100] instance : complete_space K := extension.complete_space 𝔽_[p]⟮⟮X⟯⟯ K
 
 instance : valuation.is_discrete (eq_char_local_field.with_zero.valued p K).v := 
-is_discrete_of_finite 𝔽_[p]⟮⟮X⟯⟯ K
+extension.is_discrete_of_finite 𝔽_[p]⟮⟮X⟯⟯ K
 
 -- Without the `by apply`, it times out
-instance : discrete_valuation_ring (𝓞 p K) := by apply dvr_of_finite_extension 𝔽_[p]⟮⟮X⟯⟯ K
+instance : discrete_valuation_ring (𝓞 p K) := 
+by apply integral_closure.discrete_valuation_ring_of_finite_extension 𝔽_[p]⟮⟮X⟯⟯ K
 
 variables {p}
 
