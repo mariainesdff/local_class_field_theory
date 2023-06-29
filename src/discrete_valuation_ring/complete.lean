@@ -58,7 +58,7 @@ variables (K : Type*) [field K] [algebra R K] [is_fraction_ring R K]
 local notation `R_v` := adic_completion_integers K v 
 local notation `K_v` := adic_completion K v
 
-instance is_dedekind_domain.height_one_spectrum.completion.is_discrete : 
+instance is_discrete : 
   is_discrete (@valued.v K_v _ ℤₘ₀ _ _) := 
 begin
   obtain ⟨π, hπ⟩ := valuation_exists_uniformizer K v,
