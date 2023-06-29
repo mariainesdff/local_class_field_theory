@@ -1,4 +1,9 @@
 
+/-
+Copyright (c) 2023 María Inés de Frutos-Fernández, Filippo A. E. Nuccio. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
+-/
 import field_theory.adjoin
 import ring_theory.valuation.valuation_subring
 
@@ -15,6 +20,9 @@ namespace valuation
 lemma coeff_zero (x : K) :
   v ((minpoly K ((algebra_map K L) x)).coeff 0) = v x :=
 by rw [minpoly.eq_X_sub_C, coeff_sub, coeff_X_zero, coeff_C_zero, zero_sub, valuation.map_neg]
+
+lemma unit_ne_zero (x : Kˣ) : v x ≠ (0 : Γ₀) :=
+by simp only [ne.def, valuation.zero_iff, units.ne_zero x, not_false_iff]
 
 lemma unit_pow_ne_zero [finite_dimensional K L] (x : Lˣ) :
   (v ((minpoly K x.1).coeff 0))^((finrank K L)/(minpoly K x.1).nat_degree) ≠ (0 : Γ₀) :=
