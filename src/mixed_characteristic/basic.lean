@@ -4,12 +4,11 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
 
-import discrete_valuation_ring.extensions
+import for_mathlib.ring_theory.valuation.algebra_instances
 import for_mathlib.padic_compare
 import number_theory.padics.padic_integers
 import ring_theory.dedekind_domain.integral_closure
 import ring_theory.discrete_valuation_ring
-
 
 -- import for_mathlib.algebra_comp
 
@@ -43,44 +42,10 @@ noncomputable theory
 -- For instances and lemmas that only need `K` to be a `ℚₚ`-algebra
 -- namespace padic_algebra 
 
-open padic padic' discrete_valuation valuation
+open padic padic_comparison padic_comparison.padic' discrete_valuation valuation
 open_locale discrete_valuation
 
 variables (p : ℕ) [fact(nat.prime p)] 
-
--- (K L : Type*) [field K] [hK : algebra (Q_p p) K] [field L]
---   [algebra (Q_p p) L]
-
--- include hK/
-
--- instance to_int_algebra : algebra (Z_p p) K := infer_instance --algebra.comp (Z_p p) (Q_p p) K
-
--- @[simp] lemma int_algebra_map_def : algebra_map ℤ_[p] K = 
---   (padic_algebra.to_int_algebra p K).to_ring_hom := rfl 
-
--- @[priority 10000] instance [is_discrete (@valued.v (Q_p p) _ ℤₘ₀ _ _)] : is_scalar_tower (Z_p p) (Q_p p) K :=
--- infer_instance--discrete_valuation.is_scalar_tower (Q_p p) K
-
--- @[priority 1000] instance int_is_scalar_tower [is_discrete (@valued.v (Q_p p) _ ℤₘ₀ _ _)]
--- [algebra K L] [is_scalar_tower (Q_p p) K L] :
---   is_scalar_tower (Z_p p) K L := infer_instance
--- is_scalar_tower.comp' ℤ_[p] ℚ_[p] K L
-
--- omit hK
-
---`
-
-
--- lemma algebra_map_injective {E : Type*} [field E] [algebra (Q_p p) E]
---   [is_scalar_tower (Z_p p) (Q_p p) E] [is_discrete (@valued.v (Q_p p) _ ℤₘ₀ _ _)] :
---   function.injective ⇑(algebra_map (Z_p p) E) :=
--- begin
---   exact discrete_valuation.algebra_map_injective (Q_p p) E,
--- end
-
--- end padic_algebra
-
--- include p
 
 /-- A mixed characteristic local field is a field which has characteristic zero and is finite
 dimensional over `Q_p p`, for some prime `p`. -/
@@ -100,9 +65,6 @@ attribute [priority 100, instance] to_finite_dimensional
 
 variables (K : Type*) [field K] [mixed_char_local_field p K]
 variables (L : Type*) [field L] [mixed_char_local_field p L]
-
--- We need to mark this one with high priority to avoid timeouts.
--- @[priority 10000] instance : is_scalar_tower ℤ_[p] ℚ_[p] K := infer_instance
 
 protected lemma is_algebraic : algebra.is_algebraic (Q_p p) K := algebra.is_algebraic_of_finite _ _
 
@@ -133,13 +95,8 @@ of integers. For now, this is not an instance by default as it creates an equal-
 diamond with `algebra.id` when `K = L`. This is caused by `x = ⟨x, x.prop⟩` not being defeq on
 subtypes. This will likely change in Lean 4. -/
 def ring_of_integers_algebra [algebra K L] [is_scalar_tower (Q_p p) K L]
-  : algebra (𝓞 p K) (𝓞 p L) := sorry
--- ring_hom.to_algebra
--- { to_fun := λ k, ⟨algebra_map K L k, is_integral.algebra_map k.2⟩,
---   map_zero' := subtype.ext $ by simp only [subtype.coe_mk, subalgebra.coe_zero, map_zero],
---   map_one'  := subtype.ext $ by simp only [subtype.coe_mk, subalgebra.coe_one, map_one],
---   map_add'  := λ x y, subtype.ext $ by simp only [map_add, subalgebra.coe_add, subtype.coe_mk],
---   map_mul'  := λ x y, subtype.ext $ by simp only [subalgebra.coe_mul, map_mul, subtype.coe_mk] }
+  : algebra (𝓞 p K) (𝓞 p L) := 
+valuation_subring.valuation_subring_algebra _ K L
 
 namespace ring_of_integers
 
@@ -168,29 +125,19 @@ lemma is_integral_coe (x : 𝓞 p K) : is_integral (Z_p p) (x : K) := x.2
 /-- The ring of integers of `K` is equivalent to any integral closure of `ℤ_[p]` in `K` -/
 
 protected noncomputable! def equiv (R : Type*) [comm_ring R] [algebra (Z_p p) R] [algebra R K]
-  [is_scalar_tower (Z_p p) R K] [is_integral_closure R (Z_p p) K] : 𝓞 p K ≃+* R := sorry
--- (is_integral_closure.equiv ℤ_[p] R K _).symm.to_ring_equiv
+  [is_scalar_tower (Z_p p) R K] [is_integral_closure R (Z_p p) K] : 𝓞 p K ≃+* R := 
+valuation_subring.equiv _ K R
 
 variables (K)
 
 instance : char_zero (𝓞 p K) := char_zero.of_module _ K
 
--- noncomputable! instance : is_noetherian (Z_p p) (𝓞 p K) :=
--- is_integral_closure.is_noetherian (Z_p p) (Z_p p) K (𝓞 p K)
+instance : is_noetherian (Z_p p) (𝓞 p K) :=
+is_integral_closure.is_noetherian (Z_p p) (Q_p p) K (𝓞 p K)
 
-
--- `TODO` Can probably remove, it is in `dvr_extension`
-noncomputable! lemma algebra_map_injective :
+lemma algebra_map_injective :
   function.injective ⇑(algebra_map (Z_p p) (ring_of_integers p K)) := 
-begin
-  have hinj : function.injective ⇑(algebra_map (Z_p p) K),
-  { exact algebra_map_injective (Q_p p) K},
-  rw injective_iff_map_eq_zero (algebra_map (Z_p p) ↥(𝓞 p K)),
-  intros x hx,
-  rw [← subtype.coe_inj, subalgebra.coe_zero] at hx,
-  rw injective_iff_map_eq_zero (algebra_map (Z_p p) K) at hinj,
-  exact hinj x hx, 
-end
+valuation_subring.integral_closure_algebra_map_injective _ K
 
 end ring_of_integers
 
@@ -201,7 +148,7 @@ namespace padic
 open mixed_char_local_field
 
 instance mixed_char_local_field (p : ℕ) [fact(nat.prime p)] : mixed_char_local_field p (Q_p p) :=
-{ to_finite_dimensional := infer_instance}
+{ to_finite_dimensional := infer_instance }
 --   infer_instance,
   -- The vector space structure of `ℚ` over itself can arise in multiple ways:
   -- all fields are vector spaces over themselves (used in `rat.finite_dimensional`)
