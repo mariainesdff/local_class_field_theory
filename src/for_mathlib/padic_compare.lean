@@ -158,6 +158,8 @@ def Q_p : Type* := adic_completion ℚ (p_height_one_ideal p)
 
 instance : is_discrete (@valued.v (Q_p p) _ ℤₘ₀ _ _) := sorry
 
+instance : normed_field (Q_p p) := rank_one_valuation.valued_field.to_normed_field (Q_p p) ℤₘ₀
+
 -- instance : field (Q_p p) := adic_completion.field ℚ (p_height_one_ideal p)
 
 -- instance : valued (Q_p p) ℤₘ₀ := (p_height_one_ideal p).valued_adic_completion ℚ
@@ -320,21 +322,25 @@ end
 lemma unit_ball.nonunit_mem_iff_top_nilpotent (x : (Q_p p)) :
   x ∈ (Z_p p).nonunits ↔ filter.tendsto (λ n : ℕ, x ^ n) at_top (𝓝 0) :=
 begin
-  letI : normed_field (Q_p p) := rank_one_valuation.valued_field.to_normed_field (Q_p p) ℤₘ₀,
   have aux : ∀ n : ℕ, ‖ x^n ‖ = ‖ x ‖ ^ n,
   { exact λ n, norm_pow _ n},
   rw [tendsto_zero_iff_norm_tendsto_zero, filter.tendsto_congr aux],
   refine ⟨λ H, _, λ H, _⟩,
   { simp_rw norm_pow,
-    have h3 : valued.v x < (1 : ℤₘ₀),
-    { obtain ⟨y, hy⟩ : ∃ y : (Z_p p), ↑y =x, sorry,
-      rw ← hy,
-      --have := @valuation_lt_one_iff_dvd (Z_p p) _ _ _ (Q_p p) _ _ _ (Z_p p).maximal_ideal y,
-      sorry
-      
-     },
+    obtain ⟨h, x_mem⟩ := valuation_subring.mem_nonunits_iff_exists_mem_maximal_ideal.mp H,
+    have := (@valuation_lt_one_iff_dvd (Z_p p) _ _ _ (Q_p p) _ _ _ _ ⟨x, h⟩).mpr,
+    swap,
+    { use (local_ring.maximal_ideal ↥(Z_p p)),
+      apply ideal.is_maximal.is_prime,
+      apply local_ring.maximal_ideal.is_maximal,
+      sorry },--this is just the proof that `Z_p p` is not a field
+    simp only [ideal.dvd_span_singleton, mem_nonunits_iff, valuation_subring.algebra_map_apply,
+      set_like.coe_mk, x_mem, forall_true_left] at this,
+    replace this : valued.v x < (1 : ℤₘ₀),
+    { convert this,
+      sorry},--this is the equality between two valuations
     exact _root_.tendsto_pow_at_top_nhds_0_of_lt_1 (norm_nonneg _)
-      ((rank_one_valuation.norm_lt_one_iff_val_lt_one _ ).mpr h3), },
+      ((rank_one_valuation.norm_lt_one_iff_val_lt_one _ ).mpr this), },
   { have : ‖ x ‖ < 1,
     { suffices : (⟨‖ x ‖, norm_nonneg _⟩ : ℝ≥0) < 1,
       { rwa [← nnreal.coe_lt_coe, nnreal.coe_one, ← subtype.val_eq_coe] at this },
