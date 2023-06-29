@@ -19,8 +19,6 @@ variables (p : out_param (ℕ)) [hp : fact (p.prime)]
 include hp
 variables (K : Type*) [field K] [eq_char_local_field p K]
 
--- TODO: come back after fixing the names in `dvr.extensions`
-
 -- NOTE: There is a diamond on 𝔽_[p]⟮⟮X⟯⟯, but by setting this priority lower, it seems
 -- that Lean finds the correct instance.
 @[priority 100] instance : valued K ℤₘ₀ := --valued.mk' (w 𝔽_[p]⟮⟮X⟯⟯ K)
