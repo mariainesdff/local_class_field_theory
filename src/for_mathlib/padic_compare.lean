@@ -214,7 +214,10 @@ instance : char_zero (Q_p p) := (padic_equiv p).to_ring_hom.char_zero
 @[reducible]
 def Z_p := (@valued.v (Q_p p) _ ℤₘ₀ _ _).valuation_subring
 
-def padic'_int.p_height_one_ideal (p : out_param ℕ) [hp : fact (p.prime)] : 
+instance : char_zero (Z_p p) := sorry
+
+
+def padic'_int.height_one_ideal (p : out_param ℕ) [hp : fact (p.prime)] : 
   height_one_spectrum (Z_p p) :=
 { as_ideal := local_ring.maximal_ideal (Z_p p),
   is_prime := ideal.is_maximal.is_prime (local_ring.maximal_ideal.is_maximal _),
@@ -223,8 +226,8 @@ def padic'_int.p_height_one_ideal (p : out_param ℕ) [hp : fact (p.prime)] :
     exact discrete_valuation.not_is_field _
   end }
 
-noncomputable! lemma padic.open_unit_ball_def : 
-  (padic'_int.p_height_one_ideal p).as_ideal = ideal.span {(p : Z_p p)} := 
+noncomputable! lemma padic'_int.height_one_ideal_def : 
+  (padic'_int.height_one_ideal p).as_ideal = ideal.span {(p : Z_p p)} := 
 begin
   sorry/- have hiff : ∀ (y : ℚ_[p]), y ∈ 𝓞 p ℚ_[p] ↔ ‖ y ‖  ≤ 1 := padic.mem_integers_iff p,
   simp only [open_unit_ball],
@@ -339,7 +342,7 @@ end
 lemma unit_ball.nonunit_mem_iff_top_nilpotent (x : (Q_p p)) :
   x ∈ (Z_p p).nonunits ↔ filter.tendsto (λ n : ℕ, x ^ n) at_top (𝓝 0) :=
 begin
-  have h_max_ideal : (padic'_int.p_height_one_ideal p).as_ideal =
+  have h_max_ideal : (padic'_int.height_one_ideal p).as_ideal =
     (local_ring.maximal_ideal ↥(Z_p p)) := rfl,
   have aux : ∀ n : ℕ, ‖ x^n ‖ = ‖ x ‖ ^ n,
   { exact λ n, norm_pow _ n},
@@ -347,7 +350,7 @@ begin
   refine ⟨λ H, _, λ H, _⟩,
   { simp_rw norm_pow,
     obtain ⟨h, x_mem⟩ := valuation_subring.mem_nonunits_iff_exists_mem_maximal_ideal.mp H,
-    have := (@valuation_lt_one_iff_dvd (Z_p p) _ _ _ (Q_p p) _ _ _ (padic'_int.p_height_one_ideal p)
+    have := (@valuation_lt_one_iff_dvd (Z_p p) _ _ _ (Q_p p) _ _ _ (padic'_int.height_one_ideal p)
       ⟨x, h⟩).mpr,
     simp only [h_max_ideal, ideal.dvd_span_singleton, mem_nonunits_iff,
       valuation_subring.algebra_map_apply, set_like.coe_mk, x_mem, forall_true_left] at this,
