@@ -14,8 +14,8 @@ import for_mathlib.ring_theory.dedekind_domain.ideal
 
 noncomputable theory
 
-open is_dedekind_domain is_dedekind_domain.height_one_spectrum nnreal polynomial valuation
-  normalization_monoid
+open is_dedekind_domain is_dedekind_domain.height_one_spectrum nnreal polynomial valuation 
+  normalization_monoid multiplicative
 open_locale nnreal discrete_valuation
 
 def int.p_height_one_ideal (p : out_param ℕ) [hp : fact (p.prime)] : 
@@ -43,6 +43,9 @@ local attribute [-instance] rat.metric_space rat.normed_field rat.densely_normed
 instance : separated_space ℚ_[p] := metric_space.to_separated
 
 def padic_valued : valued ℚ ℤₘ₀ := (p_height_one_ideal p).adic_valued
+
+lemma padic_valued_valuation_p : 
+  @valued.v ℚ _ ℤₘ₀ _ (padic_valued p) (p : ℚ) = (of_add (-1 : ℤ)) := sorry
 
 local attribute [instance] padic_valued
 
@@ -202,7 +205,6 @@ begin
   refl,
 end
 
-
 definition padic_equiv : (Q_p p) ≃+* ℚ_[p] :=
 { map_mul' := by {rw ← extension_eq_compare p, use (extension_as_ring_hom p).map_mul'},
   map_add' := by {rw ← extension_eq_compare p, exact (extension_as_ring_hom p).map_add'},
@@ -214,8 +216,14 @@ instance : char_zero (Q_p p) := (padic_equiv p).to_ring_hom.char_zero
 @[reducible]
 def Z_p := (@valued.v (Q_p p) _ ℤₘ₀ _ _).valuation_subring
 
-instance : char_zero (Z_p p) := sorry
-
+-- TODO: slow
+/-- TODO: possible diamond here (the proof for ℤ_[p] does not translate) -/
+instance : char_zero (Z_p p) := 
+{ cast_injective := λ m n h, 
+  begin
+    simp only [subtype.ext_iff, subring.coe_nat_cast, nat.cast_inj] at h,
+    apply h
+  end }
 
 def padic'_int.height_one_ideal (p : out_param ℕ) [hp : fact (p.prime)] : 
   height_one_spectrum (Z_p p) :=
@@ -226,10 +234,52 @@ def padic'_int.height_one_ideal (p : out_param ℕ) [hp : fact (p.prime)] :
     exact discrete_valuation.not_is_field _
   end }
 
+instance : valued (Q_p p) ℤₘ₀ := height_one_spectrum.valued_adic_completion ℚ (p_height_one_ideal p)
+--by show_term {apply_instance}
+
+lemma padic'.valuation_p : 
+  valued.v (p : Q_p p) = (of_add (-1 : ℤ)) := 
+begin
+  letI : valued ℚ ℤₘ₀ := padic_valued p,
+  have hp : (p : Q_p p) = (((coe : ℚ → (Q_p p)) p) : Q_p p),
+  { have : ∀ x : ℚ, (coe : ℚ → (Q_p p)) x = (x : Q_p p),
+    { intro x, sorry},
+    rw this, simp only [rat.cast_coe_nat], },
+  rw [hp, valued.valued_completion_apply (p : ℚ), padic_valued_valuation_p p],
+
+end
+
+#exit
+
+lemma padic'_int.height_one_ideal_def' : 
+  (padic'_int.height_one_ideal p).as_ideal = ideal.span {(p : Z_p p)} := 
+discrete_valuation.is_uniformizer_is_generator _ (padic'.valuation_p p)
+
+
 noncomputable! lemma padic'_int.height_one_ideal_def : 
   (padic'_int.height_one_ideal p).as_ideal = ideal.span {(p : Z_p p)} := 
 begin
-  sorry/- have hiff : ∀ (y : ℚ_[p]), y ∈ 𝓞 p ℚ_[p] ↔ ‖ y ‖  ≤ 1 := padic.mem_integers_iff p,
+  --have hiff : ∀ (y : Q_p p), y ∈ Z_p p ↔ ‖ y ‖  ≤ 1 := sorry,
+  simp only [padic'_int.height_one_ideal],
+  ext x,--ext ⟨x, hx⟩,
+  rw local_ring.mem_maximal_ideal,
+  rw [ideal.mem_span_singleton],
+  rw mem_nonunits_iff,
+ /-  rw valuation.integer.not_is_unit_iff_valuation_lt_one,
+  erw ← (completion.adic_valuation_equals_completion ℤ (int.p_height_one_ideal p) ℚ x),
+  erw valuation_of_algebra_map,
+  erw int_valuation_lt_one_iff_dvd, 
+  rw [ideal.dvd_span_singleton], -/
+  
+  rw [dvd_iff_exists_eq_mul_left],
+  refine ⟨λ h, _, λ h, _⟩,
+  { sorry },
+  { obtain ⟨c, hcx⟩ := h,
+    have hp : ¬ is_unit (p : Z_p p), sorry, 
+    rw hcx, rw mul_comm,
+    apply not_is_unit_of_not_is_unit_dvd hp (dvd.intro c rfl) },
+  --rw valuation_lt_one_iff_dvd,
+  /- have hiff : ∀ (y : ℚ_[p]), y ∈ 𝓞 p ℚ_[p] ↔ ‖ y ‖  ≤ 1 := padic.mem_integers_iff p,
   simp only [open_unit_ball],
   ext ⟨x, hx⟩,
   have hx' : x = (⟨x, (hiff x).mp hx⟩ : ℤ_[p]) := rfl,

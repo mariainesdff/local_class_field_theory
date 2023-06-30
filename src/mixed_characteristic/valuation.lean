@@ -56,6 +56,7 @@ begin
     exact x.2, },
 end
 
+-- TODO: reprove without using `padic'_int.height_one_ideal_def`
 lemma is_unramified_Q_p : e (Q_p p) = 1 :=
 begin
   have hp : valued.v (p : Q_p p) = (of_add (-1 : ℤ)),
