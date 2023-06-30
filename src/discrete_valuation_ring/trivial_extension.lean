@@ -10,7 +10,7 @@ open_locale discrete_valuation
 
 namespace discrete_valuation.extension
 
-variables (K : Type*) [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v] [complete_space K]
+variables {K : Type*} [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v] [complete_space K]
 
 include hv
 
@@ -23,6 +23,8 @@ begin
     coeff_X_zero, coeff_C_zero, zero_sub, valuation.map_neg, nat_degree_X_sub_C, nat.div_self, 
     nat.lt_one_iff, pow_one],
 end
+
+variables (K)
 
 lemma trivial_exp_extension_on_units_eq_one : exp_extension_on_units K K = 1 :=
 begin
