@@ -339,6 +339,8 @@ end
 lemma unit_ball.nonunit_mem_iff_top_nilpotent (x : (Q_p p)) :
   x ∈ (Z_p p).nonunits ↔ filter.tendsto (λ n : ℕ, x ^ n) at_top (𝓝 0) :=
 begin
+  have h_max_ideal : (padic'_int.p_height_one_ideal p).as_ideal =
+    (local_ring.maximal_ideal ↥(Z_p p)) := rfl,
   have aux : ∀ n : ℕ, ‖ x^n ‖ = ‖ x ‖ ^ n,
   { exact λ n, norm_pow _ n},
   rw [tendsto_zero_iff_norm_tendsto_zero, filter.tendsto_congr aux],
@@ -347,14 +349,12 @@ begin
     obtain ⟨h, x_mem⟩ := valuation_subring.mem_nonunits_iff_exists_mem_maximal_ideal.mp H,
     have := (@valuation_lt_one_iff_dvd (Z_p p) _ _ _ (Q_p p) _ _ _ (padic'_int.p_height_one_ideal p)
       ⟨x, h⟩).mpr,
-    have hp : (padic'_int.p_height_one_ideal p).as_ideal = (local_ring.maximal_ideal ↥(Z_p p)),
-    { refl },
-    simp only [hp, ideal.dvd_span_singleton, mem_nonunits_iff, valuation_subring.algebra_map_apply,
-      set_like.coe_mk, x_mem, forall_true_left] at this,
+    simp only [h_max_ideal, ideal.dvd_span_singleton, mem_nonunits_iff,
+      valuation_subring.algebra_map_apply, set_like.coe_mk, x_mem, forall_true_left] at this,
     replace this : valued.v x < (1 : ℤₘ₀),
     { convert this using 1,
       exact (completion.adic_valuation_equals_completion ℤ (int.p_height_one_ideal p) ℚ x).symm },
-    exact _root_.tendsto_pow_at_top_nhds_0_of_lt_1 (norm_nonneg _)
+      exact _root_.tendsto_pow_at_top_nhds_0_of_lt_1 (norm_nonneg _)
       ((rank_one_valuation.norm_lt_one_iff_val_lt_one _ ).mpr this), },
   { have : ‖ x ‖ < 1,
     { suffices : (⟨‖ x ‖, norm_nonneg _⟩ : ℝ≥0) < 1,
@@ -362,7 +362,44 @@ begin
       apply nnreal.lt_one_of_tendsto_pow_0,
       rwa [← nnreal.tendsto_coe, nnreal.coe_zero] },
     apply valuation_subring.mem_nonunits_iff_exists_mem_maximal_ideal.mpr,
+    replace this : valued.v x < (1 : ℤₘ₀),
+    { apply (rank_one_valuation.norm_lt_one_iff_val_lt_one x).mp this },
+    { --have x_mem := valuation_subring.mem_of_valuation_le_one (Z_p p) x (le_of_lt _),
+      -- use x_mem,
+      -- rw [← h_max_ideal, ← ideal.dvd_span_singleton],
+      -- apply (@valuation_lt_one_iff_dvd (Z_p p) _ _ _ (Q_p p) _ _ _ (padic'_int.p_height_one_ideal p)
+      -- ⟨x, x_mem⟩).mp,
+      -- simp only [valuation_subring.algebra_map_apply, set_like.coe_mk],
+      -- swap,
+      -- convert this,
+      -- sorry,
+      -- erw [(completion.adic_valuation_equals_completion ℤ (int.p_height_one_ideal p) ℚ x)],
+      -- have ff := valuation_lt_one_iff_dvd (padic'_int.p_height_one_ideal p),
+      
+
+
+    -- have dd := (@valuation_lt_one_iff_dvd (Z_p p) _ _ _ (Q_p p) _ _ _ (padic'_int.p_height_one_ideal p)
+    --   ⟨x, _⟩).mp,
+    -- have hp : (padic'_int.p_height_one_ideal p).as_ideal = (local_ring.maximal_ideal ↥(Z_p p)),
+    -- { refl },
+    -- simp only [← hp, ideal.dvd_span_singleton, mem_nonunits_iff, valuation_subring.algebra_map_apply,
+    --   set_like.coe_mk, forall_true_left] at dd,
+    -- refine ⟨_, dd _⟩,
+    -- swap,
+    -- convert this,
+    -- convert (completion.adic_valuation_equals_completion ℤ (int.p_height_one_ideal p) ℚ x) using 1,
+    -- replace dd := dd this,
+      -- rw ← em at this,
+    -- have temp := (@valuation_lt_one_iff_dvd (Z_p p) _ _ _ (Q_p p) _ _ _
+    --   (padic'_int.p_height_one_ideal p) ⟨x, ha⟩).mpr,
+    
+    -- simp only [← hp, ideal.dvd_span_singleton, mem_nonunits_iff, valuation_subring.algebra_map_apply,
+    --   set_like.coe_mk, forall_true_left],
+    -- rw (@valuation_lt_one_iff_dvd (Z_p p) _ _ _ (Q_p p) _ _ _ (padic'_int.p_height_one_ideal p)
+    --   ⟨x, h⟩) at this,
+    
     sorry,
+    }
     -- exact ⟨(padic_int.mem_subring_iff p).mpr (le_of_lt this), (local_ring.mem_maximal_ideal _).mpr
     --   (padic_int.mem_nonunits.mpr this)⟩ 
       
