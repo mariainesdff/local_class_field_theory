@@ -10,7 +10,7 @@ open_locale discrete_valuation
 
 namespace discrete_valuation.extension
 
-variables {K : Type*} [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v] [complete_space K]
+variables (K : Type*) [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v] [complete_space K]
 
 include hv
 
