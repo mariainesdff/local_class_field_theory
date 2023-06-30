@@ -5,7 +5,7 @@ Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
 import discrete_valuation_ring.extensions
 
-open discrete_valuation polynomial valuation
+open add_subgroup discrete_valuation polynomial valuation with_zero
 open_locale discrete_valuation
 
 namespace discrete_valuation.extension
@@ -15,7 +15,7 @@ variables {K : Type*} [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v] [co
 include hv
 
 lemma trivial_pow_extension_on_units_eq_valuation (x : Kˣ):
-  pow_extension_on_units K K x = with_zero.unzero (valuation.unit_ne_zero hv.v x) :=
+  pow_extension_on_units K K x = unzero (valuation.unit_ne_zero hv.v x) :=
 begin
   rw [pow_extension_on_units_apply],
   congr,
@@ -26,8 +26,23 @@ end
 
 lemma trivial_exp_extension_on_units_eq_one : exp_extension_on_units K K = 1 :=
 begin
-  
-  sorry
+  have h : zmultiples (exp_extension_on_units K K : ℤ) = ⊤,
+  { rw [zmultiples_eq_closure, ← exp_extension_on_units_generates_range', map_eq_top_iff],
+    apply subgroup.map_top_of_surjective,
+    intros z,
+    have hz : ∃ (u : Kˣ), valued.v (u : K) = (z : ℤₘ₀),
+    { have hd : is_discrete hv.v := infer_instance,
+      obtain ⟨k, hk⟩ := hd.surj z,
+      have hk0 : k ≠ 0, 
+      { rw [ne.def, ← valuation.zero_iff hv.v, hk], exact coe_ne_zero },
+      exact ⟨is_unit.unit (is_unit_iff_ne_zero.mpr hk0), hk⟩,},
+    obtain ⟨u, hu⟩ := hz,
+    use u,
+    rw [trivial_pow_extension_on_units_eq_valuation, ← with_zero.coe_inj, ← hu, coe_unzero] },
+  rw [← int.coe_nat_inj', nat.cast_one],
+  apply int.eq_one_of_dvd_one (nat.cast_nonneg _),
+  rw [← int.mem_zmultiples_iff, h],
+  exact add_subgroup.mem_top _,
 end
 
 
