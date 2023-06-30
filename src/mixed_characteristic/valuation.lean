@@ -4,13 +4,13 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
 
-import discrete_valuation_ring.extensions
+import discrete_valuation_ring.trivial_extension
 import mixed_characteristic.basic
 
 noncomputable theory
 
-open discrete_valuation is_dedekind_domain multiplicative nnreal padic_comparison
-  padic_comparison.padic' polynomial ratfunc 
+open discrete_valuation discrete_valuation.extension is_dedekind_domain multiplicative nnreal 
+  padic_comparison padic_comparison.padic' polynomial ratfunc 
 open_locale mixed_char_local_field nnreal discrete_valuation
 
 namespace mixed_char_local_field
@@ -58,19 +58,23 @@ end
 
 lemma is_unramified_Q_p : e (Q_p p) = 1 :=
 begin
-  sorry/- have hp : normalized_valuation ℚ_[p] p = (of_add (-1 : ℤ)),
-  { have hp0 : (p : 𝓞 p ℚ_[p]) ≠ 0,
-    { simp only [ne.def, nat.cast_eq_zero], exact nat.prime.ne_zero (_inst_1.1) }, --looks bad
-    have hp_alg : (p : ℚ_[p]) = algebra_map (𝓞 p ℚ_[p]) ℚ_[p] (p : 𝓞 p ℚ_[p]) := rfl,
-    simp only [normalized_valuation],
-    rw [hp_alg, valuation_of_algebra_map],
+  have hp : valued.v (p : Q_p p) = (of_add (-1 : ℤ)),
+  { have hp0 : (p : Z_p p) ≠ 0, {
+    rw nat.cast_ne_zero, exact hp.1.ne_zero,},
+    have hp_alg : (p : Q_p p) = algebra_map (Z_p p) (Q_p p) (p : Z_p p) := rfl,
+    erw ← completion.adic_valuation_equals_completion,
+    erw [hp_alg, valuation_of_algebra_map],
     simp only [int_valuation, ← valuation.to_fun_eq_coe],
-    rw [int_valuation_def_if_neg _ hp0, ← padic.open_unit_ball_def, associates.count_self],
+    rw [int_valuation_def_if_neg _ hp0],
+    erw [padic'_int.height_one_ideal_def],
+    rw [associates.count_self],
     refl,
-    { exact associates_irreducible (open_unit_ball ℚ_[p]), }}, -- so slow!
+    { rw [← padic'_int.height_one_ideal_def],
+      apply associates_irreducible, }},
   rw [ramification_index, neg_eq_iff_eq_neg, ← to_add_of_add (-1 : ℤ)],
   apply congr_arg,
-  rw [← with_zero.coe_inj, ← hp, with_zero.coe_unzero], -/
+  rw [← with_zero.coe_inj, ← hp, with_zero.coe_unzero, ← trivial_extension_eq_valuation (Q_p p)],
+  refl,
 end
 
 noncomputable! def padic'_int.equiv_valuation_subring : 
@@ -78,16 +82,21 @@ noncomputable! def padic'_int.equiv_valuation_subring :
 { to_fun    := λ x,
   begin
     use x.1, 
-    rw valuation.mem_valuation_subring_iff,
-    /- erw ← mem_adic_completion_integers, 
-    exact x.2, -/
-    sorry,
+    have heq : (mixed_char_local_field.with_zero.valued p (Q_p p)).v x.val =
+        extension (Q_p p) (Q_p p) x.val, { refl },
+    rw [valuation.mem_valuation_subring_iff, heq, trivial_extension_eq_valuation (Q_p p)],
+    exact x.2,
   end,
-  inv_fun   := sorry,
-  left_inv  := sorry,
-  right_inv := sorry,
-  map_mul'  := sorry,
-  map_add'  := sorry }
+  inv_fun   := λ x,
+  begin
+    use x.1, 
+    rw [valuation.mem_valuation_subring_iff, ← trivial_extension_eq_valuation (Q_p p)],
+    exact x.2,
+  end,
+  left_inv  := λ x, by simp only [subtype.val_eq_coe, set_like.eta],
+  right_inv := λ x, by simp only [subtype.val_eq_coe, set_like.eta],
+  map_mul'  := λ x y, by simp only [subtype.val_eq_coe, subring.coe_mul, mul_mem_class.mk_mul_mk],
+  map_add'  := λ x y, by simp only [subtype.val_eq_coe, subring.coe_add, add_mem_class.mk_add_mk] }
 
 variable {p}
 
@@ -95,6 +104,6 @@ variable {p}
 lemma padic'_int.equiv_valuation_subring_comm :
   (algebra_map (mixed_char_local_field.with_zero.valued p (Q_p p)).v.valuation_subring K).comp 
     (padic'_int.equiv_valuation_subring p).to_ring_hom = algebra_map (Z_p p) K :=
-sorry
+rfl
 
 end mixed_char_local_field
