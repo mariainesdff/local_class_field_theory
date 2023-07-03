@@ -7,6 +7,7 @@ import discrete_valuation_ring.discrete_norm
 import for_mathlib.discrete_valuation_ring
 import for_mathlib.ring_theory.valuation.int_polynomial
 import for_mathlib.ring_theory.valuation.minpoly
+import for_mathlib.field_theory.minpoly.normal
 
 noncomputable theory
 
@@ -103,8 +104,12 @@ begin
   exact hzne1 hz1,
 end
 
+variables (K L)
+
 lemma exp_extension_on_units_pos [finite_dimensional K L] : 0 < exp_extension_on_units K L := 
 nat.pos_of_ne_zero exp_extension_on_units_ne_zero
+
+variables {K L}
 
 -- This proof is ridiculous (TODO: golf)
 lemma exp_extension_on_units_generates_range [finite_dimensional K L] :
@@ -158,6 +163,16 @@ begin
   exact with_zero.coe_unzero _,
 end
 
+variable (L)
+
+lemma exp_extension_on_units_dvd [finite_dimensional K L] : 
+  exp_extension_on_units K L ∣ finrank K L :=
+begin
+  sorry
+end
+
+variable {L}
+
 def extension_def [finite_dimensional K L] : L → ℤₘ₀ :=
 λ x, by classical; exact if hx : x = 0 then 0 else 
   (of_add (-1 : ℤ))^(exists_mul_exp_extension_on_units K  (is_unit_iff_ne_zero.mpr hx).unit).some
@@ -188,7 +203,7 @@ begin
         rw [dif_neg hx, dif_neg hy, dif_neg (mul_ne_zero hx hy)],
         have hinj : injective (with_zero_mult_int_to_nnreal (base_ne_zero K hv.v)),
         { exact (with_zero_mult_int_to_nnreal_strict_mono (one_lt_base K hv.v)).injective },
-        rw [← function.injective.eq_iff hinj, ← pow_left_inj _ _ exp_extension_on_units_pos, 
+        rw [← function.injective.eq_iff hinj, ← pow_left_inj _ _ (exp_extension_on_units_pos K L), 
           ← nnreal.coe_eq, _root_.map_mul, mul_pow, ← _root_.map_pow,
           (exists_mul_exp_extension_on_units K (is_unit_iff_ne_zero.mpr hxy).unit).some_spec, 
           nnreal.coe_mul],
@@ -339,7 +354,7 @@ begin
       with_zero.coe_le_coe, ← zpow_coe_nat, ← int.of_add_mul, ← int.of_add_mul, ← of_add_zero,
       of_add_le, of_add_le],
     exact ⟨λ h, mul_nonpos_of_nonpos_of_nonneg h (nat.cast_nonneg _), 
-      λ h, nonpos_of_mul_nonpos_left h (nat.cast_pos.mpr exp_extension_on_units_pos)⟩ }
+      λ h, nonpos_of_mul_nonpos_left h (nat.cast_pos.mpr (exp_extension_on_units_pos K L))⟩ }
 end
 
 
@@ -399,6 +414,8 @@ begin
   exact spectral_norm_to_normed_field h_alg (norm_is_nonarchimedean K),
 end
 
+.
+
 @[protected] def valued [finite_dimensional K L] : valued L ℤₘ₀ := --valued.mk' (w 𝔽_[p]⟮⟮X⟯⟯ K)
 begin
   letI : normed_field L := normed_field K L,
@@ -408,10 +425,36 @@ begin
     rw metric.mem_nhds_iff,
     refine ⟨λ h, _, λ h, _⟩, 
     { obtain ⟨ε, hε, h⟩ := h,
-      sorry
-      /- use units.mk0 ⟨ε, le_of_lt hε⟩ (ne_of_gt hε),
+      obtain ⟨δ, hδ⟩ := real.exists_strict_mono_lt 
+        (with_zero_mult_int_to_nnreal_strict_mono (one_lt_base K hv.v)) hε,
+      use δ ^(finrank K L / (exp_extension_on_units K L)),
       intros x hx,
-      exact h (mem_ball_zero_iff.mpr hx)  -/},
+      simp only [set.mem_set_of_eq, extension.apply] at hx,
+      apply h,
+      rw [mem_ball_zero_iff], 
+      split_ifs at hx with h0 h0,
+      { rw [h0, norm_zero], exact hε },
+      { set n := (exists_mul_exp_extension_on_units K (is_unit_iff_ne_zero.mpr h0).unit).some 
+          with hn_def,
+        set hn := (exists_mul_exp_extension_on_units K (is_unit_iff_ne_zero.mpr h0).unit).some_spec,
+        have hpos : 0 < (exp_extension_on_units K L : ℝ),
+        { exact nat.cast_pos.mpr (exp_extension_on_units_pos K L), },
+        have hpos' : 0 < (finrank K L : ℝ),
+        { exact nat.cast_pos.mpr finrank_pos },
+        have h_alg := algebra.is_algebraic_of_finite K L,
+        rw ← hn_def at hx, 
+        have hx' := real.rpow_lt_rpow (nnreal.coe_nonneg _)
+          ((with_zero_mult_int_to_nnreal_strict_mono (one_lt_base K hv.v)) hx) hpos,
+        rw [real.rpow_nat_cast, ← nnreal.coe_pow, ← _root_.map_pow, hn, _root_.map_pow, 
+          nnreal.coe_pow, ← discrete_norm_extension.pow_eq_pow_root_zero_coeff h_alg _
+            (minpoly.degree_dvd (is_algebraic_iff_is_integral.mp 
+            (h_alg ↑((is_unit_iff_ne_zero.mpr h0).unit))))] at hx',
+        rw [← real.rpow_lt_rpow_iff (norm_nonneg _) (le_of_lt hε) hpos', real.rpow_nat_cast],
+        apply lt_trans hx',
+        rw [units.coe_pow, _root_.map_pow, nnreal.coe_pow, real.rpow_nat_cast, ← pow_mul,
+          nat.div_mul_cancel (exp_extension_on_units_dvd K L), ← real.rpow_nat_cast,
+          real.rpow_lt_rpow_iff (nnreal.coe_nonneg _) (le_of_lt hε) hpos'],
+        exact hδ, }},
     { obtain ⟨ε, hε⟩ := h,
       sorry
       /- use [(ε : ℝ), nnreal.coe_pos.mpr (units.zero_lt _)],
@@ -432,6 +475,8 @@ begin
   ..(uniform_space (algebra.is_algebraic_of_finite K L)),
   ..non_unital_normed_ring.to_normed_add_comm_group}
 end
+
+#exit
 
 @[protected, priority 100] instance complete_space [finite_dimensional K L] : 
   @complete_space L (uniform_space (algebra.is_algebraic_of_finite K L)) := 
