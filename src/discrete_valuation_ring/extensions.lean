@@ -168,7 +168,32 @@ variable (L)
 lemma exp_extension_on_units_dvd [finite_dimensional K L] : 
   exp_extension_on_units K L ∣ finrank K L :=
 begin
-  sorry
+  have h_alg := algebra.is_algebraic_of_finite K L,
+  obtain ⟨π, hπ⟩ := exists_uniformizer hv.v,
+  set u : L := algebra_map K L (π : K) with hu_def,
+  have hu0 : u ≠ 0,
+  { rw [hu_def, ne.def, _root_.map_eq_zero],
+    exact uniformizer_ne_zero hv.v hπ,},
+  obtain ⟨n, hn⟩ := exists_mul_exp_extension_on_units K (is_unit_iff_ne_zero.mpr hu0).unit,
+  have hu : ((is_unit_iff_ne_zero.mpr hu0).unit : L) = u := rfl,
+  have hne_zero : ((minpoly K ((algebra_map K L) ↑π)).nat_degree : ℤ) ≠ 0,
+  { rw [nat.cast_ne_zero, ← pos_iff_ne_zero],
+    exact minpoly.nat_degree_pos (is_algebraic_iff_is_integral.mp (h_alg _)),},
+  have h_dvd : ((minpoly K ((algebra_map K L) ↑π)).nat_degree : ℤ) ∣ (finrank K L),
+  { exact int.coe_nat_dvd.mpr (minpoly.degree_dvd (is_algebraic_iff_is_integral.mp (h_alg _)))},
+  rw [hu, hu_def, valuation.coeff_zero, is_uniformizer_iff.mp hπ, ← with_zero.coe_pow,
+    ← with_zero.coe_zpow, ← with_zero.coe_pow, with_zero.coe_inj, ← zpow_coe_nat, ← zpow_mul, 
+    ← zpow_coe_nat, of_add_pow_comm, of_add_pow_comm (-1)] at hn,
+  simp only [zpow_neg, zpow_one, inv_inj] at hn,
+  replace hn := of_add_inj hn,
+  have hn0 : 0 ≤ n, 
+  { refine nonneg_of_mul_nonneg_left _ (nat.cast_pos.mpr (exp_extension_on_units_pos K L)),
+    rw hn,
+    exact nat.cast_nonneg _ },
+  rw [int.coe_nat_div, eq_comm, int.div_eq_iff_eq_mul_right hne_zero h_dvd] at hn,
+  use (minpoly K ((algebra_map K L) ↑π)).nat_degree * n.to_nat,
+  rw [mul_comm, ← @nat.cast_inj ℤ _, hn, nat.cast_mul, nat.cast_mul, int.to_nat_of_nonneg hn0, 
+    mul_assoc],
 end
 
 variable {L}
