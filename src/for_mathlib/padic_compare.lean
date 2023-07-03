@@ -353,7 +353,8 @@ begin
       valuation_subring.algebra_map_apply, set_like.coe_mk, x_mem, forall_true_left] at this,
     replace this : valued.v x < (1 : ℤₘ₀),
     { convert this using 1,
-      exact (completion.adic_valuation_equals_completion ℤ (int.p_height_one_ideal p) ℚ x).symm },
+      exact (completion.valuation.adic_of_compl_eq_compl_of_adic ℤ
+        (int.p_height_one_ideal p) ℚ x).symm },
       exact _root_.tendsto_pow_at_top_nhds_0_of_lt_1 (norm_nonneg _)
       ((rank_one_valuation.norm_lt_one_iff_val_lt_one _ ).mpr this), },
   { have : ‖ x ‖ < 1,

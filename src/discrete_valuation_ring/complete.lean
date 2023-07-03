@@ -145,16 +145,16 @@ def max_ideal_of_completion : height_one_spectrum R_v :=
 
 --#where
 
-def adic_int_valuation : _root_.valuation R_v ℤₘ₀ :=
-(max_ideal_of_completion R v K).int_valuation
+-- def adic_int_valuation : _root_.valuation R_v ℤₘ₀ :=
+-- (max_ideal_of_completion R v K).int_valuation
 
-def adic_valuation : _root_.valuation K_v ℤₘ₀ :=
-(max_ideal_of_completion R v K).valuation
+-- def adic_valuation : _root_.valuation K_v ℤₘ₀ :=
+-- (max_ideal_of_completion R v K).valuation
 
-def v1 : valuation K_v ℤₘ₀ := 
+local notation `v_adic_of_compl` :=-- valuation K_v ℤₘ₀ := 
   (@is_dedekind_domain.height_one_spectrum.valuation R_v _ _ _ K_v _ _ _ (max_ideal_of_completion R v K))
 
-def v2 : valuation K_v ℤₘ₀ := valued.v
+local notation `v_compl_of_adic` := (valued.v : valuation K_v ℤₘ₀)
 
 open local_ring discretely_valued--needed!
 
@@ -212,10 +212,9 @@ begin
   { simp only [ha, valuation.map_zero, algebra_map.coe_zero] },
   { rw fae_int_valuation_apply,
     apply le_antisymm,
-    { obtain ⟨n, hn⟩ : ∃ n : ℕ, v2 R v K a = of_add (-n : ℤ), 
-      { replace ha : (v2 R v K) a ≠ 0 := by rwa [valuation.ne_zero_iff, ne.def,
-        subring.coe_eq_zero_iff],
-        have := (mem_integer (v2 R v K) ↑a).mp a.2,
+    { obtain ⟨n, hn⟩ : ∃ n : ℕ, v_compl_of_adic a = of_add (-n : ℤ), 
+      { replace ha : v_compl_of_adic a ≠ 0 := by rwa [valuation.ne_zero_iff, ne.def, subring.coe_eq_zero_iff],
+        have := (mem_integer v_compl_of_adic ↑a).mp a.2,
         obtain ⟨α, hα⟩ := with_zero.ne_zero_iff_exists.mp ha,
         rw ← hα at this,
         rw ← with_zero.coe_one at this,
@@ -229,14 +228,14 @@ begin
         rw with_zero.coe_inj,
         rw [← of_add_to_add α],
         rw hn },
-      dsimp only [v2] at hn,
+      -- dsimp only [v_compl_of_adic] at hn,
       rw hn,
       rw int_valuation_le_pow_iff_dvd,
       apply (uno' K_v _ n).mp (le_of_eq hn), },
-    { obtain ⟨m, hm⟩ : ∃ m : ℕ, v1 R v K a = of_add (-m : ℤ),
-      { replace ha : (v1 R v K) a ≠ 0 := by rwa [valuation.ne_zero_iff, ne.def,
+    { obtain ⟨m, hm⟩ : ∃ m : ℕ, v_adic_of_compl a = of_add (-m : ℤ),
+      { replace ha : v_adic_of_compl a ≠ 0 := by rwa [valuation.ne_zero_iff, ne.def,
         subring.coe_eq_zero_iff],
-          dsimp only [v1] at ha ⊢,
+          -- dsimp only [v_adic_of_compl] at ha ⊢,
           have : (max_ideal_of_completion R v K).valuation (↑a : K_v) ≤ 1 := valuation_le_one _ _,
           obtain ⟨α, hα⟩ := with_zero.ne_zero_iff_exists.mp ha,
           rw ← hα at this,
@@ -250,10 +249,7 @@ begin
           rw ← hα,
           rw with_zero.coe_inj,
           rw [← of_add_to_add α],
-          rw hm,
-          
-           },
-      dsimp only [v1, v2] at hm,
+          rw hm, },
       erw valuation_of_algebra_map at hm,
       rw fae_int_valuation_apply at hm,
       rw hm,
@@ -265,9 +261,8 @@ begin
       apply_instance, }},
 end
 
-lemma adic_valuation_equals_completion (x : K_v) : v1 R v K x = v2 R v K x :=
+lemma valuation.adic_of_compl_eq_compl_of_adic (x : K_v) : v_adic_of_compl x = v_compl_of_adic x :=
 begin
-  rw [v1, v2],
   obtain ⟨a, b, H⟩ := is_localization.mk'_surjective (non_zero_divisors R_v) x, 
   have h2 := due K_v a b,
   have h1 := @valuation_of_mk' R_v _ _ _ K_v _ _ _ (max_ideal_of_completion R v K) a b,
