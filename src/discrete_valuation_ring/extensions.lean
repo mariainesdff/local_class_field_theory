@@ -68,7 +68,6 @@ int.nat_abs (int.subgroup_cyclic (map (pow_extension_on_units K L) ⊤).to_add_s
 
 variables {K L}
 
---TODO : can we get rid of this?
 lemma exp_extension_on_units_generates_range' [finite_dimensional K L] : 
   to_add_subgroup (map (pow_extension_on_units K L) ⊤) =
     closure {(exp_extension_on_units K L : ℤ)} := 
