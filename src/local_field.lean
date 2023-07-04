@@ -16,8 +16,8 @@ namespace eq_char_local_field
 
 @[priority 100] noncomputable! instance (p : out_param ℕ) [fact(nat.prime p)] (K : Type*) [field K]
   [eq_char_local_field p K] : local_field K := 
-{ complete             := sorry, -- TODO: infer_instance used to work!
-  is_discrete          := sorry, -- TODO: infer_instance used to work!
+{ complete             := eq_char_local_field.complete_space p K,
+  is_discrete          := v.valuation.is_discrete p K,
   finite_residue_field := sorry,
   ..(eq_char_local_field.with_zero.valued p K) }
 
@@ -27,20 +27,17 @@ namespace local_field
 
 end local_field
 
-#exit
+-- #exit
 
 namespace mixed_char_local_field
 
 --TODO: generalize is_discrete lemma to adic_valued completion
 @[priority 100] noncomputable instance (p : out_param ℕ) [fact(nat.prime p)] (K : Type*) [field K] 
   [mixed_char_local_field p K] : local_field K := 
-{ complete             := sorry,
-  is_discrete          := 
-  begin 
-    sorry
-  end,
+{ complete             := mixed_char_local_field.complete_space p K,
+  is_discrete          := v.valuation.is_discrete p K,
   finite_residue_field := sorry,
-  ..(mixed_char_local_field.with_zero.valued K) }
+  ..(mixed_char_local_field.with_zero.valued p K) }
 
 end mixed_char_local_field
 
