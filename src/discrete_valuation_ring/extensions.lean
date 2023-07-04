@@ -439,14 +439,17 @@ begin
   exact spectral_norm_to_normed_field h_alg (norm_is_nonarchimedean K),
 end
 
-.
-
-@[protected] def valued [finite_dimensional K L] : valued L ℤₘ₀ := --valued.mk' (w 𝔽_[p]⟮⟮X⟯⟯ K)
+@[protected] def valued [finite_dimensional K L] : valued L ℤₘ₀ :=
 begin
   letI : normed_field L := normed_field K L,
   exact { v := extension K L,
   is_topological_valuation := λ U,
   begin
+    have hpos : 0 < (exp_extension_on_units K L : ℝ),
+    { exact nat.cast_pos.mpr (exp_extension_on_units_pos K L), },
+    have hpos' : 0 < (finrank K L : ℝ),
+    { exact nat.cast_pos.mpr finrank_pos },
+    have h_alg := algebra.is_algebraic_of_finite K L,
     rw metric.mem_nhds_iff,
     refine ⟨λ h, _, λ h, _⟩, 
     { obtain ⟨ε, hε, h⟩ := h,
@@ -462,11 +465,6 @@ begin
       { set n := (exists_mul_exp_extension_on_units K (is_unit_iff_ne_zero.mpr h0).unit).some 
           with hn_def,
         set hn := (exists_mul_exp_extension_on_units K (is_unit_iff_ne_zero.mpr h0).unit).some_spec,
-        have hpos : 0 < (exp_extension_on_units K L : ℝ),
-        { exact nat.cast_pos.mpr (exp_extension_on_units_pos K L), },
-        have hpos' : 0 < (finrank K L : ℝ),
-        { exact nat.cast_pos.mpr finrank_pos },
-        have h_alg := algebra.is_algebraic_of_finite K L,
         rw ← hn_def at hx, 
         have hx' := real.rpow_lt_rpow (nnreal.coe_nonneg _)
           ((with_zero_mult_int_to_nnreal_strict_mono (one_lt_base K hv.v)) hx) hpos,
@@ -481,27 +479,37 @@ begin
           real.rpow_lt_rpow_iff (nnreal.coe_nonneg _) (le_of_lt hε) hpos'],
         exact hδ, }},
     { obtain ⟨ε, hε⟩ := h,
-      sorry
-      /- use [(ε : ℝ), nnreal.coe_pos.mpr (units.zero_lt _)],
+      have hε_pos : 0 < (with_zero_mult_int_to_nnreal (base_ne_zero K hv.v) ε : ℝ) ^
+        ((exp_extension_on_units K L : ℝ)/(finrank K L : ℝ)),
+      { apply rpow_pos,
+        rw [← _root_.map_zero (with_zero_mult_int_to_nnreal (base_ne_zero K hv.v)),
+          (with_zero_mult_int_to_nnreal_strict_mono (one_lt_base K hv.v)).lt_iff_lt],
+        exact units.zero_lt _, }, 
+      use [(with_zero_mult_int_to_nnreal (base_ne_zero K hv.v) ε : ℝ) ^
+        ((exp_extension_on_units K L : ℝ)/(finrank K L : ℝ)), hε_pos],
       intros x hx,
-      exact hε  (mem_ball_zero_iff.mp hx) -/ },
-
-    /- rw metric.mem_nhds_iff,
-    refine ⟨λ h, _, λ h, _⟩, 
-    { obtain ⟨ε, hε, h⟩ := h,
-      use units.mk0 ⟨ε, le_of_lt hε⟩ (ne_of_gt hε),
-      intros x hx,
-      exact h (mem_ball_zero_iff.mpr hx) },
-    { obtain ⟨ε, hε⟩ := h,
-      use [(ε : ℝ), nnreal.coe_pos.mpr (units.zero_lt _)],
-      intros x hx,
-      exact hε  (mem_ball_zero_iff.mp hx) }, -/
+      rw [mem_ball_zero_iff] at hx,
+      apply hε,
+      rw [set.mem_set_of_eq, extension.apply],
+      split_ifs with h0 h0,
+      { exact units.zero_lt _ },
+      { set n := (exists_mul_exp_extension_on_units K (is_unit_iff_ne_zero.mpr h0).unit).some 
+          with hn_def,
+        set hn := (exists_mul_exp_extension_on_units K (is_unit_iff_ne_zero.mpr h0).unit).some_spec,
+        rw [← hn_def] at hn ⊢,
+        rw [←(with_zero_mult_int_to_nnreal_strict_mono (one_lt_base K hv.v)).lt_iff_lt, 
+          ← rpow_lt_rpow_iff hpos, rpow_nat_cast, ←_root_.map_pow, hn, ← nnreal.coe_lt_coe,
+          _root_.map_pow, nnreal.coe_pow, ← pow_eq_pow_root_zero_coeff h_alg _ 
+          (minpoly.degree_dvd (is_algebraic_iff_is_integral.mp (h_alg _))),
+          ← real.rpow_lt_rpow_iff (pow_nonneg (discrete_norm_extension.nonneg h_alg _) _)
+            (coe_nonneg _) (inv_pos.mpr hpos'), ←real.rpow_nat_cast, 
+          ← real.rpow_mul (discrete_norm_extension.nonneg h_alg _), mul_inv_cancel (ne_of_gt hpos'),
+          real.rpow_one, coe_rpow, ← real.rpow_mul (coe_nonneg _)],
+        exact hx }},
   end,
   ..(uniform_space (algebra.is_algebraic_of_finite K L)),
   ..non_unital_normed_ring.to_normed_add_comm_group}
 end
-
-#exit
 
 @[protected, priority 100] instance complete_space [finite_dimensional K L] : 
   @complete_space L (uniform_space (algebra.is_algebraic_of_finite K L)) := 
