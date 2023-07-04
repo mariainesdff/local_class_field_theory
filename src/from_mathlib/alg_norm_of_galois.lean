@@ -135,17 +135,6 @@ begin
       rintros i -; exact zero_le _ }},
 end
 
-/-- The supr of a non-negative function `f : ι → ℝ` is non-negative. -/
-lemma real.supr_nonneg {ι : Type*} [nonempty ι] {f : ι → ℝ} (hf_nn : ∀ i, 0 ≤ f i) :
-  0 ≤ supr f :=
-begin
-  by_cases hf : bdd_above (set.range f),
-  { set i : ι := nonempty.some (by apply_instance),
-    exact le_csupr_of_le hf i (hf_nn i), },
-  { simp only [supr, Sup],
-    rw dif_neg (not_and_of_not_right _ hf) }
-end
-
 /-- If `f : ι → ℝ` and `g : ι → ℝ` are non-negative and `∀ i j, f i * g j ≤ a`, then
  `supr f * supr g ≤ a`. -/
 lemma real.supr_mul_supr_le {ι : Type*} [nonempty ι] {a : ℝ} {f g : ι → ℝ} (hf_nn : ∀ i, 0 ≤ f i)

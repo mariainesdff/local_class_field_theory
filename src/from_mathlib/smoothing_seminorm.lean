@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: María Inés de Frutos-Fernández
 -/
 
-import analysis.special_functions.pow
+import analysis.special_functions.pow.continuity
 import from_mathlib.limsup
 import from_mathlib.ring_seminorm
 
