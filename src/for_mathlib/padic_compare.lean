@@ -216,6 +216,26 @@ instance : char_zero (Q_p p) := (padic_equiv p).to_ring_hom.char_zero
 @[reducible]
 def Z_p := (@valued.v (Q_p p) _ ℤₘ₀ _ _).valuation_subring
 
+lemma exists_mem_le_one_of_lt_one {x : (Q_p p)} (hx : valued.v x ≤ (1 : ℤₘ₀)) : ∃ (y : Z_p p),
+  (y : (Q_p p)) = x ∧ (valued.v (y : Q_p p)) = valued.v x :=
+begin
+  have hv := valued.v.is_equiv_valuation_valuation_subring,
+  have := valuation_subring.mem_of_valuation_le_one (Z_p p) x _,
+  use ⟨x, this⟩,
+  simp only [set_like.coe_mk, eq_self_iff_true, and_self],
+  exact ((valuation.is_equiv_iff_val_le_one _ _).mp hv).mp hx,
+end
+
+lemma exists_mem_lt_one_of_lt_one {x : (Q_p p)} (hx : valued.v x < (1 : ℤₘ₀)) : ∃ (y : Z_p p),
+  (y : (Q_p p)) = x ∧ (valued.v (y : Q_p p)) = valued.v x :=
+begin
+  have hv := valued.v.is_equiv_valuation_valuation_subring,
+  have := valuation_subring.mem_of_valuation_le_one (Z_p p) x (le_of_lt _),
+  use ⟨x, this⟩,
+  simp only [set_like.coe_mk, eq_self_iff_true, and_self],
+  exact ((valuation.is_equiv_iff_val_lt_one _ _).mp hv).mp hx,
+end
+
 -- TODO: slow
 /-- TODO: possible diamond here (the proof for ℤ_[p] does not translate) -/
 instance : char_zero (Z_p p) := 
@@ -335,6 +355,7 @@ def comap_Zp : valuation_subring ℚ_[p] :=
 valuation_subring.comap (Z_p p) (padic_equiv p).symm.to_ring_hom
 
 -- TODO: Ask on Zulip if it exists and move it to another file/folder
+-- **FAE** This is in lean4 already
 lemma nnreal.lt_one_of_tendsto_pow_0 (a : ℝ≥0) (h : tendsto (λ n : ℕ, a^n) at_top (𝓝 0)) :
   a < 1 :=
 begin
@@ -363,10 +384,9 @@ begin
   end
 
 
-/-`FAE` The two lemmas below have basically the same proof, except from the fact that in one we
+/-The two lemmas below have basically the same proof, except from the fact that in one we
  use that `x : ℚ_[p]` satisfies ‖ x ‖ < 1 iff `p ∣ x` and in the other that `x : (Q_p p)` has
- ‖ x ‖ < 1 iff it belongs to the maximal ideal...
--/
+ ‖ x ‖ < 1 iff it belongs to the maximal ideal...-/
 lemma padic_int.nonunit_mem_iff_top_nilpotent (x : ℚ_[p]) :
   x ∈ (padic_int.valuation_subring p).nonunits ↔ filter.tendsto (λ n : ℕ, x ^ n) at_top (𝓝 0) :=
 begin
@@ -387,10 +407,10 @@ begin
       (padic_int.mem_nonunits.mpr this)⟩ },
 end
 
-lemma exists_int (x : (Q_p p)) (hx : valued.v x < (1 : ℤₘ₀)) : ∃ (y : Z_p p), (y : (Q_p p)) = x 
-  ∧ (valued.v (y : Q_p p)) = valued.v x := sorry
 
-lemma go_faster (x : (Q_p p)) (h_go : ‖ x ‖ < 1) (H : tendsto (λ (n : ℕ), ‖x‖ ^ n) at_top (𝓝 0)) :
+--The lemma below could probably be incorporated in the proof of 
+-- `unit_ball.nonunit_mem_iff_top_nilpotent` if the whole things does not become too long
+lemma go_faster {x : (Q_p p)} (h_go : ‖ x ‖ < 1) (H : tendsto (λ (n : ℕ), ‖x‖ ^ n) at_top (𝓝 0)) :
   x ∈ (Z_p p).nonunits :=
 begin
   apply valuation_subring.mem_nonunits_iff_exists_mem_maximal_ideal.mpr,
@@ -401,12 +421,10 @@ begin
       rwa [← nnreal.tendsto_coe, nnreal.coe_zero] },
     replace this : valued.v x < (1 : ℤₘ₀),
     { apply (rank_one_valuation.norm_lt_one_iff_val_lt_one x).mp this },
-    --up to here, as in lemma above
-    obtain ⟨y, hy₁, hy₂⟩ := exists_int p x this,
-    have cc_int := completion.valuation.adic_of_compl_eq_compl_of_adic ℤ (p_height_one_ideal p) ℚ (↑y),
+    obtain ⟨y, hy₁, hy₂⟩ := exists_mem_lt_one_of_lt_one p this,
     rw [← hy₂] at this,
     have this' := this,
-    rw [← cc_int] at this,
+    rw [← completion.valuation.adic_of_compl_eq_compl_of_adic ℤ (p_height_one_ideal p) ℚ (↑y)] at this,
     let M := (completion.max_ideal_of_completion) ℤ (p_height_one_ideal p) ℚ,
     have v_lt_one := @is_dedekind_domain.height_one_spectrum.valuation_lt_one_iff_dvd (Z_p p) _ _ _ (Q_p p)
       _ _ _ (completion.max_ideal_of_completion ℤ (p_height_one_ideal p) ℚ) y,
@@ -419,9 +437,6 @@ begin
     simp only [mem_valuation_subring_iff, set_like.eta, exists_prop],
     exact ⟨le_of_lt this', this⟩,--this final `exact` probably shows that having both `this'` and `this` is perfectly useless
 end
-
-
-#exit
 
 lemma unit_ball.nonunit_mem_iff_top_nilpotent (x : (Q_p p)) :
   x ∈ (Z_p p).nonunits ↔ filter.tendsto (λ n : ℕ, x ^ n) at_top (𝓝 0) :=
@@ -449,54 +464,8 @@ begin
       { rwa [← nnreal.coe_lt_coe, nnreal.coe_one, ← subtype.val_eq_coe] at this },
       apply nnreal.lt_one_of_tendsto_pow_0,
       rwa [← nnreal.tendsto_coe, nnreal.coe_zero] },
-    apply valuation_subring.mem_nonunits_iff_exists_mem_maximal_ideal.mpr,--up to here, as in lemma above
-    have cc := completion.valuation.adic_of_compl_eq_compl_of_adic (Z_p p),
-    
-    
-    replace this : valued.v x < (1 : ℤₘ₀),
-    { apply (rank_one_valuation.norm_lt_one_iff_val_lt_one x).mp this },
-    { have x_mem := valuation_subring.mem_of_valuation_le_one (Z_p p) x (le_of_lt _),
-      use x_mem,
-      rw [← h_max_ideal, ← ideal.dvd_span_singleton],
-      -- apply (@valuation_lt_one_iff_dvd (Z_p p) _ _ _ (Q_p p) _ _ _ (padic'_int.p_height_one_ideal p)
-      -- ⟨x, x_mem⟩).mp,
-      simp only [valuation_subring.algebra_map_apply, set_like.coe_mk],
-      -- swap,
-      -- convert this,
-      -- sorry,
-      -- erw [(completion.adic_valuation_equals_completion ℤ (int.p_height_one_ideal p) ℚ x)],
-      -- have ff := valuation_lt_one_iff_dvd (padic'_int.p_height_one_ideal p),
-      
-
-
-    -- have dd := (@valuation_lt_one_iff_dvd (Z_p p) _ _ _ (Q_p p) _ _ _ (padic'_int.p_height_one_ideal p)
-    --   ⟨x, _⟩).mp,
-    -- have hp : (padic'_int.p_height_one_ideal p).as_ideal = (local_ring.maximal_ideal ↥(Z_p p)),
-    -- { refl },
-    -- simp only [← hp, ideal.dvd_span_singleton, mem_nonunits_iff, valuation_subring.algebra_map_apply,
-    --   set_like.coe_mk, forall_true_left] at dd,
-    -- refine ⟨_, dd _⟩,
-    -- swap,
-    -- convert this,
-    -- convert (completion.adic_valuation_equals_completion ℤ (int.p_height_one_ideal p) ℚ x) using 1,
-    -- replace dd := dd this,
-      -- rw ← em at this,
-    -- have temp := (@valuation_lt_one_iff_dvd (Z_p p) _ _ _ (Q_p p) _ _ _
-    --   (padic'_int.p_height_one_ideal p) ⟨x, ha⟩).mpr,
-    
-    -- simp only [← hp, ideal.dvd_span_singleton, mem_nonunits_iff, valuation_subring.algebra_map_apply,
-    --   set_like.coe_mk, forall_true_left],
-    -- rw (@valuation_lt_one_iff_dvd (Z_p p) _ _ _ (Q_p p) _ _ _ (padic'_int.p_height_one_ideal p)
-    --   ⟨x, h⟩) at this,
-    
-    sorry, sorry
-    }
-    -- exact ⟨(padic_int.mem_subring_iff p).mpr (le_of_lt this), (local_ring.mem_maximal_ideal _).mpr
-    --   (padic_int.mem_nonunits.mpr this)⟩ 
-      
-      },
+      apply go_faster p this H }
 end
-
 
 
 lemma mem_nonunits_iff (x : (Q_p p)) :
