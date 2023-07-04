@@ -1,5 +1,6 @@
 --import analysis.special_functions.pow.nnreal
 import from_mathlib.spectral_norm_unique
+--import field_theory.splitting_field.construction
 
 open_locale nnreal polynomial
 
@@ -82,37 +83,103 @@ begin
 end
 
 open polynomial 
+lemma spectral_norm_eq_root_zero_coeff' (h_alg : algebra.is_algebraic K L) 
+ (hna : is_nonarchimedean (norm : K → ℝ)) (x : L) :
+  spectral_norm K L x = ‖ (minpoly K x).coeff 0 ‖^(1/(minpoly K x).nat_degree : ℝ) :=
+begin
+  by_cases hx0 : x = 0,
+  { simp only [hx0, minpoly.zero, coeff_X_zero, norm_zero, nat_degree_X, algebra_map.coe_one,
+      div_self, ne.def, one_ne_zero, not_false_iff, real.rpow_one, spectral_norm_zero] },
+  { have hspl : splits  (ring_hom.id L) (map_alg K L (minpoly K x)),
+   { sorry },
+    have h0 : (algebra_map K L ((minpoly K x).coeff 0)) = (map_alg K L (minpoly K x)).coeff 0,
+    { rw [map_alg_eq_map, coeff_map] },
+    rw real.eq_rpow_one_div_iff (spectral_norm_nonneg x)
+      (norm_nonneg ((minpoly K x).coeff 0)),
+    rw [real.rpow_nat_cast],  
+    rw ← @spectral_norm_extends K _ L _ _ ((minpoly K x).coeff 0),
+    rw ← spectral_mul_ring_norm_def h_alg hna,
+    rw ← spectral_mul_ring_norm_def h_alg hna,
+    rw h0,
+    rw polynomial.prod_roots_eq_coeff_zero_of_monic_of_split _ hspl,
+    rw [map_mul, map_pow, map_neg_eq_map, map_one, one_pow, one_mul],
+    simp only [polynomial.roots],
+    simp only [multiset.empty_eq_zero],
+    rw dif_neg,
+    
+    sorry,
+    { apply mt (congr_arg (λ p, coeff p 0)),
+      rw [← h0, coeff_zero, _root_.map_eq_zero], 
+      exact minpoly.coeff_zero_ne_zero (is_algebraic_iff_is_integral.mp (h_alg x)) hx0, },
+    { have h_monic: (minpoly K x).leading_coeff = 1,
+      { exact minpoly.monic (is_algebraic_iff_is_integral.mp (h_alg x)),},
+      rw [map_alg_eq_map, monic, leading_coeff, coeff_map, nat_degree_map, 
+        coeff_nat_degree, h_monic, map_one] },
+    { rw [ne.def, nat.cast_eq_zero],
+      exact ne_of_gt 
+        (minpoly.nat_degree_pos (is_algebraic_iff_is_integral.mp (h_alg x))) }},
+end
+
+/- noncomputable! def minpoly.is_splitting_field.algebra (x : L) {E : Type*} [field E] [algebra K E]
+  [(minpoly K x).is_splitting_field K E] :
+  algebra K⟮x⟯ E :=
+sorry
+
+local attribute [instance] minpoly.is_splitting_field.algebra
+
+lemma minpoly.is_splitting_field.scalar_tower (x : L) {E : Type*} [field E] [algebra K E]
+  [(minpoly K x).is_splitting_field K E] :
+  is_scalar_tower K K⟮x⟯ E :=
+sorry -/
+
 lemma spectral_norm_eq_root_zero_coeff (h_alg : algebra.is_algebraic K L) 
  (hna : is_nonarchimedean (norm : K → ℝ)) (x : L) :
   spectral_norm K L x = ‖ (minpoly K x).coeff 0 ‖^(1/(minpoly K x).nat_degree : ℝ) :=
 begin
-  have hspl : splits  (ring_hom.id L) (map_alg K L (minpoly K x)),
-  { sorry },
-  have h0 : (algebra_map K L ((minpoly K x).coeff 0)) = (map_alg K L (minpoly K x)).coeff 0,
-  { rw [map_alg_eq_map, coeff_map] },
-  rw real.eq_rpow_one_div_iff (spectral_norm_nonneg x)
-    (norm_nonneg ((minpoly K x).coeff 0)),
-  rw [real.rpow_nat_cast],  
-  rw ← @spectral_norm_extends K _ L _ _ ((minpoly K x).coeff 0),
-  rw ← spectral_mul_ring_norm_def h_alg hna,
-  rw ← spectral_mul_ring_norm_def h_alg hna,
-  rw h0,
-  rw polynomial.prod_roots_eq_coeff_zero_of_monic_of_split _ hspl,
-  rw [map_mul, map_pow, map_neg_eq_map, map_one, one_pow, one_mul],
-  simp only [polynomial.roots],
-  simp only [multiset.empty_eq_zero],
-  rw dif_neg,
-  -- polynomial.degree_eq_card_roots
-  sorry,
-  { sorry },
-  { have h_monic: (minpoly K x).leading_coeff = 1,
-    { exact minpoly.monic (is_algebraic_iff_is_integral.mp (h_alg x)),},
-    rw [map_alg_eq_map, monic, leading_coeff, coeff_map, nat_degree_map, 
-      coeff_nat_degree, h_monic, map_one] },
-  { rw [ne.def, nat.cast_eq_zero],
-    exact ne_of_gt 
-      (minpoly.nat_degree_pos (is_algebraic_iff_is_integral.mp (h_alg x))) },
+  by_cases hx0 : x = 0,
+  { simp only [hx0, minpoly.zero, coeff_X_zero, norm_zero, nat_degree_X, algebra_map.coe_one,
+      div_self, ne.def, one_ne_zero, not_false_iff, real.rpow_one, spectral_norm_zero] },
+  { set E := (map_alg K L (minpoly K x)).splitting_field,
+    letI : is_scalar_tower K L E := sorry, --splitting_field.is_scalar_tower,
+    have h_alg_E : algebra.is_algebraic K E := sorry,
+    have hspl : splits  (ring_hom.id E) (map_alg K E (minpoly K x)),
+   { sorry },
+    have h0 : (algebra_map K L ((minpoly K x).coeff 0)) = (map_alg K L (minpoly K x)).coeff 0,
+    { rw [map_alg_eq_map, coeff_map] },
+    have h1 : (algebra_map L E) ((algebra_map K L) ((minpoly K x).coeff 0)) =
+      (map_alg K E (minpoly K x)).coeff 0,
+    { sorry },
+    rw real.eq_rpow_one_div_iff (spectral_norm_nonneg x)
+      (norm_nonneg ((minpoly K x).coeff 0)),
+    rw [real.rpow_nat_cast],  
+    rw @spectral_value.eq_of_tower K _ E,
+    rw ← @spectral_norm_extends K _ L _ _ ((minpoly K x).coeff 0),
+    rw @spectral_value.eq_of_tower K _ E _ _ L,
+    rw ← spectral_mul_ring_norm_def h_alg_E hna,
+    rw ← spectral_mul_ring_norm_def h_alg_E hna,
+    rw h1,
+    
+    rw polynomial.prod_roots_eq_coeff_zero_of_monic_of_split _ hspl,
+    rw [map_mul, map_pow, map_neg_eq_map, map_one, one_pow, one_mul],
+    simp only [polynomial.roots],
+    simp only [multiset.empty_eq_zero],
+    rw dif_neg,
+    
+    sorry,
+    { apply mt (congr_arg (λ p, coeff p 0)),
+      rw [← h1, coeff_zero, _root_.map_eq_zero, _root_.map_eq_zero], 
+      exact minpoly.coeff_zero_ne_zero (is_algebraic_iff_is_integral.mp (h_alg x)) hx0, },
+    { have h_monic: (minpoly K x).leading_coeff = 1,
+      { exact minpoly.monic (is_algebraic_iff_is_integral.mp (h_alg x)), },
+      simp only [map_alg_eq_map, monic, leading_coeff, coeff_map, nat_degree_map, 
+        coeff_nat_degree, h_monic, map_one] },
+    { exact h_alg },
+    { exact h_alg },
+    { rw [ne.def, nat.cast_eq_zero],
+      exact ne_of_gt 
+        (minpoly.nat_degree_pos (is_algebraic_iff_is_integral.mp (h_alg x))) }},
 end
+
 
 lemma spectral_value_term_le (h_alg : algebra.is_algebraic K L) 
   (hna : is_nonarchimedean (norm : K → ℝ)) (x : L) {n : ℕ} (hn : n < (minpoly K x).nat_degree) :
