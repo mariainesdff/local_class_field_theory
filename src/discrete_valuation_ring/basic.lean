@@ -6,9 +6,8 @@ Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 
 import ring_theory.dedekind_domain.adic_valuation
 import ring_theory.dedekind_domain.pid
-import ring_theory.discrete_valuation_ring
+import ring_theory.discrete_valuation_ring.basic
 import ring_theory.ideal.basic
-import ring_theory.valuation.tfae
 import ring_theory.valuation.valuation_subring
 import topology.algebra.valued_field
 import topology.algebra.with_zero_topology
