@@ -387,6 +387,9 @@ begin
       (padic_int.mem_nonunits.mpr this)⟩ },
 end
 
+lemma exists_int (x : (Q_p p)) (hx : valued.v x < (1 : ℤₘ₀)) : ∃ (y : Z_p p), (y : (Q_p p)) = x 
+  ∧ (valued.v (y : Q_p p)) = valued.v x := sorry
+
 lemma go_faster (x : (Q_p p)) (h_go : ‖ x ‖ < 1) (H : tendsto (λ (n : ℕ), ‖x‖ ^ n) at_top (𝓝 0)) :
   x ∈ (Z_p p).nonunits :=
 begin
@@ -399,13 +402,26 @@ begin
     replace this : valued.v x < (1 : ℤₘ₀),
     { apply (rank_one_valuation.norm_lt_one_iff_val_lt_one x).mp this },
     --up to here, as in lemma above
-    have cc := completion.valuation.adic_of_compl_eq_compl_of_adic ℤ (p_height_one_ideal p) _ x,
-    rw [← cc] at this,
-    clear cc,
-    sorry
-    -- rw [is_dedekind_domain.height_one_spectrum.valuation_lt_one_iff_dvd] at this,
+    obtain ⟨y, hy₁, hy₂⟩ := exists_int p x this,
+    have cc_int := completion.valuation.adic_of_compl_eq_compl_of_adic ℤ (p_height_one_ideal p) ℚ (↑y),
+    rw [← hy₂] at this,
+    have this' := this,
+    rw [← cc_int] at this,
+    let M := (completion.max_ideal_of_completion) ℤ (p_height_one_ideal p) ℚ,
+    have v_lt_one := @is_dedekind_domain.height_one_spectrum.valuation_lt_one_iff_dvd (Z_p p) _ _ _ (Q_p p)
+      _ _ _ (completion.max_ideal_of_completion ℤ (p_height_one_ideal p) ℚ) y,
+    have eq_y : (algebra_map ↥(Z_p p) (Q_p p)) y = (↑y : (Q_p p)) := rfl,
+    rw eq_y at v_lt_one,
+    rw [v_lt_one] at this,
+    simp only [ideal.dvd_span_singleton, mem_nonunits_iff, valuation_subring.algebra_map_apply,
+      set_like.coe_mk, forall_true_left] at this,--squeeze_simp has a bizarre *unwanted* effect
+    rw [← hy₁],
+    simp only [mem_valuation_subring_iff, set_like.eta, exists_prop],
+    exact ⟨le_of_lt this', this⟩,--this final `exact` probably shows that having both `this'` and `this` is perfectly useless
 end
 
+
+#exit
 
 lemma unit_ball.nonunit_mem_iff_top_nilpotent (x : (Q_p p)) :
   x ∈ (Z_p p).nonunits ↔ filter.tendsto (λ n : ℕ, x ^ n) at_top (𝓝 0) :=
