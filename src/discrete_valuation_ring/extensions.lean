@@ -44,6 +44,7 @@ begin
   apply_instance,
 end
 
+
 variables (K L) 
 def pow_extension_on_units [finite_dimensional K L] : 
   Lˣ →* (multiplicative ℤ) :=
@@ -70,8 +71,8 @@ int.nat_abs (int.subgroup_cyclic (map (pow_extension_on_units K L) ⊤).to_add_s
 variables {K L}
 
 lemma exp_extension_on_units_generates_range' [finite_dimensional K L] : 
-  to_add_subgroup (map (pow_extension_on_units K L) ⊤) =
-    closure {(exp_extension_on_units K L : ℤ)} := 
+  subgroup.to_add_subgroup (subgroup.map (pow_extension_on_units K L) ⊤) =
+    add_subgroup.closure {(exp_extension_on_units K L : ℤ)} := 
 by rw [(int.subgroup_cyclic (map (pow_extension_on_units K L) 
   ⊤).to_add_subgroup).some_spec, ← zmultiples_eq_closure, ← zmultiples_eq_closure, 
   exp_extension_on_units, int.zmultiples_nat_abs]
