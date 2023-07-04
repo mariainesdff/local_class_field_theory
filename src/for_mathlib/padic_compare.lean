@@ -10,7 +10,7 @@ import ring_theory.dedekind_domain.adic_valuation
 import for_mathlib.ring_theory.dedekind_domain.ideal
 
 --import for_mathlib.laurent_series_iso.old_power_series_adic_completion
-
+set_option profiler true
 
 noncomputable theory
 
@@ -44,8 +44,8 @@ instance : separated_space ℚ_[p] := metric_space.to_separated
 
 def padic_valued : valued ℚ ℤₘ₀ := (p_height_one_ideal p).adic_valued
 
-lemma padic_valued_valuation_p : 
-  @valued.v ℚ _ ℤₘ₀ _ (padic_valued p) (p : ℚ) = (of_add (-1 : ℤ)) := sorry
+-- lemma padic_valued_valuation_p : 
+--   @valued.v ℚ _ ℤₘ₀ _ (padic_valued p) (p : ℚ) = (of_add (-1 : ℤ)) := sorry
 
 local attribute [instance] padic_valued
 
@@ -237,25 +237,22 @@ def padic'_int.height_one_ideal (p : out_param ℕ) [hp : fact (p.prime)] :
 instance : valued (Q_p p) ℤₘ₀ := height_one_spectrum.valued_adic_completion ℚ (p_height_one_ideal p)
 --by show_term {apply_instance}
 
-lemma padic'.valuation_p : 
-  valued.v (p : Q_p p) = (of_add (-1 : ℤ)) := 
-begin
-  letI : valued ℚ ℤₘ₀ := padic_valued p,
-  have hp : (p : Q_p p) = (((coe : ℚ → (Q_p p)) p) : Q_p p),
-  { have : ∀ x : ℚ, (coe : ℚ → (Q_p p)) x = (x : Q_p p),
-    { intro x, sorry},
-    rw this, simp only [rat.cast_coe_nat], },
-  rw [hp, valued.valued_completion_apply (p : ℚ), padic_valued_valuation_p p],
+-- lemma padic'.valuation_p : 
+--   valued.v (p : Q_p p) = (of_add (-1 : ℤ)) := 
+-- begin
+--   letI : valued ℚ ℤₘ₀ := padic_valued p,
+--   have hp : (p : Q_p p) = (((coe : ℚ → (Q_p p)) p) : Q_p p),
+--   { have : ∀ x : ℚ, (coe : ℚ → (Q_p p)) x = (x : Q_p p),
+--     { intro x, sorry},
+--     rw this, simp only [rat.cast_coe_nat], },
+--   rw [hp, valued.valued_completion_apply (p : ℚ), padic_valued_valuation_p p],
+-- end
 
-end
+-- lemma padic'_int.height_one_ideal_def' : 
+--   (padic'_int.height_one_ideal p).as_ideal = ideal.span {(p : Z_p p)} := 
+-- discrete_valuation.is_uniformizer_is_generator _ (padic'.valuation_p p)
 
-#exit
-
-lemma padic'_int.height_one_ideal_def' : 
-  (padic'_int.height_one_ideal p).as_ideal = ideal.span {(p : Z_p p)} := 
-discrete_valuation.is_uniformizer_is_generator _ (padic'.valuation_p p)
-
-
+/-
 noncomputable! lemma padic'_int.height_one_ideal_def : 
   (padic'_int.height_one_ideal p).as_ideal = ideal.span {(p : Z_p p)} := 
 begin
@@ -298,6 +295,7 @@ begin
     rw subtype.ext_iff at hcx ⊢,
     exact hcx }, -/
 end
+-/
 
 
 /- The lemma `padic_int_ring_equiv_mem` states that an element `x ∈ ℚ_[p]` is in `ℤ_[p]` if and
@@ -389,6 +387,28 @@ begin
       (padic_int.mem_nonunits.mpr this)⟩ },
 end
 
+lemma go_faster (x : (Q_p p)) (h_go : ‖ x ‖ < 1) (H : tendsto (λ (n : ℕ), ‖x‖ ^ n) at_top (𝓝 0) :
+  x ∈ (Z_p p).nonunits :=
+begin
+  apply valuation_subring.mem_nonunits_iff_exists_mem_maximal_ideal.mpr,
+  have : ‖ x ‖ < 1,
+    { suffices : (⟨‖ x ‖, norm_nonneg _⟩ : ℝ≥0) < 1,
+      { rwa [← nnreal.coe_lt_coe, nnreal.coe_one, ← subtype.val_eq_coe] at this },
+      apply nnreal.lt_one_of_tendsto_pow_0,
+      rwa [← nnreal.tendsto_coe, nnreal.coe_zero] },
+    replace this : valued.v x < (1 : ℤₘ₀),
+    { apply (rank_one_valuation.norm_lt_one_iff_val_lt_one x).mp this },
+    --up to here, as in lemma above
+    have cc := completion.valuation.adic_of_compl_eq_compl_of_adic ℤ (p_height_one_ideal p) _ x,
+    rw [← cc] at this,
+    clear cc,
+    -- rw [is_dedekind_domain.height_one_spectrum.valuation_lt_one_iff_dvd] at this,
+end
+
+
+
+#exit
+
 lemma unit_ball.nonunit_mem_iff_top_nilpotent (x : (Q_p p)) :
   x ∈ (Z_p p).nonunits ↔ filter.tendsto (λ n : ℕ, x ^ n) at_top (𝓝 0) :=
 begin
@@ -415,15 +435,18 @@ begin
       { rwa [← nnreal.coe_lt_coe, nnreal.coe_one, ← subtype.val_eq_coe] at this },
       apply nnreal.lt_one_of_tendsto_pow_0,
       rwa [← nnreal.tendsto_coe, nnreal.coe_zero] },
-    apply valuation_subring.mem_nonunits_iff_exists_mem_maximal_ideal.mpr,
+    apply valuation_subring.mem_nonunits_iff_exists_mem_maximal_ideal.mpr,--up to here, as in lemma above
+    have cc := completion.valuation.adic_of_compl_eq_compl_of_adic (Z_p p),
+    
+    
     replace this : valued.v x < (1 : ℤₘ₀),
     { apply (rank_one_valuation.norm_lt_one_iff_val_lt_one x).mp this },
-    { --have x_mem := valuation_subring.mem_of_valuation_le_one (Z_p p) x (le_of_lt _),
-      -- use x_mem,
-      -- rw [← h_max_ideal, ← ideal.dvd_span_singleton],
+    { have x_mem := valuation_subring.mem_of_valuation_le_one (Z_p p) x (le_of_lt _),
+      use x_mem,
+      rw [← h_max_ideal, ← ideal.dvd_span_singleton],
       -- apply (@valuation_lt_one_iff_dvd (Z_p p) _ _ _ (Q_p p) _ _ _ (padic'_int.p_height_one_ideal p)
       -- ⟨x, x_mem⟩).mp,
-      -- simp only [valuation_subring.algebra_map_apply, set_like.coe_mk],
+      simp only [valuation_subring.algebra_map_apply, set_like.coe_mk],
       -- swap,
       -- convert this,
       -- sorry,
@@ -459,6 +482,8 @@ begin
       
       },
 end
+
+
 
 lemma mem_nonunits_iff (x : (Q_p p)) :
   x ∈ (Z_p p).nonunits ↔ (padic_equiv p) x ∈ (comap_Zp p).nonunits :=
