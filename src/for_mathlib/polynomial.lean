@@ -1,3 +1,4 @@
+import field_theory.ratfunc
 import ring_theory.dedekind_domain.adic_valuation
 
 open is_dedekind_domain

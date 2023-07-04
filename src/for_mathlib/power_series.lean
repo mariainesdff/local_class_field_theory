@@ -1,8 +1,8 @@
 import field_theory.finite.galois_field
 import ring_theory.dedekind_domain.adic_valuation
 import ring_theory.dedekind_domain.integral_closure
-
-import ring_theory.valuation.tfae
+import ring_theory.power_series.basic
+import ring_theory.valuation.valuation_subring
 
 open_locale discrete_valuation
 
