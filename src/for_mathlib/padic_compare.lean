@@ -10,7 +10,7 @@ import ring_theory.dedekind_domain.adic_valuation
 import for_mathlib.ring_theory.dedekind_domain.ideal
 
 --import for_mathlib.laurent_series_iso.old_power_series_adic_completion
-set_option profiler true
+--set_option profiler true
 
 noncomputable theory
 
@@ -387,7 +387,7 @@ begin
       (padic_int.mem_nonunits.mpr this)⟩ },
 end
 
-lemma go_faster (x : (Q_p p)) (h_go : ‖ x ‖ < 1) (H : tendsto (λ (n : ℕ), ‖x‖ ^ n) at_top (𝓝 0) :
+lemma go_faster (x : (Q_p p)) (h_go : ‖ x ‖ < 1) (H : tendsto (λ (n : ℕ), ‖x‖ ^ n) at_top (𝓝 0)) :
   x ∈ (Z_p p).nonunits :=
 begin
   apply valuation_subring.mem_nonunits_iff_exists_mem_maximal_ideal.mpr,
@@ -402,12 +402,10 @@ begin
     have cc := completion.valuation.adic_of_compl_eq_compl_of_adic ℤ (p_height_one_ideal p) _ x,
     rw [← cc] at this,
     clear cc,
+    sorry
     -- rw [is_dedekind_domain.height_one_spectrum.valuation_lt_one_iff_dvd] at this,
 end
 
-
-
-#exit
 
 lemma unit_ball.nonunit_mem_iff_top_nilpotent (x : (Q_p p)) :
   x ∈ (Z_p p).nonunits ↔ filter.tendsto (λ n : ℕ, x ^ n) at_top (𝓝 0) :=
@@ -475,7 +473,7 @@ begin
     -- rw (@valuation_lt_one_iff_dvd (Z_p p) _ _ _ (Q_p p) _ _ _ (padic'_int.p_height_one_ideal p)
     --   ⟨x, h⟩) at this,
     
-    sorry,
+    sorry, sorry
     }
     -- exact ⟨(padic_int.mem_subring_iff p).mpr (le_of_lt this), (local_ring.mem_maximal_ideal _).mpr
     --   (padic_int.mem_nonunits.mpr this)⟩ 

@@ -14,10 +14,10 @@ class local_field (K : Type*) [field K] extends valued K ℤₘ₀ :=
 
 namespace eq_char_local_field
 
-@[priority 100] noncomputable instance (p : out_param ℕ) [fact(nat.prime p)] (K : Type*) [field K]
+@[priority 100] noncomputable! instance (p : out_param ℕ) [fact(nat.prime p)] (K : Type*) [field K]
   [eq_char_local_field p K] : local_field K := 
-{ complete             := infer_instance,
-  is_discrete          := infer_instance,
+{ complete             := sorry, -- TODO: infer_instance used to work!
+  is_discrete          := sorry, -- TODO: infer_instance used to work!
   finite_residue_field := sorry,
   ..(eq_char_local_field.with_zero.valued p K) }
 
