@@ -176,11 +176,46 @@ end
 
 
 lemma foo (h_alg : algebra.is_algebraic K L) (hna : is_nonarchimedean (norm : K → ℝ)) (x : L) 
-  {E : Type*} [field E] [algebra K E] [algebra L E] (hE : is_splitting_field L E (map_alg K L (minpoly K x)))
+  {E : Type*} [field E] [algebra K E] [algebra L E] [is_scalar_tower K L E]
+  (hE : is_splitting_field L E (map_alg K L (minpoly K x)))
   (h_alg_E : algebra.is_algebraic K E) :
   (spectral_mul_alg_norm h_alg_E hna) ((algebra_map L E) x) ^ (minpoly K x).nat_degree = 
   (spectral_mul_alg_norm h_alg_E hna) ((map_alg K E) (minpoly K x)).roots.prod :=
-sorry
+begin
+  have h_deg' : (minpoly K x).nat_degree = (map_alg K E (minpoly K x)).nat_degree,
+  { sorry },
+  have h_deg : (minpoly K x).nat_degree = ((map_alg K E) (minpoly K x)).roots.card,
+  { rw [h_deg', eq_comm, ← splits_iff_card_roots], 
+    exact foo_splits _ hE },
+  have h : (spectral_mul_alg_norm h_alg_E hna) ((map_alg K E) (minpoly K x)).roots.prod =
+  (multiset.map (spectral_mul_alg_norm h_alg_E hna) ((map_alg K E) (minpoly K x)).roots).prod,
+  { sorry },
+  rw h,
+  rw ← multiset.prod_replicate,
+  apply congr_arg,
+  ext r,
+  rw multiset.count_replicate,
+  split_ifs with hr hr,
+  { -- multiset.count_eq_card 
+    sorry },
+  { rw multiset.count_eq_zero_of_not_mem,
+    intros hr_mem,
+    simp only [multiset.mem_map, mem_roots', ne.def, is_root.def] at hr_mem,
+    obtain ⟨e, he_root, her⟩ := hr_mem,
+    have heq : (spectral_mul_alg_norm h_alg_E hna) e = 
+      (spectral_mul_alg_norm h_alg_E hna) ((algebra_map L E) x),
+    { change spectral_norm K E e = spectral_norm K E (algebra_map L E x),
+      simp only [spectral_norm],
+      rw minpoly.eq_of_root h_alg_E,
+      rw [← he_root.2, map_alg_eq_map, ← minpoly.eq_of_algebra_map_eq (algebra_map L E).injective
+        (is_algebraic_iff_is_integral.mp (h_alg x)) (eq.refl (algebra_map L E x)),
+        aeval_def, eval_map] },
+    rw heq at her,
+    exact hr her.symm,
+}
+end
+
+#exit
 
 lemma spectral_norm_eq_root_zero_coeff (h_alg : algebra.is_algebraic K L) 
  (hna : is_nonarchimedean (norm : K → ℝ)) (x : L) :
