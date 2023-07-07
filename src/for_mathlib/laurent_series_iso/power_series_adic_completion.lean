@@ -18,7 +18,8 @@ namespace completion_laurent_series
 
 variables (K : Type*) [field K]
 
-def power_series.ideal_X (K : Type*) [field K] : is_dedekind_domain.height_one_spectrum (power_series K) := 
+def power_series.ideal_X (K : Type*) [field K] : is_dedekind_domain.height_one_spectrum 
+  (power_series K) := 
 { as_ideal := ideal.span({X}),
   is_prime := power_series.span_X_is_prime,
   ne_bot   := by { rw [ne.def, ideal.span_singleton_eq_bot], exact X_ne_zero }} 
@@ -32,12 +33,39 @@ lemma coe_range_dense : dense_range (coe : (ratfunc K) → (laurent_series K)) :
 local attribute [instance] classical.prop_decidable
 open multiplicity unique_factorization_monoid
 
+lemma polynomial.norm_unit_X : norm_unit (polynomial.X : (polynomial K)) = 1 := sorry
+
+lemma polynomial.X_eq_normalize : (polynomial.X : (polynomial K)) = normalize polynomial.X :=
+  by simp only [normalize_apply, polynomial.norm_unit_X, units.coe_one, mul_one]
+
+lemma power_series.norm_unit_X : norm_unit (power_series.X : (power_series K)) = 1 := sorry
+
+lemma power_series.X_eq_normalize : (power_series.X : (power_series K)) = normalize power_series.X :=
+  by simp only [normalize_apply, power_series.norm_unit_X, units.coe_one, mul_one]
+
 lemma aux_old_pol (P : (polynomial K)) : 
-  multiset.count (power_series.ideal_X K).as_ideal (normalized_factors (ideal.span {↑P})) =
-  multiset.count (ideal.span {polynomial.X} : ideal (polynomial K))
-    (normalized_factors (ideal.span {P})) :=
+  (normalized_factors (ideal.span {↑P})).count (power_series.ideal_X K).as_ideal =
+  (normalized_factors (ideal.span {P})).count (ideal.span {polynomial.X} : ideal (polynomial K)) :=
 begin
+  -- sorry,
+  by_cases hP : P = 0,
   sorry,
+  { have for_pol := count_normalized_factors_eq_count_normalized_factors_span hP
+    polynomial.X_ne_zero (polynomial.norm_unit_X K) polynomial.prime_X,
+    rw [← for_pol],
+    have coe_ne_zero : (↑ P : (power_series K)) ≠ 0, sorry,
+    have for_pow := count_normalized_factors_eq_count_normalized_factors_span coe_ne_zero
+      power_series.X_ne_zero (power_series.norm_unit_X K) power_series.X_prime,
+    have X_eq_X : (power_series.ideal_X K).as_ideal = ideal.span {X},
+    sorry,
+    rw [X_eq_X, ← for_pow],
+    have uno := @multiplicity_eq_count_normalized_factors (polynomial K) _ _ _ _ _ _ polynomial.X P
+    (irreducible_X) hP,
+    have due := @multiplicity_eq_count_normalized_factors (power_series K) _ _ _ _ _ _ power_series.X ↑P
+    (prime.irreducible power_series.X_prime) coe_ne_zero,
+    rw [polynomial.X_eq_normalize, power_series.X_eq_normalize, ← part_enat.coe_inj, ← uno, ← due],
+    sorry,
+  }
 end
 
 
