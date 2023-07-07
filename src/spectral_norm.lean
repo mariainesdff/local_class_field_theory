@@ -1,4 +1,3 @@
---import analysis.special_functions.pow.nnreal
 import from_mathlib.spectral_norm_unique
 import field_theory.splitting_field.construction
 
@@ -50,28 +49,6 @@ open finite_dimensional
 
 variables {K : Type*} [nontrivially_normed_field K] [complete_space K] 
   (hna : is_nonarchimedean (norm : K → ℝ)) {L : Type*} [field L] [algebra K L]
-   --[finite_dimensional K L]
-
-/- lemma spectral_value_term_le (x : L) {n : ℕ} (hn : n < (minpoly K x).nat_degree)  :
-  ‖(minpoly K x).coeff n‖ ^ (1 / (((minpoly K x).nat_degree : ℝ) - n)) ≤ 
-  ‖(minpoly K x).coeff 0‖ ^ (1 / ((minpoly K x).nat_degree : ℝ)) :=
-sorry
-
-lemma spectral_norm_eq_root_zero_coeff (h_alg : algebra.is_algebraic K L) (x : L) :
-  spectral_norm K L x = ‖ (minpoly K x).coeff 0‖^(1/(minpoly K x).nat_degree : ℝ) :=
-begin
-  simp only [spectral_norm, spectral_value, spectral_value_terms],
-  apply le_antisymm,
-  { apply csupr_le,
-    intros n,
-    split_ifs with hn,
-    { exact spectral_value_term_le x hn, },
-    { exact real.rpow_nonneg_of_nonneg (norm_nonneg _ ) _ }},
-  { apply le_csupr_of_le (spectral_value_terms_bdd_above (minpoly K x)) 0,
-    simp only [spectral_value_terms],
-    rw [if_pos (minpoly.nat_degree_pos (is_algebraic_iff_is_integral.mp (h_alg x))),
-      nat.cast_zero,  tsub_zero] }
-end -/
 
 lemma real.eq_rpow_one_div_iff {x y : ℝ} (hx : 0 ≤ x) (hy : 0 ≤ y) {z : ℝ} (hz : z ≠ 0) :
   x = y ^ (1 / z) ↔ x ^ z = y :=
@@ -83,54 +60,6 @@ begin
 end
 
 open polynomial 
-/- lemma spectral_norm_eq_root_zero_coeff' (h_alg : algebra.is_algebraic K L) 
- (hna : is_nonarchimedean (norm : K → ℝ)) (x : L) :
-  spectral_norm K L x = ‖ (minpoly K x).coeff 0 ‖^(1/(minpoly K x).nat_degree : ℝ) :=
-begin
-  by_cases hx0 : x = 0,
-  { simp only [hx0, minpoly.zero, coeff_X_zero, norm_zero, nat_degree_X, algebra_map.coe_one,
-      div_self, ne.def, one_ne_zero, not_false_iff, real.rpow_one, spectral_norm_zero] },
-  { have hspl : splits  (ring_hom.id L) (map_alg K L (minpoly K x)),
-   { sorry },
-    have h0 : (algebra_map K L ((minpoly K x).coeff 0)) = (map_alg K L (minpoly K x)).coeff 0,
-    { rw [map_alg_eq_map, coeff_map] },
-    rw real.eq_rpow_one_div_iff (spectral_norm_nonneg x)
-      (norm_nonneg ((minpoly K x).coeff 0)),
-    rw [real.rpow_nat_cast],  
-    rw ← @spectral_norm_extends K _ L _ _ ((minpoly K x).coeff 0),
-    rw ← spectral_mul_ring_norm_def h_alg hna,
-    rw ← spectral_mul_ring_norm_def h_alg hna,
-    rw h0,
-    rw polynomial.prod_roots_eq_coeff_zero_of_monic_of_split _ hspl,
-    rw [map_mul, map_pow, map_neg_eq_map, map_one, one_pow, one_mul],
-    simp only [polynomial.roots],
-    simp only [multiset.empty_eq_zero],
-    rw dif_neg,
-    
-    sorry,
-    { apply mt (congr_arg (λ p, coeff p 0)),
-      rw [← h0, coeff_zero, _root_.map_eq_zero], 
-      exact minpoly.coeff_zero_ne_zero (is_algebraic_iff_is_integral.mp (h_alg x)) hx0, },
-    { have h_monic: (minpoly K x).leading_coeff = 1,
-      { exact minpoly.monic (is_algebraic_iff_is_integral.mp (h_alg x)),},
-      rw [map_alg_eq_map, monic, leading_coeff, coeff_map, nat_degree_map, 
-        coeff_nat_degree, h_monic, map_one] },
-    { rw [ne.def, nat.cast_eq_zero],
-      exact ne_of_gt 
-        (minpoly.nat_degree_pos (is_algebraic_iff_is_integral.mp (h_alg x))) }},
-end -/
-
-/- noncomputable! def minpoly.is_splitting_field.algebra (x : L) {E : Type*} [field E] [algebra K E]
-  [(minpoly K x).is_splitting_field K E] :
-  algebra K⟮x⟯ E :=
-sorry
-
-local attribute [instance] minpoly.is_splitting_field.algebra
-
-lemma minpoly.is_splitting_field.scalar_tower (x : L) {E : Type*} [field E] [algebra K E]
-  [(minpoly K x).is_splitting_field K E] :
-  is_scalar_tower K K⟮x⟯ E :=
-sorry -/
 
 lemma bar {A : Type*} (B C : Type*) [field A] [field B] [field C] [algebra A B] [algebra A C] 
   [algebra B C] [is_scalar_tower A B C] (p : A[X]) :
@@ -174,7 +103,6 @@ begin
   
 end
 
-
 lemma foo (h_alg : algebra.is_algebraic K L) (hna : is_nonarchimedean (norm : K → ℝ)) (x : L) 
   {E : Type*} [field E] [algebra K E] [algebra L E] [is_scalar_tower K L E]
   (hE : is_splitting_field L E (map_alg K L (minpoly K x)))
@@ -183,21 +111,30 @@ lemma foo (h_alg : algebra.is_algebraic K L) (hna : is_nonarchimedean (norm : K 
   (spectral_mul_alg_norm h_alg_E hna) ((map_alg K E) (minpoly K x)).roots.prod :=
 begin
   have h_deg' : (minpoly K x).nat_degree = (map_alg K E (minpoly K x)).nat_degree,
-  { sorry },
+  { rw [map_alg_eq_map, nat_degree_map] },
   have h_deg : (minpoly K x).nat_degree = ((map_alg K E) (minpoly K x)).roots.card,
   { rw [h_deg', eq_comm, ← splits_iff_card_roots], 
     exact foo_splits _ hE },
-  have h : (spectral_mul_alg_norm h_alg_E hna) ((map_alg K E) (minpoly K x)).roots.prod =
-  (multiset.map (spectral_mul_alg_norm h_alg_E hna) ((map_alg K E) (minpoly K x)).roots).prod,
-  { sorry },
-  rw h,
+  rw map_multiset_prod,
   rw ← multiset.prod_replicate,
   apply congr_arg,
   ext r,
   rw multiset.count_replicate,
   split_ifs with hr hr,
-  { -- multiset.count_eq_card 
-    sorry },
+  { have h : ∀ (s : ℝ), s ∈ (multiset.map (spectral_mul_alg_norm h_alg_E hna) 
+      ((map_alg K E) (minpoly K x)).roots) → r = s,
+    { intros s hs,
+      simp only [multiset.mem_map, mem_roots', ne.def, is_root.def] at hs,
+      obtain ⟨a, ha_root, has⟩ := hs,
+      rw [hr, ← has],
+      change  spectral_norm K E (algebra_map L E x) = spectral_norm K E a,
+      simp only [spectral_norm],
+      rw ← minpoly.eq_of_root h_alg_E,
+      rw [← ha_root.2, map_alg_eq_map, ← minpoly.eq_of_algebra_map_eq (algebra_map L E).injective
+        (is_algebraic_iff_is_integral.mp (h_alg x)) (eq.refl (algebra_map L E x)),
+        aeval_def, eval_map] }, 
+    rw [multiset.count_eq_card.mpr h, multiset.card_map],
+    exact h_deg },
   { rw multiset.count_eq_zero_of_not_mem,
     intros hr_mem,
     simp only [multiset.mem_map, mem_roots', ne.def, is_root.def] at hr_mem,
@@ -211,11 +148,8 @@ begin
         (is_algebraic_iff_is_integral.mp (h_alg x)) (eq.refl (algebra_map L E x)),
         aeval_def, eval_map] },
     rw heq at her,
-    exact hr her.symm,
-}
+    exact hr her.symm }
 end
-
-#exit
 
 lemma spectral_norm_eq_root_zero_coeff (h_alg : algebra.is_algebraic K L) 
  (hna : is_nonarchimedean (norm : K → ℝ)) (x : L) :
@@ -225,7 +159,7 @@ begin
   { simp only [hx0, minpoly.zero, coeff_X_zero, norm_zero, nat_degree_X, algebra_map.coe_one,
       div_self, ne.def, one_ne_zero, not_false_iff, real.rpow_one, spectral_norm_zero] },
   { set E := (map_alg K L (minpoly K x)).splitting_field,
-    letI : is_scalar_tower K L E := splitting_field.is_scalar_tower (map_alg K L (minpoly K x)), --slow
+    --letI : is_scalar_tower K L E := splitting_field.is_scalar_tower (map_alg K L (minpoly K x)), --slow
     have h_alg_E : algebra.is_algebraic K E,
     { exact foo_is_algebraic x h_alg },
     have hspl : splits  (ring_hom.id E) (map_alg K E (minpoly K x)),
@@ -244,35 +178,20 @@ begin
     rw ← spectral_mul_ring_norm_def h_alg_E hna,
     rw ← spectral_mul_ring_norm_def h_alg_E hna,
     rw h1,
-    
     rw polynomial.prod_roots_eq_coeff_zero_of_monic_of_split _ hspl,
     rw [map_mul, map_pow, map_neg_eq_map, map_one, one_pow, one_mul],
-    --simp only [polynomial.roots],
-    --simp only [multiset.empty_eq_zero],
-    --rw dif_neg,
     rw foo h_alg hna x,
     exact (is_splitting_field.splitting_field _),
+    apply_instance,
     { have h_monic: (minpoly K x).leading_coeff = 1,
       { exact minpoly.monic (is_algebraic_iff_is_integral.mp (h_alg x)), },
       simp only [map_alg_eq_map, monic, leading_coeff, coeff_map, nat_degree_map, 
-        coeff_nat_degree, h_monic, map_one] },
+        coeff_nat_degree, h_monic, map_one]  },
     exact h_alg,
     exact h_alg,
     { rw [ne.def, nat.cast_eq_zero],
       exact ne_of_gt 
-        (minpoly.nat_degree_pos (is_algebraic_iff_is_integral.mp (h_alg x))) }
-    /-{ apply mt (congr_arg (λ p, coeff p 0)),
-      rw [← h1, coeff_zero, _root_.map_eq_zero, _root_.map_eq_zero], 
-      exact minpoly.coeff_zero_ne_zero (is_algebraic_iff_is_integral.mp (h_alg x)) hx0, },
-     { have h_monic: (minpoly K x).leading_coeff = 1,
-      { exact minpoly.monic (is_algebraic_iff_is_integral.mp (h_alg x)), },
-      simp only [map_alg_eq_map, monic, leading_coeff, coeff_map, nat_degree_map, 
-        coeff_nat_degree, h_monic, map_one] },
-    { exact h_alg },
-    { exact h_alg },
-    { rw [ne.def, nat.cast_eq_zero],
-      exact ne_of_gt 
-        (minpoly.nat_degree_pos (is_algebraic_iff_is_integral.mp (h_alg x))) } -/},
+        (minpoly.nat_degree_pos (is_algebraic_iff_is_integral.mp (h_alg x))) }},
 end
 
 
