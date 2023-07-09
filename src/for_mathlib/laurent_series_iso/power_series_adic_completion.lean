@@ -43,29 +43,39 @@ lemma power_series.norm_unit_X : norm_unit (power_series.X : (power_series K)) =
 lemma power_series.X_eq_normalize : (power_series.X : (power_series K)) = normalize power_series.X :=
   by simp only [normalize_apply, power_series.norm_unit_X, units.coe_one, mul_one]
 
-lemma aux_old_pol (P : (polynomial K)) : 
+lemma aux_old_pol (P : (polynomial K)) (hP : P ≠ 0) : 
   (normalized_factors (ideal.span {↑P})).count (power_series.ideal_X K).as_ideal =
   (normalized_factors (ideal.span {P})).count (ideal.span {polynomial.X} : ideal (polynomial K)) :=
 begin
-  -- sorry,
-  by_cases hP : P = 0,
+  have for_pol := count_normalized_factors_eq_count_normalized_factors_span hP
+  polynomial.X_ne_zero (polynomial.norm_unit_X K) polynomial.prime_X,
+  rw [← for_pol],
+  have for_pow := count_normalized_factors_eq_count_normalized_factors_span (coe_ne_zero hP)
+    power_series.X_ne_zero (power_series.norm_unit_X K) power_series.X_prime,
+  have X_eq_X : (power_series.ideal_X K).as_ideal = ideal.span {X},
   sorry,
-  { have for_pol := count_normalized_factors_eq_count_normalized_factors_span hP
-    polynomial.X_ne_zero (polynomial.norm_unit_X K) polynomial.prime_X,
-    rw [← for_pol],
-    have coe_ne_zero : (↑ P : (power_series K)) ≠ 0, sorry,
-    have for_pow := count_normalized_factors_eq_count_normalized_factors_span coe_ne_zero
-      power_series.X_ne_zero (power_series.norm_unit_X K) power_series.X_prime,
-    have X_eq_X : (power_series.ideal_X K).as_ideal = ideal.span {X},
-    sorry,
-    rw [X_eq_X, ← for_pow],
-    have uno := @multiplicity_eq_count_normalized_factors (polynomial K) _ _ _ _ _ _ polynomial.X P
+  rw [X_eq_X, ← for_pow],
+  have uno := @multiplicity_eq_count_normalized_factors (polynomial K) _ _ _ _ _ _ polynomial.X P
     (irreducible_X) hP,
-    have due := @multiplicity_eq_count_normalized_factors (power_series K) _ _ _ _ _ _ power_series.X ↑P
-    (prime.irreducible power_series.X_prime) coe_ne_zero,
-    rw [polynomial.X_eq_normalize, power_series.X_eq_normalize, ← part_enat.coe_inj, ← uno, ← due],
+  have due := @multiplicity_eq_count_normalized_factors (power_series K) _ _ _ _ _ _ power_series.X
+    ↑P (prime.irreducible power_series.X_prime) (coe_ne_zero hP),
+  apply nat.le_antisymm,
+  { rw [polynomial.X_eq_normalize, power_series.X_eq_normalize, ← part_enat.coe_le_coe, ← uno, 
+      ← multiplicity.pow_dvd_iff_le_multiplicity, polynomial.X_pow_dvd_iff],
+    intros d hd,
+    replace due := le_of_eq due.symm,
+    rw [← multiplicity.pow_dvd_iff_le_multiplicity, power_series.X_pow_dvd_iff] at due,
+    replace due := due d hd,
     sorry,
-  }
+    },
+  { rw [polynomial.X_eq_normalize, power_series.X_eq_normalize, ← part_enat.coe_le_coe, ← due, 
+      ← multiplicity.pow_dvd_iff_le_multiplicity, power_series.X_pow_dvd_iff],
+    intros d hd,
+    replace uno := le_of_eq uno.symm,
+    rw [← multiplicity.pow_dvd_iff_le_multiplicity, polynomial.X_pow_dvd_iff] at uno,
+    replace uno := uno d hd,
+    sorry,
+    },
 end
 
 
@@ -94,7 +104,7 @@ begin
       not_false_iff, and_self, (power_series.ideal_X K).3],
     have also := @count_normalized_factors_eq_associates_count' K _ (ideal.span {↑P})
     (power_series.ideal_X K).as_ideal span_ne_zero'.1 (power_series.ideal_X K).2 span_ne_zero'.2,
-    rw ← aux_old_pol,
+    rw [← aux_old_pol _ _ hP],
     convert also.symm,
   }
 end
