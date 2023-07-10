@@ -64,16 +64,14 @@ begin
     replace aux_pow_series := le_of_eq aux_pow_series.symm,
     rw [← multiplicity.pow_dvd_iff_le_multiplicity, power_series.X_pow_dvd_iff] at aux_pow_series,
     replace aux_pow_series := aux_pow_series d hd,
-    sorry,
-    },
+    rwa [polynomial.coeff_coe P d] at aux_pow_series },
   { rw [polynomial.X_eq_normalize, power_series.X_eq_normalize, ← part_enat.coe_le_coe, ← aux_pow_series, 
       ← multiplicity.pow_dvd_iff_le_multiplicity, power_series.X_pow_dvd_iff],
     intros d hd,
     replace aux_pol := le_of_eq aux_pol.symm,
     rw [← multiplicity.pow_dvd_iff_le_multiplicity, polynomial.X_pow_dvd_iff] at aux_pol,
     replace aux_pol := aux_pol d hd,
-    sorry,
-    },
+    rwa [← polynomial.coeff_coe P d] at aux_pol },
 end
 
 
