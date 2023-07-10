@@ -405,10 +405,9 @@ lemma integer_is_principal_ideal_ring : is_principal_ideal_ring K₀:=
 
 -- This is Chapter I, Section 1, Proposition 1 in Serre's Local Fields (TODO: proper reference)
 instance dvr_of_is_discrete : discrete_valuation_ring K₀ :=
-begin
-  haveI := integer_is_principal_ideal_ring v,
-  exact ((discrete_valuation_ring.tfae K₀ (not_is_field v)).out 0 4).mpr (ideal_is_principal v _),
-end
+{ to_is_principal_ideal_ring := integer_is_principal_ideal_ring v,
+  to_local_ring := infer_instance,
+  not_a_field' := by rw [ne.def, ← is_field_iff_maximal_ideal_eq]; exact not_is_field v }
 
 variables (A : Type*) [comm_ring A] [is_domain A] [discrete_valuation_ring A]
 
