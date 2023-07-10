@@ -344,11 +344,10 @@ variable (K)
 open unique_factorization_monoid
 
 --#where
-
 /- TODO: This lemma is now in the file `ring_theory.dedekind_domain.ideal`, probably line 1446
 [FAE, 7/7/23] Not quite sure, at any rate it is needed in the new version-/
-lemma count_normalized_factors_eq_count_normalized_factors_span {R : Type*} [comm_ring R]
-  [is_domain R] [is_principal_ideal_ring R] [normalization_monoid R]
+lemma principal_ideal_ring.count_normalized_factors_eq_count_normalized_factors_span {R : Type*}
+  [comm_ring R] [is_domain R] [is_principal_ideal_ring R] [normalization_monoid R]
     {r X : R} (hr : r ≠ 0) (hX₀ : X ≠ 0) (hX₁ : norm_unit X = 1 )(hX : prime X) : 
   multiset.count X (normalized_factors r) =
     multiset.count (ideal.span {X} : ideal R ) (normalized_factors (ideal.span {r})) :=
