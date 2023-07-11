@@ -539,7 +539,7 @@ end
 
 variables (K L)
 
-lemma integral_closure_eq_integer [is_fraction_ring hv.v.valuation_subring K] 
+lemma integral_closure_eq_integer --[is_fraction_ring hv.v.valuation_subring K] 
   [finite_dimensional K L] :
   (integral_closure hv.v.valuation_subring L).to_subring = 
     (extension K L).valuation_subring.to_subring :=
