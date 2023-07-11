@@ -26,19 +26,101 @@ def power_series.ideal_X (K : Type*) [field K] : is_dedekind_domain.height_one_s
 
 instance : valued (laurent_series K) ℤₘ₀ := valued.mk' (power_series.ideal_X K).valuation
 
-instance : complete_space (laurent_series K) := sorry
+section complete
+-- open filter
+open_locale filter
+
+def coeff_map (d : ℤ) : laurent_series K → K := λ x, x.coeff d
+
+lemma uniform_continuous_coeff_map {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) (d : ℤ) :
+  uniform_continuous (coeff_map K d) := sorry
+
+/- The definition below avoids the assumption that `K` be endowed with the trivial uniformity,
+  rather putting this in the proof.
+-/
+variable {K}
+def cauchy.coeff_map' {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) : ℤ → K :=
+begin
+  letI : uniform_space K := ⊥,
+  have hK : @uniformity K ⊥ = filter.principal id_rel := rfl,
+  use λ d, cauchy_discrete_is_constant hK (hℱ.map (uniform_continuous_coeff_map K hK d)),
+end
+
+lemma cauchy.coeff_map_support_bdd {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) : ∃ N, ∀ n,
+  n ≤ N → (hℱ.coeff_map n) = 0 :=
+begin
+  letI : uniform_space K := ⊥,
+  have hK : uniformity K = filter.principal id_rel, refl,
+  obtain ⟨N, hN⟩ := hℱ.coeff_map_zero_at_bot,
+  use N,
+  intros n hn,
+  exact ne_bot_unique_principal hK (hℱ.map (uniform_continuous_coeff_map hK n)).1
+    (hℱ.coeff_map_le n) (hN n hn),
+end
+
+lemma cauchy.coeff_map_support_bdd' {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) :
+  bdd_below (hℱ.coeff_map.support) :=
+begin
+  obtain ⟨N, hN⟩ := hℱ.coeff_map_support_bdd,
+  use N,
+  intros n hn,
+  rw function.mem_support at hn,
+  contrapose! hn,
+  exact hN _ (le_of_lt hn),
+end
+
+def Cauchy.to_laurent_series (ℱ : Cauchy (laurent_series K)) : (laurent_series K) :=
+hahn_series.mk (λ d, ℱ.coeff_map d) (set.is_wf.is_pwo ℱ.coeff_map_support_bdd.well_founded_on_lt)
+
+instance : complete_space (laurent_series K) :=
+begin
+  -- haveI : (uniformity (laurent_series K)).is_countably_generated, sorry,
+  -- apply uniform_space.complete_of_cauchy_seq_tendsto,
+  -- intros u hu,
+  -- rw cauchy_seq at hu,
+  -- rcases hu with ⟨h1, h2⟩,
+  -- simp at hu,
+  fconstructor,
+  rintros ℱ hℱ,
+  -- use λ d,
+  -- -- simp at h2,//
+  -- rw uniformity_eq_comap_nhds_zero at h2,
+  -- simp at h2,
+  -- rw filter.le_def at h2,
+  -- rw uniformity_eq_comap_nhds_zero at h2,
+  -- use 0,
+  -- specialize h2 id_rel,
+  -- simp at h2,
+  -- -- simp,
+  -- -- simp_rw filter.le_def,
+  -- -- simp_rw filter.mem_prod_iff at h2,
+  -- rw filter.ne_bot_iff at h1,
+  -- simp at h1,
+  
+
+  -- rw filter.le_principal_iff,
+  -- simp at h2,
+end
+
+end complete
 
 lemma coe_range_dense : dense_range (coe : (ratfunc K) → (laurent_series K)) := sorry
 
 local attribute [instance] classical.prop_decidable
 open multiplicity unique_factorization_monoid
 
-lemma polynomial.norm_unit_X : norm_unit (polynomial.X : (polynomial K)) = 1 := sorry
+lemma polynomial.norm_unit_X : norm_unit (polynomial.X : (polynomial K)) = 1 :=
+begin
+  have := @coe_norm_unit K _ _ _ polynomial.X,
+  rwa [leading_coeff_X, norm_unit_one, units.coe_one, map_one, units.coe_eq_one] at this,
+end
 
 lemma polynomial.X_eq_normalize : (polynomial.X : (polynomial K)) = normalize polynomial.X :=
   by simp only [normalize_apply, polynomial.norm_unit_X, units.coe_one, mul_one]
 
-lemma power_series.norm_unit_X : norm_unit (power_series.X : (power_series K)) = 1 := sorry
+lemma power_series.norm_unit_X : norm_unit (power_series.X : (power_series K)) = 1 :=
+  by {dsimp only [norm_unit],rw [inv_eq_one, ← units.coe_eq_one, unit_of_divided_by_X_pow_nonzero,
+    divided_by_X_pow_of_X_eq_one]}
 
 lemma power_series.X_eq_normalize : (power_series.X : (power_series K)) = normalize power_series.X :=
   by simp only [normalize_apply, power_series.norm_unit_X, units.coe_one, mul_one]
@@ -79,7 +161,7 @@ lemma should_be_in_old_pol (P : (polynomial K)) : (ideal_X K).int_valuation (P) 
   (power_series.ideal_X K).int_valuation (↑P : (power_series K)) :=
 begin
   by_cases hP : P = 0,
-  sorry,
+  { rw [hP, valuation.map_zero, polynomial.coe_zero, valuation.map_zero] },
   { simp only [fae_int_valuation_apply],
     rw [int_valuation_def_if_neg _ hP, int_valuation_def_if_neg _ $ coe_ne_zero hP],
     simp only [ideal_X_span, of_add_neg, inv_inj, with_zero.coe_inj, embedding_like.apply_eq_iff_eq,

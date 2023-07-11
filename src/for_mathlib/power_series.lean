@@ -43,6 +43,11 @@ begin
   exact (exists_eq_mul_right_of_dvd dvd).some_spec.symm,
 end
 
+@[simp]
+lemma divided_by_X_pow_of_X_eq_one : divided_by_X_pow (@X_ne_zero K _ _) = 1 :=
+  by simpa only [order_X, X_ne_zero, part_enat.get_one, pow_one, mul_eq_left₀, ne.def, not_false_iff]
+    using (self_eq_X_pow_mul_divided_by_X_pow (@X_ne_zero K _ _))
+
 lemma divided_by_X_pow_mul {f g : power_series K} (hf : f ≠ 0) (hg : g ≠ 0) :
   (divided_by_X_pow hf) * (divided_by_X_pow hg) = (divided_by_X_pow (mul_ne_zero hf hg)) :=
 begin
@@ -53,7 +58,7 @@ begin
   have H := self_eq_X_pow_mul_divided_by_X_pow (mul_ne_zero hf hg),
   have : f * g = X ^ (dfg) * ((divided_by_X_pow hf) * (divided_by_X_pow hg)),
   { calc f * g = X^df * (divided_by_X_pow hf) * (X^dg *
-                  (divided_by_X_pow hg)) : by {simp only [self_eq_X_pow_mul_divided_by_X_pow]}
+                  (divided_by_X_pow hg)) : by simp only [self_eq_X_pow_mul_divided_by_X_pow]
            ... = X^df * X^dg * (divided_by_X_pow hf) * 
                   (divided_by_X_pow hg) : by ring
            ... = X^(df + dg)*(divided_by_X_pow hf) * (divided_by_X_pow hg) : by {rw [pow_add]}
