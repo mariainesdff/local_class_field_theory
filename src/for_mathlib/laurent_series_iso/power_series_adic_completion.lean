@@ -46,31 +46,50 @@ begin
   use λ d, cauchy_discrete_is_constant hK (hℱ.map (uniform_continuous_coeff_map K hK d)),
 end
 
-lemma cauchy.coeff_map_support_bdd {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) : ∃ N, ∀ n,
-  n ≤ N → (hℱ.coeff_map n) = 0 :=
+-- lemma cauchy.coeff_map_zero_at_bot {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) : ∃ N, 
+--   ∀ n ≤ N, ℱ.map (ratfunc.coeff_map' K n) ≤ filter.principal {0} :=
+-- begin
+--   simp only [principal_singleton, pure_zero, nonpos_iff, mem_map],
+--   obtain ⟨N, hN⟩ := coeff_eventually_zero_cauchy hℱ,
+--   use  N,
+--   intros n hn,
+--   apply filter.mem_of_superset hN,
+--   intros a ha,
+--   exact ha n hn,
+-- end
+
+-- lemma cauchy.coeff_map_zero_at_bot' {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) : ∀ᶠ n in at_bot,
+--   ℱ.map (ratfunc.coeff_map K n) ≤ filter.principal {0} :=
+-- eventually_at_bot.mpr (cauchy.coeff_map_zero_at_bot hℱ)
+
+-- lemma cauchy.coeff_map_support_bdd {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) : ∃ N, ∀ n,
+--   n ≤ N → (hℱ.coeff_map' n) = 0 :=
+-- begin
+--   letI : uniform_space K := ⊥,
+--   have hK : uniformity K = filter.principal id_rel, refl,
+--   obtain ⟨N, hN⟩ := hℱ.coeff_map_zero_at_bot,
+--   use N,
+--   intros n hn,
+--   exact ne_bot_unique_principal hK (hℱ.map (uniform_continuous_coeff_map hK n)).1
+--     (hℱ.coeff_map_le n) (hN n hn),
+-- end
+
+lemma cauchy.coeff_map_support_bdd'' {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) :
+  bdd_below (hℱ.coeff_map'.support) :=
 begin
-  letI : uniform_space K := ⊥,
-  have hK : uniformity K = filter.principal id_rel, refl,
-  obtain ⟨N, hN⟩ := hℱ.coeff_map_zero_at_bot,
-  use N,
-  intros n hn,
-  exact ne_bot_unique_principal hK (hℱ.map (uniform_continuous_coeff_map hK n)).1
-    (hℱ.coeff_map_le n) (hN n hn),
+  sorry,
+  -- obtain ⟨N, hN⟩ := hℱ.coeff_map_support_bdd,
+  -- use N,
+  -- intros n hn,
+  -- rw function.mem_support at hn,
+  -- contrapose! hn,
+  -- exact hN _ (le_of_lt hn),
 end
 
-lemma cauchy.coeff_map_support_bdd' {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) :
-  bdd_below (hℱ.coeff_map.support) :=
-begin
-  obtain ⟨N, hN⟩ := hℱ.coeff_map_support_bdd,
-  use N,
-  intros n hn,
-  rw function.mem_support at hn,
-  contrapose! hn,
-  exact hN _ (le_of_lt hn),
-end
-
-def Cauchy.to_laurent_series (ℱ : Cauchy (laurent_series K)) : (laurent_series K) :=
-hahn_series.mk (λ d, ℱ.coeff_map d) (set.is_wf.is_pwo ℱ.coeff_map_support_bdd.well_founded_on_lt)
+def cauchy.to_laurent_series {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) : (laurent_series K) :=
+hahn_series.mk (λ d, hℱ.coeff_map' d)
+  (set.is_wf.is_pwo (hℱ.coeff_map_support_bdd''.well_founded_on_lt))
+-- end
 
 instance : complete_space (laurent_series K) :=
 begin
@@ -82,6 +101,7 @@ begin
   -- simp at hu,
   fconstructor,
   rintros ℱ hℱ,
+  use hℱ.to_laurent_series,
   -- use λ d,
   -- -- simp at h2,//
   -- rw uniformity_eq_comap_nhds_zero at h2,
