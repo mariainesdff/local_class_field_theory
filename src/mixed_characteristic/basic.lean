@@ -94,8 +94,8 @@ end
 of integers. For now, this is not an instance by default as it creates an equal-but-not-defeq
 diamond with `algebra.id` when `K = L`. This is caused by `x = ⟨x, x.prop⟩` not being defeq on
 subtypes. This will likely change in Lean 4. -/
-def ring_of_integers_algebra [algebra K L] [is_scalar_tower (Q_p p) K L]
-  : algebra (𝓞 p K) (𝓞 p L) := 
+def ring_of_integers_algebra [algebra K L] [is_scalar_tower (Q_p p) K L] :
+  algebra (𝓞 p K) (𝓞 p L) := 
 valuation_subring.valuation_subring_algebra _ K L
 
 namespace ring_of_integers
