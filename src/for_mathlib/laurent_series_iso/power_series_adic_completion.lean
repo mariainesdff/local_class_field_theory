@@ -3,7 +3,7 @@ import topology.uniform_space.abstract_completion
 
 noncomputable theory
 
-open uniform_space ratfunc power_series abstract_completion is_dedekind_domain.height_one_spectrum polynomial
+open uniform_space power_series abstract_completion is_dedekind_domain.height_one_spectrum polynomial
 open_locale discrete_valuation
 
 -- namespace laurent_series
@@ -73,23 +73,38 @@ end
 --   exact ne_bot_unique_principal hK (hℱ.map (uniform_continuous_coeff_map hK n)).1
 --     (hℱ.coeff_map_le n) (hN n hn),
 -- end
+open filter topological_space
+open_locale filter topology uniformity
+
+-- lemma cauchy.eventually₁ {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) :
+-- ∀ᶠ f in ℱ, ∃ N, ∀ n, N ≤ n → (hℱ.coeff_map' n) = coeff_map K n f := 
+-- begin
+--   sorry
+-- end
+
+lemma cauchy.eventually₁ {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) :
+∀ᶠ f in ℱ, ∀ᶠ n in (at_bot : (filter ℤ)), (hℱ.coeff_map' n) = coeff_map K n f := 
+begin
+  -- simp_rw eventually_at_top,
+  -- simp_rw eventually_iff, 
+  -- apply cauchy.eventually₁,
+  sorry,
+end
 
 lemma cauchy.coeff_map_support_bdd'' {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) :
   bdd_below (hℱ.coeff_map'.support) :=
 begin
   sorry,
-  -- obtain ⟨N, hN⟩ := hℱ.coeff_map_support_bdd,
-  -- use N,
-  -- intros n hn,
-  -- rw function.mem_support at hn,
-  -- contrapose! hn,
-  -- exact hN _ (le_of_lt hn),
 end
 
-def cauchy.to_laurent_series {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) : (laurent_series K) :=
+def cauchy.mk_laurent_series {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) : (laurent_series K) :=
 hahn_series.mk (λ d, hℱ.coeff_map' d)
   (set.is_wf.is_pwo (hℱ.coeff_map_support_bdd''.well_founded_on_lt))
--- end
+
+def new.entourage (d : ℕ) : set (laurent_series K × laurent_series K) :=
+  {P | (power_series.ideal_X K).valuation (P.1 - P.2) < ↑(multiplicative.of_add (- (d : ℤ)))}
+
+lemma new.entourage_uniformity_mem (d : ℕ) : new.entourage d ∈ 𝓤 (laurent_series K) := sorry
 
 instance : complete_space (laurent_series K) :=
 begin
@@ -101,25 +116,53 @@ begin
   -- simp at hu,
   fconstructor,
   rintros ℱ hℱ,
-  use hℱ.to_laurent_series,
-  -- use λ d,
-  -- -- simp at h2,//
-  -- rw uniformity_eq_comap_nhds_zero at h2,
-  -- simp at h2,
-  -- rw filter.le_def at h2,
-  -- rw uniformity_eq_comap_nhds_zero at h2,
-  -- use 0,
-  -- specialize h2 id_rel,
-  -- simp at h2,
-  -- -- simp,
-  -- -- simp_rw filter.le_def,
-  -- -- simp_rw filter.mem_prod_iff at h2,
-  -- rw filter.ne_bot_iff at h1,
-  -- simp at h1,
-  
+  use hℱ.mk_laurent_series,
+  obtain ⟨V, H, hV⟩ := hℱ.eventually₁.exists_mem,
 
-  -- rw filter.le_principal_iff,
-  -- simp at h2,
+  apply sequentially_complete.le_nhds_of_seq_tendsto_nhds hℱ (new.entourage_uniformity_mem),
+  { intros S hS,
+    rw uniformity_eq_comap_nhds_zero at hS,
+    simp at hS,
+    sorry,
+  },
+  { have uno := hℱ.eventually₁,
+    simp_rw [eventually_at_bot, eventually_iff] at uno,
+
+
+    rw tendsto_at_top',
+    intros S hS,
+    rw valued.mem_nhds at hS,
+    obtain ⟨n_mul, hn_mul⟩ := hS,
+    obtain ⟨n, hn⟩ : ∃ n : ℕ, (multiplicative.of_add (n : ℤ) : ℤₘ₀) = n_mul, sorry,--sono pigro
+    use n,
+    intros d hd,
+    apply hn_mul,
+    simp only [set.mem_set_of_eq],
+    -- rw sequentially_complete.seq,
+    suffices : sequentially_complete.seq hℱ new.entourage_uniformity_mem d -
+      cauchy.mk_laurent_series hℱ = 0,
+    {rw this, simp },
+    
+    
+
+  },
+  -- rw filter.le_def,
+  -- intros S hS,
+  -- replace hS := uniform_space.mem_nhds_iff.mp hS,
+  -- rw uniformity_eq_comap_nhds_zero at hS,
+  -- obtain ⟨V, hV, hV_S⟩ := hS,
+  -- simp only [mem_comap, exists_prop] at hV,
+  -- obtain ⟨U, hU, hU_S⟩ := hV,
+  -- have H := hℱ.eventually₁,
+  -- simp_rw [eventually_at_bot, eventually_iff] at H,
+  -- have mah : U = {x : laurent_series K | ∃ (a : ℤ), ∀ (b : ℤ), b ≤ a → cauchy.coeff_map' hℱ b =
+  --   coeff_map K b x}, sorry,
+  -- -- rw ← mah at H,
+  -- refine ℱ.3 _ hV_S,
+  -- refine ℱ.3 _ (ball_mono hU_S (cauchy.mk_laurent_series hℱ)),
+  -- rw mah,
+  -- simp only [set.preimage_set_of_eq, filter.mem_sets],
+  
 end
 
 end complete
