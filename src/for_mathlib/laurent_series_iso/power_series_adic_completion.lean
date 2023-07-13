@@ -1,5 +1,6 @@
 import for_mathlib.laurent_series_iso.old_power_series_adic_completion
 import topology.uniform_space.abstract_completion
+topology.metric_space.cau_seq_filter
 
 noncomputable theory
 
@@ -106,8 +107,12 @@ def new.entourage (d : ℕ) : set (laurent_series K × laurent_series K) :=
 
 lemma new.entourage_uniformity_mem (d : ℕ) : new.entourage d ∈ 𝓤 (laurent_series K) := sorry
 
+-- example : normed_field (laurent_series K) := 
+
 instance : complete_space (laurent_series K) :=
 begin
+  -- have := cau_seq.is_complete (laurent_series K) norm,
+  -- apply complete_space_of_cau_seq_complete,
   -- haveI : (uniformity (laurent_series K)).is_countably_generated, sorry,
   -- apply uniform_space.complete_of_cauchy_seq_tendsto,
   -- intros u hu,
@@ -117,6 +122,24 @@ begin
   fconstructor,
   rintros ℱ hℱ,
   use hℱ.mk_laurent_series,
+  rcases hℱ with ⟨h₁, h₂⟩,
+  rw [filter.le_def] at h₂,
+  rw filter.le_def,
+  intros S hS,
+  have test : S ×ˢ S ∈ 𝓤 (laurent_series K),
+  { sorry,
+    
+  },
+  specialize h₂ (S ×ˢ S) test,
+  rw filter.mem_prod_self_iff at h₂,
+  obtain ⟨T, ⟨a, b⟩⟩ := h₂,
+  rw set.prod_self_subset_prod_self at b,
+  refine ℱ.3 _ b,
+  simp,
+  exact a,
+
+  
+
   obtain ⟨V, H, hV⟩ := hℱ.eventually₁.exists_mem,
 
   apply sequentially_complete.le_nhds_of_seq_tendsto_nhds hℱ (new.entourage_uniformity_mem),
