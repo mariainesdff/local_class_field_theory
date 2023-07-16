@@ -125,7 +125,9 @@ end
 lemma cauchy.coeff_map_support_bdd'' {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) :
   bdd_below (hℱ.coeff_map'.support) :=
 begin
-  sorry,
+  refine ⟨hℱ.bot₂.some, λ d hd, _⟩,
+  by_contra' hNd,
+  exact hd (hℱ.bot₂.some_spec d (le_of_lt hNd)),
 end
 
 def cauchy.mk_laurent_series {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) : (laurent_series K) :=
@@ -140,11 +142,51 @@ lemma eventually_constant {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel
     (hℱ.map (uniform_continuous_coeff_map h n)) := by simpa only [comap_principal, le_principal_iff]
     using tendsto.le_comap (cauchy_discrete_converges _ (hℱ.map (uniform_continuous_coeff_map _ _)))
     -/
+open_locale big_operators
 
 lemma cauchy.eventually₁ {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) :
 ∀ D : ℤ, ∀ᶠ f in ℱ, ∀ d, d ≤ D → (hℱ.coeff_map' d) = coeff_map K d f := 
 begin
-  -- intro D,
+  intro D,
+  set X : ℤ → set (laurent_series K) := λ d, {f | (hℱ.coeff_map' d) = coeff_map K d f} with hX,
+  have intersec : (⋂ d, X d) ⊆ {x : laurent_series K | ∀ (d : ℤ), d ≤ D → hℱ.coeff_map' d = coeff_map K d x},
+  -- have intersec : ({d : ℤ | d ≤ D}.Inter, (X d.1) ⊆ 
+    -- {x : laurent_series K | ∀ (d : ℤ), d ≤ D → hℱ.coeff_map' d = coeff_map K d x},
+    
+  -- { ext f,
+  --   split,
+  --   { intros hf S hS,
+  --     simp only [set.mem_set_of_eq] at hf,
+  --     simp only [set.mem_range, hX] at hS,
+  --     obtain ⟨s, hs⟩ := hS,
+  --     rw ← hs,
+  --     simp,
+  --     apply hf,
+  --     sorry,},
+    { intros f hf n hn,
+      simp only [set.mem_Inter, set.mem_set_of_eq, hX] at hf,
+      exact hf n },
+  suffices : (⋂ d, X d) ∈ ℱ,
+  exact ℱ.3 this intersec,
+  -- rw filter.eventually_iff,
+  -- rw hX at this,
+    -- simp_rw [← hf₃],
+  -- { ext f,
+  -- },
+  
+  -- convert this,
+  -- simp,
+  -- apply this,
+
+  
+  set N := linear_order.min hℱ.bot₁.some hℱ.bot₂.some with hN₀,
+  by_cases H : D ≤ N,--forse non serve, il finset.Ico N D e' vuoto ed e' ok
+  -- sorry,
+  { have := @filter.bInter_mem (laurent_series K) ℱ (finset.Ico N D) _ (set.univ) _,
+
+
+
+  },
   -- -- suffices uno : ∀ᶠ f in ℱ, ∀ d, coeff_map K d f = (hℱ.coeff_map' d),
   -- -- { apply filter.eventually.mono uno,
   -- --   simp,
@@ -155,25 +197,25 @@ begin
   -- simp_rw [principal_singleton, tendsto_pure] at sopra,
   -- apply eventually.mono,
   -- intros f hf d hdD,
-  suffices nuova_tesi : ∀ᶠ (f : laurent_series K) in ℱ, ∀ᶠ d in at_bot, coeff_map K d f =
-    cauchy.coeff_map' hℱ d,--se bastasse, potrei usare questa invece della tesi attuale
-  sorry,
-  have sopra := aux_coeff_map' hℱ,
-  simp_rw [principal_singleton, tendsto_pure] at sopra,
-  replace sopra := @eventually_of_forall ℤ _ at_bot sopra,
-  convert sopra,
-  simp,
-  split,
-  { intro H,
-    obtain ⟨f, ⟨m, hm⟩⟩ := @eventually.exists _ _ ℱ hℱ.1 H,
-    use m,
-    intros b hb,
-    specialize hm b hb,
-    -- apply H.mono,
-    -- rintros g ⟨k, hk⟩,
+  -- suffices nuova_tesi : ∀ᶠ (f : laurent_series K) in ℱ, ∀ᶠ d in at_bot, coeff_map K d f =
+  --   cauchy.coeff_map' hℱ d,--se bastasse, potrei usare questa invece della tesi attuale
+  -- sorry,
+  -- have sopra := aux_coeff_map' hℱ,
+  -- simp_rw [principal_singleton, tendsto_pure] at sopra,
+  -- replace sopra := @eventually_of_forall ℤ _ at_bot sopra,
+  -- convert sopra,
+  -- simp,
+  -- split,
+  -- { intro H,
+  --   obtain ⟨f, ⟨m, hm⟩⟩ := @eventually.exists _ _ ℱ hℱ.1 H,
+  --   use m,
+  --   intros b hb,
+  --   specialize hm b hb,
+  --   -- apply H.mono,
+  --   -- rintros g ⟨k, hk⟩,
     
 
-  },
+  -- },
   -- congr,
   -- congr,
   -- simp_rw eventually_at_bot,
