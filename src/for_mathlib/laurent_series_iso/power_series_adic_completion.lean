@@ -1,6 +1,6 @@
 import for_mathlib.laurent_series_iso.old_power_series_adic_completion
 import topology.uniform_space.abstract_completion
-topology.metric_space.cau_seq_filter
+-- topology.metric_space.cau_seq_filter
 
 noncomputable theory
 
@@ -28,7 +28,7 @@ def power_series.ideal_X (K : Type*) [field K] : is_dedekind_domain.height_one_s
 instance : valued (laurent_series K) ℤₘ₀ := valued.mk' (power_series.ideal_X K).valuation
 
 section complete
--- open filter
+
 open_locale filter
 
 def coeff_map (d : ℤ) : laurent_series K → K := λ x, x.coeff d
@@ -39,6 +39,9 @@ lemma uniform_continuous_coeff_map {uK : uniform_space K} (h : uniformity K = �
 /- The definition below avoids the assumption that `K` be endowed with the trivial uniformity,
   rather putting this in the proof.
 -/
+open filter topological_space
+open_locale filter topology uniformity
+
 variable {K}
 def cauchy.coeff_map' {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) : ℤ → K :=
 begin
@@ -47,42 +50,77 @@ begin
   use λ d, cauchy_discrete_is_constant hK (hℱ.map (uniform_continuous_coeff_map K hK d)),
 end
 
--- lemma cauchy.coeff_map_zero_at_bot {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) : ∃ N, 
---   ∀ n ≤ N, ℱ.map (ratfunc.coeff_map' K n) ≤ filter.principal {0} :=
--- begin
---   simp only [principal_singleton, pure_zero, nonpos_iff, mem_map],
---   obtain ⟨N, hN⟩ := coeff_eventually_zero_cauchy hℱ,
---   use  N,
---   intros n hn,
---   apply filter.mem_of_superset hN,
---   intros a ha,
---   exact ha n hn,
--- end
+lemma aux_coeff_map' {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) (D : ℤ) : 
+  tendsto (coeff_map K D) ℱ (𝓟 {cauchy.coeff_map' hℱ D}) :=
+begin
+  letI : uniform_space K := ⊥,
+  have hK : uniformity K = filter.principal id_rel, refl,
+  exact cauchy_discrete_le hK (hℱ.map (uniform_continuous_coeff_map K hK D)),
+end
+
+lemma cauchy.bot₁ {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) : ∃ N, 
+  ∀ᶠ y in ℱ, ∀ n ≤ N, coeff_map K n y = (0 : K) :=
+begin
+  sorry,
+  -- obtain ⟨S, ⟨hS, ⟨T, ⟨hT, H⟩⟩⟩⟩ := filter.mem_prod_iff.mp (filter.le_def.mp hℱ.2 (entourage K 0)
+  --   (entourage_uniformity_mem _ _)),
+  -- obtain ⟨x, hx⟩ := filter.forall_mem_nonempty_iff_ne_bot.mpr hℱ.1 (S ∩ T)
+  --   (by {exact inter_mem_iff.mpr ⟨hS, hT⟩}),
+  -- obtain ⟨N, hN⟩ := bounded_supp_of_mem_entourage x 0,
+  -- use N,
+  -- rw filter.eventually,
+  -- apply mem_of_superset (inter_mem hS hT),
+  -- suffices : (S ∩ T) ×ˢ (S ∩ T) ⊆ entourage K 0,
+  -- { intros y hy,
+  --   have h_prod : (x, y) ∈ entourage K 0,
+  --   { refine this (mem_prod.mpr _),
+  --     exact ⟨hx, hy⟩ },
+  --   exact hN y h_prod },
+  -- exact (prod_mono (inter_subset_left S T) (inter_subset_right S T)).trans H,
+end
+
+lemma cauchy.bot_aux {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) : ∃ N, 
+  ∀ n ≤ N, ℱ.map (coeff_map K n) ≤ filter.principal {0} :=
+begin
+  simp only [principal_singleton, pure_zero, nonpos_iff, mem_map],
+  obtain ⟨N, hN⟩ := hℱ.bot₁,
+  use  N,
+  intros n hn,
+  apply filter.mem_of_superset hN,
+  intros a ha,
+  exact ha n hn,
+end
 
 -- lemma cauchy.coeff_map_zero_at_bot' {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) : ∀ᶠ n in at_bot,
 --   ℱ.map (ratfunc.coeff_map K n) ≤ filter.principal {0} :=
 -- eventually_at_bot.mpr (cauchy.coeff_map_zero_at_bot hℱ)
 
--- lemma cauchy.coeff_map_support_bdd {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) : ∃ N, ∀ n,
---   n ≤ N → (hℱ.coeff_map' n) = 0 :=
--- begin
---   letI : uniform_space K := ⊥,
---   have hK : uniformity K = filter.principal id_rel, refl,
---   obtain ⟨N, hN⟩ := hℱ.coeff_map_zero_at_bot,
---   use N,
---   intros n hn,
---   exact ne_bot_unique_principal hK (hℱ.map (uniform_continuous_coeff_map hK n)).1
---     (hℱ.coeff_map_le n) (hN n hn),
--- end
-open filter topological_space
-open_locale filter topology uniformity
+lemma cauchy.bot₂ {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) : ∃ N, ∀ n,
+  n ≤ N → (hℱ.coeff_map' n) = 0 :=
+begin
+  letI : uniform_space K := ⊥,
+  have hK : uniformity K = filter.principal id_rel, refl,
+  obtain ⟨N, hN⟩ := hℱ.bot_aux,
+  use N,
+  intros n hn,
+  exact ne_bot_unique_principal hK (hℱ.map (uniform_continuous_coeff_map K hK n)).1
+    (aux_coeff_map' _ _) (hN n hn),
+end
 
--- lemma cauchy.eventually₁ {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) :
--- ∀ᶠ f in ℱ, ∃ N, ∀ n, N ≤ n → (hℱ.coeff_map' n) = coeff_map K n f := 
--- begin
---   sorry
--- end
-
+lemma cauchy.bot₃ {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) :
+  ∀ᶠ f in ℱ, ∀ d ≤ linear_order.min hℱ.bot₁.some hℱ.bot₂.some, 
+  coeff_map K d f = (hℱ.coeff_map' d) :=
+begin
+  have hN := hℱ.bot₁.some_spec,
+  set N := hℱ.bot₁.some with hN₀,
+  rw ← hN₀ at hN,
+  have hM := hℱ.bot₂.some_spec,
+  set M := hℱ.bot₂.some with hM₀,
+  rw ← hM₀ at hM,
+  apply ℱ.3 hN (λ a ha, _),
+  intros d hd,
+  rw [ha d (le_trans hd (min_le_left _ _)), hM d (le_trans hd (min_le_right _ _))],
+end
 
 lemma cauchy.coeff_map_support_bdd'' {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) :
   bdd_below (hℱ.coeff_map'.support) :=
@@ -94,33 +132,104 @@ def cauchy.mk_laurent_series {ℱ : filter (laurent_series K)} (hℱ : cauchy �
 hahn_series.mk (λ d, hℱ.coeff_map' d)
   (set.is_wf.is_pwo (hℱ.coeff_map_support_bdd''.well_founded_on_lt))
 
+/-
+`COPIATA DA SOPRA`
+lemma eventually_constant {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel)
+  {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) (n : ℤ) :
+  ∀ᶠ x in ℱ, ratfunc.coeff x n = cauchy_discrete_is_constant h 
+    (hℱ.map (uniform_continuous_coeff_map h n)) := by simpa only [comap_principal, le_principal_iff]
+    using tendsto.le_comap (cauchy_discrete_converges _ (hℱ.map (uniform_continuous_coeff_map _ _)))
+    -/
+
 lemma cauchy.eventually₁ {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) :
-∀ᶠ d in (at_bot : (filter ℤ)), ∀ᶠ f in ℱ, (hℱ.coeff_map' d) = coeff_map K d f := 
+∀ D : ℤ, ∀ᶠ f in ℱ, ∀ d, d ≤ D → (hℱ.coeff_map' d) = coeff_map K d f := 
 begin
-  -- simp_rw eventually_at_top,
-  -- simp_rw eventually_iff, 
-  -- apply cauchy.eventually₁,
+  -- intro D,
+  -- -- suffices uno : ∀ᶠ f in ℱ, ∀ d, coeff_map K d f = (hℱ.coeff_map' d),
+  -- -- { apply filter.eventually.mono uno,
+  -- --   simp,
+  -- --   intros f H d hDd,
+  -- --   exact (H d).symm },
+  -- have sopra := aux_coeff_map' hℱ,
+  -- -- simp_rw [← principal_singleton],
+  -- simp_rw [principal_singleton, tendsto_pure] at sopra,
+  -- apply eventually.mono,
+  -- intros f hf d hdD,
+  suffices nuova_tesi : ∀ᶠ (f : laurent_series K) in ℱ, ∀ᶠ d in at_bot, coeff_map K d f =
+    cauchy.coeff_map' hℱ d,--se bastasse, potrei usare questa invece della tesi attuale
   sorry,
+  have sopra := aux_coeff_map' hℱ,
+  simp_rw [principal_singleton, tendsto_pure] at sopra,
+  replace sopra := @eventually_of_forall ℤ _ at_bot sopra,
+  convert sopra,
+  simp,
+  split,
+  { intro H,
+    obtain ⟨f, ⟨m, hm⟩⟩ := @eventually.exists _ _ ℱ hℱ.1 H,
+    use m,
+    intros b hb,
+    specialize hm b hb,
+    -- apply H.mono,
+    -- rintros g ⟨k, hk⟩,
+    
+
+  },
+  -- congr,
+  -- congr,
+  -- simp_rw eventually_at_bot,
+  -- apply filter.eventually.mono,
+
+  
+  -- have := @eventually_eventually_nhds,
+  -- simp at sopra,
+
+  -- intros D,
+  
+  
+  -- specialize this D,
+  -- suffices nuova_tesi : ∀ᶠ d in at_bot, ∀ᶠ (f : laurent_series K) in ℱ, cauchy.coeff_map' hℱ d =
+  --   coeff_map K d f,
+  -- -- simp_rw eventually_at_bot at nuova_tesi,
+  -- -- obtain ⟨D₁, hD₁⟩ := nuova_tesi,
+  -- -- apply nuova_tesi,
+  -- -- apply filter.eventually.mono,
+  -- have ff := filter.forall_eventually_of_eventually_forall,
+  -- refine eventually_top.mpr _ ℱ.sets,
+  -- apply forall_eventually_of_eventually_forall,
+  -- apply this,
+  -- -- simp_rw [← tendsto_pure] at this,
+  -- -- suffices non_basta_ma_inizio : ∀ᶠ f in ℱ, coeff_map K D f = (hℱ.coeff_map' D),
+  -- -- sorry,
+  -- rw [← tendsto_pure, ← principal_singleton] at this,
+  -- apply aux_coeff_map',
 end
+
+lemma diff.eventually₀ {f g : (laurent_series K)} {D : ℤ}
+  (H : ∀ d, d ≤ D → coeff_map K d g = coeff_map K d f) :
+  valued.v (f - g) < ↑(multiplicative.of_add D) := sorry
 
 lemma cauchy.eventually₂ {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ)
   {U : set (laurent_series K)} (hU : U ∈ 𝓝 (hℱ.mk_laurent_series)) : ∀ᶠ f in ℱ, f ∈ U := 
 begin
   rw valued.mem_nhds at hU,
   obtain ⟨γ, hU₁⟩ := hU,
-  have uno := hℱ.eventually₁,
   suffices : ∀ᶠ f in ℱ, f ∈ {y : laurent_series K | valued.v (y - hℱ.mk_laurent_series) < ↑γ},
-  apply filter.eventually.mono this (λ _ hf, hU₁ hf),
-  rw eventually_at_bot at uno,
-  obtain ⟨D₁, hD₁⟩ := uno,
+  apply this.mono (λ _ hf, hU₁ hf),
   have pigrizia : ∃ D : ℤ, ((multiplicative.of_add D) : ℤₘ₀)= γ,sorry,
   obtain ⟨D, hD⟩ := pigrizia,
-  have H_D_D : D ≤ D₁, sorry,--bisogna prendere un max perché funzioni
-  apply filter.eventually.mono (hD₁ D H_D_D),
+  apply (hℱ.eventually₁ D).mono,
   intros f hf,
-  simp only [set.mem_set_of_eq],
-  sorry,
-  -- rw [← hD] at hU₁ ⊢,
+  rw [set.mem_set_of_eq, ← hD],
+  apply (diff.eventually₀),
+  apply hf,
+  -- have sopra := aux_coeff_map' hℱ D,
+  -- -- have qui := hℱ.eventually₁ D,
+  -- simp only [principal_singleton, tendsto_pure] at sopra,
+  -- apply filter.eventually.mono sopra,
+  -- intros f hf,
+  -- simp only [set.mem_set_of_eq],
+  -- -- apply (diff.eventually₀),
+  -- -- apply hf,
 end
 
 -- def new.entourage (d : ℕ) : set (laurent_series K × laurent_series K) :=

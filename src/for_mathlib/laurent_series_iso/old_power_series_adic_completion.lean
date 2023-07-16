@@ -717,19 +717,20 @@ def cauchy_discrete_is_constant {X : Type*} [nonempty X] {uX : uniform_space X}
   (hX : uniformity X = 𝓟 id_rel) {α : filter X} (hα : cauchy α) : X :=
 (cauchy_discrete_le_principal hX hα).some
 
+--`[fae]` CRUCIALLY USED IN THE NEW VERSION 
 lemma cauchy_discrete_le  {X : Type*} [nonempty X] {uX : uniform_space X} 
   (hX : uniformity X = 𝓟 id_rel) {α : filter X} (hα : cauchy α) : 
   α ≤ 𝓟 {cauchy_discrete_is_constant hX hα} := Exists.some_spec (cauchy_discrete_le_principal hX hα)
 
-lemma cauchy_discrete_le'  {X : Type*} [nonempty X] {uX : uniform_space X} 
-  (hX : uniformity X = 𝓟 id_rel) {α : filter X} (hα : cauchy α) : 
-  α ≤ 𝓝 (cauchy_discrete_is_constant hX hα) :=
-begin
-  convert cauchy_discrete_le hX hα,
-  have top_discrete : ∀ a : X, is_open {a},
-    { exact λ a, @is_open_discrete _ _ (discrete_topology_of_discrete_uniformity hX) {a} },
-  rw [((is_open_singleton_iff_nhds_eq_pure _).mp (top_discrete _)), principal_singleton],
-end
+-- lemma cauchy_discrete_le'  {X : Type*} [nonempty X] {uX : uniform_space X} 
+--   (hX : uniformity X = 𝓟 id_rel) {α : filter X} (hα : cauchy α) : 
+--   α ≤ 𝓝 (cauchy_discrete_is_constant hX hα) :=
+-- begin
+--   convert cauchy_discrete_le hX hα,
+--   have top_discrete : ∀ a : X, is_open {a},
+--     { exact λ a, @is_open_discrete _ _ (discrete_topology_of_discrete_uniformity hX) {a} },
+--   rw [((is_open_singleton_iff_nhds_eq_pure _).mp (top_discrete _)), principal_singleton],
+-- end
 
 lemma ne_bot_unique_principal {X : Type*} [uniform_space X] (hX : uniformity X = 𝓟 id_rel)
   {α : filter X} (hα : α.ne_bot) {x y : X} (hx : α ≤ 𝓟 {x}) (hy : α ≤ 𝓟 {y}) : x = y :=
