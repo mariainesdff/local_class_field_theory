@@ -236,7 +236,10 @@ end
 
 lemma diff.eventually₀ {f g : (laurent_series K)} {D : ℤ}
   (H : ∀ d, d ≤ D → coeff_map K d g = coeff_map K d f) :
-  valued.v (f - g) < ↑(multiplicative.of_add D) := sorry
+  valued.v (f - g) < ↑(multiplicative.of_add D) :=
+begin
+  sorry,
+end
 
 lemma cauchy.eventually₂ {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ)
   {U : set (laurent_series K)} (hU : U ∈ 𝓝 (hℱ.mk_laurent_series)) : ∀ᶠ f in ℱ, f ∈ U := 
@@ -255,147 +258,18 @@ begin
     apply hf },
 end
 
--- def new.entourage (d : ℕ) : set (laurent_series K × laurent_series K) :=
---   {P | (power_series.ideal_X K).valuation (P.1 - P.2) < ↑(multiplicative.of_add (- (d : ℤ)))}
-
--- lemma new.entourage_uniformity_mem (d : ℕ) : new.entourage d ∈ 𝓤 (laurent_series K) := sorry
-
--- example : normed_field (laurent_series K) := 
-
 instance : complete_space (laurent_series K) :=
-begin
-  -- have := cau_seq.is_complete (laurent_series K) norm,
-  -- apply complete_space_of_cau_seq_complete,
-  -- haveI : (uniformity (laurent_series K)).is_countably_generated, sorry,
-  -- apply uniform_space.complete_of_cauchy_seq_tendsto,
-  -- intros u hu,
-  -- rw cauchy_seq at hu,
-  -- rcases hu with ⟨h1, h2⟩,
-  -- simp at hu,
-  fconstructor,
-  rintros ℱ hℱ,
-  -- let HF := hℱ,
-  use hℱ.mk_laurent_series,
-  -- have subtest : (𝓝 (hℱ.mk_laurent_series) ×ᶠ 𝓝 (hℱ.mk_laurent_series)) ≤ 𝓤 (laurent_series K),
-  -- sorry,
-  -- -- have subtest : (𝓝 (hℱ.mk_laurent_series) ×ˢ 𝓝 (hℱ.mk_laurent_series)) ∈ 𝓤 (laurent_series K),
-  -- -- sorry,
-  -- rcases hℱ with ⟨h₁, h₂⟩,
-  -- rw [filter.le_def] at h₂,
-  rw filter.le_def,
-  intros S hS,
-  exact hℱ.eventually₂ hS,
-  
-
-  -- rw filter.eventually_mem
-  -- rw valued.
-  -- obtain ⟨V, ⟨hV, hV_S⟩⟩ := uniform_space.mem_nhds_iff.mp hS,
-  -- apply ℱ.3 _ hV_S,
-  -- simp,
-  -- rw uniform_space.ball at hV_S ⊢,
-  -- specialize h₂ V hV,
-  -- rw filter.mem_prod_iff at h₂,
-  -- obtain ⟨T₁, hT₁, T₂, hT₂, H⟩ := h₂,
-  -- set T := T₁ ∩ T₂ with hT,
-  -- have := ℱ.4 hT₁ hT₂,
-  -- rw [← hT] at this,
-  -- have uff : T ⊆ prod.mk (cauchy.mk_laurent_series _) ⁻¹' V,
-  -- { have sette : T ×ˢ T ⊆ V,
-  --   apply _root_.subset_trans _ H,
-  --   sorry,--this is really easy
-  --   --refine principal_le_iff.mp _ (prod.mk (cauchy.mk_laurent_series _) ⁻¹' V) _,
-
-  -- },
-  -- apply ℱ.3 _ uff,
-  -- exact this,
-  -- -- rw [← filter.prod_comap_comap_eq],
-  -- -- simp at this,
-  -- -- simp,
-  -- -- refine set.mem_Inter.mp _ (ball (cauchy.mk_laurent_series ⟨h₁, h₂⟩) V),
-  -- -- simp,
-  -- -- intro X,
-  
-  -- -- obtain ⟨T, ⟨hT, hT_S⟩⟩ := _root_.mem_nhds_iff.mp hS,
-
-
-
-  -- have test : S ×ˢ S ∈ 𝓤 (laurent_series K),
-  -- { have uno := filter.prod_mem_prod hS hS,
-  --   have due : is_open S, sorry,
-  --   rw [uniform_space.is_open_uniformity] at due,
-  --   have easy : cauchy.mk_laurent_series HF ∈ S, sorry,
-  --   specialize due (HF.mk_laurent_series) easy,
-  --   convert due,
-  --   -- simp,
-
-  --   -- sorry,--easy
-
-  --   -- use uno,
-  --   -- rw filter.le_def at subtest,
-  --   -- specialize subtest S
-    
-  -- },
-  -- specialize h₂ (S ×ˢ S) test,
-  -- rw filter.mem_prod_self_iff at h₂,
-  -- obtain ⟨T, ⟨a, b⟩⟩ := h₂,
-  -- rw set.prod_self_subset_prod_self at b,
-  -- refine ℱ.3 _ b,
-  -- simp,
-  -- exact a,
-
-  
-
-  -- obtain ⟨V, H, hV⟩ := hℱ.eventually₁.exists_mem,
-
-  -- apply sequentially_complete.le_nhds_of_seq_tendsto_nhds hℱ (new.entourage_uniformity_mem),
-  -- { intros S hS,
-  --   rw uniformity_eq_comap_nhds_zero at hS,
-  --   simp at hS,
-  --   sorry,
-  -- },
-  -- { have uno := hℱ.eventually₁,
-  --   simp_rw [eventually_at_bot, eventually_iff] at uno,
-
-
-  --   rw tendsto_at_top',
-  --   intros S hS,
-  --   rw valued.mem_nhds at hS,
-  --   obtain ⟨n_mul, hn_mul⟩ := hS,
-  --   obtain ⟨n, hn⟩ : ∃ n : ℕ, (multiplicative.of_add (n : ℤ) : ℤₘ₀) = n_mul, sorry,--sono pigro
-  --   use n,
-  --   intros d hd,
-  --   apply hn_mul,
-  --   simp only [set.mem_set_of_eq],
-  --   -- rw sequentially_complete.seq,
-  --   suffices : sequentially_complete.seq hℱ new.entourage_uniformity_mem d -
-  --     cauchy.mk_laurent_series hℱ = 0,
-  --   {rw this, simp },
-    
-    
-
-  -- },
-  -- -- rw filter.le_def,
-  -- -- intros S hS,
-  -- -- replace hS := uniform_space.mem_nhds_iff.mp hS,
-  -- -- rw uniformity_eq_comap_nhds_zero at hS,
-  -- -- obtain ⟨V, hV, hV_S⟩ := hS,
-  -- -- simp only [mem_comap, exists_prop] at hV,
-  -- -- obtain ⟨U, hU, hU_S⟩ := hV,
-  -- -- have H := hℱ.eventually₁,
-  -- -- simp_rw [eventually_at_bot, eventually_iff] at H,
-  -- -- have mah : U = {x : laurent_series K | ∃ (a : ℤ), ∀ (b : ℤ), b ≤ a → cauchy.coeff_map' hℱ b =
-  -- --   coeff_map K b x}, sorry,
-  -- -- -- rw ← mah at H,
-  -- -- refine ℱ.3 _ hV_S,
-  -- -- refine ℱ.3 _ (ball_mono hU_S (cauchy.mk_laurent_series hℱ)),
-  -- -- rw mah,
-  -- -- simp only [set.preimage_set_of_eq, filter.mem_sets],
-  
-end
+  ⟨λ _ hℱ, ⟨hℱ.mk_laurent_series, λ S hS, hℱ.eventually₂ hS⟩⟩
 
 end complete
 
+section dense 
+
 lemma coe_range_dense : dense_range (coe : (ratfunc K) → (laurent_series K)) := sorry
+
+end dense
+
+section boh
 
 local attribute [instance] classical.prop_decidable
 open multiplicity unique_factorization_monoid
@@ -635,5 +509,7 @@ noncomputable! def  laurent_series_ring_equiv :
 { map_mul' := (extension_as_ring_hom K (unif_cont_coe K).continuous).map_mul',
   map_add' := (extension_as_ring_hom K (unif_cont_coe K).continuous).map_add',
   .. compare_pkg K }
+
+end boh
 
 end completion_laurent_series
