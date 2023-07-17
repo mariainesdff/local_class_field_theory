@@ -1,19 +1,13 @@
+import algebra.group.with_one.units
 import for_mathlib.laurent_series_iso.old_power_series_adic_completion
 import topology.uniform_space.abstract_completion
+
 -- topology.metric_space.cau_seq_filter
 
 noncomputable theory
 
 open uniform_space power_series abstract_completion is_dedekind_domain.height_one_spectrum polynomial
 open_locale discrete_valuation
-
--- namespace laurent_series
-
--- /-The main point of this section is to prove the equality between the X-adic valuation and the order of laurent_series. Applying then `fae_order_eq_val'`, we deduce that for every `f : ratfunc`, the equality of `f : ratfunc` coincides with the valuation of `↑f : laurent_series` -/
-
-
-
--- end laurent_series
 
 namespace completion_laurent_series
 
@@ -29,19 +23,50 @@ instance : valued (laurent_series K) ℤₘ₀ := valued.mk' (power_series.ideal
 
 section complete
 
-open_locale filter
+open filter topological_space
+open_locale filter topology uniformity
 
 def coeff_map (d : ℤ) : laurent_series K → K := λ x, x.coeff d
 
+lemma vecchio (f : laurent_series K) : (valued.v f)⁻¹ = ↑(multiplicative.of_add (f.order)) := 
+begin
+  sorry,
+end
+
+lemma eq_coeff_of_val_sub_lt {d n : ℤ} {f g : laurent_series K} 
+  (H : valued.v (g - f) < ↑(multiplicative.of_add (- d))) :
+  n ≤ d → coeff_map K n g = coeff_map K n f :=
+begin
+  by_cases triv : g = f,
+  { exact (λ _, by rw triv) },
+  { intro hn,
+    apply eq_of_sub_eq_zero,
+    erw [← hahn_series.sub_coeff],
+    apply hahn_series.coeff_eq_zero_of_lt_order,
+    suffices : d < (g - f).order,
+    { exact lt_of_le_of_lt hn this },
+    { rw [← multiplicative.of_add_lt, ← with_zero.coe_lt_coe],
+      replace triv : (valued.v (g - f) ≠ (0 : ℤₘ₀)),
+      { exact (valuation.ne_zero_iff _).mpr (sub_ne_zero_of_ne triv) },
+      rwa [of_add_neg, ← with_zero.coe_unzero triv, with_zero.coe_lt_coe, lt_inv', 
+        ← with_zero.coe_lt_coe, with_zero.coe_inv, with_zero.coe_unzero triv, vecchio] at H }}
+end
+
 lemma uniform_continuous_coeff_map {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) (d : ℤ) :
-  uniform_continuous (coeff_map K d) := sorry
+  uniform_continuous (coeff_map K d) :=
+begin
+  refine uniform_continuous_iff_eventually.mpr (λ S hS, eventually_iff_exists_mem.mpr _),
+  let γ : ℤₘ₀ˣ := units.mk0 (↑(multiplicative.of_add (- d))) with_zero.coe_ne_zero,
+  use {P | valued.v (P.snd - P.fst) < ↑γ},
+  refine  ⟨(valued.has_basis_uniformity (laurent_series K) ℤₘ₀).mem_of_mem (by tauto), λ P hP, _⟩,
+  rw [h] at hS,
+  apply hS,
+  rw [eq_coeff_of_val_sub_lt K hP (le_of_eq (refl d)), mem_id_rel],
+end
 
 /- The definition below avoids the assumption that `K` be endowed with the trivial uniformity,
   rather putting this in the proof.
 -/
-open filter topological_space
-open_locale filter topology uniformity
-
 variable {K}
 def cauchy.coeff_map' {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) : ℤ → K :=
 begin
@@ -58,25 +83,41 @@ begin
   exact cauchy_discrete_le hK (hℱ.map (uniform_continuous_coeff_map K hK D)),
 end
 
+lemma bounded_supp_of_val_le (f : laurent_series K) (d : ℤ) : ∃ N : ℤ,
+∀ (g : laurent_series K), valued.v (g - f) < ↑(multiplicative.of_add (- d)) →
+  ∀ n ≤ N, coeff_map K n g = 0 :=
+begin
+  by_cases hf : f = 0,
+  { refine ⟨d, λ _ hg _ hn, _⟩,
+    simpa only [eq_coeff_of_val_sub_lt K hg hn, hf] using hahn_series.zero_coeff },
+  { refine ⟨min (f.2.is_wf.min (hahn_series.support_nonempty_iff.mpr hf)) d - 1, λ _ hg n hn, _⟩,
+    have hn' : coeff_map K n f = 0 := function.nmem_support.mp ( λ h, set.is_wf.not_lt_min
+      f.2.is_wf (hahn_series.support_nonempty_iff.mpr hf) h _),
+    rwa eq_coeff_of_val_sub_lt K hg _,
+    { exact hn.trans (le_of_lt (int.sub_one_lt_of_le (min_le_right _ _))) },
+    { exact int.lt_of_le_sub_one (hn.trans (sub_le_sub (min_le_left _ _) (le_of_eq (refl _)))) }},
+end
+
 lemma cauchy.bot₁ {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) : ∃ N, 
   ∀ᶠ y in ℱ, ∀ n ≤ N, coeff_map K n y = (0 : K) :=
 begin
-  sorry,
-  -- obtain ⟨S, ⟨hS, ⟨T, ⟨hT, H⟩⟩⟩⟩ := filter.mem_prod_iff.mp (filter.le_def.mp hℱ.2 (entourage K 0)
-  --   (entourage_uniformity_mem _ _)),
-  -- obtain ⟨x, hx⟩ := filter.forall_mem_nonempty_iff_ne_bot.mpr hℱ.1 (S ∩ T)
-  --   (by {exact inter_mem_iff.mpr ⟨hS, hT⟩}),
-  -- obtain ⟨N, hN⟩ := bounded_supp_of_mem_entourage x 0,
-  -- use N,
-  -- rw filter.eventually,
-  -- apply mem_of_superset (inter_mem hS hT),
-  -- suffices : (S ∩ T) ×ˢ (S ∩ T) ⊆ entourage K 0,
-  -- { intros y hy,
-  --   have h_prod : (x, y) ∈ entourage K 0,
-  --   { refine this (mem_prod.mpr _),
-  --     exact ⟨hx, hy⟩ },
-  --   exact hN y h_prod },
-  -- exact (prod_mono (inter_subset_left S T) (inter_subset_right S T)).trans H,
+  let entourage := {P : (laurent_series K) × (laurent_series K) | valued.v (P.snd - P.fst)
+    < ↑(multiplicative.of_add (0 : ℤ))},
+  let ζ : ℤₘ₀ˣ := units.mk0 (↑(multiplicative.of_add 0)) with_zero.coe_ne_zero,
+  obtain ⟨S, ⟨hS, ⟨T, ⟨hT, H⟩⟩⟩⟩ := mem_prod_iff.mp (filter.le_def.mp hℱ.2 entourage
+    (@has_basis.mem_of_mem _ _ _ _ _ ζ ((valued.has_basis_uniformity (laurent_series K) ℤₘ₀)) _)),
+  obtain ⟨f, hf⟩ := forall_mem_nonempty_iff_ne_bot.mpr hℱ.1 (S ∩ T)
+    (by {exact inter_mem_iff.mpr ⟨hS, hT⟩}),
+  obtain ⟨N, hN⟩ := bounded_supp_of_val_le f 0,
+  use N,
+  apply mem_of_superset (inter_mem hS hT),
+  suffices : (S ∩ T) ×ˢ (S ∩ T) ⊆ entourage,
+  { intros g hg,
+    have h_prod : (f, g) ∈ entourage,
+    { refine this (set.mem_prod.mpr _),
+      exact ⟨hf, hg⟩ },
+    exact (λ _ hn, hN g h_prod _ hn), },
+  exacts [(set.prod_mono (set.inter_subset_left S T) (set.inter_subset_right S T)).trans H, trivial]
 end
 
 lemma cauchy.bot_aux {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) : ∃ N, 
@@ -143,11 +184,6 @@ lemma eventually_constant {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel
     -/
 open_locale big_operators
 
-example (α : Type) (X : ℤ → set α) (D : ℤ) : (⋂ d ∈ {n : ℤ | n ≤ D}, X d) =
-  (⋂ d ∈ (set.Iic D), X d) :=
-  begin
-    refl,
-  end
 
 lemma set_inter_Iic {α β: Type*} [linear_order β] {X : β → set α} {D N : β} (hND : N ≤ D) :
   (⋂ d ∈ (set.Iic D), X d) = (⋂ d ∈ (set.Iic N), X d) ∩ (⋂ d ∈ (set.Icc N D), X d) :=
@@ -208,17 +244,15 @@ begin
   rw valued.mem_nhds at hU,
   obtain ⟨γ, hU₁⟩ := hU,
   suffices : ∀ᶠ f in ℱ, f ∈ {y : laurent_series K | valued.v (y - hℱ.mk_laurent_series) < ↑γ},
-  apply this.mono (λ _ hf, hU₁ hf),
-  have pigrizia : ∃ D : ℤ, ((multiplicative.of_add D) : ℤₘ₀) = γ,
-  use multiplicative.to_add (with_zero.unzero γ.ne_zero),
-  simp only [of_add_to_add, with_zero.coe_unzero],
-  obtain ⟨D, hD⟩ := pigrizia,
-  apply (hℱ.eventually₁ D).mono,
-  intros f hf,
-  rw [set.mem_set_of_eq],
-  -- simp only [of_add_to_add, with_zero.coe_unzero],
-  apply (diff.eventually₀),
-  apply hf,
+  { apply this.mono (λ _ hf, hU₁ hf) },
+  { let D:= multiplicative.to_add (with_zero.unzero γ.ne_zero),
+    have hD : ((multiplicative.of_add D) : ℤₘ₀) = γ := by simp only [of_add_to_add,
+      with_zero.coe_unzero],
+    apply (hℱ.eventually₁ D).mono,
+    intros f hf,
+    rw [set.mem_set_of_eq, ← hD],
+    apply diff.eventually₀,
+    apply hf },
 end
 
 -- def new.entourage (d : ℕ) : set (laurent_series K × laurent_series K) :=
@@ -443,6 +477,8 @@ begin
     convert also.symm,
   }
 end
+
+open ratfunc
 
 
 lemma ovvio (f : (polynomial K)) (g : (polynomial K)) (hg : g ≠ 0) : (ratfunc.mk f g) = 
