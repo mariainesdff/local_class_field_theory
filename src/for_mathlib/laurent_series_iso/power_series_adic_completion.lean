@@ -28,9 +28,68 @@ open_locale filter topology uniformity
 
 def coeff_map (d : ℤ) : laurent_series K → K := λ x, x.coeff d
 
+-- def val_equiv : (hahn_series.add_val ℤ K).valuation.is_equiv valued.v := sorry
+
+lemma vecchio_int (f : power_series K) :
+  ((power_series.ideal_X K).int_valuation f)  =
+  ↑(multiplicative.of_add (- (↑f : (hahn_series ℕ K)).order : ℤ)) := sorry
+/-
+* In the hahn_series.lean file there are things like `order_mul`, `order_neg`, `order_zero`,
+  `order_single`, `order_C`; more globally, there is `add_val` defined as the order, showing that it
+  is an `add_val`. It takes values (for Laurent Series) in `with_zero ℤ`.
+* The `order_div` and `order_inv` are called with `fae_` and are in **old**
+* There is also a lemma `order_eq_of_power_series` in **old**, showing that the "orders" of a
+*power_series* (one obtained by seeing it as a hahn series, the other by using the `part_enat` def
+that is basically the same but that has more API, eg about being divisible by `X^n`) coincide. The
+above lemma is stated in terms of `part_enat`, and there is `order_eq_of_power_series_Z` that shows 
+that the equality stay true if (1) seeing the power series as a laurent series; and (2) going to `ℤ`
+* Read lines *257-265*
+-/
+
+lemma aux₁ {R : Type*} [comm_semiring R] {φ : power_series R} : --(hφ : φ ≠ 0) :
+  (((↑φ : (hahn_series ℕ R)).order) : ℤ) = (hahn_series.of_power_series ℤ R φ).order := sorry
+
+lemma aux₂ {f : laurent_series K} {P Q : power_series K} {hQ : Q ∈ non_zero_divisors (power_series K)}
+  (hfPQ : is_localization.mk' (laurent_series K) P ⟨Q, hQ⟩ = f) :
+    hahn_series.order f = (↑P : (hahn_series ℕ K)).order - (↑Q : (hahn_series ℕ K)).order :=
+begin
+  rw aux₁,
+  rw aux₁,
+  rw ← fae_order_div,
+  rw ← hfPQ,
+  simp only [is_fraction_ring.mk'_eq_div, laurent_series.coe_algebra_map, set_like.coe_mk],
+  sorry,--needed?
+  -- have := non_zero_divisors.ne_zero hQ,
+  rw ← (hahn_series.of_power_series ℤ K).map_zero,
+  apply hahn_series.of_power_series_injective.ne (non_zero_divisors.ne_zero hQ),
+end
+
 lemma vecchio (f : laurent_series K) : (valued.v f)⁻¹ = ↑(multiplicative.of_add (f.order)) := 
 begin
-  sorry,
+  obtain ⟨P, ⟨Q, hQ, hfPQ⟩⟩ := @is_fraction_ring.div_surjective (power_series K) _ _
+    (laurent_series K) _ _ _ f,
+  replace hfPQ : is_localization.mk' (laurent_series K) P ⟨Q, hQ⟩ = f :=
+    by simp only [hfPQ, is_fraction_ring.mk'_eq_div, set_like.coe_mk],
+  -- have hP : P ≠ 0 :=  by sorry,--{rw ← hfPQ at hf, exact is_localization.ne_zero_of_mk'_ne_zero hf},
+  -- have hQ₀ : Q ≠ 0 := by rwa [← mem_non_zero_divisors_iff_ne_zero],
+  have val_P_Q := @valuation_of_mk' (power_series K) _ _ _ (laurent_series K) _ _ _
+    (power_series.ideal_X K) P ⟨Q, hQ⟩,
+  rw hfPQ at val_P_Q,
+  rw inv_eq_iff_eq_inv,
+  erw val_P_Q,
+  rw vecchio_int,
+  rw vecchio_int,
+  rw ← with_zero.coe_div,
+  rw ← with_zero.coe_inv,
+  rw with_zero.coe_inj,
+  rw ← of_add_sub,
+  rw ← of_add_neg,
+  apply congr_arg,
+  rw ← neg_sub',
+  rw ← neg_eq_iff_eq_neg,
+  rw neg_neg,
+  simp only [set_like.coe_mk],
+  exact (aux₂ K hfPQ).symm,
 end
 
 lemma eq_coeff_of_val_sub_lt {d n : ℤ} {f g : laurent_series K} 

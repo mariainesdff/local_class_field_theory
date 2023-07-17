@@ -223,6 +223,7 @@ begin
   symmetry,
   exact this,
 end
+
 end hahn_series
 
 -- FAE for `mathlib`? **USED** IN `power_series_adic_completion`
@@ -539,7 +540,7 @@ begin
   { rwa [fae_coe, ← ratfunc.coe_ne_zero_iff], },
 end
 
--- `FAE` Depends on `fae_order_eq_val`
+-- `FAE` Depends on `order_as_hahn_series_eq_valuation`
 lemma fae_order_eq_val' {f : ratfunc K} (hf : f ≠ 0) :
  ↑(multiplicative.of_add ((f : laurent_series K).order)) = ((ideal_X K).valuation f)⁻¹ :=
 begin
