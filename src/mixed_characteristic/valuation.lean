@@ -56,25 +56,11 @@ begin
     exact x.2, },
 end
 
--- TODO: reprove without using `padic'_int.height_one_ideal_def`, 
 lemma is_unramified_Q_p : e (Q_p p) = 1 :=
 begin
-  have hp : valued.v (p : Q_p p) = (of_add (-1 : ℤ)),
-  { sorry/- have hp0 : (p : Z_p p) ≠ 0, {
-    rw nat.cast_ne_zero, exact hp.1.ne_zero,},
-    have hp_alg : (p : Q_p p) = algebra_map (Z_p p) (Q_p p) (p : Z_p p) := rfl,
-    erw ← completion.valuation.adic_of_compl_eq_compl_of_adic,
-    erw [hp_alg, valuation_of_algebra_map],
-    simp only [int_valuation, ← valuation.to_fun_eq_coe],
-    rw [int_valuation_def_if_neg _ hp0],
-    erw [padic'_int.height_one_ideal_def],
-    rw [associates.count_self],
-    refl,
-    { rw [← padic'_int.height_one_ideal_def],
-      apply associates_irreducible,  }-/},
   rw [ramification_index, neg_eq_iff_eq_neg, ← to_add_of_add (-1 : ℤ)],
   apply congr_arg,
-  rw [← with_zero.coe_inj, ← hp, with_zero.coe_unzero, ← trivial_extension_eq_valuation (Q_p p)],
+  rw [← with_zero.coe_inj, ← padic'.valuation_p p, with_zero.coe_unzero, ← trivial_extension_eq_valuation (Q_p p)],
   refl,
 end
 
