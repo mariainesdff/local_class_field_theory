@@ -223,6 +223,7 @@ begin
   symmetry,
   exact this,
 end
+
 end hahn_series
 
 -- FAE for `mathlib`? **USED** IN `power_series_adic_completion`
@@ -539,7 +540,7 @@ begin
   { rwa [fae_coe, ← ratfunc.coe_ne_zero_iff], },
 end
 
--- `FAE` Depends on `fae_order_eq_val`
+-- `FAE` Depends on `order_as_hahn_series_eq_valuation`
 lemma fae_order_eq_val' {f : ratfunc K} (hf : f ≠ 0) :
  ↑(multiplicative.of_add ((f : laurent_series K).order)) = ((ideal_X K).valuation f)⁻¹ :=
 begin
@@ -717,19 +718,20 @@ def cauchy_discrete_is_constant {X : Type*} [nonempty X] {uX : uniform_space X}
   (hX : uniformity X = 𝓟 id_rel) {α : filter X} (hα : cauchy α) : X :=
 (cauchy_discrete_le_principal hX hα).some
 
+--`[fae]` CRUCIALLY USED IN THE NEW VERSION 
 lemma cauchy_discrete_le  {X : Type*} [nonempty X] {uX : uniform_space X} 
   (hX : uniformity X = 𝓟 id_rel) {α : filter X} (hα : cauchy α) : 
   α ≤ 𝓟 {cauchy_discrete_is_constant hX hα} := Exists.some_spec (cauchy_discrete_le_principal hX hα)
 
-lemma cauchy_discrete_le'  {X : Type*} [nonempty X] {uX : uniform_space X} 
-  (hX : uniformity X = 𝓟 id_rel) {α : filter X} (hα : cauchy α) : 
-  α ≤ 𝓝 (cauchy_discrete_is_constant hX hα) :=
-begin
-  convert cauchy_discrete_le hX hα,
-  have top_discrete : ∀ a : X, is_open {a},
-    { exact λ a, @is_open_discrete _ _ (discrete_topology_of_discrete_uniformity hX) {a} },
-  rw [((is_open_singleton_iff_nhds_eq_pure _).mp (top_discrete _)), principal_singleton],
-end
+-- lemma cauchy_discrete_le'  {X : Type*} [nonempty X] {uX : uniform_space X} 
+--   (hX : uniformity X = 𝓟 id_rel) {α : filter X} (hα : cauchy α) : 
+--   α ≤ 𝓝 (cauchy_discrete_is_constant hX hα) :=
+-- begin
+--   convert cauchy_discrete_le hX hα,
+--   have top_discrete : ∀ a : X, is_open {a},
+--     { exact λ a, @is_open_discrete _ _ (discrete_topology_of_discrete_uniformity hX) {a} },
+--   rw [((is_open_singleton_iff_nhds_eq_pure _).mp (top_discrete _)), principal_singleton],
+-- end
 
 lemma ne_bot_unique_principal {X : Type*} [uniform_space X] (hX : uniformity X = 𝓟 id_rel)
   {α : filter X} (hα : α.ne_bot) {x y : X} (hx : α ≤ 𝓟 {x}) (hy : α ≤ 𝓟 {y}) : x = y :=
