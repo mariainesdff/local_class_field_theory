@@ -450,3 +450,24 @@ instance [hv : valued K ℤₘ₀] [is_discrete hv.v] : nonempty (uniformizer K)
 ⟨⟨(exists_uniformizer hv.v).some, (exists_uniformizer hv.v).some_spec⟩⟩
 
 end discretely_valued
+
+
+namespace is_dedekind_domain.height_one_spectrum.adic_valuation
+
+open is_dedekind_domain is_dedekind_domain.height_one_spectrum valuation
+
+variables (R : Type*) [comm_ring R] [is_domain R] [is_dedekind_domain R] (v : height_one_spectrum R)
+variables (K : Type*) [field K] [algebra R K] [is_fraction_ring R K]
+  
+lemma is_discrete : 
+  is_discrete (@adic_valued R _ _ _ K _ _ _ v).v := 
+begin
+  obtain ⟨π, hπ⟩ := valuation_exists_uniformizer K v,
+  apply is_discrete_of_exists_uniformizer,
+  swap,
+  use π,
+  rw [is_uniformizer_iff, ← hπ],
+  refl,
+end
+
+end is_dedekind_domain.height_one_spectrum.adic_valuation
