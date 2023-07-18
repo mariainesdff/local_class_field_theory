@@ -319,8 +319,7 @@ begin
   exact uniformizer_not_is_unit v hπ h,
 end
 
-
-lemma uniformizer_of_generator {r : K₀}
+lemma is_uniformizer_of_generator {r : K₀}
   (hr : maximal_ideal v.valuation_subring = ideal.span {r}) : is_uniformizer v r :=
 begin
   have hr₀ : r ≠ 0,
