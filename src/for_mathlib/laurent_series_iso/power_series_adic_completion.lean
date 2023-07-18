@@ -310,17 +310,12 @@ lemma set_inter_Iio {α β: Type*} [linear_order β] {X : β → set α} {D N : 
   (⋂ d ∈ (set.Iio D), X d) = (⋂ d ∈ (set.Iio N), X d) ∩ (⋂ d ∈ (set.Ico N D), X d) :=
 begin
   by_cases hND₀ : N = D,
-  { rw hND₀,
-    simp only [set.mem_Iio, set.mem_Ico],
-    have aux : (⋂ d ∈ {d | D ≤ d ∧ d < D}, X d) = set.univ,
-    have := @set.bInter_empty β α X,
-    apply set.Inter_congr,
-    -- have auxx : {x | D ≤ x ∧ x < D} = ∅, sorry,
-    -- -- rw aux,
-    -- have := @set.bInter_empty β α X,
-    
-
-  },
+  { haveI : is_empty {d | D ≤ d ∧ d < D},
+    { simp only [set.coe_set_of, is_empty_subtype, not_and, not_lt, imp_self, implies_true_iff] },
+    have aux : (⋂ (d : β) (x : D ≤ d ∧ d < D), X d) = set.univ,
+    { erw set.bInter_eq_Inter {d | D ≤ d ∧ d < D} (λ x _, X x),
+      apply set.Inter_of_empty },
+    simp only [hND₀, set.mem_Iio, set.mem_Ico, aux, set.inter_univ] },
   { replace hND := lt_of_le_of_ne hND hND₀,
     rw [← set.Inter_inter_distrib, ← max_eq_right (le_refl D), ← set.Iio_union_Ioo
       (min_lt_of_left_lt hND), max_eq_right (le_refl D)],
