@@ -44,8 +44,30 @@ instance : separated_space ℚ_[p] := metric_space.to_separated
 
 def padic_valued : valued ℚ ℤₘ₀ := (p_height_one_ideal p).adic_valued
 
--- lemma padic_valued_valuation_p : 
---   @valued.v ℚ _ ℤₘ₀ _ (padic_valued p) (p : ℚ) = (of_add (-1 : ℤ)) := sorry
+lemma padic_valued_valuation_p : 
+  @valued.v ℚ _ ℤₘ₀ _ (padic_valued p) (p : ℚ) = (of_add (-1 : ℤ)) := 
+begin
+  letI hv := padic_valued p,
+  have hp : (p : ℚ) = algebra_map ℤ ℚ (p : ℤ) := rfl,
+  rw adic_valued_apply, rw hp,
+  rw valuation_of_algebra_map,
+  have hp' : ((p_height_one_ideal p).int_valuation) (p : ℤ) =
+    ((p_height_one_ideal p).int_valuation_def) (p : ℤ) := rfl,
+  rw hp',
+  have hp'' : (p_height_one_ideal p).as_ideal = ideal.span{(p : ℤ)} := rfl,
+  rw int_valuation_def_if_neg (p_height_one_ideal p) (nat.cast_ne_zero.mpr (nat.prime.ne_zero _inst_1.1)),
+  rw hp'',
+  simp only [of_add_neg, inv_inj, with_zero.coe_inj, embedding_like.apply_eq_iff_eq, 
+    nat.cast_eq_one],
+  apply associates.count_self,
+  rw associates.irreducible_mk,
+  apply prime.irreducible,
+  apply ideal.prime_of_is_prime,
+  { sorry },
+  rw ideal.span_singleton_prime, 
+  sorry,
+  sorry
+end
 
 local attribute [instance] padic_valued
 
@@ -211,7 +233,6 @@ definition padic_equiv : (Q_p p) ≃+* ℚ_[p] :=
 
 instance : char_zero (Q_p p) := (padic_equiv p).to_ring_hom.char_zero
 
--- local notation `Z_p` p := (@valued.v (Q_p p) _ ℤₘ₀ _ _).valuation_subring
 @[reducible]
 def Z_p := (@valued.v (Q_p p) _ ℤₘ₀ _ _).valuation_subring
 
@@ -241,7 +262,7 @@ instance : char_zero (Z_p p) :=
 { cast_injective := λ m n h, 
   begin
     simp only [subtype.ext_iff, subring.coe_nat_cast, nat.cast_inj] at h,
-    apply h
+    exact h
   end }
 
 def padic'_int.height_one_ideal (p : out_param ℕ) [hp : fact (p.prime)] : 
@@ -254,18 +275,17 @@ def padic'_int.height_one_ideal (p : out_param ℕ) [hp : fact (p.prime)] :
   end }
 
 instance : valued (Q_p p) ℤₘ₀ := height_one_spectrum.valued_adic_completion ℚ (p_height_one_ideal p)
---by show_term {apply_instance}
 
--- lemma padic'.valuation_p : 
---   valued.v (p : Q_p p) = (of_add (-1 : ℤ)) := 
--- begin
---   letI : valued ℚ ℤₘ₀ := padic_valued p,
---   have hp : (p : Q_p p) = (((coe : ℚ → (Q_p p)) p) : Q_p p),
---   { have : ∀ x : ℚ, (coe : ℚ → (Q_p p)) x = (x : Q_p p),
---     { intro x, sorry},
---     rw this, simp only [rat.cast_coe_nat], },
---   rw [hp, valued.valued_completion_apply (p : ℚ), padic_valued_valuation_p p],
--- end
+lemma padic'.valuation_p : 
+   valued.v (p : Q_p p) = (of_add (-1 : ℤ)) := 
+begin
+   letI : valued ℚ ℤₘ₀ := padic_valued p,
+   have hp : (p : Q_p p) = (((coe : ℚ → (Q_p p)) p) : Q_p p),
+   { have : ∀ x : ℚ, (coe : ℚ → (Q_p p)) x = (x : Q_p p),
+     { intro x, sorry},
+     rw this, simp only [rat.cast_coe_nat], },
+   rw [hp, valued.valued_completion_apply (p : ℚ), padic_valued_valuation_p p],
+ end
 
 -- lemma padic'_int.height_one_ideal_def' : 
 --   (padic'_int.height_one_ideal p).as_ideal = ideal.span {(p : Z_p p)} := 
@@ -517,6 +537,12 @@ begin
       apply continuous.tendsto (compare p).symm.3.continuous 0}},
 end
 
+lemma padic'_int.height_one_ideal_def : 
+  (padic'_int.height_one_ideal p).as_ideal = ideal.span {(p : Z_p p)} := 
+begin
+  sorry
+end
+
 
 --TODO: Golf proof!
 lemma padic_int_ring_equiv_range :
@@ -548,6 +574,8 @@ begin
     simp only [ring_equiv.to_ring_hom_apply_symm_to_ring_hom_apply],  },
 end
 
+
+
 -- lemma padic_int_ring_equiv_mem (x : ℚ_[p]) :
 --   x ∈ ((Z_p p).map (padic_equiv p).to_ring_hom) ↔ x ∈ padic_int.subring p :=
 -- begin
@@ -571,8 +599,6 @@ end
 noncomputable!
 definition padic_int_ring_equiv :  (Z_p p) ≃+* ℤ_[p] :=
 (ring_equiv.subring_map _).trans (ring_equiv.subring_congr (padic_int_ring_equiv_range p))
-
-
 
 
 -- instance padic.valued : valued ℚ_[p] ℤₘ₀ :=
