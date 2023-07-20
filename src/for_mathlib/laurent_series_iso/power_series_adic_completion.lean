@@ -1,5 +1,6 @@
 import algebra.group.with_one.units
 import with_zero
+import discrete_valuation_ring.basic
 import for_mathlib.laurent_series_iso.old_power_series_adic_completion
 import topology.uniform_space.abstract_completion
 
@@ -16,9 +17,91 @@ variables (K : Type*) [field K]
 
 def power_series.ideal_X (K : Type*) [field K] : is_dedekind_domain.height_one_spectrum 
   (power_series K) := 
-{ as_ideal := ideal.span({X}),
+  { as_ideal := ideal.span({X}),
   is_prime := power_series.span_X_is_prime,
   ne_bot   := by { rw [ne.def, ideal.span_singleton_eq_bot], exact X_ne_zero }} 
+
+local attribute [instance] classical.prop_decidable
+open multiplicity unique_factorization_monoid
+
+lemma polynomial.norm_unit_X : norm_unit (polynomial.X : (polynomial K)) = 1 :=
+begin
+  have := @coe_norm_unit K _ _ _ polynomial.X,
+  rwa [leading_coeff_X, norm_unit_one, units.coe_one, map_one, units.coe_eq_one] at this,
+end
+
+lemma polynomial.X_eq_normalize : (polynomial.X : (polynomial K)) = normalize polynomial.X :=
+  by simp only [normalize_apply, polynomial.norm_unit_X, units.coe_one, mul_one]
+
+lemma power_series.norm_unit_X : norm_unit (power_series.X : (power_series K)) = 1 :=
+  by {dsimp only [norm_unit],rw [inv_eq_one, ← units.coe_eq_one, unit_of_divided_by_X_pow_nonzero,
+    divided_by_X_pow_of_X_eq_one]}
+
+lemma power_series.X_eq_normalize : (power_series.X : (power_series K)) = normalize power_series.X :=
+  by simp only [normalize_apply, power_series.norm_unit_X, units.coe_one, mul_one]
+
+lemma aux_old_pol (P : (polynomial K)) (hP : P ≠ 0) : 
+  (normalized_factors (ideal.span {↑P})).count (power_series.ideal_X K).as_ideal =
+  (normalized_factors (ideal.span {P})).count (ideal.span {polynomial.X} : ideal (polynomial K)) :=
+begin
+  have for_pol := principal_ideal_ring.count_normalized_factors_eq_count_normalized_factors_span hP
+    polynomial.X_ne_zero (polynomial.norm_unit_X K) polynomial.prime_X,
+  rw [← for_pol],
+  have for_pow := principal_ideal_ring.count_normalized_factors_eq_count_normalized_factors_span
+    (coe_ne_zero hP) power_series.X_ne_zero (power_series.norm_unit_X K) power_series.X_prime,
+  erw [← for_pow],
+  have aux_pol := @multiplicity_eq_count_normalized_factors (polynomial K) _ _ _ _ _ _ polynomial.X P
+    (irreducible_X) hP,
+  have aux_pow_series := @multiplicity_eq_count_normalized_factors (power_series K) _ _ _ _ _ _ power_series.X
+    ↑P (prime.irreducible power_series.X_prime) (coe_ne_zero hP),
+  apply nat.le_antisymm,
+  { rw [polynomial.X_eq_normalize, power_series.X_eq_normalize, ← part_enat.coe_le_coe, ← aux_pol, 
+      ← multiplicity.pow_dvd_iff_le_multiplicity, polynomial.X_pow_dvd_iff],
+    intros d hd,
+    replace aux_pow_series := le_of_eq aux_pow_series.symm,
+    rw [← multiplicity.pow_dvd_iff_le_multiplicity, power_series.X_pow_dvd_iff] at aux_pow_series,
+    replace aux_pow_series := aux_pow_series d hd,
+    rwa [polynomial.coeff_coe P d] at aux_pow_series },
+  { rw [polynomial.X_eq_normalize, power_series.X_eq_normalize, ← part_enat.coe_le_coe, ← aux_pow_series, 
+      ← multiplicity.pow_dvd_iff_le_multiplicity, power_series.X_pow_dvd_iff],
+    intros d hd,
+    replace aux_pol := le_of_eq aux_pol.symm,
+    rw [← multiplicity.pow_dvd_iff_le_multiplicity, polynomial.X_pow_dvd_iff] at aux_pol,
+    replace aux_pol := aux_pol d hd,
+    rwa [← polynomial.coeff_coe P d] at aux_pol },
+end
+
+lemma should_be_in_old_pol (P : (polynomial K)) : (ideal_X K).int_valuation (P) =
+  (power_series.ideal_X K).int_valuation (↑P : (power_series K)) :=
+begin
+  by_cases hP : P = 0,
+  { rw [hP, valuation.map_zero, polynomial.coe_zero, valuation.map_zero] },
+  { simp only [fae_int_valuation_apply],
+    rw [int_valuation_def_if_neg _ hP, int_valuation_def_if_neg _ $ coe_ne_zero hP],
+    simp only [ideal_X_span, of_add_neg, inv_inj, with_zero.coe_inj, embedding_like.apply_eq_iff_eq,
+      nat.cast_inj],
+    have span_ne_zero : (ideal.span {P} : ideal (polynomial K)) ≠ 0 ∧
+    (ideal.span {polynomial.X} : ideal (polynomial K)) ≠ 0 := by simp only [ideal.zero_eq_bot,
+    ne.def, ideal.span_singleton_eq_bot, hP, polynomial.X_ne_zero, not_false_iff, and_self],
+    have span_X_prime : (ideal.span {polynomial.X} : ideal (polynomial K)).is_prime,
+    { apply (@ideal.span_singleton_prime (polynomial K) _ _ polynomial.X_ne_zero).mpr prime_X },
+    have := @count_normalized_factors_eq_associates_count K _ (ideal.span {P})
+    (ideal.span {polynomial.X}) span_ne_zero.1 ((@ideal.span_singleton_prime (polynomial K) _ _ 
+    polynomial.X_ne_zero).mpr prime_X) span_ne_zero.2,
+    convert this.symm,
+
+    have span_ne_zero' : (ideal.span {↑P} : ideal (power_series K)) ≠ 0 ∧
+    ((power_series.ideal_X K).as_ideal : ideal (power_series K)) ≠ 0 := by simp only [ne.def, 
+      ideal.zero_eq_bot, ideal.span_singleton_eq_bot, coe_ne_zero hP, power_series.X_ne_zero,
+      not_false_iff, and_self, (power_series.ideal_X K).3],
+    rw [← aux_old_pol _ _ hP],
+    convert (@count_normalized_factors_eq_associates_count' K _ (ideal.span {↑P})
+    (power_series.ideal_X K).as_ideal span_ne_zero'.1 (power_series.ideal_X K).2 span_ne_zero'.2).symm,
+    
+    -- convert also.symm,
+  }
+end
+
 
 instance : valued (laurent_series K) ℤₘ₀ := valued.mk' (power_series.ideal_X K).valuation
 
@@ -107,6 +190,71 @@ begin
   apply dvd_val_int,
 end
 
+
+lemma key : ((power_series.ideal_X K).int_valuation) X = ↑(multiplicative.of_add (-1 : ℤ)) := sorry
+/-
+classical,
+  have := @valuation_of_algebra_map (power_series K) _ _ _ (laurent_series K) _ _ _
+    (power_series.ideal_X K) (power_series.X),
+  have temp : valued.v (↑(power_series.X : (power_series K))) = 
+    (↑(multiplicative.of_add (- (1 : ℤ))) : ℤₘ₀),
+  erw this,
+  rw [fae_int_valuation_apply, int_valuation_def_if_neg],
+  congr,-- if_neg (associates.mk_ne_zero'.mp hπ), with_zero.coe_inj],
+  -- rw [ideal.dvd_span_singleton],-- ← associates.mk_le_mk_iff_dvd_iff],
+  -- simp,
+  have hx : (ideal.span {power_series.X}) = (power_series.ideal_X K).as_ideal, refl,
+  rw ← hx,
+  have span_ne_zero : ideal.span {power_series.X} ≠ 0, sorry,--use power_series.X_ne_zero
+  have span_ne_bot : ideal.span {power_series.X} ≠ ⊥, sorry,--use power_series.X_ne_zero
+  -- have cc := @count_normalized_factors_eq_associates_count'' (power_series K) _ _ _ _ _
+  --   (ideal.span {power_series.X}) (ideal.span {power_series.X}) span_ne_zero
+  --     power_series.span_X_is_prime span_ne_bot,
+  -- erw [← cc],
+  have cd := @principal_ideal_ring.count_normalized_factors_eq_count_normalized_factors_span
+   (power_series K) _ _ _ _ (power_series.X) (power_series.X) power_series.X_ne_zero 
+    power_series.X_ne_zero (power_series.norm_unit_X K) power_series.X_prime,
+  -- rw ← cd at cc,
+  have := multiset.count_singleton,
+  -- simp at cc,
+  -- rw ← cc,
+-/
+
+lemma valuation_of_X_zpow (s : ℕ) :
+  valued.v ((↑(power_series.X : (power_series K)) : (laurent_series K)) ^ s) = 
+    ↑(multiplicative.of_add (- (s : ℤ))) :=
+begin
+  have : valued.v (↑(power_series.X : (power_series K))) = 
+    (↑(multiplicative.of_add (- (1 : ℤ))) : ℤₘ₀),
+  { erw @valuation_of_algebra_map (power_series K) _ _ _ (laurent_series K) _ _ _
+    (power_series.ideal_X K) (power_series.X),
+    apply key K },
+  rw [map_pow, this, ← one_mul ↑s, ← neg_mul (1 : ℤ) ↑s, int.of_add_mul, with_zero.coe_zpow, 
+    of_add_neg, with_zero.coe_inv, zpow_coe_nat],
+end
+
+lemma valuation_of_single_zpow (s : ℤ) :
+  valued.v ((hahn_series.single s (1 : K)) : (laurent_series K)) = 
+    ↑(multiplicative.of_add (- (s : ℤ))) := --sorry
+begin
+  have aux_mul : (hahn_series.single s (1 : K)) * (hahn_series.single (-s) (1 : K)) =
+    (1 : laurent_series K),
+  { rw [hahn_series.single_mul_single, ← sub_eq_add_neg, sub_self, one_mul],
+    refl },
+  have H : (valued.v (1 : laurent_series K)) = (1 : ℤₘ₀) := valued.v.map_one,
+  rw [← aux_mul, map_mul, mul_eq_one_iff_eq_inv₀] at H,
+  { rw H,
+    induction s with s s,
+    { rw [int.of_nat_eq_coe, ← hahn_series.of_power_series_X_pow, ← coe_power_series] at H,
+      rw [int.of_nat_eq_coe, ← H, power_series.coe_pow, valuation_of_X_zpow] },
+    { simp only [int.neg_succ_of_nat_coe, neg_neg, ← hahn_series.of_power_series_X_pow,
+      ← coe_power_series, power_series.coe_pow, valuation_of_X_zpow, of_add_neg, with_zero.coe_inv,
+        inv_inv] }},
+  { rw valuation.ne_zero_iff,
+    simp only [ne.def, one_ne_zero, not_false_iff, hahn_series.single_ne_zero]},
+end
+
+
 lemma vecchio {n D : ℤ} {f : laurent_series K} (H : valued.v f ≤ ↑(multiplicative.of_add (- D))) :
   n < D → coeff_map K n f = 0 :=
 begin
@@ -116,36 +264,54 @@ begin
   { exact hahn_series.coeff_eq_zero_of_lt_order h_n_ord },
   { rw not_lt at h_n_ord,
     set F := power_series_part f with hF, --non proprio necessaria
-    have ord_neg : f.order ≤ 0, sorry,--andrà fatto `by_cases` usando che se no `vecchio_int` basta
-    obtain ⟨s, hs⟩ := int.exists_eq_neg_of_nat ord_neg,
-    have F_mul := of_power_series_power_series_part f,
-    rw [hs] at h_n_ord,
-    rw [← hF, hs, neg_neg, ← hahn_series.of_power_series_X_pow s, ← coe_power_series,
-      ← coe_power_series] at F_mul,
-    obtain ⟨m, hm⟩ := int.eq_coe_of_zero_le (neg_le_iff_add_nonneg.mp h_n_ord),
-    have hD : 0 ≤  D + s, sorry,
-    obtain ⟨d, hd⟩ := int.eq_coe_of_zero_le hD,
-    have F_coeff := power_series_part_coeff f m,
-    rw [hs, add_comm, ← eq_add_neg_of_add_eq hm, ← hF] at F_coeff,
-    simp only,
-    rw [← F_coeff],--I wonder if `coeff_map` is a good idea
-    apply @vecchio_int K _ m d F,
-    { rw F_mul,
-      rw map_mul,
-      rw ← hd,
-      simp only [power_series.coe_pow, /- valuation.map_pow,  -/neg_add_rev, of_add_add,/-  of_add_neg, -/
-        with_zero.coe_mul/- , with_zero.coe_inv -/],
-      have temp : valued.v ((↑power_series.X : (laurent_series K)) ^ s) = 
-        ↑(multiplicative.of_add (- (s : ℤ))), sorry,
-      rw temp,
-      have temp₁ : ↑(multiplicative.of_add (-↑s)) ≠ (0 : ℤₘ₀), sorry,
-      exact (mul_le_mul_left₀ temp₁).mpr H,
-    },
-    have at_least : m ≤ d, 
-    rw [← int.coe_nat_le, ← hd, ← hm],
-    linarith,
-    sorry--e' falso perche' devo risolvere `≤` **vs** `<`.
-  }
+    by_cases ord_neg : f.order ≤ 0,
+    { obtain ⟨s, hs⟩ := int.exists_eq_neg_of_nat ord_neg,
+      have F_mul := of_power_series_power_series_part f,
+      rw [hs] at h_n_ord,
+      rw [← hF, hs, neg_neg, ← hahn_series.of_power_series_X_pow s, ← coe_power_series,
+        ← coe_power_series] at F_mul,
+      obtain ⟨m, hm⟩ := int.eq_coe_of_zero_le (neg_le_iff_add_nonneg.mp h_n_ord),
+      have hD : 0 ≤  D + s:= by linarith,
+      obtain ⟨d, hd⟩ := int.eq_coe_of_zero_le hD,
+      have F_coeff := power_series_part_coeff f m,
+      rw [hs, add_comm, ← eq_add_neg_of_add_eq hm, ← hF] at F_coeff,
+      simp only,--needed!
+      rw [← F_coeff],--I wonder if `coeff_map` is a good idea
+      apply @vecchio_int K _ m d F _ (by linarith),
+      rw [F_mul, map_mul, ← hd],
+      simp only [power_series.coe_pow, neg_add_rev, of_add_add, with_zero.coe_mul],
+      rwa [valuation_of_X_zpow K s, mul_le_mul_left₀],
+      simp only [ne.def, with_zero.coe_ne_zero, not_false_iff] },
+    { rw not_le at ord_neg,--here most of the code is duplicated in the case `0 ≤ s`.
+      obtain ⟨s, hs⟩ := int.exists_eq_neg_of_nat (int.neg_nonpos_of_nonneg (le_of_lt ord_neg)),
+      rw neg_inj at hs,
+      rw [hs, ← sub_nonneg] at h_n_ord,
+      obtain ⟨m, hm⟩ := int.eq_coe_of_zero_le h_n_ord,
+      rw sub_eq_iff_eq_add at hm,
+      have hD : 0 ≤  D + s := by linarith,
+      obtain ⟨d, hd⟩ := int.eq_coe_of_zero_le hD,--not sure it is the right choice
+      -- obtain ⟨m, hm⟩ := int.eq_coe_of_zero_le (add_nonneg (le_of_lt (lt_of_lt_of_le ord_neg h_n_ord))
+      --    (s.cast_nonneg)),
+      have F_coeff := power_series_part_coeff f m,
+      rw [hs, add_comm, ← hF, ← hm] at F_coeff,
+      simp only,--needed!
+      rw ← F_coeff,
+      apply @vecchio_int K _ m d F _ (by linarith),
+      have F_mul := of_power_series_power_series_part f,
+      rw [← hF, ← coe_power_series] at F_mul,
+      -- have temp := valued.v ↑F = (valued.v f)
+      
+      rw [F_mul, map_mul, ← hd, hs],
+      
+      rw [neg_add],
+      rw [of_add_add],
+      sorry,
+      -- erw [valuation_of_single_zpow K (-↑s), neg_neg, neg_add_rev, of_add_add, with_zero.coe_mul],
+      --   mul_le_mul_left₀],
+      -- have temp₁ : ↑(multiplicative.of_add (↑s)) ≠ (0 : ℤₘ₀), sorry,
+      -- have := (mul_le_mul_left₀ temp₁).mpr H,
+      -- apply this,
+      }}
 end
 
 
@@ -399,87 +565,6 @@ lemma coe_range_dense : dense_range (coe : (ratfunc K) → (laurent_series K)) :
 end dense
 
 section boh
-
-local attribute [instance] classical.prop_decidable
-open multiplicity unique_factorization_monoid
-
-lemma polynomial.norm_unit_X : norm_unit (polynomial.X : (polynomial K)) = 1 :=
-begin
-  have := @coe_norm_unit K _ _ _ polynomial.X,
-  rwa [leading_coeff_X, norm_unit_one, units.coe_one, map_one, units.coe_eq_one] at this,
-end
-
-lemma polynomial.X_eq_normalize : (polynomial.X : (polynomial K)) = normalize polynomial.X :=
-  by simp only [normalize_apply, polynomial.norm_unit_X, units.coe_one, mul_one]
-
-lemma power_series.norm_unit_X : norm_unit (power_series.X : (power_series K)) = 1 :=
-  by {dsimp only [norm_unit],rw [inv_eq_one, ← units.coe_eq_one, unit_of_divided_by_X_pow_nonzero,
-    divided_by_X_pow_of_X_eq_one]}
-
-lemma power_series.X_eq_normalize : (power_series.X : (power_series K)) = normalize power_series.X :=
-  by simp only [normalize_apply, power_series.norm_unit_X, units.coe_one, mul_one]
-
-lemma aux_old_pol (P : (polynomial K)) (hP : P ≠ 0) : 
-  (normalized_factors (ideal.span {↑P})).count (power_series.ideal_X K).as_ideal =
-  (normalized_factors (ideal.span {P})).count (ideal.span {polynomial.X} : ideal (polynomial K)) :=
-begin
-  have for_pol := principal_ideal_ring.count_normalized_factors_eq_count_normalized_factors_span hP
-    polynomial.X_ne_zero (polynomial.norm_unit_X K) polynomial.prime_X,
-  rw [← for_pol],
-  have for_pow := principal_ideal_ring.count_normalized_factors_eq_count_normalized_factors_span
-    (coe_ne_zero hP) power_series.X_ne_zero (power_series.norm_unit_X K) power_series.X_prime,
-  erw [← for_pow],
-  have aux_pol := @multiplicity_eq_count_normalized_factors (polynomial K) _ _ _ _ _ _ polynomial.X P
-    (irreducible_X) hP,
-  have aux_pow_series := @multiplicity_eq_count_normalized_factors (power_series K) _ _ _ _ _ _ power_series.X
-    ↑P (prime.irreducible power_series.X_prime) (coe_ne_zero hP),
-  apply nat.le_antisymm,
-  { rw [polynomial.X_eq_normalize, power_series.X_eq_normalize, ← part_enat.coe_le_coe, ← aux_pol, 
-      ← multiplicity.pow_dvd_iff_le_multiplicity, polynomial.X_pow_dvd_iff],
-    intros d hd,
-    replace aux_pow_series := le_of_eq aux_pow_series.symm,
-    rw [← multiplicity.pow_dvd_iff_le_multiplicity, power_series.X_pow_dvd_iff] at aux_pow_series,
-    replace aux_pow_series := aux_pow_series d hd,
-    rwa [polynomial.coeff_coe P d] at aux_pow_series },
-  { rw [polynomial.X_eq_normalize, power_series.X_eq_normalize, ← part_enat.coe_le_coe, ← aux_pow_series, 
-      ← multiplicity.pow_dvd_iff_le_multiplicity, power_series.X_pow_dvd_iff],
-    intros d hd,
-    replace aux_pol := le_of_eq aux_pol.symm,
-    rw [← multiplicity.pow_dvd_iff_le_multiplicity, polynomial.X_pow_dvd_iff] at aux_pol,
-    replace aux_pol := aux_pol d hd,
-    rwa [← polynomial.coeff_coe P d] at aux_pol },
-end
-
-
-lemma should_be_in_old_pol (P : (polynomial K)) : (ideal_X K).int_valuation (P) =
-  (power_series.ideal_X K).int_valuation (↑P : (power_series K)) :=
-begin
-  by_cases hP : P = 0,
-  { rw [hP, valuation.map_zero, polynomial.coe_zero, valuation.map_zero] },
-  { simp only [fae_int_valuation_apply],
-    rw [int_valuation_def_if_neg _ hP, int_valuation_def_if_neg _ $ coe_ne_zero hP],
-    simp only [ideal_X_span, of_add_neg, inv_inj, with_zero.coe_inj, embedding_like.apply_eq_iff_eq,
-      nat.cast_inj],
-    have span_ne_zero : (ideal.span {P} : ideal (polynomial K)) ≠ 0 ∧
-    (ideal.span {polynomial.X} : ideal (polynomial K)) ≠ 0 := by simp only [ideal.zero_eq_bot,
-    ne.def, ideal.span_singleton_eq_bot, hP, polynomial.X_ne_zero, not_false_iff, and_self],
-    have span_X_prime : (ideal.span {polynomial.X} : ideal (polynomial K)).is_prime,
-    { apply (@ideal.span_singleton_prime (polynomial K) _ _ polynomial.X_ne_zero).mpr prime_X },
-    have := @count_normalized_factors_eq_associates_count K _ (ideal.span {P})
-    (ideal.span {polynomial.X}) span_ne_zero.1 ((@ideal.span_singleton_prime (polynomial K) _ _ 
-    polynomial.X_ne_zero).mpr prime_X) span_ne_zero.2,
-    convert this.symm,
-
-    have span_ne_zero' : (ideal.span {↑P} : ideal (power_series K)) ≠ 0 ∧
-    ((power_series.ideal_X K).as_ideal : ideal (power_series K)) ≠ 0 := by simp only [ne.def, 
-      ideal.zero_eq_bot, ideal.span_singleton_eq_bot, coe_ne_zero hP, power_series.X_ne_zero,
-      not_false_iff, and_self, (power_series.ideal_X K).3],
-    have also := @count_normalized_factors_eq_associates_count' K _ (ideal.span {↑P})
-    (power_series.ideal_X K).as_ideal span_ne_zero'.1 (power_series.ideal_X K).2 span_ne_zero'.2,
-    rw [← aux_old_pol _ _ hP],
-    convert also.symm,
-  }
-end
 
 open ratfunc
 
