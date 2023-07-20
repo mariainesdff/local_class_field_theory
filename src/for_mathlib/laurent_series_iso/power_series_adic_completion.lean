@@ -191,34 +191,20 @@ begin
 end
 
 
-lemma key : ((power_series.ideal_X K).int_valuation) X = ↑(multiplicative.of_add (-1 : ℤ)) := sorry
-/-
-classical,
-  have := @valuation_of_algebra_map (power_series K) _ _ _ (laurent_series K) _ _ _
-    (power_series.ideal_X K) (power_series.X),
-  have temp : valued.v (↑(power_series.X : (power_series K))) = 
-    (↑(multiplicative.of_add (- (1 : ℤ))) : ℤₘ₀),
-  erw this,
-  rw [fae_int_valuation_apply, int_valuation_def_if_neg],
-  congr,-- if_neg (associates.mk_ne_zero'.mp hπ), with_zero.coe_inj],
-  -- rw [ideal.dvd_span_singleton],-- ← associates.mk_le_mk_iff_dvd_iff],
-  -- simp,
-  have hx : (ideal.span {power_series.X}) = (power_series.ideal_X K).as_ideal, refl,
-  rw ← hx,
-  have span_ne_zero : ideal.span {power_series.X} ≠ 0, sorry,--use power_series.X_ne_zero
-  have span_ne_bot : ideal.span {power_series.X} ≠ ⊥, sorry,--use power_series.X_ne_zero
-  -- have cc := @count_normalized_factors_eq_associates_count'' (power_series K) _ _ _ _ _
-  --   (ideal.span {power_series.X}) (ideal.span {power_series.X}) span_ne_zero
-  --     power_series.span_X_is_prime span_ne_bot,
-  -- erw [← cc],
-  have cd := @principal_ideal_ring.count_normalized_factors_eq_count_normalized_factors_span
-   (power_series K) _ _ _ _ (power_series.X) (power_series.X) power_series.X_ne_zero 
-    power_series.X_ne_zero (power_series.norm_unit_X K) power_series.X_prime,
-  -- rw ← cd at cc,
-  have := multiset.count_singleton,
-  -- simp at cc,
-  -- rw ← cc,
--/
+lemma int_valuation_X : ((power_series.ideal_X K).int_valuation) X =
+  ↑(multiplicative.of_add (-1 : ℤ)) := 
+begin
+  rw [fae_int_valuation_apply, int_valuation_def_if_neg (power_series.ideal_X K)
+    power_series.X_ne_zero],
+  congr,
+  apply associates.count_self,
+  rw associates.irreducible_mk,
+  apply prime.irreducible,
+  apply ideal.prime_of_is_prime,
+  apply ideal.span_singleton_eq_bot.mp.mt,
+  apply power_series.X_ne_zero,
+  apply power_series.span_X_is_prime,
+end
 
 lemma valuation_of_X_zpow (s : ℕ) :
   valued.v ((↑(power_series.X : (power_series K)) : (laurent_series K)) ^ s) = 
@@ -228,7 +214,7 @@ begin
     (↑(multiplicative.of_add (- (1 : ℤ))) : ℤₘ₀),
   { erw @valuation_of_algebra_map (power_series K) _ _ _ (laurent_series K) _ _ _
     (power_series.ideal_X K) (power_series.X),
-    apply key K },
+    apply int_valuation_X K },
   rw [map_pow, this, ← one_mul ↑s, ← neg_mul (1 : ℤ) ↑s, int.of_add_mul, with_zero.coe_zpow, 
     of_add_neg, with_zero.coe_inv, zpow_coe_nat],
 end
