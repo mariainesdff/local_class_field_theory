@@ -4,8 +4,6 @@ import discrete_valuation_ring.basic
 import for_mathlib.laurent_series_iso.old_power_series_adic_completion
 import topology.uniform_space.abstract_completion
 
--- topology.metric_space.cau_seq_filter
-
 noncomputable theory
 
 open uniform_space power_series abstract_completion is_dedekind_domain.height_one_spectrum polynomial
@@ -108,72 +106,6 @@ section complete
 open filter topological_space laurent_series
 open_locale filter topology uniformity
 
-def coeff_map (d : ℤ) : laurent_series K → K := λ x, x.coeff d
-
--- def val_equiv : (hahn_series.add_val ℤ K).valuation.is_equiv valued.v := sorry
-
--- lemma vecchio_int (f : power_series K) :
---   ((power_series.ideal_X K).int_valuation f)  =
---   ↑(multiplicative.of_add (- (↑f : (hahn_series ℕ K)).order : ℤ)) := sorry
-/-
-* In the hahn_series.lean file there are things like `order_mul`, `order_neg`, `order_zero`,
-  `order_single`, `order_C`; more globally, there is `add_val` defined as the order, showing that it
-  is an `add_val`. It takes values (for Laurent Series) in `with_zero ℤ`.
-* The `order_div` and `order_inv` are called with `fae_` and are in **old**
-* There is also a lemma `order_eq_of_power_series` in **old**, showing that the "orders" of a
-*power_series* (one obtained by seeing it as a hahn series, the other by using the `part_enat` def
-that is basically the same but that has more API, eg about being divisible by `X^n`) coincide. The
-above lemma is stated in terms of `part_enat`, and there is `order_eq_of_power_series_Z` that shows 
-that the equality stay true if (1) seeing the power series as a laurent series; and (2) going to `ℤ`
-* Read lines *257-265*
--/
-
--- lemma aux₁ {R : Type*} [comm_semiring R] {φ : power_series R} : --(hφ : φ ≠ 0) :
---   (((↑φ : (hahn_series ℕ R)).order) : ℤ) = (hahn_series.of_power_series ℤ R φ).order := sorry
-
--- lemma aux₂ {f : laurent_series K} {P Q : power_series K} {hQ : Q ∈ non_zero_divisors (power_series K)}
---   (hfPQ : is_localization.mk' (laurent_series K) P ⟨Q, hQ⟩ = f) :
---     hahn_series.order f = (↑P : (hahn_series ℕ K)).order - (↑Q : (hahn_series ℕ K)).order :=
--- begin
---   rw aux₁,
---   rw aux₁,
---   rw ← fae_order_div,
---   rw ← hfPQ,
---   simp only [is_fraction_ring.mk'_eq_div, laurent_series.coe_algebra_map, set_like.coe_mk],
---   sorry,--needed?
---   -- have := non_zero_divisors.ne_zero hQ,
---   rw ← (hahn_series.of_power_series ℤ K).map_zero,
---   apply hahn_series.of_power_series_injective.ne (non_zero_divisors.ne_zero hQ),
--- end
-
--- lemma vecchio (f : laurent_series K) : (valued.v f)⁻¹ = ↑(multiplicative.of_add (f.order)) := 
--- begin
---   obtain ⟨P, ⟨Q, hQ, hfPQ⟩⟩ := @is_fraction_ring.div_surjective (power_series K) _ _
---     (laurent_series K) _ _ _ f,
---   replace hfPQ : is_localization.mk' (laurent_series K) P ⟨Q, hQ⟩ = f :=
---     by simp only [hfPQ, is_fraction_ring.mk'_eq_div, set_like.coe_mk],
---   -- have hP : P ≠ 0 :=  by sorry,--{rw ← hfPQ at hf, exact is_localization.ne_zero_of_mk'_ne_zero hf},
---   -- have hQ₀ : Q ≠ 0 := by rwa [← mem_non_zero_divisors_iff_ne_zero],
---   have val_P_Q := @valuation_of_mk' (power_series K) _ _ _ (laurent_series K) _ _ _
---     (power_series.ideal_X K) P ⟨Q, hQ⟩,
---   rw hfPQ at val_P_Q,
---   rw inv_eq_iff_eq_inv,
---   erw val_P_Q,
---   rw vecchio_int,
---   rw vecchio_int,
---   rw ← with_zero.coe_div,
---   rw ← with_zero.coe_inv,
---   rw with_zero.coe_inj,
---   rw ← of_add_sub,
---   rw ← of_add_neg,
---   apply congr_arg,
---   rw ← neg_sub',
---   rw ← neg_eq_iff_eq_neg,
---   rw neg_neg,
---   simp only [set_like.coe_mk],
---   exact (aux₂ K hfPQ).symm,
--- end
-
 lemma coeff_zero_of_lt_int_valuation {n d : ℕ} {f : power_series K} (H : valued.v (f : laurent_series K) ≤
   ↑(multiplicative.of_add ((- d) : ℤ))) : n < d → coeff K n f = 0 :=
 begin
@@ -229,7 +161,7 @@ end
 
 lemma valuation_of_single_zpow (s : ℤ) :
   valued.v ((hahn_series.single s (1 : K)) : (laurent_series K)) = 
-    ↑(multiplicative.of_add (- (s : ℤ))) := --sorry
+    ↑(multiplicative.of_add (- (s : ℤ))) :=
 begin
   have aux_mul : (hahn_series.single s (1 : K)) * (hahn_series.single (-s) (1 : K)) =
     (1 : laurent_series K),
@@ -249,14 +181,13 @@ begin
 end
 
 lemma coeff_zero_of_lt_valuation {n D : ℤ} {f : laurent_series K} 
-  (H : valued.v f ≤ ↑(multiplicative.of_add (- D))) : n < D → coeff_map K n f = 0 :=
+  (H : valued.v f ≤ ↑(multiplicative.of_add (- D))) : n < D → f.coeff n = 0 :=
 begin
   intro hnd,
-  rw [coeff_map],--I wonder if `coeff_map` is a good ide
   by_cases h_n_ord : n < f.order,
   { exact hahn_series.coeff_eq_zero_of_lt_order h_n_ord },
   { rw not_lt at h_n_ord,
-    set F := power_series_part f with hF, --non proprio necessaria
+    set F := power_series_part f with hF,--not really necessary
     by_cases ord_neg : f.order ≤ 0,
     { obtain ⟨s, hs⟩ := int.exists_eq_neg_of_nat ord_neg,
       rw [hs] at h_n_ord,
@@ -265,8 +196,7 @@ begin
       obtain ⟨d, hd⟩ := int.eq_coe_of_zero_le hD,
       have F_coeff := power_series_part_coeff f m,
       rw [hs, add_comm, ← eq_add_neg_of_add_eq hm, ← hF] at F_coeff,
-      simp only,--needed!
-      rw [← F_coeff],--I wonder if `coeff_map` is a good idea
+      rw [← F_coeff],
       refine (@int_valuation_le_iff_coeff_zero_of_lt K _ d F).mp _ m (by linarith),
       have F_mul := of_power_series_power_series_part f,
       rw [← hF, hs, neg_neg, ← hahn_series.of_power_series_X_pow s, ← coe_power_series,
@@ -284,7 +214,6 @@ begin
       obtain ⟨d, hd⟩ := int.eq_coe_of_zero_le hD,
       have F_coeff := power_series_part_coeff f m,
       rw [hs, add_comm, ← hF, ← hm] at F_coeff,
-      simp only,
       rw ← F_coeff,
       refine (@int_valuation_le_iff_coeff_zero_of_lt K _ d F).mp _ m (by linarith),
       have F_mul := of_power_series_power_series_part f,
@@ -294,22 +223,11 @@ begin
       simp only [ne.def, with_zero.coe_ne_zero, not_false_iff] }}
 end
 
-/-
-lemma int_valuation_le_iff_coeff_zero_of_lt {d : ℕ} {f : power_series K} :
-valued.v (f : laurent_series K) ≤ ↑(multiplicative.of_add ((- d) : ℤ))
-   ↔ (∀ n : ℕ, n < d → coeff K n f = 0) :=
-
-by_cases h_n_ord : n < f.order,
-  { exact hahn_series.coeff_eq_zero_of_lt_order h_n_ord },
--/
-
-
-
 lemma valuation_le_iff_coeff_zero_of_lt {D : ℤ} {f : laurent_series K} :
-  valued.v f ≤ ↑(multiplicative.of_add ((- D) : ℤ)) ↔ (∀ n : ℤ, n < D → coeff_map K n f = 0) :=
+  valued.v f ≤ ↑(multiplicative.of_add ((- D) : ℤ)) ↔ (∀ n : ℤ, n < D → f.coeff n = 0) :=
 begin
   refine ⟨λ hnD n hn, coeff_zero_of_lt_valuation K hnD hn, λ h_val_f, _⟩,
-  set F := power_series_part f with hF, --non proprio necessaria
+  set F := power_series_part f with hF, --not really necessary
   by_cases ord_neg : f.order ≤ 0,
   { obtain ⟨s, hs⟩ := int.exists_eq_neg_of_nat ord_neg,
     have h_F_mul := f.single_order_mul_power_series_part,
@@ -359,7 +277,7 @@ end
 
 lemma eq_coeff_of_valuation_sub_lt {d n : ℤ} {f g : laurent_series K} 
   (H : valued.v (g - f) ≤ ↑(multiplicative.of_add (- d))) :
-  n < d → coeff_map K n g = coeff_map K n f :=
+  n < d → g.coeff n = f.coeff n :=
 begin
   by_cases triv : g = f,
   { exact (λ _, by rw triv) },
@@ -370,8 +288,8 @@ begin
 end
 
 
-lemma uniform_continuous_coeff_map {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) (d : ℤ) :
-  uniform_continuous (coeff_map K d) :=
+lemma uniform_continuous_coeff {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) (d : ℤ) :
+  uniform_continuous (λ (f : laurent_series K), f.coeff d) :=
 begin
   refine uniform_continuous_iff_eventually.mpr (λ S hS, eventually_iff_exists_mem.mpr _),
   let γ : ℤₘ₀ˣ := units.mk0 (↑(multiplicative.of_add (- (d + 1)))) with_zero.coe_ne_zero,
@@ -386,30 +304,30 @@ end
   rather putting this in the proof.
 -/
 variable {K}
-def cauchy.coeff_map' {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) : ℤ → K :=
+def cauchy.coeff {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) : ℤ → K :=
 begin
   letI : uniform_space K := ⊥,
   have hK : @uniformity K ⊥ = filter.principal id_rel := rfl,
-  use λ d, cauchy_discrete_is_constant hK (hℱ.map (uniform_continuous_coeff_map K hK d)),
+  use λ d, cauchy_discrete_is_constant hK (hℱ.map (uniform_continuous_coeff K hK d)),
 end
 
-lemma aux_coeff_map' {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) (D : ℤ) : 
-  tendsto (coeff_map K D) ℱ (𝓟 {cauchy.coeff_map' hℱ D}) :=
+lemma aux_coeff_map {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) (D : ℤ) : 
+  tendsto (λ (f : laurent_series K), f.coeff D) ℱ (𝓟 {cauchy.coeff hℱ D}) :=
 begin
   letI : uniform_space K := ⊥,
   have hK : uniformity K = filter.principal id_rel, refl,
-  exact cauchy_discrete_le hK (hℱ.map (uniform_continuous_coeff_map K hK D)),
+  exact cauchy_discrete_le hK (hℱ.map (uniform_continuous_coeff K hK D)),
 end
 
 lemma bounded_supp_of_valuation_le (f : laurent_series K) (d : ℤ) : ∃ N : ℤ,
 ∀ (g : laurent_series K), valued.v (g - f) ≤ ↑(multiplicative.of_add (- d)) →
-  ∀ n < N, coeff_map K n g = 0 :=
+  ∀ n < N, g.coeff n = 0 :=
 begin
   by_cases hf : f = 0,
   { refine ⟨d, λ _ hg _ hn, _⟩,
     simpa only [eq_coeff_of_valuation_sub_lt K hg hn, hf] using hahn_series.zero_coeff },
   { refine ⟨min (f.2.is_wf.min (hahn_series.support_nonempty_iff.mpr hf)) d - 1, λ _ hg n hn, _⟩,
-    have hn' : coeff_map K n f = 0 := function.nmem_support.mp ( λ h, set.is_wf.not_lt_min
+    have hn' : f.coeff n = 0 := function.nmem_support.mp ( λ h, set.is_wf.not_lt_min
       f.2.is_wf (hahn_series.support_nonempty_iff.mpr hf) h _),
     rwa eq_coeff_of_valuation_sub_lt K hg _,
     { exact lt_trans hn (int.lt_of_le_sub_one $ (sub_le_sub_iff_right _).mpr (min_le_right _ d)) },
@@ -417,7 +335,7 @@ begin
 end
 
 lemma cauchy.bot₁ {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) : ∃ N, 
-  ∀ᶠ y in ℱ, ∀ n < N, coeff_map K n y = (0 : K) :=
+  ∀ᶠ (f : (laurent_series K)) in ℱ, ∀ n < N, f.coeff n = (0 : K) :=
 begin
   let entourage := {P : (laurent_series K) × (laurent_series K) | valued.v (P.snd - P.fst)
     < ↑(multiplicative.of_add (0 : ℤ))},
@@ -439,7 +357,7 @@ begin
 end
 
 lemma cauchy.bot_aux {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) : ∃ N, 
-  ∀ n < N, ℱ.map (coeff_map K n) ≤ filter.principal {0} :=
+  ∀ n < N, ℱ.map (λ (f : laurent_series K), f.coeff n) ≤ filter.principal {0} :=
 begin
   simp only [principal_singleton, pure_zero, nonpos_iff, mem_map],
   obtain ⟨N, hN⟩ := hℱ.bot₁,
@@ -451,31 +369,31 @@ begin
 end
 
 lemma cauchy.bot₂ {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) : ∃ N, ∀ n,
-  n < N → (hℱ.coeff_map' n) = 0 :=
+  n < N → (hℱ.coeff n) = 0 :=
 begin
   letI : uniform_space K := ⊥,
   have hK : uniformity K = filter.principal id_rel, refl,
   obtain ⟨N, hN⟩ := hℱ.bot_aux,
   use N,
   intros n hn,
-  refine ne_bot_unique_principal hK (hℱ.map (uniform_continuous_coeff_map K hK n)).1
-    (aux_coeff_map' _ _) (hN n hn),
+  refine ne_bot_unique_principal hK (hℱ.map (uniform_continuous_coeff K hK n)).1
+    (aux_coeff_map _ _) (hN n hn),
 end
 
 /-- The following lemma shows that for every `d` smaller than the minimum between the integers
 produced in `cauchy.bot₁` and `cauchy.bot₂`, for almost all series in `ℱ` the `d`th coefficient
-coincides with the `d`th coefficient of `hℱ.coeff_map'`.
+coincides with the `d`th coefficient of `hℱ.coeff`.
 -/
 lemma cauchy.bot₃ {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) : ∃ N,
-  ∀ᶠ f in ℱ, ∀ d < N, (hℱ.coeff_map' d) = coeff_map K d f :=
+  ∀ᶠ (f : laurent_series K) in ℱ, ∀ d < N, (hℱ.coeff d) = f.coeff d :=
 begin
   obtain ⟨⟨N₁, hN₁⟩, ⟨N₂, hN₂⟩⟩ := ⟨hℱ.bot₁, hℱ.bot₂⟩,
   refine ⟨min N₁ N₂, ℱ.3 hN₁ (λ _ hf d hd, _)⟩,
   rw [hf d (lt_of_lt_of_le hd (min_le_left _ _)), hN₂ d (lt_of_lt_of_le hd (min_le_right _ _))],
 end
 
-lemma cauchy.coeff_map_support_bdd'' {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) :
-  bdd_below (hℱ.coeff_map'.support) :=
+lemma cauchy.coeff_support_bdd {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) :
+  bdd_below (hℱ.coeff.support) :=
 begin
   refine ⟨hℱ.bot₂.some, λ d hd, _⟩,
   by_contra' hNd,
@@ -483,8 +401,8 @@ begin
 end
 
 def cauchy.mk_laurent_series {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) : (laurent_series K) :=
-hahn_series.mk (λ d, hℱ.coeff_map' d)
-  (set.is_wf.is_pwo (hℱ.coeff_map_support_bdd''.well_founded_on_lt))
+hahn_series.mk (λ d, hℱ.coeff d)
+  (set.is_wf.is_pwo (hℱ.coeff_support_bdd.well_founded_on_lt))
 
 
 open_locale big_operators
@@ -515,12 +433,12 @@ end
 
 
 lemma cauchy.eventually₁ {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) :
-  ∀ D : ℤ, ∀ᶠ f in ℱ, ∀ d, d < D → (hℱ.coeff_map' d) = coeff_map K d f := 
+  ∀ D : ℤ, ∀ᶠ (f : laurent_series K) in ℱ, ∀ d, d < D → (hℱ.coeff d) = f.coeff d := 
 begin
   intro D,
-  set X : ℤ → set (laurent_series K) := λ d, {f | (hℱ.coeff_map' d) = coeff_map K d f} with hX,
+  set X : ℤ → set (laurent_series K) := λ d, {f | (hℱ.coeff d) = f.coeff d} with hX,
   have intersec : (⋂ n ∈ (set.Iio D), X n) ⊆ {x : laurent_series K | ∀ (d : ℤ), d < D 
-    → hℱ.coeff_map' d = coeff_map K d x},
+    → hℱ.coeff d = x.coeff d},
   { rintro (_ hf n hn),
     simp only [set.mem_Inter, set.mem_set_of_eq, hX] at hf,
     exact hf n hn, },
@@ -543,17 +461,16 @@ begin
       { simp only [set.mem_Ico, set.Inter_coe_set, finset.mem_coe, finset.mem_Ico, subtype.coe_mk]},
       simp only [this, filter.Inter_mem],
       intro d,
-      apply aux_coeff_map' hℱ,
+      apply aux_coeff_map hℱ,
       simpa only [principal_singleton, mem_pure] using rfl }}
 end
 
 lemma valuation_le_of_coeff_eventually_eq {f g : (laurent_series K)} {D : ℤ}
-  (H : ∀ d, d < D → coeff_map K d g = coeff_map K d f) :
-  valued.v (f - g) ≤ ↑(multiplicative.of_add (- D)) :=
+  (H : ∀ d, d < D → g.coeff d = f.coeff d) : valued.v (f - g) ≤ ↑(multiplicative.of_add (- D)) :=
 begin
   apply (valuation_le_iff_coeff_zero_of_lt K).mpr,
   intros n hn,
-  simp_rw [coeff_map, hahn_series.sub_coeff, sub_eq_zero],
+  rw [hahn_series.sub_coeff, sub_eq_zero],
   exact (H n hn).symm,
 end
 
