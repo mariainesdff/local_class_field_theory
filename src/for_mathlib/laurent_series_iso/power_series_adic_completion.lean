@@ -31,14 +31,15 @@ begin
 end
 
 lemma polynomial.X_eq_normalize : (polynomial.X : (polynomial K)) = normalize polynomial.X :=
-  by simp only [normalize_apply, polynomial.norm_unit_X, units.coe_one, mul_one]
+by simp only [normalize_apply, polynomial.norm_unit_X, units.coe_one, mul_one]
 
 lemma power_series.norm_unit_X : norm_unit (power_series.X : (power_series K)) = 1 :=
-  by {dsimp only [norm_unit],rw [inv_eq_one, ← units.coe_eq_one, unit_of_divided_by_X_pow_nonzero,
+by {dsimp only [norm_unit],rw [inv_eq_one, ← units.coe_eq_one, unit_of_divided_by_X_pow_nonzero,
     divided_by_X_pow_of_X_eq_one]}
 
-lemma power_series.X_eq_normalize : (power_series.X : (power_series K)) = normalize power_series.X :=
-  by simp only [normalize_apply, power_series.norm_unit_X, units.coe_one, mul_one]
+lemma power_series.X_eq_normalize : 
+  (power_series.X : (power_series K)) = normalize power_series.X :=
+by simp only [normalize_apply, power_series.norm_unit_X, units.coe_one, mul_one]
 
 lemma aux_old_pol (P : (polynomial K)) (hP : P ≠ 0) : 
   (normalized_factors (ideal.span {↑P})).count (power_series.ideal_X K).as_ideal =
@@ -50,10 +51,10 @@ begin
   have for_pow := principal_ideal_ring.count_normalized_factors_eq_count_normalized_factors_span
     (coe_ne_zero hP) power_series.X_ne_zero (power_series.norm_unit_X K) power_series.X_prime,
   erw [← for_pow],
-  have aux_pol := @multiplicity_eq_count_normalized_factors (polynomial K) _ _ _ _ _ _ polynomial.X P
-    (irreducible_X) hP,
-  have aux_pow_series := @multiplicity_eq_count_normalized_factors (power_series K) _ _ _ _ _ _ power_series.X
-    ↑P (prime.irreducible power_series.X_prime) (coe_ne_zero hP),
+  have aux_pol := @multiplicity_eq_count_normalized_factors (polynomial K) _ _ _ _ _ _ 
+    polynomial.X P (irreducible_X) hP,
+  have aux_pow_series := @multiplicity_eq_count_normalized_factors (power_series K) _ _ _ _ _ _
+    power_series.X ↑P (prime.irreducible power_series.X_prime) (coe_ne_zero hP),
   apply nat.le_antisymm,
   { rw [polynomial.X_eq_normalize, power_series.X_eq_normalize, ← part_enat.coe_le_coe, ← aux_pol, 
       ← multiplicity.pow_dvd_iff_le_multiplicity, polynomial.X_pow_dvd_iff],
@@ -62,8 +63,8 @@ begin
     rw [← multiplicity.pow_dvd_iff_le_multiplicity, power_series.X_pow_dvd_iff] at aux_pow_series,
     replace aux_pow_series := aux_pow_series d hd,
     rwa [polynomial.coeff_coe P d] at aux_pow_series },
-  { rw [polynomial.X_eq_normalize, power_series.X_eq_normalize, ← part_enat.coe_le_coe, ← aux_pow_series, 
-      ← multiplicity.pow_dvd_iff_le_multiplicity, power_series.X_pow_dvd_iff],
+  { rw [polynomial.X_eq_normalize, power_series.X_eq_normalize, ← part_enat.coe_le_coe,
+      ← aux_pow_series, ← multiplicity.pow_dvd_iff_le_multiplicity, power_series.X_pow_dvd_iff],
     intros d hd,
     replace aux_pol := le_of_eq aux_pol.symm,
     rw [← multiplicity.pow_dvd_iff_le_multiplicity, polynomial.X_pow_dvd_iff] at aux_pol,
@@ -89,17 +90,14 @@ begin
     (ideal.span {polynomial.X}) span_ne_zero.1 ((@ideal.span_singleton_prime (polynomial K) _ _ 
     polynomial.X_ne_zero).mpr prime_X) span_ne_zero.2,
     convert this.symm,
-
     have span_ne_zero' : (ideal.span {↑P} : ideal (power_series K)) ≠ 0 ∧
     ((power_series.ideal_X K).as_ideal : ideal (power_series K)) ≠ 0 := by simp only [ne.def, 
       ideal.zero_eq_bot, ideal.span_singleton_eq_bot, coe_ne_zero hP, power_series.X_ne_zero,
       not_false_iff, and_self, (power_series.ideal_X K).3],
     rw [← aux_old_pol _ _ hP],
     convert (@count_normalized_factors_eq_associates_count' K _ (ideal.span {↑P})
-    (power_series.ideal_X K).as_ideal span_ne_zero'.1 (power_series.ideal_X K).2 span_ne_zero'.2).symm,
-    
-    -- convert also.symm,
-  }
+    (power_series.ideal_X K).as_ideal span_ne_zero'.1 (power_series.ideal_X K).2
+      span_ne_zero'.2).symm }
 end
 
 
@@ -176,7 +174,7 @@ that the equality stay true if (1) seeing the power series as a laurent series; 
 --   exact (aux₂ K hfPQ).symm,
 -- end
 
-lemma vecchio_int {n d : ℕ} {f : power_series K} (H : valued.v (f : laurent_series K) ≤
+lemma coeff_zero_of_lt_int_valuation {n d : ℕ} {f : power_series K} (H : valued.v (f : laurent_series K) ≤
   ↑(multiplicative.of_add ((- d) : ℤ))) : n < d → coeff K n f = 0 :=
 begin
   intro hnd,
@@ -190,6 +188,16 @@ begin
   apply dvd_val_int,
 end
 
+lemma int_valuation_le_iff_coeff_zero_of_lt {d : ℕ} (f : power_series K) :
+valued.v (f : laurent_series K) ≤ ↑(multiplicative.of_add ((- d) : ℤ))
+   ↔ (∀ n : ℕ, n < d → coeff K n f = 0) :=
+begin
+  have : power_series.X ^ d ∣ f ↔ ∀ n : ℕ, n < d → (coeff K n) f = 0,
+  exact ⟨λ hd n hnd, power_series.X_pow_dvd_iff.mp hd n hnd, λ H, power_series.X_pow_dvd_iff.mpr H⟩,
+  erw [← this, valuation_of_algebra_map (power_series.ideal_X K) f, 
+    ← span_singleton_dvd_span_singleton_iff_dvd, ← ideal.span_singleton_pow],
+  apply int_valuation_le_pow_iff_dvd,
+end
 
 lemma int_valuation_X : ((power_series.ideal_X K).int_valuation) X =
   ↑(multiplicative.of_add (-1 : ℤ)) := 
@@ -240,9 +248,8 @@ begin
     simp only [ne.def, one_ne_zero, not_false_iff, hahn_series.single_ne_zero]},
 end
 
-
-lemma vecchio {n D : ℤ} {f : laurent_series K} (H : valued.v f ≤ ↑(multiplicative.of_add (- D))) :
-  n < D → coeff_map K n f = 0 :=
+lemma coeff_zero_of_lt_valuation {n D : ℤ} {f : laurent_series K} 
+  (H : valued.v f ≤ ↑(multiplicative.of_add (- D))) : n < D → coeff_map K n f = 0 :=
 begin
   intro hnd,
   rw [coeff_map],--I wonder if `coeff_map` is a good ide
@@ -252,10 +259,7 @@ begin
     set F := power_series_part f with hF, --non proprio necessaria
     by_cases ord_neg : f.order ≤ 0,
     { obtain ⟨s, hs⟩ := int.exists_eq_neg_of_nat ord_neg,
-      have F_mul := of_power_series_power_series_part f,
       rw [hs] at h_n_ord,
-      rw [← hF, hs, neg_neg, ← hahn_series.of_power_series_X_pow s, ← coe_power_series,
-        ← coe_power_series] at F_mul,
       obtain ⟨m, hm⟩ := int.eq_coe_of_zero_le (neg_le_iff_add_nonneg.mp h_n_ord),
       have hD : 0 ≤  D + s:= by linarith,
       obtain ⟨d, hd⟩ := int.eq_coe_of_zero_le hD,
@@ -263,47 +267,97 @@ begin
       rw [hs, add_comm, ← eq_add_neg_of_add_eq hm, ← hF] at F_coeff,
       simp only,--needed!
       rw [← F_coeff],--I wonder if `coeff_map` is a good idea
-      apply @vecchio_int K _ m d F _ (by linarith),
-      rw [F_mul, map_mul, ← hd],
-      simp only [power_series.coe_pow, neg_add_rev, of_add_add, with_zero.coe_mul],
-      rwa [valuation_of_X_zpow K s, mul_le_mul_left₀],
-      simp only [ne.def, with_zero.coe_ne_zero, not_false_iff] },
-    { rw not_le at ord_neg,--here most of the code is duplicated in the case `0 ≤ s`.
+      refine (@int_valuation_le_iff_coeff_zero_of_lt K _ d F).mp _ m (by linarith),
+      have F_mul := of_power_series_power_series_part f,
+      rw [← hF, hs, neg_neg, ← hahn_series.of_power_series_X_pow s, ← coe_power_series,
+        ← coe_power_series] at F_mul,
+      rwa [F_mul, map_mul, ← hd, power_series.coe_pow, neg_add_rev, of_add_add, with_zero.coe_mul,
+        valuation_of_X_zpow K s, mul_le_mul_left₀],
+      simp only [ne.def, with_zero.coe_ne_zero, not_false_iff], },
+    { rw not_le at ord_neg,
       obtain ⟨s, hs⟩ := int.exists_eq_neg_of_nat (int.neg_nonpos_of_nonneg (le_of_lt ord_neg)),
       rw neg_inj at hs,
       rw [hs, ← sub_nonneg] at h_n_ord,
       obtain ⟨m, hm⟩ := int.eq_coe_of_zero_le h_n_ord,
       rw sub_eq_iff_eq_add at hm,
-      have hD : 0 ≤  D + s := by linarith,
-      obtain ⟨d, hd⟩ := int.eq_coe_of_zero_le hD,--not sure it is the right choice
-      -- obtain ⟨m, hm⟩ := int.eq_coe_of_zero_le (add_nonneg (le_of_lt (lt_of_lt_of_le ord_neg h_n_ord))
-      --    (s.cast_nonneg)),
+      have hD : 0 ≤  D - s := by linarith,
+      obtain ⟨d, hd⟩ := int.eq_coe_of_zero_le hD,
       have F_coeff := power_series_part_coeff f m,
       rw [hs, add_comm, ← hF, ← hm] at F_coeff,
-      simp only,--needed!
+      simp only,
       rw ← F_coeff,
-      apply @vecchio_int K _ m d F _ (by linarith),
+      refine (@int_valuation_le_iff_coeff_zero_of_lt K _ d F).mp _ m (by linarith),
       have F_mul := of_power_series_power_series_part f,
       rw [← hF, ← coe_power_series] at F_mul,
-      -- have temp := valued.v ↑F = (valued.v f)
-      
-      rw [F_mul, map_mul, ← hd, hs],
-      
-      rw [neg_add],
-      rw [of_add_add],
-      sorry,
-      -- erw [valuation_of_single_zpow K (-↑s), neg_neg, neg_add_rev, of_add_add, with_zero.coe_mul],
-      --   mul_le_mul_left₀],
-      -- have temp₁ : ↑(multiplicative.of_add (↑s)) ≠ (0 : ℤₘ₀), sorry,
-      -- have := (mul_le_mul_left₀ temp₁).mpr H,
-      -- apply this,
-      }}
+      rwa [F_mul, map_mul, ← hd, hs, neg_sub, sub_eq_add_neg, of_add_add, valuation_of_single_zpow, 
+        neg_neg, with_zero.coe_mul, mul_le_mul_left₀],
+      simp only [ne.def, with_zero.coe_ne_zero, not_false_iff] }}
+end
+
+/-
+lemma int_valuation_le_iff_coeff_zero_of_lt {d : ℕ} {f : power_series K} :
+valued.v (f : laurent_series K) ≤ ↑(multiplicative.of_add ((- d) : ℤ))
+   ↔ (∀ n : ℕ, n < d → coeff K n f = 0) :=
+
+by_cases h_n_ord : n < f.order,
+  { exact hahn_series.coeff_eq_zero_of_lt_order h_n_ord },
+-/
+
+
+
+lemma valuation_le_iff_coeff_zero_of_lt {D : ℤ} {f : laurent_series K} :
+  valued.v f ≤ ↑(multiplicative.of_add ((- D) : ℤ)) ↔ (∀ n : ℤ, n < D → coeff_map K n f = 0) :=
+begin
+  refine ⟨λ hnD n hn, coeff_zero_of_lt_valuation K hnD hn, λ h_val_f, _⟩,
+  set F := power_series_part f with hF, --non proprio necessaria
+  by_cases ord_neg : f.order ≤ 0,
+  { obtain ⟨s, hs⟩ := int.exists_eq_neg_of_nat ord_neg,
+    have h_F_mul := f.single_order_mul_power_series_part,
+    rw [hs, ← hF] at h_F_mul,
+    rw [← h_F_mul, map_mul, valuation_of_single_zpow, neg_neg, mul_comm, ← le_mul_inv_iff₀,
+      of_add_neg, with_zero.coe_inv, ← mul_inv, ← with_zero.coe_mul, ← of_add_add, 
+      ← with_zero.coe_inv, ← of_add_neg],
+      by_cases hDs : D + s ≤ 0,
+      { apply le_trans ((power_series.ideal_X K).valuation_le_one F),
+        rwa [← with_zero.coe_one, ← of_add_zero, with_zero.coe_le_coe, multiplicative.of_add_le,
+          left.nonneg_neg_iff] },
+      { rw not_le at hDs,
+        obtain ⟨d, hd⟩ := int.eq_coe_of_zero_le (le_of_lt hDs),
+        rw hd,
+        apply (int_valuation_le_iff_coeff_zero_of_lt K F).mpr,
+        intros n hn,
+        rw [power_series_part_coeff f n, hs],
+        apply h_val_f,
+        linarith },
+      simp only [ne.def, with_zero.coe_ne_zero, not_false_iff] },
+    { rw not_le at ord_neg,
+      obtain ⟨s, hs⟩ := int.exists_eq_neg_of_nat (int.neg_nonpos_of_nonneg (le_of_lt ord_neg)),
+      rw neg_inj at hs,
+      have h_F_mul := f.single_order_mul_power_series_part,
+      rw [hs, ← hF] at h_F_mul,
+      rw [← h_F_mul, map_mul, valuation_of_single_zpow, mul_comm, ← le_mul_inv_iff₀, of_add_neg,
+        with_zero.coe_inv, ← mul_inv, ← with_zero.coe_mul, ← of_add_add, ← with_zero.coe_inv, 
+        ← of_add_neg, neg_add, neg_neg], 
+      by_cases hDs : D - s ≤ 0,
+      { apply le_trans ((power_series.ideal_X K).valuation_le_one F),
+        rw [← with_zero.coe_one, ← of_add_zero, with_zero.coe_le_coe, multiplicative.of_add_le],
+        linarith},
+      { rw not_le at hDs,
+        obtain ⟨d, hd⟩ := int.eq_coe_of_zero_le (le_of_lt hDs),
+        rw [← neg_neg (-D + ↑s)],
+        rw ← sub_eq_neg_add,
+        rw neg_sub,
+        rw hd,
+        apply (int_valuation_le_iff_coeff_zero_of_lt K F).mpr,
+        intros n hn,
+        rw [power_series_part_coeff f n, hs],
+        apply h_val_f (s + n),
+        linarith },
+      simp only [ne.def, with_zero.coe_ne_zero, not_false_iff] },
 end
 
 
--- #exit
-
-lemma eq_coeff_of_val_sub_lt {d n : ℤ} {f g : laurent_series K} 
+lemma eq_coeff_of_valuation_sub_lt {d n : ℤ} {f g : laurent_series K} 
   (H : valued.v (g - f) ≤ ↑(multiplicative.of_add (- d))) :
   n < d → coeff_map K n g = coeff_map K n f :=
 begin
@@ -312,22 +366,9 @@ begin
   { intro hn,
     apply eq_of_sub_eq_zero,
     erw [← hahn_series.sub_coeff],
-    apply vecchio K H hn,
-
-
-
-    -- apply hahn_series.coeff_eq_zero_of_lt_order,
-    -- suffices : d < (g - f).order,
-    -- { exact lt_of_le_of_lt hn this },
-    -- { rw [← multiplicative.of_add_lt, ← with_zero.coe_lt_coe],
-    --   replace triv : (valued.v (g - f) ≠ (0 : ℤₘ₀)),
-    --   { exact (valuation.ne_zero_iff _).mpr (sub_ne_zero_of_ne triv) },
-    --   rw [of_add_neg, ← with_zero.coe_unzero triv, with_zero.coe_lt_coe, lt_inv', 
-    --     ← with_zero.coe_lt_coe, with_zero.coe_inv, with_zero.coe_unzero triv] at H,
-        
-        
-         }
+    apply coeff_zero_of_lt_valuation K H hn }
 end
+
 
 lemma uniform_continuous_coeff_map {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) (d : ℤ) :
   uniform_continuous (coeff_map K d) :=
@@ -338,7 +379,7 @@ begin
   refine  ⟨(valued.has_basis_uniformity (laurent_series K) ℤₘ₀).mem_of_mem (by tauto), λ P hP, _⟩,
   rw [h] at hS,
   apply hS,
-  rw [eq_coeff_of_val_sub_lt K (le_of_lt hP) (lt_add_one _), mem_id_rel],
+  rw [eq_coeff_of_valuation_sub_lt K (le_of_lt hP) (lt_add_one _), mem_id_rel],
 end
 
 /- The definition below avoids the assumption that `K` be endowed with the trivial uniformity,
@@ -360,17 +401,17 @@ begin
   exact cauchy_discrete_le hK (hℱ.map (uniform_continuous_coeff_map K hK D)),
 end
 
-lemma bounded_supp_of_val_le (f : laurent_series K) (d : ℤ) : ∃ N : ℤ,
+lemma bounded_supp_of_valuation_le (f : laurent_series K) (d : ℤ) : ∃ N : ℤ,
 ∀ (g : laurent_series K), valued.v (g - f) ≤ ↑(multiplicative.of_add (- d)) →
   ∀ n < N, coeff_map K n g = 0 :=
 begin
   by_cases hf : f = 0,
   { refine ⟨d, λ _ hg _ hn, _⟩,
-    simpa only [eq_coeff_of_val_sub_lt K hg hn, hf] using hahn_series.zero_coeff },
+    simpa only [eq_coeff_of_valuation_sub_lt K hg hn, hf] using hahn_series.zero_coeff },
   { refine ⟨min (f.2.is_wf.min (hahn_series.support_nonempty_iff.mpr hf)) d - 1, λ _ hg n hn, _⟩,
     have hn' : coeff_map K n f = 0 := function.nmem_support.mp ( λ h, set.is_wf.not_lt_min
       f.2.is_wf (hahn_series.support_nonempty_iff.mpr hf) h _),
-    rwa eq_coeff_of_val_sub_lt K hg _,
+    rwa eq_coeff_of_valuation_sub_lt K hg _,
     { exact lt_trans hn (int.lt_of_le_sub_one $ (sub_le_sub_iff_right _).mpr (min_le_right _ d)) },
     { exact lt_trans hn (int.lt_of_le_sub_one $ (sub_le_sub_iff_right _).mpr (min_le_left _ _)) }},
 end
@@ -385,7 +426,7 @@ begin
     (@has_basis.mem_of_mem _ _ _ _ _ ζ ((valued.has_basis_uniformity (laurent_series K) ℤₘ₀)) _)),
   obtain ⟨f, hf⟩ := forall_mem_nonempty_iff_ne_bot.mpr hℱ.1 (S ∩ T)
     (by {exact inter_mem_iff.mpr ⟨hS, hT⟩}),
-  obtain ⟨N, hN⟩ := bounded_supp_of_val_le f 0,
+  obtain ⟨N, hN⟩ := bounded_supp_of_valuation_le f 0,
   use N,
   apply mem_of_superset (inter_mem hS hT),
   suffices : (S ∩ T) ×ˢ (S ∩ T) ⊆ entourage,
@@ -425,8 +466,6 @@ end
 produced in `cauchy.bot₁` and `cauchy.bot₂`, for almost all series in `ℱ` the `d`th coefficient
 coincides with the `d`th coefficient of `hℱ.coeff_map'`.
 -/
--- lemma cauchy.bot₃ {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) :
---   ∀ᶠ f in ℱ, ∀ d ≤ linear_order.min hℱ.bot₁.some hℱ.bot₂.some, 
 lemma cauchy.bot₃ {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) : ∃ N,
   ∀ᶠ f in ℱ, ∀ d < N, (hℱ.coeff_map' d) = coeff_map K d f :=
 begin
@@ -447,14 +486,7 @@ def cauchy.mk_laurent_series {ℱ : filter (laurent_series K)} (hℱ : cauchy �
 hahn_series.mk (λ d, hℱ.coeff_map' d)
   (set.is_wf.is_pwo (hℱ.coeff_map_support_bdd''.well_founded_on_lt))
 
-/-
-`COPIATA DA SOPRA`
-lemma eventually_constant {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel)
-  {ℱ : filter (ratfunc K)} (hℱ : cauchy ℱ) (n : ℤ) :
-  ∀ᶠ x in ℱ, ratfunc.coeff x n = cauchy_discrete_is_constant h 
-    (hℱ.map (uniform_continuous_coeff_map h n)) := by simpa only [comap_principal, le_principal_iff]
-    using tendsto.le_comap (cauchy_discrete_converges _ (hℱ.map (uniform_continuous_coeff_map _ _)))
-    -/
+
 open_locale big_operators
 
 
@@ -515,12 +547,14 @@ begin
       simpa only [principal_singleton, mem_pure] using rfl }}
 end
 
-lemma diff.eventually₀ {f g : (laurent_series K)} {D : ℤ}
+lemma valuation_le_of_coeff_eventually_eq {f g : (laurent_series K)} {D : ℤ}
   (H : ∀ d, d < D → coeff_map K d g = coeff_map K d f) :
-  valued.v (f - g) ≤ ↑(multiplicative.of_add D) :=
+  valued.v (f - g) ≤ ↑(multiplicative.of_add (- D)) :=
 begin
-  sorry,--`FAE` Temo sia falso col `valued.v (f - g) < ↑(multiplicative.of_add D)`, probabilmente
-    -- vero con `≤` ma rompe la prova di `cauchy.eventually₂`.
+  apply (valuation_le_iff_coeff_zero_of_lt K).mpr,
+  intros n hn,
+  simp_rw [coeff_map, hahn_series.sub_coeff, sub_eq_zero],
+  exact (H n hn).symm,
 end
 
 lemma cauchy.eventually₂ {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ)
@@ -529,14 +563,15 @@ begin
   obtain ⟨γ, hU₁⟩ := valued.mem_nhds.mp hU,
   suffices : ∀ᶠ f in ℱ, f ∈ {y : laurent_series K | valued.v (y - hℱ.mk_laurent_series) < ↑γ},
   { apply this.mono (λ _ hf, hU₁ hf) },
-  { set D := multiplicative.to_add (with_zero.unzero γ.ne_zero) - 1 with hD₀,
-    have hD : ((multiplicative.of_add D) : ℤₘ₀) < γ,
-    { rw [← with_zero.coe_unzero γ.ne_zero, with_zero.coe_lt_coe],
-      apply int.lt_of_le_sub_one (le_of_eq (refl _)) },
+  { set D := -( multiplicative.to_add (with_zero.unzero γ.ne_zero) - 1) with hD₀,
+    have hD : ((multiplicative.of_add (-D)) : ℤₘ₀) < γ,
+    { rw [← with_zero.coe_unzero γ.ne_zero, with_zero.coe_lt_coe, hD₀, neg_neg, of_add_sub,
+        of_add_to_add, div_lt_comm, div_self', ← of_add_zero, multiplicative.of_add_lt],
+      exact zero_lt_one, },
     apply (hℱ.eventually₁ D).mono,
     intros f hf,
-    apply lt_of_le_of_lt (diff.eventually₀ _) hD,
-    apply hf },
+    apply lt_of_le_of_lt (valuation_le_of_coeff_eventually_eq _) hD,
+    apply hf }
 end
 
 instance : complete_space (laurent_series K) :=
