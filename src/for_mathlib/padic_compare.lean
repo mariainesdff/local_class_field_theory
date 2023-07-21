@@ -252,57 +252,6 @@ def padic'_int.height_one_ideal (p : out_param ℕ) [hp : fact (p.prime)] :
 instance : valued (Q_p p) ℤₘ₀ := height_one_spectrum.valued_adic_completion ℚ (p_height_one_ideal p)
 
 
-
--- lemma padic'_int.height_one_ideal_def' : 
---   (padic'_int.height_one_ideal p).as_ideal = ideal.span {(p : Z_p p)} := 
--- discrete_valuation.is_uniformizer_is_generator _ (padic'.valuation_p p)
-
-/-
-noncomputable! lemma padic'_int.height_one_ideal_def : 
-  (padic'_int.height_one_ideal p).as_ideal = ideal.span {(p : Z_p p)} := 
-begin
-  --have hiff : ∀ (y : Q_p p), y ∈ Z_p p ↔ ‖ y ‖  ≤ 1 := sorry,
-  simp only [padic'_int.height_one_ideal],
-  ext x,--ext ⟨x, hx⟩,
-  rw local_ring.mem_maximal_ideal,
-  rw [ideal.mem_span_singleton],
-  rw mem_nonunits_iff,
- /-  rw valuation.integer.not_is_unit_iff_valuation_lt_one,
-  erw ← (completion.adic_valuation_equals_completion ℤ (int.p_height_one_ideal p) ℚ x),
-  erw valuation_of_algebra_map,
-  erw int_valuation_lt_one_iff_dvd, 
-  rw [ideal.dvd_span_singleton], -/
-  
-  rw [dvd_iff_exists_eq_mul_left],
-  refine ⟨λ h, _, λ h, _⟩,
-  { sorry },
-  { obtain ⟨c, hcx⟩ := h,
-    have hp : ¬ is_unit (p : Z_p p), sorry, 
-    rw hcx, rw mul_comm,
-    apply not_is_unit_of_not_is_unit_dvd hp (dvd.intro c rfl) },
-  --rw valuation_lt_one_iff_dvd,
-  /- have hiff : ∀ (y : ℚ_[p]), y ∈ 𝓞 p ℚ_[p] ↔ ‖ y ‖  ≤ 1 := padic.mem_integers_iff p,
-  simp only [open_unit_ball],
-  ext ⟨x, hx⟩,
-  have hx' : x = (⟨x, (hiff x).mp hx⟩ : ℤ_[p]) := rfl,
-  rw [submodule.mem_mk, set.mem_set_of_eq, ideal.mem_span_singleton, norm_on_padic, 
-    set_like.coe_mk],
-  conv_lhs {rw hx'},
-  rw [← padic_int.norm_def, padic_int.norm_lt_one_iff_dvd, dvd_iff_exists_eq_mul_left,
-    dvd_iff_exists_eq_mul_left],
-  refine ⟨λ h, _, λ h, _⟩,
-  { obtain ⟨⟨c, hc⟩, hcx⟩ := h, 
-    use ⟨c, (hiff c).mpr hc⟩,
-    rw subtype.ext_iff at hcx ⊢,
-    exact hcx },
-  { obtain ⟨⟨c, hc⟩, hcx⟩ := h, 
-    use ⟨c, (hiff c).mp hc⟩,
-    rw subtype.ext_iff at hcx ⊢,
-    exact hcx }, -/
-end
--/
-
-
 /- The lemma `padic_int_ring_equiv_mem` states that an element `x ∈ ℚ_[p]` is in `ℤ_[p]` if and
 only if it is in the image of `Z_p p` via the ring equivalence `padic_equiv p`. See
 `padic_int_ring_equiv` for an upgrade of this statement to a ring equivalence `Z_p p ≃+* ℤ_[p]`-/
@@ -479,7 +428,6 @@ begin
       refine ⟨_, h2⟩ },
 end
 
-
 lemma valuation_subrings_eq : padic_int.valuation_subring p = comap_Zp p :=
 begin
   rw ← valuation_subring.nonunits_inj,
@@ -503,29 +451,37 @@ begin
       apply continuous.tendsto (compare p).symm.3.continuous 0}},
 end
 
+instance : algebra ℚ_[p] (Q_p p) := 
+ring_hom.to_algebra (padic_comparison.padic_equiv p).symm
+
+instance : is_scalar_tower ℚ ℚ_[p] (Q_p p) := 
+{ smul_assoc := λ r x y, begin
+    simp only [algebra.smul_def, eq_rat_cast, _root_.map_mul, map_rat_cast, mul_assoc],
+    refl,
+  end  }
+
 lemma padic_valued_valuation_p : 
   @valued.v ℚ _ ℤₘ₀ _ (padic_valued p) (p : ℚ) = (of_add (-1 : ℤ)) := 
 begin
-  letI hv := padic_valued p,
   have hp : (p : ℚ) = algebra_map ℤ ℚ (p : ℤ) := rfl,
-  rw adic_valued_apply, rw hp,
-  rw valuation_of_algebra_map,
-  have hp' : ((p_height_one_ideal p).int_valuation) (p : ℤ) =
-    ((p_height_one_ideal p).int_valuation_def) (p : ℤ) := rfl,
-  rw hp',
-  have hp'' : (p_height_one_ideal p).as_ideal = ideal.span{(p : ℤ)} := rfl,
-  rw int_valuation_def_if_neg (p_height_one_ideal p) (nat.cast_ne_zero.mpr (nat.prime.ne_zero _inst_1.1)),
-  rw hp'',
-  simp only [of_add_neg, inv_inj, with_zero.coe_inj, embedding_like.apply_eq_iff_eq, 
-    nat.cast_eq_one],
+  rw [adic_valued_apply, hp, valuation_of_algebra_map, fae_int_valuation_apply, 
+    int_valuation_def_if_neg (p_height_one_ideal p) 
+      (nat.cast_ne_zero.mpr (nat.prime.ne_zero _inst_1.1))],
+  congr,
   apply associates.count_self,
   rw associates.irreducible_mk,
   apply prime.irreducible,
-  apply ideal.prime_of_is_prime,
-  { sorry },
-  rw ideal.span_singleton_prime, 
-  sorry,
-  sorry
+  exact ideal.prime_of_is_prime ( ideal.span_singleton_eq_bot.mp.mt (nat.cast_ne_zero.mpr 
+    (nat.prime.ne_zero _inst_1.1))) (ideal.is_maximal.is_prime' (p_height_one_ideal p).as_ideal)
+end
+
+lemma padic'.coe_eq (x : ℚ) : (x : Q_p p) = (((padic'_pkg p).coe x) : (padic'_pkg p).space) :=
+begin
+  have hp : (x : Q_p p) = (padic_pkg p).compare (padic'_pkg p) (x : ℚ_[p]),
+  { have h: (padic_pkg p).compare (padic'_pkg p) (x : ℚ_[p]) = algebra_map ℚ_[p] (Q_p p) x := rfl,
+    rw [h, map_rat_cast] },
+  rw [← abstract_completion.compare_coe (padic_pkg p) (padic'_pkg p), hp],
+  refl,
 end
 
 lemma padic'.valuation_p : 
@@ -534,33 +490,14 @@ begin
    letI : valued ℚ ℤₘ₀ := padic_valued p,
    have hp : (p : Q_p p) = (((coe : ℚ → (Q_p p)) p) : Q_p p),
    { have : ∀ x : ℚ, (coe : ℚ → (Q_p p)) x = (x : Q_p p),
-     { intro x, sorry},
+     { intro x, rw padic'.coe_eq, refl, },
      rw this, simp only [rat.cast_coe_nat], },
    rw [hp, valued.valued_completion_apply (p : ℚ), padic_valued_valuation_p p],
  end
 
 lemma padic'_int.height_one_ideal_def : 
   (padic'_int.height_one_ideal p).as_ideal = ideal.span {(p : Z_p p)} := 
-begin
-  sorry
-end
-
-example (x : ℚ) : (x : ℚ_[p]) = (((padic_pkg p).coe x) : (padic_pkg p).space) :=
-begin
-  refl,
-end
-
-instance : algebra ℚ_[p] (Q_p p) := sorry
--- { smul := _,
---   to_fun := _,
---   map_one' := _,
---   map_mul' := _,
---   map_zero' := _,
---   map_add' := _,
---   commutes' := _,
---   smul_def' := _ }
-
-example : is_scalar_tower ℚ ℚ_[p] (Q_p p) := sorry
+discrete_valuation.is_uniformizer_is_generator _ (padic'.valuation_p p)
 
 --TODO: Golf proof!
 lemma padic_int_ring_equiv_range :
@@ -592,42 +529,10 @@ begin
     simp only [ring_equiv.to_ring_hom_apply_symm_to_ring_hom_apply],  },
 end
 
-
-
--- lemma padic_int_ring_equiv_mem (x : ℚ_[p]) :
---   x ∈ ((Z_p p).map (padic_equiv p).to_ring_hom) ↔ x ∈ padic_int.subring p :=
--- begin
---   split,
---   { intro h,
---     rw padic_int.mem_subring_iff,
---     obtain ⟨z, hz_val, hzx⟩ := h,
---     rw ← hzx,
---     sorry
---   },
---   { intro h,
---     rw padic_int.mem_subring_iff at h,
---     sorry,  
---   },
--- end
-
--- lemma padic_int_ring_equiv_range' :
---   (Z_p p).map (padic_equiv p).to_ring_hom = padic_int.subring p :=
--- by {ext, rw padic_int_ring_equiv_mem}
-
 noncomputable!
 definition padic_int_ring_equiv :  (Z_p p) ≃+* ℤ_[p] :=
 (ring_equiv.subring_map _).trans (ring_equiv.subring_congr (padic_int_ring_equiv_range p))
 
 
--- instance padic.valued : valued ℚ_[p] ℤₘ₀ :=
--- { v := 
---   { to_fun    := λ x, valued.v ((padic_equiv p).symm x),
---     map_zero' := sorry,
---     map_one'  := sorry,
---     map_mul'  := sorry,
---     map_add_le_max' := sorry },--,
---     is_topological_valuation := sorry,
---   ..(infer_instance : uniform_space ℚ_[p]),
---   ..non_unital_normed_ring.to_normed_add_comm_group }
 
 end padic_comparison
