@@ -86,7 +86,7 @@ begin
     ne.def, ideal.span_singleton_eq_bot, hP, polynomial.X_ne_zero, not_false_iff, and_self],
     have span_X_prime : (ideal.span {polynomial.X} : ideal (polynomial K)).is_prime,
     { apply (@ideal.span_singleton_prime (polynomial K) _ _ polynomial.X_ne_zero).mpr prime_X },
-    have := @count_normalized_factors_eq_associates_count K _ (ideal.span {P})
+    have := @count_normalized_factors_eq_associates_count'' K _ (ideal.span {P})
     (ideal.span {polynomial.X}) span_ne_zero.1 ((@ideal.span_singleton_prime (polynomial K) _ _ 
     polynomial.X_ne_zero).mpr prime_X) span_ne_zero.2,
     convert this.symm,
@@ -730,14 +730,6 @@ def extension_as_ring_hom := uniform_space.completion.extension_hom (coe_alg_hom
 noncomputable!
 def compare_pkg : (completion_of_ratfunc K) ≃ᵤ laurent_series K :=
   compare_equiv (ratfunc_pkg K) (laurent_series_pkg K)
-
-
--- lemma aux (f : ratfunc K) : (f : laurent_series K) = compare_pkg K ↑f :=
---   ((abstract_completion.compare_coe (ratfunc_pkg K) (laurent_series_pkg K) f)).symm
-
--- lemma extension_eq_compare : (ϕ K (unif_cont_coe K).continuous).to_fun = (compare_pkg K).to_fun :=
---   uniform_space.completion.extension_unique (unif_cont_coe K)
---     (uniform_continuous_compare_equiv _ _) (aux K)
 
 noncomputable! def  laurent_series_ring_equiv : 
   ring_equiv (completion_of_ratfunc K) (laurent_series K) :=
