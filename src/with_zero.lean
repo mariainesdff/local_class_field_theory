@@ -9,6 +9,28 @@ import data.real.nnreal
 import logic.equiv.transfer_instance
 import ring_theory.valuation.basic
 
+/-!
+# with_zero
+
+In this file we define the field `ℂ_[p]` of `p`-adic complex numbers and we give it both a normed 
+field and a valued field structure, induced by the unique extension of the `p`-adic norm to `ℂ_[p]`.
+
+## Main Definitions
+
+* `with_zero_mult_int_to_nnreal` : The `monoid_with_zero_hom` from `ℤₘ₀ → ℝ≥0` sending `0 ↦ 0` and 
+  `x ↦ e^(multiplicative.to_add (with_zero.unzero hx)` when `x ≠ 0`, for a nonzero `e : ℝ≥0`. 
+
+## Main Results
+
+* `with_zero_mult_int_to_nnreal_strict_mono` :  The map `with_zero_mult_int_to_nnreal` is strictly
+   monotone whenever `1 < e`.
+
+
+## Tags
+
+with_zero, multiplicative, nnreal
+-/
+
 
 
 noncomputable theory
@@ -27,7 +49,7 @@ lemma of_add_inj {x y : multiplicative ℤ} (hxy : of_add x = of_add y) : x = y 
 end multiplicative
 
 namespace with_zero
---TODO: rename
+
 lemma of_add_zpow (n : ℤ) : (of_add n : ℤₘ₀) = (of_add (1 : ℤ))^n :=
 by rw [← with_zero.coe_zpow, with_zero.coe_inj, ← int.of_add_mul, one_mul]
 
@@ -68,14 +90,11 @@ end
 lemma lt_mul_left₀ {α : Type*} {b c : α} [linear_ordered_comm_group_with_zero α] (a : α) (h : b < c)
    (ha : a ≠ 0) : a * b < a * c := by simpa only [mul_comm a _] using mul_lt_right₀ a h ha
 
-
 theorem one_lt_div' {α : Type*} [linear_ordered_comm_group_with_zero α] (a : α)
   {b : α} (hb : b ≠ 0) : 1 < a / b ↔ b < a :=
 by rw [← mul_lt_mul_right₀ (zero_lt_iff.mpr hb), one_mul, div_eq_mul_inv, inv_mul_cancel_right₀ hb]
 
 open_locale discrete_valuation 
-
--- TODO: generalize these
 
 theorem strict_mono_on_zpow {n : ℤ} (hn : 0 < n) :
   strict_mono_on (λ (x : ℤₘ₀), x ^ n) (set.Ioi 0) := λ a ha b hb hab, 
@@ -107,11 +126,16 @@ set.inj_on.eq_iff (zpow_left_inj_on hn) (set.mem_Ioi.mpr (zero_lt_iff.mpr ha))
 
 end with_zero
 
+/-- Given `e : ℝ≥0`, we define a map `ℤₘ₀ → ℝ≥0` sending `0 ↦ 0` and 
+  `x ↦ e^(multiplicative.to_add (with_zero.unzero hx)` when `x ≠ 0`. 
+  We regard this map as an inclusion of `ℤₘ₀` in `ℝ≥0`. -/
 def with_zero_mult_int_to_nnreal_def (e : nnreal) : ℤₘ₀ → ℝ≥0 := 
 λ x, if hx : x = 0 then 0 else e^(multiplicative.to_add (with_zero.unzero hx))
 
 open with_zero
 
+/-- Given a nonzero `e : ℝ≥0`, the map `ℤₘ₀ → ℝ≥0` sending `0 ↦ 0` and 
+  `x ↦ e^(multiplicative.to_add (with_zero.unzero hx)` when `x ≠ 0` as a `monoid_with_zero_hom`. -/
 def with_zero_mult_int_to_nnreal {e : nnreal} (he : e ≠ 0)  : ℤₘ₀ →*₀ ℝ≥0 := 
 { to_fun    := with_zero_mult_int_to_nnreal_def e,
   map_zero' := by { simp only [with_zero_mult_int_to_nnreal_def], rw dif_pos, refl },
@@ -134,15 +158,18 @@ def with_zero_mult_int_to_nnreal {e : nnreal} (he : e ≠ 0)  : ℤₘ₀ →*�
       rw [← with_zero.coe_inj, with_zero.coe_mul, coe_unzero hx,coe_unzero hy, coe_unzero hxy] },
   end }
 
+/-- `with_zero_mult_int_to_nnreal` sends nonzero elements to nonzero elements. -/
 lemma with_zero_mult_int_to_nnreal_ne_zero {e : nnreal} {m : ℤₘ₀} (he : e ≠ 0) (hm : m ≠ 0) :
   with_zero_mult_int_to_nnreal he m ≠ 0 :=
 by simpa only [with_zero_mult_int_to_nnreal, with_zero_mult_int_to_nnreal_def,
   monoid_with_zero_hom.coe_mk, dif_neg hm] using zpow_ne_zero _ he
 
+/-- `with_zero_mult_int_to_nnreal` sends nonzero elements to positive elements. -/
 lemma with_zero_mult_int_to_nnreal_pos {e : nnreal} {m : ℤₘ₀} (he : e ≠ 0) (hm : m ≠ 0) :
   0 < with_zero_mult_int_to_nnreal he m :=
 lt_of_le_of_ne zero_le' (with_zero_mult_int_to_nnreal_ne_zero he hm).symm
 
+/-- The map `with_zero_mult_int_to_nnreal` is strictly monotone whenever `1 < e`. -/
 lemma with_zero_mult_int_to_nnreal_strict_mono {e : nnreal} (he : 1 < e) : 
   strict_mono (with_zero_mult_int_to_nnreal (ne_zero_of_lt he))  := 
 begin
