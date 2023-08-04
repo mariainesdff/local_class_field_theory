@@ -19,6 +19,10 @@ open polynomial is_dedekind_domain.height_one_spectrum topological_space ratfunc
   sequentially_complete filter
 open_locale big_operators discrete_valuation uniformity filter topology
 
+-- `[FAE]` This is `#18604`
+lemma bdd_below.well_founded_on_lt {X : Type} [preorder X] {s : set X} : 
+  bdd_below s → s.well_founded_on (<) := sorry
+
 variables (K : Type*) [field K]
 
 noncomputable theory
@@ -367,21 +371,11 @@ begin
 end
 
 --GOLF BOTH AND UNIFY THEM **USED** in `power_series_adic_completion`!
-lemma count_normalized_factors_eq_associates_count'' {R : Type*} [comm_ring R]
+lemma count_normalized_factors_eq_associates_count {R : Type*} [comm_ring R]
   [is_domain R] [is_principal_ideal_ring R] [normalization_monoid R] [unique_factorization_monoid R] 
   {I J : ideal R} (hI : I ≠ 0)
   (hJ : J.is_prime ) (hJ₀ : J ≠ ⊥) : multiset.count J (normalized_factors I) =
-  (associates.mk J).count (associates.mk I).factors := sorry
-
-lemma count_normalized_factors_eq_associates_count' {I J : ideal (power_series K)} (hI : I ≠ 0)
-  (hJ : J.is_prime ) (hJ₀ : J ≠ ⊥) : multiset.count J (normalized_factors I) =
-  (associates.mk J).count (associates.mk I).factors := sorry
-
-/- TODO: This lemma is now in the file `ring_theory.dedekind_domain.ideal`.
-  Moreover, there `polynomial K` is replaced by a Dedekind domain `R`. -/
-lemma count_normalized_factors_eq_associates_count {I J : ideal (polynomial K)} (hI : I ≠ 0)
-  (hJ : J.is_prime ) (hJ₀ : J ≠ ⊥) :
-  multiset.count J (normalized_factors I) = (associates.mk J).count (associates.mk I).factors :=
+  (associates.mk J).count (associates.mk I).factors :=
 begin
   replace hI : associates.mk I ≠ 0,
   { apply associates.mk_ne_zero.mpr hI },
@@ -402,6 +396,17 @@ begin
   },
 end
 
+lemma count_normalized_factors_eq_associates_count' {I J : ideal (power_series K)} (hI : I ≠ 0)
+  (hJ : J.is_prime ) (hJ₀ : J ≠ ⊥) : multiset.count J (normalized_factors I) =
+  (associates.mk J).count (associates.mk I).factors :=
+count_normalized_factors_eq_associates_count hI hJ hJ₀
+
+/- TODO: This lemma is now in the file `ring_theory.dedekind_domain.ideal`.
+  Moreover, there `polynomial K` is replaced by a Dedekind domain `R`. -/
+lemma count_normalized_factors_eq_associates_count'' {I J : ideal (polynomial K)} (hI : I ≠ 0)
+  (hJ : J.is_prime ) (hJ₀ : J ≠ ⊥) :
+  multiset.count J (normalized_factors I) = (associates.mk J).count (associates.mk I).factors :=
+count_normalized_factors_eq_associates_count hI hJ hJ₀
 
 -- lemma multiplicity_X_eq_int_valuation {f : polynomial K} (hf : f ≠ 0 ) :
 -- -- ↑(multiplicative.of_add 
@@ -429,7 +434,7 @@ begin
     ne.def, ideal.span_singleton_eq_bot, hf, polynomial.X_ne_zero, not_false_iff, and_self],
     have span_X_prime : (ideal.span {polynomial.X} : ideal (polynomial K)).is_prime,
     { apply (@ideal.span_singleton_prime (polynomial K) _ _ polynomial.X_ne_zero).mpr prime_X },
-    convert @count_normalized_factors_eq_associates_count K _ (ideal.span {f})
+    convert @count_normalized_factors_eq_associates_count'' K _ (ideal.span {f})
     (ideal.span {polynomial.X}) span_ne_zero.1 ((@ideal.span_singleton_prime (polynomial K) _ _ 
     polynomial.X_ne_zero).mpr prime_X) span_ne_zero.2 },
   { simp only [← units.coe_eq_one, coe_norm_unit, leading_coeff_X, norm_unit_one,
@@ -559,6 +564,8 @@ begin
   simp only [this, with_zero.coe_unzero, valuation.map_neg],
 end
 
+/- **OLD THINGS** 
+
 namespace ratfunc
 
 variable {K}
@@ -661,6 +668,8 @@ begin
   exact eq_coeff_of_mem_entourage hx (le_of_eq (refl _)),
 end
 
+-/
+
 namespace set
 
 lemma prod_subset_diag_singleton_left {X : Type*} [nonempty X] {S T : set X} (hS : S.nonempty)
@@ -746,6 +755,7 @@ begin
   exact ⟨le_principal_iff.mp hx, le_principal_iff.mp hy⟩,
 end
 
+/-
 /- The definition below avoids the assumption that `K` be endowed with the trivial uniformity,
   rather putting this in the proof.
 -/
@@ -769,120 +779,120 @@ def Cauchy.coeff_map' {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) (d
 
 /-To perform explicit computation, `Cauchy.coeff_map` is more suitable, but `Cauchy.coeff_map'` is
 defined in a way that unveils its abstract properties better.-/
-lemma coeff_map_eq_coeff_map' {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) (d : ℤ) :
-  Cauchy.coeff_map d = Cauchy.coeff_map' h d :=
-begin
-  sorry;
-  {
-  {
-  haveI t2_K : t2_space K, sorry,
-  have top_discrete : ∀ a : K, is_open {a},
-    { exact λ a, @is_open_discrete _ _ (discrete_topology_of_discrete_uniformity h) {a} },
-  ext ℱ,
-  have ℱ_bot : (comap (@Cauchy.pure_cauchy (ratfunc K) _) (𝓟 {ℱ})).ne_bot,
-  {sorry},
-  simp only [Cauchy.coeff_map, Cauchy.coeff_map', Cauchy.extend,
-    if_pos (uniform_continuous_coeff_map h d), subtype.val_eq_coe],
-  -- have due : lim (filter.comap Cauchy.pure_cauchy (𝓝 ℱ)) (ratfunc.coeff_map K d) =
-  --   (cauchy_discrete_is_constant h (ℱ.2.map (uniform_continuous_coeff_map h d))),
-  have speroma : comap Cauchy.pure_cauchy (𝓟 {ℱ}) = ℱ.1, sorry,
-  have uno : lim (filter.comap Cauchy.pure_cauchy (𝓟 {ℱ})) (ratfunc.coeff_map K d) =
-    (cauchy_discrete_is_constant h (ℱ.2.map (uniform_continuous_coeff_map h d))),
-    { rw [lim, Lim_eq_iff _],
-      rw speroma,
-      apply cauchy_discrete_le',
-      exact t2_K,
-      simp [ℱ_bot], sorry,
-      use ℱ.coeff_map d,
-      rw speroma,
-      simp,
-      rw Cauchy.coeff_map,
-      simp,
-      -- apply cauchy_discrete_le',
-    },
-    -- { rw [lim, Lim_eq_iff _],
-    --   -- rw [Lim_eq_iff _],
-    --   { rw ((is_open_singleton_iff_nhds_eq_pure _).mp (top_discrete _)),
-    --     rw ← principal_singleton,
-    --     apply le_trans _ (cauchy_discrete_le h (ℱ.2.map (uniform_continuous_coeff_map h d))),
-    --     apply filter.map_mono,
-    --     -- simp only [principal_singleton, subtype.val_eq_coe],
-    --     intros T hT,
-    --     rw mem_comap,
-    --     -- use set.Iic (𝓟 {ℱ}),
-    --     -- use {ℱ},
-    --     -- split,
-    --     -- sorry,
-    --     -- rw mem_nh
-    --     -- rw mem_nhds_iff,
-    --     -- rw filter.mem_principal,
-    --     rw set.preimage_subset_iff,
-    --     intro f,
-    --     -- intro f,
-    --     rw Cauchy.pure_cauchy,
-    --     intro hf,
-    --     rw mem_singleton_iff at hf,
-    --     rw subtype.ext_iff at hf,
-    --     rw [← hf, subtype.coe_mk, mem_pure] at hT,
-    --     -- exact hT,
-    --   },
-      { rw ((is_open_singleton_iff_nhds_eq_pure _).mp (top_discrete _)),
-        rw ← principal_singleton,
-        apply le_trans _ (cauchy_discrete_le h (ℱ.2.map (uniform_continuous_coeff_map h d))),
-        apply filter.map_mono,
-        simp only [principal_singleton, comap_pure, subtype.val_eq_coe],
-        intros T hT,
-        rw filter.mem_principal,
-        rw set.preimage_subset_iff,
-        intro f,
-        rw Cauchy.pure_cauchy,
-        intro hf,
-        rw mem_singleton_iff at hf,
-        rw subtype.ext_iff at hf,
-        rw [← hf, subtype.coe_mk, mem_pure] at hT,
-        exact hT,
-      },
-      { exact t2_K},
-      { sorry },
-      { use cauchy_discrete_is_constant h (ℱ.2.map (uniform_continuous_coeff_map h d)),
-        apply le_trans _ (cauchy_discrete_le' h (ℱ.2.map (uniform_continuous_coeff_map h d))),
-        apply filter.map_mono,
-        simp only [principal_singleton, comap_pure, subtype.val_eq_coe],
-        intros T hT,
-        rw filter.mem_principal,
-        rw set.preimage_subset_iff,
-        intro f,
-        rw Cauchy.pure_cauchy,
-        intro hf,
-        rw mem_singleton_iff at hf,
-        rw subtype.ext_iff at hf,
-        rw [← hf, subtype.coe_mk, mem_pure] at hT,
-        exact hT, }},
+-- lemma coeff_map_eq_coeff_map' {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel) (d : ℤ) :
+--   Cauchy.coeff_map d = Cauchy.coeff_map' h d :=
+-- begin
+--   sorry;
+--   {
+--   {
+--   haveI t2_K : t2_space K, sorry,
+--   have top_discrete : ∀ a : K, is_open {a},
+--     { exact λ a, @is_open_discrete _ _ (discrete_topology_of_discrete_uniformity h) {a} },
+--   ext ℱ,
+--   have ℱ_bot : (comap (@Cauchy.pure_cauchy (ratfunc K) _) (𝓟 {ℱ})).ne_bot,
+--   {sorry},
+--   simp only [Cauchy.coeff_map, Cauchy.coeff_map', Cauchy.extend,
+--     if_pos (uniform_continuous_coeff_map h d), subtype.val_eq_coe],
+--   -- have due : lim (filter.comap Cauchy.pure_cauchy (𝓝 ℱ)) (ratfunc.coeff_map K d) =
+--   --   (cauchy_discrete_is_constant h (ℱ.2.map (uniform_continuous_coeff_map h d))),
+--   have speroma : comap Cauchy.pure_cauchy (𝓟 {ℱ}) = ℱ.1, sorry,
+--   have uno : lim (filter.comap Cauchy.pure_cauchy (𝓟 {ℱ})) (ratfunc.coeff_map K d) =
+--     (cauchy_discrete_is_constant h (ℱ.2.map (uniform_continuous_coeff_map h d))),
+--     { rw [lim, Lim_eq_iff _],
+--       rw speroma,
+--       apply cauchy_discrete_le',
+--       exact t2_K,
+--       simp [ℱ_bot], sorry,
+--       use ℱ.coeff_map d,
+--       rw speroma,
+--       simp,
+--       rw Cauchy.coeff_map,
+--       simp,
+--       -- apply cauchy_discrete_le',
+--     },
+--     -- { rw [lim, Lim_eq_iff _],
+--     --   -- rw [Lim_eq_iff _],
+--     --   { rw ((is_open_singleton_iff_nhds_eq_pure _).mp (top_discrete _)),
+--     --     rw ← principal_singleton,
+--     --     apply le_trans _ (cauchy_discrete_le h (ℱ.2.map (uniform_continuous_coeff_map h d))),
+--     --     apply filter.map_mono,
+--     --     -- simp only [principal_singleton, subtype.val_eq_coe],
+--     --     intros T hT,
+--     --     rw mem_comap,
+--     --     -- use set.Iic (𝓟 {ℱ}),
+--     --     -- use {ℱ},
+--     --     -- split,
+--     --     -- sorry,
+--     --     -- rw mem_nh
+--     --     -- rw mem_nhds_iff,
+--     --     -- rw filter.mem_principal,
+--     --     rw set.preimage_subset_iff,
+--     --     intro f,
+--     --     -- intro f,
+--     --     rw Cauchy.pure_cauchy,
+--     --     intro hf,
+--     --     rw mem_singleton_iff at hf,
+--     --     rw subtype.ext_iff at hf,
+--     --     rw [← hf, subtype.coe_mk, mem_pure] at hT,
+--     --     -- exact hT,
+--     --   },
+--       { rw ((is_open_singleton_iff_nhds_eq_pure _).mp (top_discrete _)),
+--         rw ← principal_singleton,
+--         apply le_trans _ (cauchy_discrete_le h (ℱ.2.map (uniform_continuous_coeff_map h d))),
+--         apply filter.map_mono,
+--         simp only [principal_singleton, comap_pure, subtype.val_eq_coe],
+--         intros T hT,
+--         rw filter.mem_principal,
+--         rw set.preimage_subset_iff,
+--         intro f,
+--         rw Cauchy.pure_cauchy,
+--         intro hf,
+--         rw mem_singleton_iff at hf,
+--         rw subtype.ext_iff at hf,
+--         rw [← hf, subtype.coe_mk, mem_pure] at hT,
+--         exact hT,
+--       },
+--       { exact t2_K},
+--       { sorry },
+--       { use cauchy_discrete_is_constant h (ℱ.2.map (uniform_continuous_coeff_map h d)),
+--         apply le_trans _ (cauchy_discrete_le' h (ℱ.2.map (uniform_continuous_coeff_map h d))),
+--         apply filter.map_mono,
+--         simp only [principal_singleton, comap_pure, subtype.val_eq_coe],
+--         intros T hT,
+--         rw filter.mem_principal,
+--         rw set.preimage_subset_iff,
+--         intro f,
+--         rw Cauchy.pure_cauchy,
+--         intro hf,
+--         rw mem_singleton_iff at hf,
+--         rw subtype.ext_iff at hf,
+--         rw [← hf, subtype.coe_mk, mem_pure] at hT,
+--         exact hT, }},
 
-      -- convert uno.symm,
-      -- sorry,
-      -- dsimp [Cauchy.dense_inducing_pure_cauchy.extend],
-      erw ← uno,
-      -- rw principal_singleton,
-      rw dense_inducing.extend,
-      symmetry,
-      rw @lim_eq_iff _ _ _ _ _ _,
-      sorry,
-      sorry,
-      sorry,
-      sorry, 
-      -- rw @lim_eq_iff _ _ _ _ _ ℱ_bot, 
-      -- rw lim_monoto
-      -- rw lim,
-      -- rw Lim,
-      -- simp,
-      -- simp,
-      -- congr' 1,
+--       -- convert uno.symm,
+--       -- sorry,
+--       -- dsimp [Cauchy.dense_inducing_pure_cauchy.extend],
+--       erw ← uno,
+--       -- rw principal_singleton,
+--       rw dense_inducing.extend,
+--       symmetry,
+--       rw @lim_eq_iff _ _ _ _ _ _,
+--       sorry,
+--       sorry,
+--       sorry,
+--       sorry, 
+--       -- rw @lim_eq_iff _ _ _ _ _ ℱ_bot, 
+--       -- rw lim_monoto
+--       -- rw lim,
+--       -- rw Lim,
+--       -- simp,
+--       -- simp,
+--       -- congr' 1,
 
       
-  }
-      -- exact (is_open_singleton_iff_nhds_eq_pure _).mp (top_discrete _),
-end
+--   }
+--       -- exact (is_open_singleton_iff_nhds_eq_pure _).mp (top_discrete _),
+-- end
 
 lemma Cauchy.uniform_continuous_coeff_map {uK : uniform_space K} (h : uniformity K = 𝓟 id_rel)
   (d : ℤ) : uniform_continuous (Cauchy.coeff_map' h d) :=
@@ -1054,9 +1064,7 @@ end
 
 -- #check λ d : ℤ, filter.map (ratfunc.coeff d)
 
--- `[FAE]` This is `#18604`
-lemma bdd_below.well_founded_on_lt {X : Type} [preorder X] {s : set X} : 
-  bdd_below s → s.well_founded_on (<) := sorry
+
 
 
 def Cauchy.to_laurent_series (ℱ : Cauchy (ratfunc K)) : (laurent_series K) :=
@@ -1096,53 +1104,53 @@ variable {K}
 --   use (ratfunc.X : (ratfunc K))^(f.X_pow hf) * ↑(F.trunc d),
 -- end
 
-def laurent_series.trunc (f : laurent_series K) (d : ℕ) : ratfunc K :=
-if hf : f = 0 then 0 else ratfunc.X^(f.order) * ↑((power_series_part f).trunc d)
+-- def laurent_series.trunc (f : laurent_series K) (d : ℕ) : ratfunc K :=
+-- if hf : f = 0 then 0 else ratfunc.X^(f.order) * ↑((power_series_part f).trunc d)
 
-lemma trunc_coeff_eq_zero_of_lt (f : laurent_series K) {d n: ℕ} (h : n < d) :
-  ((power_series_part f).trunc d).coeff n = 0 :=
-begin
-  sorry,
-end
+-- lemma trunc_coeff_eq_zero_of_lt (f : laurent_series K) {d n: ℕ} (h : n < d) :
+--   ((power_series_part f).trunc d).coeff n = 0 :=
+-- begin
+--   sorry,
+-- end
 
-lemma trunc_coeff_eq_coeff_of_ge (f : laurent_series K) {d n: ℕ} (h : d ≤ n) :
-  ((power_series_part f).trunc d).coeff n = 0 := sorry
+-- lemma trunc_coeff_eq_coeff_of_ge (f : laurent_series K) {d n: ℕ} (h : d ≤ n) :
+--   ((power_series_part f).trunc d).coeff n = 0 := sorry
 
-lemma int_valuation_trunc_sub (f : laurent_series K) {d₁ d₂ : ℕ} (hd : d₁ ≤ d₂) :
-  (ideal_X K).int_valuation ((power_series_part f).trunc d₂ - (power_series_part f).trunc d₁)
-    ≤ ↑(multiplicative.of_add (- (d₁ : ℤ))) :=
-begin
-  set g := (power_series_part f).trunc d₂ - (power_series_part f).trunc d₁ with hg,
-  by_cases H : g ≠ 0,
-  { have h_coeff : polynomial.X ^ d₁ ∣ g,
-    { rw polynomial.X_pow_dvd_iff,
-      intros m hm,
-      rw [coeff_sub, trunc_coeff_eq_zero_of_lt f hm, trunc_coeff_eq_zero_of_lt f
-        (lt_of_lt_of_le hm hd), zero_sub_zero]},
-  rwa [← hg, fae_int_valuation_apply, int_valuation_le_pow_iff_dvd, ideal_X_span,
-    dvd_span_singleton, span_singleton_pow, mem_span_singleton] },
-  { simp only [← hg, not_not.mp H, valuation.map_zero, zero_le'] }
-end
+-- lemma int_valuation_trunc_sub (f : laurent_series K) {d₁ d₂ : ℕ} (hd : d₁ ≤ d₂) :
+--   (ideal_X K).int_valuation ((power_series_part f).trunc d₂ - (power_series_part f).trunc d₁)
+--     ≤ ↑(multiplicative.of_add (- (d₁ : ℤ))) :=
+-- begin
+--   set g := (power_series_part f).trunc d₂ - (power_series_part f).trunc d₁ with hg,
+--   by_cases H : g ≠ 0,
+--   { have h_coeff : polynomial.X ^ d₁ ∣ g,
+--     { rw polynomial.X_pow_dvd_iff,
+--       intros m hm,
+--       rw [coeff_sub, trunc_coeff_eq_zero_of_lt f hm, trunc_coeff_eq_zero_of_lt f
+--         (lt_of_lt_of_le hm hd), zero_sub_zero]},
+--   rwa [← hg, fae_int_valuation_apply, int_valuation_le_pow_iff_dvd, ideal_X_span,
+--     dvd_span_singleton, span_singleton_pow, mem_span_singleton] },
+--   { simp only [← hg, not_not.mp H, valuation.map_zero, zero_le'] }
+-- end
 
-lemma valuation_trunc_sub {f : laurent_series K} (hf : f ≠ 0) {d₁ d₂ : ℕ} (hd : d₁ ≤ d₂) :
-  (ideal_X K).valuation ((f.trunc d₂ - f.trunc d₁))
-    ≤ ↑(multiplicative.of_add (- f.order - d₁ : ℤ)) :=
-begin
-  simp only [laurent_series.trunc, dif_neg hf, ← mul_sub, valuation.map_mul, map_zpow₀, of_add_sub,
-    with_zero.coe_div, val_X_eq_one, ← with_zero.coe_zpow, ← of_add_zsmul, zsmul_neg, zsmul_one,
-    int.cast_id, div_eq_mul_inv, ← with_zero.coe_inv, ← of_add_neg],
-  simp only [sub_eq_add_neg, ← algebra_map.coe_neg, ← algebra_map.coe_add],
-  convert (mul_le_mul_left₀ _).mpr (int_valuation_trunc_sub f hd),
-  convert @valuation_of_algebra_map (polynomial K) _ _ _ (ratfunc K) _ _ _ (ideal_X K)
-   (power_series.trunc d₂ f.power_series_part - power_series.trunc d₁ f.power_series_part),
-  apply with_zero.coe_ne_zero,
-end
+-- lemma valuation_trunc_sub {f : laurent_series K} (hf : f ≠ 0) {d₁ d₂ : ℕ} (hd : d₁ ≤ d₂) :
+--   (ideal_X K).valuation ((f.trunc d₂ - f.trunc d₁))
+--     ≤ ↑(multiplicative.of_add (- f.order - d₁ : ℤ)) :=
+-- begin
+--   simp only [laurent_series.trunc, dif_neg hf, ← mul_sub, valuation.map_mul, map_zpow₀, of_add_sub,
+--     with_zero.coe_div, val_X_eq_one, ← with_zero.coe_zpow, ← of_add_zsmul, zsmul_neg, zsmul_one,
+--     int.cast_id, div_eq_mul_inv, ← with_zero.coe_inv, ← of_add_neg],
+--   simp only [sub_eq_add_neg, ← algebra_map.coe_neg, ← algebra_map.coe_add],
+--   convert (mul_le_mul_left₀ _).mpr (int_valuation_trunc_sub f hd),
+--   convert @valuation_of_algebra_map (polynomial K) _ _ _ (ratfunc K) _ _ _ (ideal_X K)
+--    (power_series.trunc d₂ f.power_series_part - power_series.trunc d₁ f.power_series_part),
+--   apply with_zero.coe_ne_zero,
+-- end
 
-definition truncation_seq (f : laurent_series K) : ℕ → ratfunc K := λ d, f.trunc d
+-- definition truncation_seq (f : laurent_series K) : ℕ → ratfunc K := λ d, f.trunc d
 
-@[simp]
-lemma truncation_zero : truncation_seq (0 : (laurent_series K)) = 0 :=
-  by simp only [truncation_seq, laurent_series.trunc, dif_pos, function.const_eq_zero]
+-- @[simp]
+-- lemma truncation_zero : truncation_seq (0 : (laurent_series K)) = 0 :=
+--   by simp only [truncation_seq, laurent_series.trunc, dif_pos, function.const_eq_zero]
 
 
 -- lemma trunc_same_denom (f : laurent_series K) (d₁ d₂ : ℕ) :
@@ -1164,60 +1172,60 @@ lemma truncation_zero : truncation_seq (0 : (laurent_series K)) = 0 :=
 --   (f : laurent_series K).trunc d = ↑(f.trunc d) := sorry
 
 
-theorem truncation_cauchy_seq (f : laurent_series K) : cauchy_seq (truncation_seq f) :=
-begin
-  by_cases hf : f = 0,  
-  { convert @cauchy_seq_const _ ℕ _ _ _ (0 : ratfunc K),
-    funext,
-    simp only [hf, truncation_zero, pi.zero_apply], },
-  { simp_rw has_basis.cauchy_seq_iff (valued.has_basis_uniformity (ratfunc K) ℤₘ₀),
-    rintros i -,
-    obtain ⟨j, hj⟩ := with_zero.ne_zero_iff_exists.mp (units.ne_zero i),
-    simp only [ge_iff_le, mem_set_of_eq, truncation_seq],
-    use int.nat_abs (-f.order - j) + 1,
-    intros m hm n hn,
-    wlog hmn : m ≤ n with Hsymm,
-    { convert Hsymm f hf i j hj _ hn _ hm (le_of_not_ge hmn) using 1,
-      suffices : f.trunc n - f.trunc m = - (f.trunc m - f.trunc n),
-      rw [this, valuation.map_neg],
-      ring },
-    { replace hm : - f.order - j < m,
-      { refine lt_of_le_of_lt int.le_nat_abs (nat.cast_lt.mpr (nat.lt_of_succ_le (le_trans _ hm))),
-        rw nat.succ_eq_add_one},
-      apply lt_of_le_of_lt (valuation_trunc_sub hf hmn),
-      rw [← hj, with_zero.coe_lt_coe],
-      exact sub_lt_comm.mp hm }},
-end
+-- theorem truncation_cauchy_seq (f : laurent_series K) : cauchy_seq (truncation_seq f) :=
+-- begin
+--   by_cases hf : f = 0,  
+--   { convert @cauchy_seq_const _ ℕ _ _ _ (0 : ratfunc K),
+--     funext,
+--     simp only [hf, truncation_zero, pi.zero_apply], },
+--   { simp_rw has_basis.cauchy_seq_iff (valued.has_basis_uniformity (ratfunc K) ℤₘ₀),
+--     rintros i -,
+--     obtain ⟨j, hj⟩ := with_zero.ne_zero_iff_exists.mp (units.ne_zero i),
+--     simp only [ge_iff_le, mem_set_of_eq, truncation_seq],
+--     use int.nat_abs (-f.order - j) + 1,
+--     intros m hm n hn,
+--     wlog hmn : m ≤ n with Hsymm,
+--     { convert Hsymm f hf i j hj _ hn _ hm (le_of_not_ge hmn) using 1,
+--       suffices : f.trunc n - f.trunc m = - (f.trunc m - f.trunc n),
+--       rw [this, valuation.map_neg],
+--       ring },
+--     { replace hm : - f.order - j < m,
+--       { refine lt_of_le_of_lt int.le_nat_abs (nat.cast_lt.mpr (nat.lt_of_succ_le (le_trans _ hm))),
+--         rw nat.succ_eq_add_one},
+--       apply lt_of_le_of_lt (valuation_trunc_sub hf hmn),
+--       rw [← hj, with_zero.coe_lt_coe],
+--       exact sub_lt_comm.mp hm }},
+-- end
 
-def truncation_cauchy_filter (f : laurent_series K) : Cauchy (ratfunc K) := 
-  ⟨at_top.map (truncation_seq f), truncation_cauchy_seq f⟩
+-- def truncation_cauchy_filter (f : laurent_series K) : Cauchy (ratfunc K) := 
+--   ⟨at_top.map (truncation_seq f), truncation_cauchy_seq f⟩
 
-lemma truncation_coeff_eq_coeff (f : laurent_series K) (d : ℤ) : 
- (truncation_cauchy_filter f).2.coeff_map d = f.coeff d :=
-begin
-  sorry,
-end
+-- lemma truncation_coeff_eq_coeff (f : laurent_series K) (d : ℤ) : 
+--  (truncation_cauchy_filter f).2.coeff_map d = f.coeff d :=
+-- begin
+--   sorry,
+-- end
 
-end truncation
+-- end truncation
 
-def laurent_series.equiv_other_proof : (completion_of_ratfunc K) ≃ (laurent_series K) :=
-{ to_fun := λ α, quot.lift Cauchy.to_laurent_series (Cauchy.laurent_series_eq_of_inseparable K) α,
-  inv_fun := λ f, quotient.mk' $ truncation_cauchy_filter f,
-  left_inv := 
-  begin
-    rw function.left_inverse,
-    rintro ⟨α, hα⟩,
-    simp,
-    have : truncation_cauchy_filter (Cauchy.to_laurent_series ⟨α, hα⟩) = ⟨α, hα⟩,
-    { ext,
-      sorry,
+-- def laurent_series.equiv_other_proof : (completion_of_ratfunc K) ≃ (laurent_series K) :=
+-- { to_fun := λ α, quot.lift Cauchy.to_laurent_series (Cauchy.laurent_series_eq_of_inseparable K) α,
+--   inv_fun := λ f, quotient.mk' $ truncation_cauchy_filter f,
+--   left_inv := 
+--   begin
+--     rw function.left_inverse,
+--     rintro ⟨α, hα⟩,
+--     simp,
+--     have : truncation_cauchy_filter (Cauchy.to_laurent_series ⟨α, hα⟩) = ⟨α, hα⟩,
+--     { ext,
+--       sorry,
     
-    },
-    rw this,
-    rw quotient.mk',
-  end,
-  right_inv := λ f, hahn_series.ext _ _ (_root_.funext (λ _, truncation_coeff_eq_coeff _ _))
-   }
+--     },
+--     rw this,
+--     rw quotient.mk',
+--   end,
+--   right_inv := λ f, hahn_series.ext _ _ (_root_.funext (λ _, truncation_coeff_eq_coeff _ _))
+--    }
   
     -- apply equiv.of_bijective
   --   (λ α, quot.lift Cauchy.to_laurent_series (Cauchy.laurent_series_eq_of_inseparable K) α),
@@ -1226,91 +1234,91 @@ def laurent_series.equiv_other_proof : (completion_of_ratfunc K) ≃ (laurent_se
 
 --#exit --TODO
 
-variable {K}
-def laurent_series.equiv : (completion_of_ratfunc K) ≃ (laurent_series K) :=
-{ to_fun :=
-  begin
-    intro α,
-    obtain ⟨ℱ, hℱ⟩ := (quot.exists_rep α).some,
-    apply hahn_series.mk,
-    exact is_wf.is_pwo ((hℱ.coeff_map_support_bdd').well_founded_on_lt),
-  end,
-  inv_fun := -- apply cau_seq.completion.mk_add-- there are a lot of things like this, only useful for
-    -- valued fields, but the proofs are probably exactly what I need
-    -- λ f, @quotient.mk (Cauchy (ratfunc K)) (uniform_space.separation_setoid _)
-    --   ⟨at_top.map (truncation_seq f), truncation_cauchy_seq f⟩,
-    -- begin
-      λ f, quotient.mk' $ truncation_cauchy_filter f,
+-- variable {K}
+-- def laurent_series.equiv : (completion_of_ratfunc K) ≃ (laurent_series K) :=
+-- { to_fun :=
+--   begin
+--     intro α,
+--     obtain ⟨ℱ, hℱ⟩ := (quot.exists_rep α).some,
+--     apply hahn_series.mk,
+--     exact is_wf.is_pwo ((hℱ.coeff_map_support_bdd').well_founded_on_lt),
+--   end,
+--   inv_fun := -- apply cau_seq.completion.mk_add-- there are a lot of things like this, only useful for
+--     -- valued fields, but the proofs are probably exactly what I need
+--     -- λ f, @quotient.mk (Cauchy (ratfunc K)) (uniform_space.separation_setoid _)
+--     --   ⟨at_top.map (truncation_seq f), truncation_cauchy_seq f⟩,
+--     -- begin
+--       λ f, quotient.mk' $ truncation_cauchy_filter f,
 
-    -- end,
-  left_inv := 
-  begin
-    intro ℱ,
-    simp only,
-    sorry,
-  end,
-  -- sorry,
-  right_inv := 
-  begin
-    intro f,
-    ext d,
-    simp,
-    have := truncation_coeff_eq_coeff f d,
-    rw ← this,
-    rw ← truncation_coeff_eq_coeff,
-    congr,
-    sorry,
-    -- simp,
-    -- simp,
-  end, }
+--     -- end,
+--   left_inv := 
+--   begin
+--     intro ℱ,
+--     simp only,
+--     sorry,
+--   end,
+--   -- sorry,
+--   right_inv := 
+--   begin
+--     intro f,
+--     ext d,
+--     simp,
+--     have := truncation_coeff_eq_coeff f d,
+--     rw ← this,
+--     rw ← truncation_coeff_eq_coeff,
+--     congr,
+--     sorry,
+--     -- simp,
+--     -- simp,
+--   end, }
 
-example {ℱ ℱ' : filter (ratfunc K)} (hℱ : cauchy ℱ) (hℱ' : cauchy ℱ') :
-  cauchy ((ℱ.prod ℱ').map (+).uncurry) := 
-begin
-  exact (hℱ.prod hℱ').map (uniform_continuous_add),
-end
+-- example {ℱ ℱ' : filter (ratfunc K)} (hℱ : cauchy ℱ) (hℱ' : cauchy ℱ') :
+--   cauchy ((ℱ.prod ℱ').map (+).uncurry) := 
+-- begin
+--   exact (hℱ.prod hℱ').map (uniform_continuous_add),
+-- end
 
-lemma coeff_map_add {ℱ ℱ' : filter (ratfunc K)} (hℱ : cauchy ℱ) (hℱ' : cauchy ℱ') :
-  ((hℱ.prod hℱ').map (uniform_continuous_add)).coeff_map = hℱ.coeff_map + hℱ'.coeff_map :=
-begin
-  ext n,
-  -- have fine : ((ℱ.prod ℱ').map (+).uncurry).coeff_map n ≤ 𝓝 ( (hℱ.coeff_map n) + (hℱ'.coeff_map n)),
-  -- letI : uniform_space K := ⊥,
+-- lemma coeff_map_add {ℱ ℱ' : filter (ratfunc K)} (hℱ : cauchy ℱ) (hℱ' : cauchy ℱ') :
+--   ((hℱ.prod hℱ').map (uniform_continuous_add)).coeff_map = hℱ.coeff_map + hℱ'.coeff_map :=
+-- begin
+--   ext n,
+--   -- have fine : ((ℱ.prod ℱ').map (+).uncurry).coeff_map n ≤ 𝓝 ( (hℱ.coeff_map n) + (hℱ'.coeff_map n)),
+--   -- letI : uniform_space K := ⊥,
   
-  rw cauchy.coeff_map,
-  rw cauchy.coeff_map,
-  rw cauchy.coeff_map,
-  simp,
-  sorry
-end
+--   rw cauchy.coeff_map,
+--   rw cauchy.coeff_map,
+--   rw cauchy.coeff_map,
+--   simp,
+--   sorry
+-- end
 
-noncomputable! def laurent_series.ring_equiv' : 
-  ring_equiv (completion_of_ratfunc K) (laurent_series K) :=
-{ map_mul' := sorry,
-  map_add' := sorry,
-  .. laurent_series.equiv }
+-- noncomputable! def laurent_series.ring_equiv' : 
+--   ring_equiv (completion_of_ratfunc K) (laurent_series K) :=
+-- { map_mul' := sorry,
+--   map_add' := sorry,
+--   .. laurent_series.equiv }
 
-noncomputable! def power_series.ring_equiv' : ring_equiv (adic_completion_integers (ratfunc K) 
-  (ideal_X K : is_dedekind_domain.height_one_spectrum (polynomial K))) (power_series K) :=
-sorry
+-- noncomputable! def power_series.ring_equiv' : ring_equiv (adic_completion_integers (ratfunc K) 
+--   (ideal_X K : is_dedekind_domain.height_one_spectrum (polynomial K))) (power_series K) :=
+-- sorry
 
 
-instance : algebra (ratfunc K) (completion_of_ratfunc K) := 
-adic_completion.algebra (polynomial K) (ratfunc K) (ideal_X K)
+-- instance : algebra (ratfunc K) (completion_of_ratfunc K) := 
+-- adic_completion.algebra (polynomial K) (ratfunc K) (ideal_X K)
 
-instance completion_of_ratfunc.K_algebra : algebra K (completion_of_ratfunc K) := 
-algebra.comp K (ratfunc K) (completion_of_ratfunc K)
+-- instance completion_of_ratfunc.K_algebra : algebra K (completion_of_ratfunc K) := 
+-- algebra.comp K (ratfunc K) (completion_of_ratfunc K)
 
-noncomputable! def laurent_series.alg_equiv : 
-  alg_equiv K (completion_of_ratfunc K) (laurent_series K) :=
-{ to_fun    := laurent_series.equiv.to_fun,
-  inv_fun   := laurent_series.equiv.inv_fun,
-  map_mul'  := sorry,
-  map_add'  := sorry,
-  commutes' := sorry,
-  ..(laurent_series.equiv) }
+-- noncomputable! def laurent_series.alg_equiv : 
+--   alg_equiv K (completion_of_ratfunc K) (laurent_series K) :=
+-- { to_fun    := laurent_series.equiv.to_fun,
+--   inv_fun   := laurent_series.equiv.inv_fun,
+--   map_mul'  := sorry,
+--   map_add'  := sorry,
+--   commutes' := sorry,
+--   ..(laurent_series.equiv) }
 
-/- **OLD THINGS** 
+
 
   -- is_dedekind_domain.height_one_spectrum.uniform_space_adic_completion (ratfunc K) _
 
