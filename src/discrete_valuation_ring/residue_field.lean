@@ -5,7 +5,7 @@ Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
 
 import discrete_valuation_ring.extensions
---import number_theory.ramification_inertia
+import number_theory.ramification_inertia
 import ring_theory.dedekind_domain.integral_closure
 
 
@@ -23,47 +23,14 @@ universes u v
 
 namespace discrete_valuation
 
-variables (K : Type u) [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v] [complete_space K]
+variables (K : Type u) [field K] [hv : valued K ℤₘ₀]
 
 local notation `K₀` := hv.v.valuation_subring
 
 include hv
 
-.
+variables (L : Type v) [field L] [algebra K L] 
 
-
-variables (L : Type v) [field L] [algebra K L] [finite_dimensional K L]
-
-/- instance : algebra (hv.v.valuation_subring) L := sorry
-
-instance : discrete_valuation_ring ((integral_closure (hv.v.valuation_subring) L)) :=
-sorry -/
-
-
--- Writing this instance speeds out ufd and ccm.
-@[priority 10000]
-instance dd : is_dedekind_domain (integral_closure K₀ L) := 
-is_principal_ideal_ring.is_dedekind_domain (integral_closure (hv.v.valuation_subring) L)
-
-@[priority 10000]
-noncomputable! def ufd : unique_factorization_monoid (ideal(integral_closure K₀ L)) :=
-@ideal.unique_factorization_monoid (integral_closure K₀ L) _ _ _
-  --(discrete_valuation_ring_of_finite_extension K L)
-
-noncomputable! def ccm : cancel_comm_monoid_with_zero (ideal(integral_closure K₀ L)) :=
-@ideal.cancel_comm_monoid_with_zero (integral_closure K₀ L) _ _ _
-
-/- lemma foo  (L : Type*) [field L] [algebra K L] [finite_dimensional K L]
-: false :=
-begin
-  letI : @unique_factorization_monoid (ideal(integral_closure K₀ L)) (ccm K L) := ufd K L,
-  let f := (@unique_factorization_monoid.factors (ideal(integral_closure K₀ L)) (ccm K L)  _ (ufd K L)
-    (ideal.map (algebra_map K₀ (integral_closure K₀ L)) (local_ring.maximal_ideal K₀))),
-  sorry
-end
- -/
-def prime_factor' : ideal (integral_closure K₀ L) :=
-(ideal.map (algebra_map K₀ (integral_closure K₀ L)) (local_ring.maximal_ideal K₀))
 
 -- TODO: move to DVR.basic/extensions
 instance : no_zero_smul_divisors K₀ (integral_closure K₀ L) := 
@@ -74,6 +41,23 @@ instance : no_zero_smul_divisors K₀ (integral_closure K₀ L) :=
     rw ← map_zero (algebra_map K₀ (integral_closure K₀ L)) at hc,
     exact is_fraction_ring.injective K₀ K ((algebra_map K L).injective (subtype.ext_iff.mp hc)),
   end }
+
+def prime_factor' : ideal (integral_closure K₀ L) :=
+(ideal.map (algebra_map K₀ (integral_closure K₀ L)) (local_ring.maximal_ideal K₀))
+
+variables [is_discrete hv.v] [complete_space K] [finite_dimensional K L]
+
+-- TODO: Without making this explicit the file times out. However the linter warns of a loop.
+@[priority 10000]
+instance dd : is_dedekind_domain (integral_closure K₀ L) := 
+is_principal_ideal_ring.is_dedekind_domain (integral_closure (hv.v.valuation_subring) L)
+
+@[priority 10000]
+noncomputable! lemma ufd : unique_factorization_monoid (ideal(integral_closure K₀ L)) :=
+@ideal.unique_factorization_monoid (integral_closure K₀ L) _ _ _
+
+noncomputable! def ccm : cancel_comm_monoid_with_zero (ideal(integral_closure K₀ L)) :=
+@ideal.cancel_comm_monoid_with_zero (integral_closure K₀ L) _ _ _
 
 lemma prime_factor'_ne_zero : 
   prime_factor' K L ≠ 0 :=
@@ -115,162 +99,104 @@ noncomputable! def prime_factor (L : Type*) [field L] [algebra K L] [finite_dime
     (ideal.map (algebra_map K₀ (integral_closure K₀ L)) 
     (local_ring.maximal_ideal K₀))).to_finset) :=
 ⟨(bar K L).some, multiset.mem_to_finset.mpr (bar K L).some_spec⟩
-/- begin
-  exact ⟨(bar K L).some, multiset.mem_to_finset.mpr (bar K L).some_spec⟩,
-  /- set J : ideal (integral_closure K₀ L) := (ideal.map (algebra_map K₀ (integral_closure K₀ L)) 
-    (local_ring.maximal_ideal K₀)) with hJ,
-  have hJ0 : J ≠ 0 := sorry,
-  have hJu : ¬ @is_unit (ideal (integral_closure K₀ L))  _ J := sorry,
-  have h := @unique_factorization_monoid.exists_mem_factors (ideal (integral_closure K₀ L)) 
-    (ccm K L)  _ (ufd K L) J hJ0, -/
-  --cases (h _) with u hu,
-  /- have h : finset.nonempty ((unique_factorization_monoid.factors (ideal.map (algebra_map K₀ (integral_closure K₀ L))
-    (local_ring.maximal_ideal K₀))).to_finset),
-  { rw finset.nonempty_iff_ne_empty, rw ne.def,
-    rw multiset.to_finset_eq_empty,
-    rw unique_factorization_monoid.factors_unique,
-    sorry
-  }, -/
-  --sorry, --exact h.some
-end -/
 
-#exit
 
-lemma prime_factor_coe_eq_max_ideal (L : Type*) [field L] [algebra K L] [finite_dimensional K L] : 
-  (prime_factor K L : ideal (integral_closure K₀ L)) = 
-    local_ring.maximal_ideal (integral_closure K₀ L) :=
+lemma prime_factor_coe_eq_max_ideal : (prime_factor K L : ideal (integral_closure K₀ L)) =
+  local_ring.maximal_ideal (integral_closure K₀ L) :=
 begin
   sorry
 end
 
 #exit
 
-instance (L : Type*) [field L] [algebra K L] [finite_dimensional K L] [is_separable K L] : 
+instance [is_separable K L] : 
   is_noetherian K₀ (integral_closure K₀ L) :=
 by exact is_integral_closure.is_noetherian K₀ K L (integral_closure K₀ L)
 
-noncomputable! def alg (L : Type*) [field L] [algebra K L] [finite_dimensional K L] : 
-  module (residue_field K₀) (residue_field ↥(integral_closure K₀ L)) := sorry
+lemma foo : (residue_field (integral_closure K₀ L)) =
+  ((integral_closure K₀ L) ⧸ (prime_factor K L : ideal (integral_closure K₀ L))) :=
+by rw [residue_field, prime_factor_coe_eq_max_ideal]
 
+def alg : algebra (residue_field K₀) (residue_field (integral_closure K₀ L)) := 
+begin
+  apply ideal.quotient.algebra_quotient_of_ramification_idx_ne_zero 
+  (algebra_map K₀ (integral_closure K₀ L))
+    (local_ring.maximal_ideal K₀) _,
+  rw ←prime_factor_coe_eq_max_ideal,
+  apply_instance, 
+end
+
+@[priority 900] -- linter
 instance {A : Type*} [comm_ring A] [is_domain A] [discrete_valuation_ring A] : 
 is_principal_ideal_ring A := by refine discrete_valuation_ring.to_is_principal_ideal_ring
 
-noncomputable! lemma finite_dimensional_residue_field_of_integral_closure (L : Type*) [field L] 
-  [algebra K L] [finite_dimensional K L] [is_separable K L] : 
-  @finite_dimensional (residue_field K₀) (residue_field (integral_closure K₀ L)) _ _ 
-  (alg K L)  :=
+
+noncomputable! def alg' : 
+  algebra (residue_field K₀)
+    ((integral_closure K₀ L) ⧸ (prime_factor K L : ideal (integral_closure K₀ L))) := 
+ideal.quotient.algebra_quotient_of_ramification_idx_ne_zero (algebra_map _ _)
+    (local_ring.maximal_ideal K₀) (prime_factor K L)
+
+local attribute [instance] alg alg'
+
+--TODO : This should be trivial but it gives a memory error.
+noncomputable! def sadf : residue_field (integral_closure K₀ L) ≃ₗ[residue_field K₀]
+    (integral_closure K₀ L) ⧸ (prime_factor K L : ideal (integral_closure K₀ L)) :=
+sorry
+/- { to_fun    := λ x, 
+  begin
+    sorry/- convert x,
+    rw prime_factor_coe_eq_max_ideal, -/
+  end,
+  map_add'  := sorry,
+  map_smul' := sorry,
+  inv_fun   := λ x, 
+  begin
+    
+    
+    sorry/- convert x,
+    rw ← prime_factor_coe_eq_max_ideal, -/
+  end,
+  left_inv  := sorry,
+  right_inv := sorry } -/
+. 
+
+--TODO : Speed up!
+noncomputable! lemma finite_dimensional_residue_field_of_integral_closure [is_separable K L] : 
+  finite_dimensional (residue_field K₀) (residue_field (integral_closure K₀ L)) :=
 begin
-  letI := alg K L,
-  letI h1 : is_dedekind_domain (integral_closure K₀ L) :=
-  is_principal_ideal_ring.is_dedekind_domain _, 
-  letI : field (K₀ ⧸ local_ring.maximal_ideal K₀),
-  { exact (residue_field.field K₀) },
-  /- letI : module (K₀ ⧸ local_ring.maximal_ideal K₀)
-    (↥(integral_closure K₀ L) ⧸ (prime_factor K L : ideal (integral_closure K₀ L))),
-  { sorry }, -/
-  have : finite_dimensional (K₀ ⧸ local_ring.maximal_ideal K₀) _ /- 
-    ((integral_closure K₀ L) ⧸ (prime_factor K L : ideal (integral_closure K₀ L)))  -/:= 
-  @ideal.factors.finite_dimensional_quotient K₀ _ (integral_closure K₀ L) _
-    (local_ring.maximal_ideal K₀) _ h1 _ _ _ (prime_factor K L),
-
-  --convert this,
-  /- letI := alg K L,
-  letI h3 : discrete_valuation_ring (integral_closure K₀ L) :=
-  integral_closure.discrete_valuation_ring_of_finite_extension K L,
-  letI h2 : is_principal_ideal_ring (integral_closure K₀ L) :=
-  discrete_valuation_ring.to_is_principal_ideal_ring,
-  letI h1 : is_dedekind_domain (integral_closure K₀ L) :=
-  discrete_valuation_ring.to_is_principal_ideal_ring.is_dedekind_domain _, 
-  letI : field (K₀ ⧸ local_ring.maximal_ideal K₀),
-  { exact (residue_field.field K₀) },
-  letI : module (K₀ ⧸ local_ring.maximal_ideal K₀)
-    (↥(integral_closure K₀ L) ⧸ (prime_factor K L : ideal (integral_closure K₀ L))),
-  { sorry },
-  have : @finite_dimensional 
-    (K₀ ⧸ local_ring.maximal_ideal K₀) 
-    ((integral_closure K₀ L) ⧸ (prime_factor K L : ideal (integral_closure K₀ L))) _ _ _ :=
-  @ideal.factors.finite_dimensional_quotient K₀ _ (integral_closure K₀ L) _
+  rw @finite_dimensional.finite_dimensional_iff_of_rank_eq_nsmul (residue_field K₀) 
+    (residue_field (integral_closure K₀ L)) _ _ _
+    ((integral_closure K₀ L) ⧸ (prime_factor K L : ideal (integral_closure K₀ L))) _ _ 1
+    one_ne_zero,
+  /- exact @ideal.factors.finite_dimensional_quotient K₀ _ (integral_closure K₀ L) _
     (local_ring.maximal_ideal K₀) _ _ _ _ _ (prime_factor K L), -/
-  
-  sorry
+  exact ideal.factors.finite_dimensional_quotient (local_ring.maximal_ideal K₀) 
+    (prime_factor K L),
+  rw [nsmul_eq_mul, algebra_map.coe_one, one_mul],
+  exact linear_equiv.rank_eq (sadf K L),
 end
-
-
-#exit
 .
 
-noncomputable! lemma finite_dimensional_residue_field_of_integral_closure (L : Type*) [field L] 
-  [algebra K L] [finite_dimensional K L] [is_separable K L] :
-  @finite_dimensional (residue_field K₀) (residue_field (integral_closure K₀ L)) _ _ 
-  (alg K L) :=
+
+def finite_residue_field_of_integral_closure [is_separable K L] 
+  (hres : fintype (local_ring.residue_field K₀)) :
+  fintype (local_ring.residue_field (integral_closure K₀ L)) :=
 begin
-  letI := alg K L,
-  letI h3 : discrete_valuation_ring (integral_closure K₀ L) :=
-  dvr_of_finite_extension K L,
-  letI h2 : is_principal_ideal_ring (integral_closure K₀ L) :=
-  discrete_valuation_ring.to_is_principal_ideal_ring,
-  letI h1 : is_dedekind_domain (integral_closure K₀ L) :=
-  discrete_valuation_ring.to_is_principal_ideal_ring.is_dedekind_domain _,
-  have : @finite_dimensional 
-    (K₀ ⧸ local_ring.maximal_ideal K₀) 
-    ((integral_closure K₀ L) ⧸ (prime_factor K L : ideal (integral_closure K₀ L))) :=
-  sorry,
-
-  /- letI h2 : is_principal_ideal_ring (integral_closure K₀ L) :=
-  discrete_valuation_ring.to_is_principal_ideal_ring,
-  letI h1 : is_dedekind_domain (integral_closure K₀ L) :=
-  discrete_valuation_ring.to_is_principal_ideal_ring.is_dedekind_domain _,
-/-   letI : module (residue_field K₀)
-    (↥(integral_closure K₀ L) ⧸ (prime_factor K L : ideal (integral_closure K₀ L))) :=
-  sorry, -/
-  have : finite_dimensional 
-    (↥(valued.v.valuation_subring) ⧸ local_ring.maximal_ideal ↥(valued.v.valuation_subring)) 
-  (↥(integral_closure ↥(valued.v.valuation_subring) L) ⧸ ↑(prime_factor K L)) := 
-  @ideal.factors.finite_dimensional_quotient K₀ _ (integral_closure K₀ L) _
-    (local_ring.maximal_ideal K₀) _ _ _ _ _ (prime_factor K L),
-  sorry,
-  /- have /- : finite_dimensional (residue_field K₀) 
-    (((integral_closure K₀ L) ⧸ (prime_factor K L : ideal (integral_closure K₀ L))))  -/:= 
-  @ideal.factors.finite_dimensional_quotient K₀ _ (integral_closure K₀ L) _
-    (local_ring.maximal_ideal K₀) _ _ _ _ _ (prime_factor K L), -/
-  set e : residue_field (integral_closure K₀ L) ≃ₗ[(residue_field K₀)] 
-    ((integral_closure K₀ L)⧸(prime_factor K L : ideal (integral_closure K₀ L))) := -/
-  sorry,
-
-  apply e.finite_dimensional,
-  rw hK,
-  unfold local_ring.residue_field,
-    
-  --erw prime_factor_coe_eq_max_ideal K L at this,
-  
-   
-  sorry
+  letI := finite_dimensional_residue_field_of_integral_closure K L,
+  exact /- fintype.finite -/ (module.fintype_of_fintype (finite_dimensional.fin_basis 
+    (local_ring.residue_field K₀) (local_ring.residue_field (integral_closure K₀ L)))),
 end
 
-#exit
-
-noncomputable!
-definition finite_residue_field_of_integral_closure (L : Type*) [field L] [algebra K L]
-[finite_dimensional K L] (hres : fintype (local_ring.residue_field K₀)) :
- finite (local_ring.residue_field (integral_closure K₀ L)) :=
-begin
-  letI h1: is_noetherian ↥(valued.v.valuation_subring) 
-    (integral_closure ↥(valued.v.valuation_subring) L) := sorry,
-  have := @ideal.factors.finite_dimensional_quotient K₀ _ (integral_closure K₀ L) _
-  (local_ring.maximal_ideal K₀) _ _ _ h1 _ (prime_factor K L), 
-  --erw prime_factor_coe_eq_max_ideal K L at this,
-
-   
-  sorry
-end
-
-noncomputable!
-definition finite_residue_field_of_unit_ball (L : Type*) [field L] [algebra K L]
-[finite_dimensional K L] (hres : fintype (local_ring.residue_field K₀)) :
- fintype (local_ring.residue_field (w K L).valuation_subring) :=
+def finite_residue_field_of_unit_ball [is_separable K L] 
+  (hres : fintype (local_ring.residue_field K₀)) :
+ fintype (local_ring.residue_field (extension K L).valuation_subring) :=
 @fintype.of_equiv _ _ (finite_residue_field_of_integral_closure K L hres) 
   (local_ring.residue_field.map_equiv
-  (ring_equiv.subring_congr (integral_closure_eq_integer K L))).to_equiv
+  (ring_equiv.subring_congr 
+  (discrete_valuation.extension.integral_closure_eq_integer K L))).to_equiv
 
 
 end discrete_valuation
+
+#lint
