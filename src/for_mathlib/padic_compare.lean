@@ -75,7 +75,9 @@ begin
     rw [← heq, padic_val_rat.of_int_multiplicity (nat.prime.ne_one _inst_1.1) hx,
       to_add_of_add, neg_inj, nat.cast_inj, ← part_enat.coe_inj, part_enat.coe_get,
       multiplicity_eq_count_normalized_factors hp.irreducible hx, int.normalize_coe_nat,
-      part_enat.coe_inj, count_normalized_factors_eq_count_normalized_factors_span hx (ne_zero.ne p) rfl hp, count_normalized_factors_eq_associates_count hx' hp' hpne],
+      part_enat.coe_inj, count_normalized_factors_eq_count_normalized_factors_span hx 
+        (ne_zero.ne p) rfl hp, 
+      is_dedekind_domain.count_normalized_factors_eq_associates_count hx' hp' hpne],
     refl },
 end
 
