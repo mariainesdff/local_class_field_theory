@@ -12,7 +12,7 @@ import ring_theory.dedekind_domain.ideal
 import ring_theory.laurent_series
 import ring_theory.power_series.well_known
 
-import for_mathlib.algebra_comp
+--import for_mathlib.algebra_comp
 import for_mathlib.ring_theory.dedekind_domain.ideal
 
 open polynomial is_dedekind_domain.height_one_spectrum topological_space ratfunc
