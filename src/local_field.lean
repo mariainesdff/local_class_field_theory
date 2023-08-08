@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2023 María Inés de Frutos-Fernández, Filippo A. E. Nuccio. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
+-/
+
 import eq_characteristic.valuation
 import mixed_characteristic.valuation
 import from_mathlib.rank_one_valuation

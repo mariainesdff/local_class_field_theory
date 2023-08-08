@@ -1,3 +1,9 @@
+/-
+Copyright (c) 2023 María Inés de Frutos-Fernández, Filippo A. E. Nuccio. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
+-/
+
 import field_theory.finite.galois_field
 import ring_theory.dedekind_domain.adic_valuation
 import ring_theory.dedekind_domain.integral_closure
