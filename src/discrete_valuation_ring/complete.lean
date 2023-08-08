@@ -176,7 +176,7 @@ begin
     have hrn : w (r ^ n) = of_add (-(n : ℤ)),
     { have := submodule.is_principal.span_singleton_generator (maximal_ideal (w.valuation_subring)),
       rw ← hr at this,
-      replace this := discrete_valuation.uniformizer_of_generator w this.symm,
+      replace this := discrete_valuation.is_uniformizer_of_generator w this.symm,
       rw is_uniformizer_iff at this,
       simp only [this, valuation.map_pow, of_add_neg, with_zero.coe_inv, inv_pow, inv_inj, 
         ← with_zero.coe_pow, ← of_add_nsmul, nat.smul_one_eq_coe],  },
