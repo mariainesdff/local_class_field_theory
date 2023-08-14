@@ -582,9 +582,9 @@ end
 
 --FROM NOW ON WE SHOULD THINK IF WE WANT TO KEEP THESE RESULTS
 
-lemma finrank_eq : finite_dimensional.finrank hv.v.valuation_subring 
+/- lemma finrank_eq : finite_dimensional.finrank hv.v.valuation_subring 
   (integral_closure hv.v.valuation_subring L) = finite_dimensional.finrank K L :=
-sorry
+sorry -/
 
 end integral_closure
 
