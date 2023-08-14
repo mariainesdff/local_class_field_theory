@@ -31,7 +31,6 @@ include hv
 
 variables (L : Type v) [field L] [algebra K L] 
 
-
 -- TODO: move to DVR.basic/extensions
 instance : no_zero_smul_divisors K₀ (integral_closure K₀ L) := 
 { eq_zero_or_eq_zero_of_smul_eq_zero := λ c x h,
@@ -100,14 +99,10 @@ noncomputable! def prime_factor (L : Type*) [field L] [algebra K L] [finite_dime
     (local_ring.maximal_ideal K₀))).to_finset) :=
 ⟨(bar K L).some, multiset.mem_to_finset.mpr (bar K L).some_spec⟩
 
-
 lemma prime_factor_coe_eq_max_ideal : (prime_factor K L : ideal (integral_closure K₀ L)) =
   local_ring.maximal_ideal (integral_closure K₀ L) :=
-begin
-  sorry
-end
-
-#exit
+local_ring.eq_maximal_ideal (is_prime.to_maximal_ideal
+  (prime.ne_zero (unique_factorization_monoid.prime_of_factor _ (bar K L).some_spec)))
 
 instance [is_separable K L] : 
   is_noetherian K₀ (integral_closure K₀ L) :=
