@@ -21,10 +21,22 @@ namespace discrete_valuation
 
 section complete
 
-variables {K : Type*} [field K] [hv : valued K ℤₘ₀] [is_discrete hv.v] {L : Type*} [field L] 
-  [algebra K L] [complete_space K] 
+variables {K : Type*} [field K] [hv : valued K ℤₘ₀] {L : Type*} [field L] [algebra K L]
 
 include hv
+
+local notation `K₀` := hv.v.valuation_subring
+
+instance : no_zero_smul_divisors K₀ (integral_closure K₀ L) := 
+{ eq_zero_or_eq_zero_of_smul_eq_zero := λ c x h,
+  begin
+    rw [algebra.smul_def, mul_eq_zero] at h,
+    refine h.imp_left (λ hc, _),
+    rw ← map_zero (algebra_map K₀ (integral_closure K₀ L)) at hc,
+    exact is_fraction_ring.injective K₀ K ((algebra_map K L).injective (subtype.ext_iff.mp hc)),
+  end }
+
+variables [is_discrete hv.v] [complete_space K]
 
 lemma map_mul_aux [finite_dimensional K L] (x y : Lˣ) : 
   valued.v ((minpoly K ((x : L) * ↑y)).coeff 0) ^ 
@@ -590,10 +602,9 @@ end integral_closure
 
 variables [finite_dimensional K L] 
 
-local notation `K₀` := hv.v.valuation_subring
 local notation `L₀` := (extension K L).valuation_subring
 
-def valuation_subring.algebra [is_fraction_ring K₀ K] : algebra K₀ L₀ :=
+def valuation_subring.algebra : algebra K₀ L₀ :=
 begin
   have h : algebra hv.v.valuation_subring (extension K L).valuation_subring.to_subring,
   { rw ← integral_closure_eq_integer,
