@@ -71,20 +71,23 @@ begin
   rw map_eq_zero_iff,
   
   sorry,
-  { exact no_zero_smul_divisors.algebra_map_injective _ _} -/
-
-  -- This commented out proof works for the old definition of prime_factor'
-  
+  { exact no_zero_smul_divisors.algebra_map_injective _ _} -/  
 end
 
 
 --set_option profiler true
 lemma prime_factor'_not_is_unit : ¬ is_unit (prime_factor' K L) :=
 begin
-  --rw [prime_factor', ideal.map],
+  have h : ideal.span {submodule.is_principal.generator (local_ring.maximal_ideal K₀)} =
+    local_ring.maximal_ideal K₀,
+  { exact submodule.is_principal.span_singleton_generator _, },
+
   rw ideal.is_unit_iff,
   rw ideal.eq_top_iff_one,
   rw [prime_factor'],
+  rw ← submodule.is_principal.span_singleton_generator (local_ring.maximal_ideal K₀),
+  rw ideal.submodule_span_eq,
+  rw ideal.map_span,
   
  -- intro h1,
   
