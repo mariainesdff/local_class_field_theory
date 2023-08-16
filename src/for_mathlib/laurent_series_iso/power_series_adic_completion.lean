@@ -504,7 +504,28 @@ end complete
 
 section dense 
 
-lemma coe_range_dense : dense_range (coe : (ratfunc K) → (laurent_series K)) := sorry
+lemma exists_ratfunc_val_lt (f : laurent_series K) (γ : ℤₘ₀ˣ) :
+  ∃ (P : ratfunc K), valued.v (f - P) < γ :=
+begin
+  sorry,
+end
+
+lemma coe_range_dense : dense_range (coe : (ratfunc K) → (laurent_series K)) :=
+begin
+  rw dense_range_iff_closure_range,
+  ext f,
+  simp only [mem_closure_iff_symm_ball, set.mem_univ, iff_true, set.nonempty, set.mem_inter_iff,
+    set.mem_range, set.mem_set_of_eq, exists_exists_eq_and],
+  intros V hV h_symm,  
+  rw [uniformity_eq_comap_neg_add_nhds_zero_swapped] at hV,
+  obtain ⟨T, hT₀, hT₁⟩ := hV,
+  obtain ⟨γ, hγ⟩ := valued.mem_nhds_zero.mp hT₀,
+  obtain ⟨P, _⟩ := exists_ratfunc_val_lt K f γ,
+  use P,
+  apply hT₁,
+  apply hγ,
+  simpa only [set.mem_set_of_eq, add_comm, ← sub_eq_add_neg],
+end
 
 end dense
 
