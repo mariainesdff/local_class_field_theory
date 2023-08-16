@@ -504,9 +504,38 @@ end complete
 
 section dense 
 
+def laurent_series.trunc (f : laurent_series K) (d : ℕ) : ratfunc K :=
+if hf : f = 0 then 0 else ratfunc.X ^ (f.order) * ↑((f.power_series_part).trunc d)
+
+lemma trunc_coeff_eq_zero_of_lt (f : laurent_series K) {d n: ℕ} (h : n < d) :
+  ((f.power_series_part).trunc d).coeff n = 0 :=
+begin
+  sorry,
+end
+
+lemma trunc_coeff_eq_coeff_of_ge (f : laurent_series K) {d n: ℕ} (h : d ≤ n) :
+  ((f.power_series_part).trunc d).coeff n = 0 := sorry
+
+lemma int_valuation_trunc_sub (f : laurent_series K) {d₁ d₂ : ℕ} (hd : d₁ ≤ d₂) :
+  (ideal_X K).int_valuation ((f.power_series_part).trunc d₂ - (f.power_series_part).trunc d₁)
+    ≤ ↑(multiplicative.of_add (- (d₁ : ℤ))) :=
+begin
+  set g := (f.power_series_part).trunc d₂ - (f.power_series_part).trunc d₁ with hg,
+  by_cases H : g ≠ 0,
+  { have h_coeff : polynomial.X ^ d₁ ∣ g,
+    { rw polynomial.X_pow_dvd_iff,
+      intros m hm,
+      rw [coeff_sub, trunc_coeff_eq_zero_of_lt K f hm, trunc_coeff_eq_zero_of_lt K f
+        (lt_of_lt_of_le hm hd), zero_sub_zero]},
+  rwa [← hg, fae_int_valuation_apply, int_valuation_le_pow_iff_dvd, ideal_X_span,
+    dvd_span_singleton, span_singleton_pow, mem_span_singleton] },
+  { simp only [← hg, not_not.mp H, valuation.map_zero, zero_le'] }
+end
+
 lemma exists_ratfunc_val_lt (f : laurent_series K) (γ : ℤₘ₀ˣ) :
   ∃ (P : ratfunc K), valued.v (f - P) < γ :=
 begin
+  -- let F := power_series_part
   sorry,
 end
 
