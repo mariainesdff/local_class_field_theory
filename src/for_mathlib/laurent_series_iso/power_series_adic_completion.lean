@@ -504,8 +504,13 @@ end complete
 
 section dense 
 
+lemma val_sub_trunc (F : power_series K) (n : ℕ) : 
+  n ≤ (power_series.ideal_X K).int_valuation (F - ↑(ratfunc.X ^ (F.order))*(F.trunc n)) := sorry
+
 def laurent_series.trunc (f : laurent_series K) (d : ℕ) : ratfunc K :=
-if hf : f = 0 then 0 else ratfunc.X ^ (f.order) * ↑((f.power_series_part).trunc d)
+if hf : 0 ≤ ↑d - f.order then ratfunc.X ^ (f.order) * ↑((f.power_series_part).trunc 
+  ((int.eq_coe_of_zero_le hf).some + 1))
+else ratfunc.X ^ (f.order)
 
 lemma trunc_coeff_eq_zero_of_lt (f : laurent_series K) {d n: ℕ} (h : n < d) :
   ((f.power_series_part).trunc d).coeff n = 0 :=
