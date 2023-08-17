@@ -12,7 +12,8 @@ import topology.uniform_space.abstract_completion
 
 noncomputable theory
 
-open uniform_space power_series abstract_completion is_dedekind_domain.height_one_spectrum polynomial
+open uniform_space power_series abstract_completion is_dedekind_domain.height_one_spectrum
+  polynomial
 open_locale discrete_valuation
 
 namespace completion_laurent_series
@@ -45,7 +46,7 @@ lemma power_series.X_eq_normalize :
   (power_series.X : (power_series K)) = normalize power_series.X :=
 by simp only [normalize_apply, power_series.norm_unit_X, units.coe_one, mul_one]
 
-lemma aux_old_pol (P : (polynomial K)) (hP : P ≠ 0) : 
+lemma factors_in_pol_eq_power_series (P : (polynomial K)) (hP : P ≠ 0) : 
   (normalized_factors (ideal.span {↑P})).count (power_series.ideal_X K).as_ideal =
   (normalized_factors (ideal.span {P})).count (ideal.span {polynomial.X} : ideal (polynomial K)) :=
 begin
@@ -76,7 +77,7 @@ begin
     rwa [← polynomial.coeff_coe P d] at aux_pol },
 end
 
-lemma should_be_in_old_pol (P : (polynomial K)) : (ideal_X K).int_valuation (P) =
+lemma pol_int_valuation_eq_power_series (P : (polynomial K)) : (ideal_X K).int_valuation (P) =
   (power_series.ideal_X K).int_valuation (↑P : (power_series K)) :=
 begin
   by_cases hP : P = 0,
@@ -98,12 +99,11 @@ begin
     ((power_series.ideal_X K).as_ideal : ideal (power_series K)) ≠ 0 := by simp only [ne.def, 
       ideal.zero_eq_bot, ideal.span_singleton_eq_bot, coe_ne_zero hP, power_series.X_ne_zero,
       not_false_iff, and_self, (power_series.ideal_X K).3],
-    rw [← aux_old_pol _ _ hP],
+    rw [← factors_in_pol_eq_power_series _ _ hP],
     convert (@count_normalized_factors_eq_associates_count' K _ (ideal.span {↑P})
     (power_series.ideal_X K).as_ideal span_ne_zero'.1 (power_series.ideal_X K).2
       span_ne_zero'.2).symm }
 end
-
 
 instance : valued (laurent_series K) ℤₘ₀ := valued.mk' (power_series.ideal_X K).valuation
 
@@ -112,8 +112,9 @@ section complete
 open filter topological_space laurent_series
 open_locale filter topology uniformity
 
-lemma coeff_zero_of_lt_int_valuation {n d : ℕ} {f : power_series K} (H : valued.v (f : laurent_series K) ≤
-  ↑(multiplicative.of_add ((- d) : ℤ))) : n < d → coeff K n f = 0 :=
+lemma coeff_zero_of_lt_int_valuation {n d : ℕ} {f : power_series K}
+  (H : valued.v (f : laurent_series K) ≤
+    ↑(multiplicative.of_add ((- d) : ℤ))) : n < d → coeff K n f = 0 :=
 begin
   intro hnd,
   convert (@power_series.X_pow_dvd_iff K _ d f).mp _ n hnd,
@@ -406,9 +407,9 @@ begin
   exact hd (hℱ.bot₂.some_spec d hNd),
 end
 
-def cauchy.mk_laurent_series {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ) : (laurent_series K) :=
-hahn_series.mk (λ d, hℱ.coeff d)
-  (set.is_wf.is_pwo (hℱ.coeff_support_bdd.well_founded_on_lt))
+def cauchy.mk_laurent_series {ℱ : filter (laurent_series K)}
+  (hℱ : cauchy ℱ) : (laurent_series K) :=
+hahn_series.mk (λ d, hℱ.coeff d) (set.is_wf.is_pwo (hℱ.coeff_support_bdd.well_founded_on_lt))
 
 
 open_locale big_operators
@@ -576,13 +577,15 @@ lemma ovvio' (f : (polynomial K)) (g : polynomial K) (hg : g ≠ 0) :
   ((ideal_X K).int_valuation f) / ((ideal_X K).int_valuation g) :=
 by simp only [ovvio _ _ _ hg, valuation_of_mk', set_like.coe_mk]
 
+--the lemma below exists almost in the same form as `fae_coe` in `old_power_series...`, and they 
+-- must be made uniform
 lemma ratfunc.coe_coe (f : polynomial K) : (↑(algebra_map (polynomial K) (ratfunc K) f) :
   (laurent_series K)) = (algebra_map (power_series K) (laurent_series K)) f :=
 by {rw [ratfunc.coe_def, coe_alg_hom, lift_alg_hom_apply, denom_algebra_map f, map_one, div_one,
   num_algebra_map], refl}
 
 
-lemma should_be_in_old' (P: (ratfunc K)) : (ideal_X K).valuation (P) =
+lemma ratfunc_valuation_eq_power_series (P: (ratfunc K)) : (ideal_X K).valuation (P) =
   (power_series.ideal_X K).valuation ((↑P : (laurent_series K))) :=
 begin
   apply ratfunc.induction_on' P,
@@ -600,17 +603,7 @@ begin
   have := @valuation_of_mk' (power_series K) _ _ _ (laurent_series K) _ _ _
     (power_series.ideal_X K) ↑f ⟨g, mem_non_zero_divisors_iff_ne_zero.2 $ coe_ne_zero h⟩,
   convert this;
-  apply should_be_in_old_pol,
-end
-
-
-lemma should_be_in_old (P₁ P₂ : (ratfunc K)) : valued.v (P₁ - P₂) =
-  valued.v ((↑P₁ : (laurent_series K)) - ↑P₂) :=
-begin
-  have : valued.v (P₁ - P₂) = (ideal_X K).valuation (P₁ - P₂),
-  refl,
-  rw [this, should_be_in_old', ratfunc.coe_sub],
-  refl,
+  apply pol_int_valuation_eq_power_series,
 end
 
 lemma coe_is_inducing : uniform_inducing (coe : (ratfunc K) → (laurent_series K)) :=
@@ -629,7 +622,9 @@ begin
       rintros _ _,
       apply pre_R,
       apply hd,
-      rwa [set.mem_set_of_eq, sub_zero, ← should_be_in_old], }},
+      simp only,
+      erw [set.mem_set_of_eq, sub_zero, ← ratfunc.coe_sub, ← ratfunc_valuation_eq_power_series],
+      assumption, }},
   { rintros ⟨T, ⟨hT, pre_T⟩⟩,
     obtain ⟨d, hd⟩ := valued.mem_nhds.mp hT,
     let X := {f : (laurent_series K) | valued.v f < ↑d},
@@ -640,7 +635,9 @@ begin
       refine subset_trans _ pre_T,
       rintros _ _,
       apply hd,
-      rwa [set.mem_set_of_eq, sub_zero, should_be_in_old] }},
+      simp only,
+      erw [set.mem_set_of_eq, sub_zero, ratfunc_valuation_eq_power_series, ratfunc.coe_sub],
+      assumption }},
 end
 
 lemma unif_cont_coe : uniform_continuous (coe : (ratfunc K) → (laurent_series K)) :=
