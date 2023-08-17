@@ -507,31 +507,38 @@ section dense
 
 open laurent_series
 
-lemma exists_pol_int_val_lt (F : power_series K) (γ : ℤₘ₀) : ∃ (P : polynomial K),
-  (power_series.ideal_X K).int_valuation (F - P) < γ := sorry
-
+lemma exists_pol_int_val_lt (F : power_series K) (η : ℤₘ₀ˣ) : ∃ (P : polynomial K),
+  (power_series.ideal_X K).int_valuation (F - P) < η :=
+begin
+  let D := multiplicative.to_add (with_zero.unzero hη),
+  use F.trunc 1,
+  sorry,
+end
 
 lemma exists_ratfunc_val_lt (f : laurent_series K) (γ : ℤₘ₀ˣ) :
   ∃ (Q : ratfunc K), valued.v (f - Q) < γ :=
 begin
   set F := f.power_series_part with hF,
-  by_cases ord_nonpos : f.order ≤ 0,
-  { obtain ⟨P, hP⟩ := exists_pol_int_val_lt K F (multiplicative.of_add f.order * γ),
+  by_cases ord_nonpos : f.order < 0,
+  { have h₀ : ((multiplicative.of_add f.order) : ℤₘ₀) ≠ 0 := with_zero.coe_ne_zero,
+    set η : ℤₘ₀ˣ := units.mk0 (multiplicative.of_add f.order) h₀ with hη,
+    obtain ⟨P, hP⟩ := exists_pol_int_val_lt K F (η * γ),
     use (ratfunc.X)^(f.order) * ↑P,
     have F_mul := f.of_power_series_power_series_part,
-    obtain ⟨s, hs⟩ := int.exists_eq_neg_of_nat ord_nonpos,
+    obtain ⟨s, hs⟩ := int.exists_eq_neg_of_nat (le_of_lt ord_nonpos),
     rw [← hF, hs, neg_neg, ← hahn_series.of_power_series_X_pow s, ← laurent_series.coe_power_series,
       ← laurent_series.coe_power_series, ← inv_mul_eq_iff_eq_mul₀] at F_mul,
     erw [hs, ← F_mul, power_series.coe_pow, power_series.coe_X, ratfunc.coe_mul, zpow_neg,
      zpow_coe_nat, inv_eq_one_div (ratfunc.X ^ s), ratfunc.coe_div, ratfunc.coe_pow, ratfunc.coe_X,
      ratfunc.coe_one, ← inv_eq_one_div, ← mul_sub, map_mul, map_inv₀, ← power_series.coe_X,
      valuation_of_X_zpow, ← hs, ← fae_coe, ← coe_sub, laurent_series.coe_power_series, 
-     ← laurent_series.coe_algebra_map, valuation_of_algebra_map],
-    apply inv_mul_lt_of_lt_mul₀ hP,
+     ← laurent_series.coe_algebra_map, valuation_of_algebra_map, ← units.coe_mk0 h₀, ← hη],
+    apply inv_mul_lt_of_lt_mul₀,
+    rwa ← units.coe_mul,
     { simp only [power_series.coe_pow, pow_ne_zero, power_series.coe_X, ne.def,
       hahn_series.single_eq_zero_iff, one_ne_zero, not_false_iff] }},
-    { obtain ⟨s, hs⟩ := int.exists_eq_neg_of_nat (int.neg_nonpos_of_nonneg (le_of_lt 
-      (not_le.mp ord_nonpos))),
+    { obtain ⟨s, hs⟩ := int.exists_eq_neg_of_nat (int.neg_nonpos_of_nonneg 
+      (not_lt.mp ord_nonpos)),      
       simp only [neg_inj] at hs,
       have hf_coe : ↑((power_series.X)^s * F) = f,
       { rw [← f.single_order_mul_power_series_part, hs, hF, power_series.coe_mul,
