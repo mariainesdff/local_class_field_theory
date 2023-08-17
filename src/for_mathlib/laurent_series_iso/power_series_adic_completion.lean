@@ -510,9 +510,18 @@ open laurent_series
 lemma exists_pol_int_val_lt (F : power_series K) (η : ℤₘ₀ˣ) : ∃ (P : polynomial K),
   (power_series.ideal_X K).int_valuation (F - P) < η :=
 begin
-  let D := multiplicative.to_add (with_zero.unzero hη),
-  use F.trunc 1,
-  sorry,
+  let D := multiplicative.to_add (with_zero.unzero η.ne_zero) - 1,
+  by_cases hD : D < 0,
+  { sorry,
+
+  },
+  { obtain ⟨d, hd⟩ := int.eq_coe_of_zero_le (not_lt.mp hD),
+    use F.trunc d,
+    have := valuation_le_of_coeff_eventually_eq,
+    --usare piuttosto `int_valuation_le_iff_coeff_zero_of_lt`
+    have trunc_prop : ∀ m : ℕ, m < d → (power_series.coeff K m F) =
+      (power_series.coeff K m ↑(F.trunc d)),
+  }
 end
 
 lemma exists_ratfunc_val_lt (f : laurent_series K) (γ : ℤₘ₀ˣ) :
