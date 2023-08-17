@@ -60,46 +60,70 @@ open laurent_series hahn_series
 lemma val_X_fae : ((X : ratfunc K): laurent_series K).order = 1 :=
 by simp only [ratfunc.coe_X, hahn_series.order_single, ne.def, one_ne_zero, not_false_iff]
 
-lemma fae_X_pow (n : ℕ) : (hahn_series.single (n : ℤ) 1) =
-  ((X :ratfunc K) : laurent_series K) ^ n :=
+
+-- lemma fae_X_pow (n : ℕ) : (hahn_series.single (n : ℤ) 1) =
+--   ((X :ratfunc K) : laurent_series K) ^ n :=
+-- begin
+-- induction n with n h_ind,
+--     { simp only [nat.nat_zero_eq_zero, int.of_nat_eq_coe, zmod.nat_cast_self, zpow_zero],
+--      refl, },
+--     { rw ← int.coe_nat_add_one_out,
+--       rw [← one_mul (1 : K)],
+--       rw ← hahn_series.single_mul_single,
+--       rw h_ind,
+--       rw ratfunc.coe_X,
+--       rw pow_succ' },
+-- end
+
+---**for mathlib! (and used below)**
+lemma fae_single_pow (n : ℕ) : (hahn_series.single (n : ℤ) (1 : K)) =
+  (hahn_series.single (1 : ℤ) 1) ^ n :=
 begin
-induction n with n h_ind ,
+induction n with n h_ind,
     { simp only [nat.nat_zero_eq_zero, int.of_nat_eq_coe, zmod.nat_cast_self, zpow_zero],
      refl, },
-    { rw ← int.coe_nat_add_one_out,
-      rw [← one_mul (1 : K)],
-      rw ← hahn_series.single_mul_single,
-      rw h_ind,
-      rw ratfunc.coe_X,
-      rw pow_succ' },
+    { rw [← int.coe_nat_add_one_out, ← one_mul (1 : K), ← hahn_series.single_mul_single, h_ind,
+      pow_succ', one_mul (1 : K)]},
 end
 
+---**for mathlib! (and used below)**
 lemma fae_single_inv (d : ℤ) (α : K) (hα : α ≠ 0) : (hahn_series.single (d : ℤ) (α : K))⁻¹ 
   = hahn_series.single (-d) (α⁻¹ : K) :=
 by {rw [inv_eq_of_mul_eq_one_left], simpa only [hahn_series.single_mul_single, 
   add_left_neg, inv_mul_cancel hα]}
 
-
-lemma fae_X_zpow (n : ℤ) : (hahn_series.single (n : ℤ) 1) =
-  ((X :ratfunc K) : laurent_series K) ^ n :=
+---**for mathlib! (and used in `power_series_adic_completion`)**
+lemma fae_single_zpow (n : ℤ) : (hahn_series.single (n : ℤ) (1 : K)) =
+  (hahn_series.single (1 : ℤ) 1) ^ n :=
 begin
   induction n with n_pos n_neg,
-  apply fae_X_pow,
-  rw ratfunc.coe_X,
-  have := fae_single_inv K ((n_neg + 1) : ℤ) 1 one_ne_zero,
-  rw int.neg_succ_of_nat_coe,
-  rw int.coe_nat_add,
-  rw nat.cast_one,
-  nth_rewrite 0 [← inv_one],
-  rw ← this,
-  rw zpow_neg,
-  rw ← nat.cast_one,
-  rw ← int.coe_nat_add,
-  rw fae_X_pow,
-  rw ratfunc.coe_X,
-  rw [algebra_map.coe_one, inv_inj],
-  rw zpow_coe_nat,
+  { apply fae_single_pow },
+  { rw [int.neg_succ_of_nat_coe, int.coe_nat_add, nat.cast_one, ← inv_one, ← fae_single_inv K 
+      ((n_neg + 1) : ℤ) 1 one_ne_zero, zpow_neg,
+      ← nat.cast_one, ← int.coe_nat_add, algebra_map.coe_one, inv_inj, zpow_coe_nat, fae_single_pow,
+      inv_one] },
 end
+
+-- lemma fae_X_zpow (n : ℤ) : (hahn_series.single (n : ℤ) 1) =
+--   ((X :ratfunc K) : laurent_series K) ^ n :=
+-- begin
+--   induction n with n_pos n_neg,
+--   apply fae_X_pow,
+--   rw ratfunc.coe_X,
+--   have := fae_single_inv K ((n_neg + 1) : ℤ) 1 one_ne_zero,
+--   rw int.neg_succ_of_nat_coe,
+--   rw int.coe_nat_add,
+--   rw nat.cast_one,
+--   nth_rewrite 0 [← inv_one],
+--   rw ← this,
+--   rw zpow_neg,
+--   rw ← nat.cast_one,
+--   rw ← int.coe_nat_add,
+--   rw fae_X_pow,
+--   rw ratfunc.coe_X,
+--   rw [algebra_map.coe_one, inv_inj],
+--   rw zpow_coe_nat,
+-- end
 
 
 namespace hahn_series
@@ -485,7 +509,7 @@ lemma fae_order_div {a b : laurent_series K} (ha : a ≠ 0) (hb : b ≠ 0) : (a 
   a.order - b.order := 
 by rwa [div_eq_mul_inv, hahn_series.order_mul ha (inv_ne_zero hb), fae_order_inv, sub_eq_add_neg]
 
--- `FAE` for mathlib?
+-- `FAE` for mathlib? **USED** in `power_series_adic_completion`
 lemma fae_coe (P : polynomial K) : (P : laurent_series K) = (↑P : ratfunc K) :=
   by { erw [ratfunc.coe_def, ratfunc.coe_alg_hom, lift_alg_hom_apply, ratfunc.num_algebra_map,
     ratfunc.denom_algebra_map P, map_one, div_one], refl}
