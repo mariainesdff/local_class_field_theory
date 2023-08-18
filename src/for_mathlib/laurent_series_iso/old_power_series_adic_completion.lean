@@ -21,8 +21,8 @@ open polynomial is_dedekind_domain.height_one_spectrum topological_space ratfunc
 open_locale big_operators discrete_valuation uniformity filter topology
 
 -- `[FAE]` This is `#18604`
-lemma bdd_below.well_founded_on_lt {X : Type} [preorder X] {s : set X} : 
-  bdd_below s → s.well_founded_on (<) := sorry
+-- lemma bdd_below.well_founded_on_lt {X : Type} [preorder X] {s : set X} : 
+--   bdd_below s → s.well_founded_on (<) := sorry
 
 variables (K : Type*) [field K]
 
@@ -41,24 +41,24 @@ instance : uniform_space (completion_of_ratfunc K) := infer_instance
 
 variable (F : completion_of_ratfunc K)
 
-def entourage (d : ℤ) : set (ratfunc K × ratfunc K) :=
-  {P | (ideal_X K).valuation (P.1 - P.2) < ↑(multiplicative.of_add (- d))}
+-- def entourage (d : ℤ) : set (ratfunc K × ratfunc K) :=
+--   {P | (ideal_X K).valuation (P.1 - P.2) < ↑(multiplicative.of_add (- d))}
 
-lemma fae_for_pol (f  : polynomial K) (d : ℕ) (hf : (ideal_X K).int_valuation f ≤ 
-  ↑(multiplicative.of_add (- (d+(1 : ℕ)) : ℤ))) : f.coeff d = 0 :=
-begin 
-  erw [int_valuation_le_pow_iff_dvd _ _ (d+1)] at hf,
-  simp only [ideal_X_span, ideal.dvd_span_singleton, ideal.span_singleton_pow,
-    ideal.mem_span_singleton'] at hf,
-  cases hf with a ha,
-  simp only [← ha, coeff_mul_X_pow', add_le_iff_nonpos_right, le_zero_iff, nat.one_ne_zero,
-    if_false],
-end
+-- lemma fae_for_pol (f  : polynomial K) (d : ℕ) (hf : (ideal_X K).int_valuation f ≤ 
+--   ↑(multiplicative.of_add (- (d+(1 : ℕ)) : ℤ))) : f.coeff d = 0 :=
+-- begin 
+--   erw [int_valuation_le_pow_iff_dvd _ _ (d+1)] at hf,
+--   simp only [ideal_X_span, ideal.dvd_span_singleton, ideal.span_singleton_pow,
+--     ideal.mem_span_singleton'] at hf,
+--   cases hf with a ha,
+--   simp only [← ha, coeff_mul_X_pow', add_le_iff_nonpos_right, le_zero_iff, nat.one_ne_zero,
+--     if_false],
+-- end
 
 open laurent_series hahn_series
 
-lemma val_X_fae : ((X : ratfunc K): laurent_series K).order = 1 :=
-by simp only [ratfunc.coe_X, hahn_series.order_single, ne.def, one_ne_zero, not_false_iff]
+-- lemma val_X_fae : ((X : ratfunc K): laurent_series K).order = 1 :=
+-- by simp only [ratfunc.coe_X, hahn_series.order_single, ne.def, one_ne_zero, not_false_iff]
 
 
 -- lemma fae_X_pow (n : ℕ) : (hahn_series.single (n : ℤ) 1) =
@@ -104,6 +104,12 @@ begin
       inv_one] },
 end
 
+-- `FAE` for mathlib? **+USED** in `power_series_adic_completion`
+lemma fae_coe (P : polynomial K) : (P : laurent_series K) = (↑P : ratfunc K) :=
+  by { erw [ratfunc.coe_def, ratfunc.coe_alg_hom, lift_alg_hom_apply, ratfunc.num_algebra_map,
+    ratfunc.denom_algebra_map P, map_one, div_one], refl}
+
+
 -- lemma fae_X_zpow (n : ℤ) : (hahn_series.single (n : ℤ) 1) =
 --   ((X :ratfunc K) : laurent_series K) ^ n :=
 -- begin
@@ -125,7 +131,7 @@ end
 --   rw zpow_coe_nat,
 -- end
 
-
+#exit
 namespace hahn_series
 open set
 variables {Γ Γ' R : Type*}  
@@ -255,10 +261,11 @@ end
 
 end hahn_series
 
--- FAE for `mathlib`? **USED** IN `power_series_adic_completion`
+
 lemma fae_int_valuation_apply' (f : polynomial K) : 
   ((ideal_X K).int_valuation f) = ((ideal_X K).int_valuation_def f) := refl _
 
+-- FAE for `mathlib`? **+USED** IN `power_series_adic_completion`
 lemma fae_int_valuation_apply {R : Type*} [comm_ring R] [is_domain R] [is_dedekind_domain R] 
   (v : is_dedekind_domain.height_one_spectrum R) {r : R} :
   int_valuation v r = int_valuation_def v r := refl _
@@ -327,6 +334,7 @@ begin
       rwa [hd_pol, part_enat.coe_get] at Hps }}
 end
 
+--**+USED** in `power_series_adic_completion`
 variable {K}
 lemma polynomial.coe_ne_zero {f : polynomial K} : f ≠ 0 → (↑f : (power_series K)) ≠ 0 :=
 by simp only [ne.def, coe_eq_zero_iff, imp_self]
@@ -376,6 +384,7 @@ open unique_factorization_monoid
 --#where
 /- TODO: This lemma is now in the file `ring_theory.dedekind_domain.ideal`, probably line 1446
 [FAE, 7/7/23] Not quite sure, at any rate it is needed in the new version-/
+--**+USED** in `power_series_adic_completion`
 lemma principal_ideal_ring.count_normalized_factors_eq_count_normalized_factors_span {R : Type*}
   [comm_ring R] [is_domain R] [is_principal_ideal_ring R] [normalization_monoid R]
     {r X : R} (hr : r ≠ 0) (hX₀ : X ≠ 0) (hX₁ : norm_unit X = 1 )(hX : prime X) : 
@@ -395,7 +404,7 @@ begin
   {rwa [ne.def, ideal.zero_eq_bot, ideal.span_singleton_eq_bot] },
 end
 
---GOLF BOTH AND UNIFY THEM **USED** in `power_series_adic_completion`!
+--GOLF BOTH AND UNIFY THEM **+USED** in `power_series_adic_completion`!
 lemma count_normalized_factors_eq_associates_count {R : Type*} [comm_ring R]
   [is_domain R] [is_principal_ideal_ring R] [normalization_monoid R] [unique_factorization_monoid R] 
   {I J : ideal R} (hI : I ≠ 0)
@@ -509,10 +518,6 @@ lemma fae_order_div {a b : laurent_series K} (ha : a ≠ 0) (hb : b ≠ 0) : (a 
   a.order - b.order := 
 by rwa [div_eq_mul_inv, hahn_series.order_mul ha (inv_ne_zero hb), fae_order_inv, sub_eq_add_neg]
 
--- `FAE` for mathlib? **USED** in `power_series_adic_completion`
-lemma fae_coe (P : polynomial K) : (P : laurent_series K) = (↑P : ratfunc K) :=
-  by { erw [ratfunc.coe_def, ratfunc.coe_alg_hom, lift_alg_hom_apply, ratfunc.num_algebra_map,
-    ratfunc.denom_algebra_map P, map_one, div_one], refl}
 
 -- `FAE` for mathlib?
 @[simp]
@@ -697,6 +702,7 @@ end
 
 namespace set
 
+--**+USED** in `power_series_adic_completion`
 lemma prod_subset_diag_singleton_left {X : Type*} [nonempty X] {S T : set X} (hS : S.nonempty)
   (hT : T.nonempty) (h_diag : S ×ˢ T ⊆ id_rel) : ∃ x, S = {x} :=
 begin
@@ -733,6 +739,7 @@ end set
 
 open set
 
+--**+USED** in `power_series_adic_completion`
 lemma cauchy_discrete_le_principal {X : Type*} [nonempty X] {uX : uniform_space X}
 (hX : uniformity X = 𝓟 id_rel) {α : filter X} (hα : cauchy α) : ∃ x : X, α ≤ 𝓟 {x} :=
 begin
@@ -748,11 +755,12 @@ begin
   rwa [filter.le_principal_iff, ← hx],
 end
 
+--**+USED** in `power_series_adic_completion`
 def cauchy_discrete_is_constant {X : Type*} [nonempty X] {uX : uniform_space X}
   (hX : uniformity X = 𝓟 id_rel) {α : filter X} (hα : cauchy α) : X :=
 (cauchy_discrete_le_principal hX hα).some
 
---`[fae]` CRUCIALLY USED IN THE NEW VERSION 
+--**+USED** in `power_series_adic_completion`
 lemma cauchy_discrete_le  {X : Type*} [nonempty X] {uX : uniform_space X} 
   (hX : uniformity X = 𝓟 id_rel) {α : filter X} (hα : cauchy α) : 
   α ≤ 𝓟 {cauchy_discrete_is_constant hX hα} := Exists.some_spec (cauchy_discrete_le_principal hX hα)
@@ -767,6 +775,7 @@ lemma cauchy_discrete_le  {X : Type*} [nonempty X] {uX : uniform_space X}
 --   rw [((is_open_singleton_iff_nhds_eq_pure _).mp (top_discrete _)), principal_singleton],
 -- end
 
+--**+USED** in `power_series_adic_completion`
 lemma ne_bot_unique_principal {X : Type*} [uniform_space X] (hX : uniformity X = 𝓟 id_rel)
   {α : filter X} (hα : α.ne_bot) {x y : X} (hx : α ≤ 𝓟 {x}) (hy : α ≤ 𝓟 {y}) : x = y :=
 begin
@@ -1257,7 +1266,6 @@ end
   -- simp,
   -- sorry
 
---#exit --TODO
 
 -- variable {K}
 -- def laurent_series.equiv : (completion_of_ratfunc K) ≃ (laurent_series K) :=

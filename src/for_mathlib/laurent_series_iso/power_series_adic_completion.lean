@@ -5,10 +5,12 @@ Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
 
 import algebra.group.with_one.units
-import with_zero
 import discrete_valuation_ring.basic
-import for_mathlib.laurent_series_iso.old_power_series_adic_completion
+import for_mathlib.laurent_series_iso.stuff
+-- import for_mathlib.laurent_series_iso.old_power_series_adic_completion
+import from_mathlib.PR18604_well_founded
 import topology.uniform_space.abstract_completion
+import with_zero
 
 noncomputable theory
 
