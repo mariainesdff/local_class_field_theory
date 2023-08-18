@@ -510,18 +510,31 @@ open laurent_series
 lemma exists_pol_int_val_lt (F : power_series K) (η : ℤₘ₀ˣ) : ∃ (P : polynomial K),
   (power_series.ideal_X K).int_valuation (F - P) < η :=
 begin
-  let D := multiplicative.to_add (with_zero.unzero η.ne_zero) - 1,
-  by_cases hD : D < 0,
-  { sorry,
-
-  },
-  { obtain ⟨d, hd⟩ := int.eq_coe_of_zero_le (not_lt.mp hD),
+  by_cases h_neg' : 1 < η,
+  { use 0,
+    rw [polynomial.coe_zero, sub_zero],
+    apply lt_of_le_of_lt (int_valuation_le_one (power_series.ideal_X K) F),
+    rwa [← units.coe_one, units.coe_lt_coe] },
+  { set D := multiplicative.to_add (with_zero.unzero η.ne_zero) with hD,
+    rw [not_lt, ← units.coe_le_coe, units.coe_one, ← with_zero.coe_one,
+    ← with_zero.coe_unzero η.ne_zero, with_zero.coe_le_coe, ← multiplicative.to_add_le, ← hD, 
+    to_add_one] at h_neg',  
+    obtain ⟨d, hd⟩ := int.exists_eq_neg_of_nat h_neg',
     use F.trunc d,
-    have := valuation_le_of_coeff_eventually_eq,
-    --usare piuttosto `int_valuation_le_iff_coeff_zero_of_lt`
-    have trunc_prop : ∀ m : ℕ, m < d → (power_series.coeff K m F) =
-      (power_series.coeff K m ↑(F.trunc d)),
-  }
+    have trunc_prop : ∀ m : ℕ, m < d + 1 → power_series.coeff K m (F -
+      ↑(F.trunc d)) = 0,sorry,
+    have := (int_valuation_le_iff_coeff_zero_of_lt K _).mpr trunc_prop,
+    rw [nat.cast_add, neg_add, of_add_add, ← hd, hD, of_add_to_add, with_zero.coe_mul,
+      with_zero.coe_unzero, laurent_series.coe_power_series, ← laurent_series.coe_algebra_map]
+      at this, 
+    rw [← @valuation_of_algebra_map (power_series K) _ _ _ (laurent_series K) _ _ _
+      (power_series.ideal_X K) (F - ↑(F.trunc d))],
+    apply lt_of_le_of_lt this,
+    rw [← mul_one ↑η, mul_assoc, one_mul],
+    apply with_zero.lt_mul_left₀ _ η.ne_zero,
+    rw [← with_zero.coe_one, with_zero.coe_lt_coe, algebra_map.coe_one, of_add_neg,
+      right.inv_lt_one_iff, ← of_add_zero, multiplicative.of_add_lt],
+    apply int.zero_lt_one },
 end
 
 lemma exists_ratfunc_val_lt (f : laurent_series K) (γ : ℤₘ₀ˣ) :

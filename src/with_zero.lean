@@ -87,7 +87,7 @@ begin
     λ h, mul_lt_mul_of_lt_of_le₀ (le_refl _) (ne_of_gt hc) h⟩,
 end
 
-lemma lt_mul_left₀ {α : Type*} {b c : α} [linear_ordered_comm_group_with_zero α] (a : α) (h : b < c)
+lemma lt_mul_left₀ {α : Type*} {b c : α} [linear_ordered_comm_group_with_zero α] {a : α} (h : b < c)
    (ha : a ≠ 0) : a * b < a * c := by simpa only [mul_comm a _] using mul_lt_right₀ a h ha
 
 theorem one_lt_div' {α : Type*} [linear_ordered_comm_group_with_zero α] (a : α)
