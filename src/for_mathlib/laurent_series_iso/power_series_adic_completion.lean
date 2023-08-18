@@ -510,6 +510,7 @@ open laurent_series
 lemma exists_pol_int_val_lt (F : power_series K) (η : ℤₘ₀ˣ) : ∃ (P : polynomial K),
   (power_series.ideal_X K).int_valuation (F - P) < η :=
 begin
+  classical,
   by_cases h_neg' : 1 < η,
   { use 0,
     rw [polynomial.coe_zero, sub_zero],
@@ -520,15 +521,17 @@ begin
     ← with_zero.coe_unzero η.ne_zero, with_zero.coe_le_coe, ← multiplicative.to_add_le, ← hD, 
     to_add_one] at h_neg',  
     obtain ⟨d, hd⟩ := int.exists_eq_neg_of_nat h_neg',
-    use F.trunc d,
+    use F.trunc (d+1),
     have trunc_prop : ∀ m : ℕ, m < d + 1 → power_series.coeff K m (F -
-      ↑(F.trunc d)) = 0,sorry,
+      ↑(F.trunc (d+1))) = 0,
+    { intros m hm,
+      rw [map_sub, sub_eq_zero, polynomial.coeff_coe, coeff_trunc, if_pos hm] },
     have := (int_valuation_le_iff_coeff_zero_of_lt K _).mpr trunc_prop,
     rw [nat.cast_add, neg_add, of_add_add, ← hd, hD, of_add_to_add, with_zero.coe_mul,
       with_zero.coe_unzero, laurent_series.coe_power_series, ← laurent_series.coe_algebra_map]
       at this, 
     rw [← @valuation_of_algebra_map (power_series K) _ _ _ (laurent_series K) _ _ _
-      (power_series.ideal_X K) (F - ↑(F.trunc d))],
+      (power_series.ideal_X K) (F - ↑(F.trunc (d+1)))],
     apply lt_of_le_of_lt this,
     rw [← mul_one ↑η, mul_assoc, one_mul],
     apply with_zero.lt_mul_left₀ _ η.ne_zero,
