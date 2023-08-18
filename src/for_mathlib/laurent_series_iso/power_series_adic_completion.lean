@@ -6,19 +6,20 @@ Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 
 import algebra.group.with_one.units
 import discrete_valuation_ring.basic
-import for_mathlib.laurent_series_iso.stuff
--- import for_mathlib.laurent_series_iso.old_power_series_adic_completion
+import for_mathlib.laurent_series_iso.stuff 
 import from_mathlib.PR18604_well_founded
 import topology.uniform_space.abstract_completion
 import with_zero
 
 noncomputable theory
 
-open uniform_space power_series abstract_completion is_dedekind_domain.height_one_spectrum
-  polynomial
+open abstract_completion is_dedekind_domain.height_one_spectrum polynomial power_series
+   uniform_space 
 open_locale discrete_valuation
 
 namespace completion_laurent_series
+
+open_locale classical
 
 variables (K : Type*) [field K]
 
@@ -28,8 +29,8 @@ def power_series.ideal_X (K : Type*) [field K] : is_dedekind_domain.height_one_s
   is_prime := power_series.span_X_is_prime,
   ne_bot   := by { rw [ne.def, ideal.span_singleton_eq_bot], exact X_ne_zero }} 
 
-local attribute [instance] classical.prop_decidable
-open multiplicity unique_factorization_monoid
+-- local attribute [instance] classical.prop_decidable
+open multiplicity principal_ideal_ring unique_factorization_monoid
 
 lemma polynomial.norm_unit_X : norm_unit (polynomial.X : (polynomial K)) = 1 :=
 begin
@@ -84,7 +85,7 @@ lemma pol_int_valuation_eq_power_series (P : (polynomial K)) : (ideal_X K).int_v
 begin
   by_cases hP : P = 0,
   { rw [hP, valuation.map_zero, polynomial.coe_zero, valuation.map_zero] },
-  { simp only [fae_int_valuation_apply],
+  { simp only [int_valuation_apply],
     rw [int_valuation_def_if_neg _ hP, int_valuation_def_if_neg _ $ coe_ne_zero hP],
     simp only [ideal_X_span, of_add_neg, inv_inj, with_zero.coe_inj, embedding_like.apply_eq_iff_eq,
       nat.cast_inj],
@@ -93,7 +94,7 @@ begin
     ne.def, ideal.span_singleton_eq_bot, hP, polynomial.X_ne_zero, not_false_iff, and_self],
     have span_X_prime : (ideal.span {polynomial.X} : ideal (polynomial K)).is_prime,
     { apply (@ideal.span_singleton_prime (polynomial K) _ _ polynomial.X_ne_zero).mpr prime_X },
-    have := @count_normalized_factors_eq_associates_count'' K _ (ideal.span {P})
+    have := count_normalized_factors_eq_associates_count (polynomial K) (ideal.span {P})
     (ideal.span {polynomial.X}) span_ne_zero.1 ((@ideal.span_singleton_prime (polynomial K) _ _ 
     polynomial.X_ne_zero).mpr prime_X) span_ne_zero.2,
     convert this.symm,
@@ -102,7 +103,7 @@ begin
       ideal.zero_eq_bot, ideal.span_singleton_eq_bot, coe_ne_zero hP, power_series.X_ne_zero,
       not_false_iff, and_self, (power_series.ideal_X K).3],
     rw [← factors_in_pol_eq_power_series _ _ hP],
-    convert (@count_normalized_factors_eq_associates_count' K _ (ideal.span {↑P})
+    convert (count_normalized_factors_eq_associates_count (power_series K) (ideal.span {↑P})
     (power_series.ideal_X K).as_ideal span_ne_zero'.1 (power_series.ideal_X K).2
       span_ne_zero'.2).symm }
 end
@@ -143,7 +144,7 @@ end
 lemma int_valuation_of_X : ((power_series.ideal_X K).int_valuation) X =
   ↑(multiplicative.of_add (-1 : ℤ)) := 
 begin
-  rw [fae_int_valuation_apply, int_valuation_def_if_neg (power_series.ideal_X K)
+  rw [int_valuation_apply, int_valuation_def_if_neg (power_series.ideal_X K)
     power_series.X_ne_zero],
   congr,
   apply associates.count_self,
@@ -507,7 +508,7 @@ end complete
 
 section dense 
 
-open laurent_series
+open laurent_series hahn_series
 
 lemma exists_pol_int_val_lt (F : power_series K) (η : ℤₘ₀ˣ) : ∃ (P : polynomial K),
   (power_series.ideal_X K).int_valuation (F - P) < η :=
@@ -558,7 +559,7 @@ begin
     erw [hs, ← F_mul, power_series.coe_pow, power_series.coe_X, ratfunc.coe_mul, zpow_neg,
      zpow_coe_nat, inv_eq_one_div (ratfunc.X ^ s), ratfunc.coe_div, ratfunc.coe_pow, ratfunc.coe_X,
      ratfunc.coe_one, ← inv_eq_one_div, ← mul_sub, map_mul, map_inv₀, ← power_series.coe_X,
-     valuation_of_X_zpow, ← hs, ← fae_coe, ← coe_sub, laurent_series.coe_power_series, 
+     valuation_of_X_zpow, ← hs, ← polynomial.coe_coe, ← coe_sub, laurent_series.coe_power_series, 
      ← laurent_series.coe_algebra_map, valuation_of_algebra_map, ← units.coe_mk0 h₀, ← hη],
     apply inv_mul_lt_of_lt_mul₀,
     rwa ← units.coe_mul,
@@ -569,12 +570,12 @@ begin
       simp only [neg_inj] at hs,
       have hf_coe : ↑((power_series.X)^s * F) = f,
       { rw [← f.single_order_mul_power_series_part, hs, hF, power_series.coe_mul,
-        power_series.coe_pow, power_series.coe_X, ← fae_single_pow] },
+        power_series.coe_pow, power_series.coe_X, ← single_pow] },
       rw ← hf_coe,
       obtain ⟨P, hP⟩ := exists_pol_int_val_lt K ((power_series.X)^s * F) γ,
       use ↑P,
-      erw [← fae_coe, ← coe_sub, laurent_series.coe_power_series, ← laurent_series.coe_algebra_map,
-        valuation_of_algebra_map],
+      erw [← polynomial.coe_coe, ← coe_sub, laurent_series.coe_power_series,
+        ← laurent_series.coe_algebra_map, valuation_of_algebra_map],
       exact hP },
 end
 
@@ -597,7 +598,7 @@ end
 
 end dense
 
-section boh
+section comparison
 
 open ratfunc
 
@@ -611,8 +612,8 @@ lemma ovvio' (f : (polynomial K)) (g : polynomial K) (hg : g ≠ 0) :
   ((ideal_X K).int_valuation f) / ((ideal_X K).int_valuation g) :=
 by simp only [ovvio _ _ _ hg, valuation_of_mk', set_like.coe_mk]
 
---the lemma below exists almost in the same form as `fae_coe` in `old_power_series...`, and they 
--- must be made uniform
+--the lemma below exists almost in the same form as `polynomial.coe_coe` in `stuff`, and they 
+-- must be merged
 lemma ratfunc.coe_coe (f : polynomial K) : (↑(algebra_map (polynomial K) (ratfunc K) f) :
   (laurent_series K)) = (algebra_map (power_series K) (laurent_series K)) f :=
 by {rw [ratfunc.coe_def, coe_alg_hom, lift_alg_hom_apply, denom_algebra_map f, map_one, div_one,
@@ -695,15 +696,27 @@ noncomputable!
 def extension_as_ring_hom := uniform_space.completion.extension_hom (coe_alg_hom K).to_ring_hom
 
 noncomputable!
+def completion_of_ratfunc := adic_completion (ratfunc K) (ideal_X K)
+
+instance : field (completion_of_ratfunc K) := adic_completion.field (ratfunc K) (ideal_X K)
+
+instance : algebra K (polynomial K) := infer_instance
+
+instance valued_completion_of_ratfunc : valued (completion_of_ratfunc K) ℤₘ₀ :=
+  @valued.valued_completion _ _ _ _ (ideal_X K).adic_valued
+
+instance : uniform_space (completion_of_ratfunc K) := infer_instance
+
 def compare_pkg : (completion_of_ratfunc K) ≃ᵤ laurent_series K :=
   compare_equiv (ratfunc_pkg K) (laurent_series_pkg K)
 
-noncomputable! def  laurent_series_ring_equiv : 
+noncomputable! 
+def  laurent_series_ring_equiv : 
   ring_equiv (completion_of_ratfunc K) (laurent_series K) :=
 { map_mul' := (extension_as_ring_hom K (unif_cont_coe K).continuous).map_mul',
   map_add' := (extension_as_ring_hom K (unif_cont_coe K).continuous).map_add',
   .. compare_pkg K }
 
-end boh
+end comparison
 
 end completion_laurent_series

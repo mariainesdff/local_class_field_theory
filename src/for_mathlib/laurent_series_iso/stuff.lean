@@ -15,14 +15,13 @@ import ring_theory.power_series.well_known
 
 noncomputable theory
 
-variables (K : Type*) [field K]
-
 namespace polynomial
+
+variables {K : Type*} [field K]
 
 open ratfunc power_series
 
---it is now in the namespace `polynomial`
-lemma fae_coe (P : polynomial K) : (P : laurent_series K) = (↑P : ratfunc K) :=
+lemma coe_coe (P : polynomial K) : (P : laurent_series K) = (↑P : ratfunc K) :=
   by { erw [ratfunc.coe_def, ratfunc.coe_alg_hom, lift_alg_hom_apply, ratfunc.num_algebra_map,
     ratfunc.denom_algebra_map P, map_one, div_one], refl}
 
@@ -31,71 +30,44 @@ by simp only [ne.def, coe_eq_zero_iff, imp_self]
 
 end polynomial
 
-section valuation
+namespace hahn_series
 
-open is_dedekind_domain.height_one_spectrum
+lemma single_pow {R : Type*} [ring R] (n : ℕ) : (hahn_series.single (n : ℤ) (1 : R)) =
+  (hahn_series.single (1 : ℤ) 1) ^ n :=
+begin
+induction n with n h_ind,
+    { simp only [nat.nat_zero_eq_zero, int.of_nat_eq_coe, zmod.nat_cast_self, zpow_zero],
+     refl, },
+    { rw [← int.coe_nat_add_one_out, ← one_mul (1 : R), ← hahn_series.single_mul_single, h_ind,
+      pow_succ', one_mul (1 : R)]},
+end
 
-lemma fae_int_valuation_apply {R : Type*} [comm_ring R] [is_domain R] [is_dedekind_domain R] 
+variables {K : Type*} [field K]
+
+lemma single_inv (d : ℤ) (α : K) (hα : α ≠ 0) : (hahn_series.single (d : ℤ) (α : K))⁻¹ 
+  = hahn_series.single (-d) (α⁻¹ : K) :=
+by {rw [inv_eq_of_mul_eq_one_left], simpa only [hahn_series.single_mul_single, 
+  add_left_neg, inv_mul_cancel hα]}
+
+lemma single_zpow (n : ℤ) : (hahn_series.single (n : ℤ) (1 : K)) =
+  (hahn_series.single (1 : ℤ) 1) ^ n :=
+begin
+  induction n with n_pos n_neg,
+  { apply single_pow },
+  { rw [int.neg_succ_of_nat_coe, int.coe_nat_add, nat.cast_one, ← inv_one,
+    ← single_inv ((n_neg + 1) : ℤ) (1 : K) one_ne_zero, zpow_neg, ← nat.cast_one, ← int.coe_nat_add,
+    algebra_map.coe_one, inv_inj, zpow_coe_nat, single_pow, inv_one] },
+end
+
+end hahn_series
+
+namespace is_dedekind_domain.height_one_spectrum
+
+lemma int_valuation_apply {R : Type*} [comm_ring R] [is_domain R] [is_dedekind_domain R] 
   (v : is_dedekind_domain.height_one_spectrum R) {r : R} :
   int_valuation v r = int_valuation_def v r := refl _
 
-end valuation
-
-section normalized_factors
-
-local attribute [instance] classical.prop_decidable
-
-open multiplicity unique_factorization_monoid
-
-/- TODO: This lemma is now in the file `ring_theory.dedekind_domain.ideal`, probably line 1446
-[FAE, 7/7/23] Not quite sure, at any rate it is needed in the new version-/
---**USED** in `power_series_adic_completion`
-lemma principal_ideal_ring.count_normalized_factors_eq_count_normalized_factors_span {R : Type*}
-  [comm_ring R] [is_domain R] [is_principal_ideal_ring R] [normalization_monoid R]
-    {r X : R} (hr : r ≠ 0) (hX₀ : X ≠ 0) (hX₁ : norm_unit X = 1 )(hX : prime X) : 
-  multiset.count X (normalized_factors r) =
-    multiset.count (ideal.span {X} : ideal R ) (normalized_factors (ideal.span {r})) :=
-begin
-  replace hX₁ : X = normalize X, 
-  { simp only [normalize_apply, hX₁, units.coe_one, mul_one] },
-  have : (ideal.span {normalize X} : ideal  R) = normalize (ideal.span {X}),
-  { simp only [normalize_apply, normalize_eq],
-    apply ideal.span_singleton_mul_right_unit (units.is_unit _) },
-  rw [← part_enat.coe_inj, hX₁, ← multiplicity_eq_count_normalized_factors hX.irreducible hr, this, 
-    ← multiplicity_eq_multiplicity_span, ← multiplicity_eq_count_normalized_factors],
-  refine prime.irreducible (ideal.prime_of_is_prime _ _),
-  {rwa [ne.def, ideal.span_singleton_eq_bot] },
-  {rwa ideal.span_singleton_prime hX₀ },
-  {rwa [ne.def, ideal.zero_eq_bot, ideal.span_singleton_eq_bot] },
-end
-
---not sure
--- lemma count_normalized_factors_eq_associates_count {R : Type*} [comm_ring R]
---   [is_domain R] [is_principal_ideal_ring R] [normalization_monoid R] [unique_factorization_monoid R] 
---   {I J : ideal R} (hI : I ≠ 0)
---   (hJ : J.is_prime ) (hJ₀ : J ≠ ⊥) : multiset.count J (normalized_factors I) =
---   (associates.mk J).count (associates.mk I).factors :=
--- begin
---   replace hI : associates.mk I ≠ 0,
---   { apply associates.mk_ne_zero.mpr hI },
---   have hJ' : irreducible (associates.mk J),
---   { rw associates.irreducible_mk,
---     apply prime.irreducible,
---     apply ideal.prime_of_is_prime hJ₀ hJ },
---   apply ideal.count_normalized_factors_eq,
---   rw [← ideal.dvd_iff_le, ← associates.mk_dvd_mk, associates.mk_pow],
---   rw associates.dvd_eq_le,
---   rw associates.prime_pow_dvd_iff_le hI hJ',
---   { rw ← ideal.dvd_iff_le,
---     rw ← associates.mk_dvd_mk,
---     rw associates.mk_pow,
---     rw associates.dvd_eq_le,
---     rw associates.prime_pow_dvd_iff_le hI hJ',
---     linarith,
---   },
--- end
-
-end normalized_factors
+end is_dedekind_domain.height_one_spectrum
 
 namespace set
 
@@ -177,3 +149,57 @@ begin
 end
 
 end cauchy_discrete
+
+namespace principal_ideal_ring
+
+open multiplicity unique_factorization_monoid
+open_locale classical
+
+/- TODO: This lemma is now in the file `ring_theory.dedekind_domain.ideal`, probably line 1446
+[FAE, 7/7/23] Not quite sure, at any rate it is needed in the new version-/
+lemma count_normalized_factors_eq_count_normalized_factors_span {R : Type*}
+  [comm_ring R] [is_domain R] [is_principal_ideal_ring R] [normalization_monoid R] [decidable_eq R]
+    {r X : R} (hr : r ≠ 0) (hX₀ : X ≠ 0) (hX₁ : norm_unit X = 1 )(hX : prime X) : 
+  multiset.count X (normalized_factors r) =
+    multiset.count (ideal.span {X} : ideal R ) (normalized_factors (ideal.span {r})) :=
+begin
+  replace hX₁ : X = normalize X, 
+  { simp only [normalize_apply, hX₁, units.coe_one, mul_one] },
+  have : (ideal.span {normalize X} : ideal  R) = normalize (ideal.span {X}),
+  { simp only [normalize_apply, normalize_eq],
+    apply ideal.span_singleton_mul_right_unit (units.is_unit _) },
+  rw [← part_enat.coe_inj, hX₁, ← multiplicity_eq_count_normalized_factors hX.irreducible hr, this, 
+    ← multiplicity_eq_multiplicity_span, ← multiplicity_eq_count_normalized_factors],
+  refine prime.irreducible (ideal.prime_of_is_prime _ _),
+  {rwa [ne.def, ideal.span_singleton_eq_bot] },
+  {rwa ideal.span_singleton_prime hX₀ },
+  {rwa [ne.def, ideal.zero_eq_bot, ideal.span_singleton_eq_bot] },
+end
+
+--Keeping `R` explicit speeds up compilation a bit
+lemma count_normalized_factors_eq_associates_count (R : Type*) [comm_ring R]
+  [is_domain R] [is_principal_ideal_ring R] (I J : ideal R) (hI : I ≠ 0) (hJ : J.is_prime )
+  (hJ₀ : J ≠ ⊥) : multiset.count J (normalized_factors I)=
+  (associates.mk J).count (associates.mk I).factors :=
+begin
+  replace hI : associates.mk I ≠ 0,
+  { apply associates.mk_ne_zero.mpr hI },
+  have hJ' : irreducible (associates.mk J),
+  { rw associates.irreducible_mk,
+    apply prime.irreducible,
+    apply ideal.prime_of_is_prime hJ₀ hJ },
+  apply ideal.count_normalized_factors_eq,
+  all_goals {rw [← ideal.dvd_iff_le, ← associates.mk_dvd_mk, associates.mk_pow,
+    associates.dvd_eq_le, associates.prime_pow_dvd_iff_le hI hJ']},
+  linarith,
+end
+
+-- #exit
+-- variables {K : Type*} [field K]
+-- --**REMOVE!!!**
+-- lemma count_normalized_factors_eq_associates_count'' {I J : ideal (polynomial K)} (hI : I ≠ 0)
+--   (hJ : J.is_prime ) (hJ₀ : J ≠ ⊥) :
+--   multiset.count J (normalized_factors I) = (associates.mk J).count (associates.mk I).factors :=
+-- count_normalized_factors_eq_associates_count hI hJ hJ₀
+
+end principal_ideal_ring

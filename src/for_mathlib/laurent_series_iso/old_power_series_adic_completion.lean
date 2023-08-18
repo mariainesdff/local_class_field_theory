@@ -404,7 +404,7 @@ begin
   {rwa [ne.def, ideal.zero_eq_bot, ideal.span_singleton_eq_bot] },
 end
 
---GOLF BOTH AND UNIFY THEM **+USED** in `power_series_adic_completion`!
+--GOLF BOTH AND UNIFY THEM **USED** in `power_series_adic_completion`!
 lemma count_normalized_factors_eq_associates_count {R : Type*} [comm_ring R]
   [is_domain R] [is_principal_ideal_ring R] [normalization_monoid R] [unique_factorization_monoid R] 
   {I J : ideal R} (hI : I ≠ 0)
