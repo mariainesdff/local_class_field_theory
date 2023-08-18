@@ -6,7 +6,7 @@ Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 
 import ring_theory.dedekind_domain.adic_valuation
 import discrete_valuation_ring.basic
-import for_mathlib.laurent_series_iso.old_power_series_adic_completion--only to have fae_int_valuation_apply
+import for_mathlib.stuff_for_laurent_series--only to have int_valuation_apply
 
 open_locale discrete_valuation
 open multiplicative
@@ -210,7 +210,7 @@ lemma aux_for_below (a : R_v) : ((max_ideal_of_completion R v K).int_valuation)
 begin
   by_cases ha : a = 0,
   { simp only [ha, valuation.map_zero, algebra_map.coe_zero] },
-  { rw fae_int_valuation_apply,
+  { rw int_valuation_apply,
     apply le_antisymm,
     { obtain ⟨n, hn⟩ : ∃ n : ℕ, v_compl_of_adic a = of_add (-n : ℤ), 
       { replace ha : v_compl_of_adic a ≠ 0 := by rwa [valuation.ne_zero_iff, ne.def, subring.coe_eq_zero_iff],
@@ -251,7 +251,7 @@ begin
           rw [← of_add_to_add α],
           rw hm, },
       erw valuation_of_algebra_map at hm,
-      rw fae_int_valuation_apply at hm,
+      rw int_valuation_apply at hm,
       rw hm,
       replace hm := le_of_eq hm,
       rw int_valuation_le_pow_iff_dvd at hm,
