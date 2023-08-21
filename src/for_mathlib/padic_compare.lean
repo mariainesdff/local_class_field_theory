@@ -9,6 +9,8 @@ import discrete_valuation_ring.complete
 import number_theory.padics.padic_integers
 import ring_theory.dedekind_domain.adic_valuation
 import for_mathlib.ring_theory.dedekind_domain.ideal
+import for_mathlib.stuff_for_laurent_series
+
 
 --import for_mathlib.laurent_series_iso.old_power_series_adic_completion
 --set_option profiler true
@@ -467,7 +469,7 @@ lemma padic_valued_valuation_p :
   @valued.v ℚ _ ℤₘ₀ _ (padic_valued p) (p : ℚ) = (of_add (-1 : ℤ)) := 
 begin
   have hp : (p : ℚ) = algebra_map ℤ ℚ (p : ℤ) := rfl,
-  rw [adic_valued_apply, hp, valuation_of_algebra_map, fae_int_valuation_apply, 
+  rw [adic_valued_apply, hp, valuation_of_algebra_map, int_valuation_apply, 
     int_valuation_def_if_neg (p_height_one_ideal p) 
       (nat.cast_ne_zero.mpr (nat.prime.ne_zero _inst_1.1))],
   congr,
