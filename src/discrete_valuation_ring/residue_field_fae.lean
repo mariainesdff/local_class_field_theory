@@ -37,8 +37,8 @@ def prime_factor' : ideal (integral_closure K₀ L) :=
 
 variables [is_discrete hv.v] [complete_space K] [finite_dimensional K L]
 
-lemma prime_factor'_coe_eq_max_ideal : (prime_factor' K hv L) = local_ring.maximal_ideal
-  (integral_closure K₀ L) := sorry
+-- lemma prime_factor'_coe_eq_max_ideal : (prime_factor' K hv L) = local_ring.maximal_ideal
+--   (integral_closure K₀ L) := sorry
 
 
 lemma prime_factor'_ne_zero : 
@@ -77,9 +77,21 @@ begin
   apply ne_zero.mk,
   have := (((discrete_valuation_ring.tfae (integral_closure K₀ L) _).out 0 6).mp _),
   specialize this (prime_factor' K hv L) (prime_factor'_ne_zero K hv L),
-  obtain ⟨e, he⟩ := this,
-  have he₀ : e ≠ 0, sorry,
-  apply ideal.ramification_idx_ne_zero he₀,
+  apply ideal.ramification_idx_ne_zero nat.one_ne_zero,
+  { rw pow_one,
+    rw prime_factor',
+    simp only [le_refl],},
+  { rw ← prime_factor',
+    rw one_add_one_eq_two,
+    rw not_le,
+    apply ideal.pow_lt_self,
+    apply prime_factor'_ne_zero,
+    { intro h,
+      rw ← ideal.is_unit_iff at h,
+      exact prime_factor'_not_is_unit K hv L h },
+    simp only [le_refl] },
+  { apply discrete_valuation_ring.not_is_field },
+  apply_instance,
 end
 
 #exit
