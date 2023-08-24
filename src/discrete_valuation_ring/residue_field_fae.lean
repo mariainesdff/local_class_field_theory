@@ -39,9 +39,9 @@ def extended_max_ideal : ideal (integral_closure K₀ L) :=
 
 variables [is_discrete hv.v] [complete_space K] [finite_dimensional K L]
 
--- lemma extended_max_ideal_coe_eq_max_ideal : (extended_max_ideal K hv L) = local_ring.maximal_ideal
---   (integral_closure K₀ L) := sorry
 
+instance : discrete_valuation_ring (integral_closure K₀ L) := infer_instance
+instance : local_ring (integral_closure K₀ L) := infer_instance
 
 lemma extended_max_ideal_ne_zero : 
   extended_max_ideal K hv L ≠ 0 :=
@@ -329,8 +329,6 @@ begin
   exact this,
 end
 
--- #exit
-
 
 noncomputable!
 def quotient_linear_iso : ((integral_closure K₀ L) ⧸ (extended_max_ideal K hv L)) ≃ₗ[residue_field K₀]
@@ -360,8 +358,6 @@ end
 --   -- rw sorry,
 -- end
 
-
--- #exit
 
 -- noncomputable!
 -- def alg' : algebra (residue_field K₀)
@@ -406,7 +402,6 @@ lemma h_intcl: is_fraction_ring (integral_closure K₀ L) L := sorry
 --     -- rw extended_eq_pow_ramification_index at this,
 -- end
 
--- #exit
 
 -- noncomputable!
 -- definition equiv_quotient : ((integral_closure K₀ L) ⧸
@@ -428,6 +423,7 @@ lemma h_intcl: is_fraction_ring (integral_closure K₀ L) L := sorry
 --    (integral_closure K₀ L) ⧸
 --     (ideal.map (algebra_map K₀ (integral_closure K₀ L)) (local_ring.maximal_ideal K₀)) := sorry
 
+
 local attribute [instance] alg_fae
 
 lemma key [is_separable K L] :  finite_dimensional (residue_field K₀)
@@ -447,27 +443,26 @@ lemma key [is_separable K L] :  finite_dimensional (residue_field K₀)
             (local_ring.maximal_ideal (integral_closure K₀ L))
             0)) :=
 begin
-  have uno : finite_dimensional.finrank (K₀ ⧸ local_ring.maximal_ideal K₀)
+  have aux : finite_dimensional.finrank (K₀ ⧸ local_ring.maximal_ideal K₀)
     ((integral_closure K₀ L) ⧸ (extended_max_ideal K hv L)) = finite_dimensional.finrank K L,
   { apply @ideal.finrank_quotient_map K₀ _ (integral_closure K₀ L) _ (local_ring.maximal_ideal K₀)
     _ K _ _ _ L _ _ (h_intcl K hv L) _ _ _ _ _ _ _ _ _ _, },
-  replace uno : finite_dimensional (residue_field K₀)
+  haveI : finite_dimensional (residue_field K₀)
     ((integral_closure K₀ L) ⧸ (extended_max_ideal K hv L)),
   { suffices : 0 < finite_dimensional.finrank K L,
-    -- dsimp only [residue_field],
-    apply finite_dimensional.finite_dimensional_of_finrank,
-    convert this using 1,
-    convert uno,
-    dsimp only [extended_max_ideal],
-    apply algebra.algebra_ext,
-    rintro ⟨a⟩,
-    simp only [submodule.quotient.quot_mk_eq_mk, ideal.quotient.mk_eq_mk],
-    rw primo'_apply K hv L a,
-    rw ← ideal.quotient.algebra_map_quotient_map_quotient,
-    refl,
-    sorry,
-  },
-  have due : finite_dimensional (residue_field K₀)
+    { apply finite_dimensional.finite_dimensional_of_finrank,
+      convert this using 1,
+      convert aux,
+      dsimp only [extended_max_ideal],--needed?
+      apply algebra.algebra_ext,
+      rintro ⟨a⟩,
+      simp only [submodule.quotient.quot_mk_eq_mk, ideal.quotient.mk_eq_mk],
+      rw [primo'_apply K hv L a, ← ideal.quotient.algebra_map_quotient_map_quotient],
+      refl },
+    { rw finite_dimensional.finrank_pos_iff_exists_ne_zero,
+      use 1,
+      apply one_ne_zero } },
+  replace aux : finite_dimensional (residue_field K₀)
               (ideal.map (ideal.quotient.mk
                       ((local_ring.maximal_ideal (integral_closure K₀ L)) ^
                       (ideal.ramification_idx
@@ -477,18 +472,17 @@ begin
                       ))
                     )
               ((local_ring.maximal_ideal (integral_closure K₀ L)) ^ 0)),
-    { --dsimp only [residue_field],
-      rw pow_zero,
-      -- convert uno,
-      -- simp,
-      sorry,
-
-    },
-    dsimp only [residue_field],
-    apply @finite_dimensional.finite_dimensional_quotient (residue_field K₀) _ _ _ _ due,
+    { rw [pow_zero, ideal.one_eq_top, ideal.map_top],
+      haveI := (quotient_linear_iso K hv L).finite_dimensional,
+      apply (@submodule.top_equiv (residue_field K₀) 
+        ((integral_closure K₀ L) ⧸ (local_ring.maximal_ideal (integral_closure K₀ L) ^ 
+        (ideal.ramification_idx (algebra_map K₀ (integral_closure K₀ L)) 
+                              (local_ring.maximal_ideal K₀) 
+                              (local_ring.maximal_ideal (integral_closure K₀ L))
+        ))) _ _ _).symm.finite_dimensional },
+    dsimp only [residue_field],--needed?
+    apply @finite_dimensional.finite_dimensional_quotient (residue_field K₀) _ _ _ _ aux,
 end
-
-#exit
 
 /-The lemma `ideal.finrank_quotient_map` has an implicit variable `S` that should probably be made
 explicit
@@ -530,9 +524,8 @@ begin
     (residue_field (integral_closure K₀ L)) _ _ surj (key K hv L),
 end
 
+--Questo e' quello finale
 #exit
-
-
 
   have uno' : finite_dimensional.finrank (K₀ ⧸ local_ring.maximal_ideal K₀)
     ((integral_closure K₀ L) ⧸ (local_ring.maximal_ideal (integral_closure K₀ L) ^
