@@ -271,8 +271,6 @@ begin
   exact this,
 end
 
-local attribute [instance] algebra_residue_fields
-
 -- lemma primo''_apply (a : (residue_field K₀)) : (algebra_map (residue_field K₀)
 --     ((integral_closure K₀ L) ⧸ (extended_max_ideal K hv L))
 --       ) a =
@@ -301,97 +299,99 @@ begin
   rw due,  
 end
 
-definition scalar_tower_power : is_scalar_tower K₀ (residue_field K₀)
-  ((integral_closure K₀ L) ⧸ (local_ring.maximal_ideal (integral_closure K₀ L) ^ 
-    (ramification_idx (algebra_map K₀ (integral_closure K₀ L)) 
-                              (local_ring.maximal_ideal K₀) 
-                              (local_ring.maximal_ideal (integral_closure K₀ L))
-    ))) :=
-begin
-  sorry
-end
+-- definition scalar_tower_power : is_scalar_tower K₀ (residue_field K₀)
+--   ((integral_closure K₀ L) ⧸ (local_ring.maximal_ideal (integral_closure K₀ L) ^ 
+--     (ramification_idx (algebra_map K₀ (integral_closure K₀ L)) 
+--                               (local_ring.maximal_ideal K₀) 
+--                               (local_ring.maximal_ideal (integral_closure K₀ L))
+--     ))) :=
+-- begin
+--   sorry
+-- end
 
-noncomputable!
-def quotient_alg_equiv : ((integral_closure K₀ L) ⧸ (extended_max_ideal K hv L))
-  ≃ₐ[residue_field K₀]
-  ((integral_closure K₀ L) ⧸ (local_ring.maximal_ideal (integral_closure K₀ L) ^ 
-    (ramification_idx (algebra_map K₀ (integral_closure K₀ L)) 
-                              (local_ring.maximal_ideal K₀) 
-                              (local_ring.maximal_ideal (integral_closure K₀ L))))) :=
-begin
-  letI := scalar_tower_extended K hv L,
-  letI := scalar_tower_power K hv L,--needed? if not, remove declaration above
-  let f :=  ideal.quotient_equiv_alg_of_eq K₀ (extended_eq_pow_ramification_index K hv L),
-  let φ := f.to_linear_equiv,--forse usare submodule.quot_equiv_of_eq
-  let ψ :
-  ((integral_closure K₀ L) ⧸ (extended_max_ideal K hv L))
-  →ₗ[residue_field K₀]
-  ((integral_closure K₀ L) ⧸ (local_ring.maximal_ideal (integral_closure K₀ L) ^ 
-    (ramification_idx (algebra_map K₀ (integral_closure K₀ L)) 
-                              (local_ring.maximal_ideal K₀) 
-                              (local_ring.maximal_ideal (integral_closure K₀ L))))),
-  use φ,
-  sorry,
-  { rintros ⟨a⟩ v,
+-- noncomputable!
+-- def quotient_alg_equiv : ((integral_closure K₀ L) ⧸ (extended_max_ideal K hv L))
+--   ≃ₗ[residue_field K₀]
+--   ((integral_closure K₀ L) ⧸ (local_ring.maximal_ideal (integral_closure K₀ L) ^ 
+--     (ramification_idx (algebra_map K₀ (integral_closure K₀ L)) 
+--                               (local_ring.maximal_ideal K₀) 
+--                               (local_ring.maximal_ideal (integral_closure K₀ L))))) :=
+-- begin
+--   -- letI := scalar_tower_extended K hv L,
+--   -- letI := scalar_tower_power K hv L,--needed? if not, remove declaration above
+
+--   -- let f :=  ideal.quotient_equiv_alg_of_eq K₀ (extended_eq_pow_ramification_index K hv L),
+--   -- let φ := f.to_linear_equiv,--forse usare submodule.quot_equiv_of_eq
+--   let ϕ := submodule.quot_equiv_of_eq _ _ (extended_eq_pow_ramification_index K hv L),
+--   let ψ :
+--   ((integral_closure K₀ L) ⧸ (extended_max_ideal K hv L))
+--   →ₗ[residue_field K₀]
+--   ((integral_closure K₀ L) ⧸ (local_ring.maximal_ideal (integral_closure K₀ L) ^ 
+--     (ramification_idx (algebra_map K₀ (integral_closure K₀ L)) 
+--                               (local_ring.maximal_ideal K₀) 
+--                               (local_ring.maximal_ideal (integral_closure K₀ L))))),
+--   use ϕ,
+--   sorry,
+--   { rintros ⟨a⟩ v,
     
 
-  },
+--   },
 
-end
+-- end
 
-#exit
+-- #exit
 
-  let g :
-  ((integral_closure K₀ L) ⧸ (extended_max_ideal K hv L))
-  →ₐ[residue_field K₀]
-  ((integral_closure K₀ L) ⧸ (local_ring.maximal_ideal (integral_closure K₀ L) ^ 
-    (ramification_idx (algebra_map K₀ (integral_closure K₀ L)) 
-                              (local_ring.maximal_ideal K₀) 
-                              (local_ring.maximal_ideal (integral_closure K₀ L))))),
-  use λ x, f x,
-  simp only [_root_.map_one],
-  sorry,
-  sorry,
-  sorry,
-  -- any_goals {simp},
-  { intro a,
-    -- squeeze_simp,
+--   let g :
+--   ((integral_closure K₀ L) ⧸ (extended_max_ideal K hv L))
+--   →ₐ[residue_field K₀]
+--   ((integral_closure K₀ L) ⧸ (local_ring.maximal_ideal (integral_closure K₀ L) ^ 
+--     (ramification_idx (algebra_map K₀ (integral_closure K₀ L)) 
+--                               (local_ring.maximal_ideal K₀) 
+--                               (local_ring.maximal_ideal (integral_closure K₀ L))))),
+--   use λ x, f x,
+--   simp only [_root_.map_one],
+--   sorry,
+--   sorry,
+--   sorry,
+--   -- any_goals {simp},
+--   { intro a,
+--     -- squeeze_simp,
     
-    --rintro ⟨a⟩,
-    -- rw primo'_apply K hv L a,
+--     --rintro ⟨a⟩,
+--     -- rw primo'_apply K hv L a,
 
-  },
-  -- use f.1,  
-  -- let := @alg_equiv.of_bijective (residue_field K₀) _ _ _ _ _ (algebra_mod_extended K hv L)
-  --   (algebra_mod_power_e K hv L),
+--   },
+--   -- use f.1,  
+--   -- let := @alg_equiv.of_bijective (residue_field K₀) _ _ _ _ _ (algebra_mod_extended K hv L)
+--   --   (algebra_mod_power_e K hv L),
   
 
 
-  -- let f := ideal.quotient_equiv_alg_of_eq (extended_eq_pow_ramification_index K hv L),
-  -- let f := ideal.quot_equiv_of_eq (extended_eq_pow_ramification_index K hv L),
-  -- -- let g := f.to_semilinear_equiv,
-  -- fconstructor,
-  -- use f.1,
-  -- use f.map_add,
-  -- { rintros a ⟨v⟩,
-  --   squeeze_simp,
-  --   rw submodule.quotient.mk'_eq_mk,
-  --   rw ← ideal.quotient.mk_eq_mk,
-  --   simp only [ring_equiv.to_fun_eq_coe, ring_hom.id_apply],
-  --   have := ideal.quot_equiv_of_eq_mk (extended_eq_pow_ramification_index K hv L) v,
-  --   -- have hfg : f v = g v := rfl,
-  --   -- rw hfg,
-  --   -- rw ← g.map_smulₛₗ,
-  --   -- haveI := ring_hom_inv_pair.of_ring_equiv f,
-  --   -- -- haveI := ring_hom_inv_pair.symm (↑f : R →+* S) (f.symm : S →+* R),
-  --   -- rw hfg,
+--   -- let f := ideal.quotient_equiv_alg_of_eq (extended_eq_pow_ramification_index K hv L),
+--   -- let f := ideal.quot_equiv_of_eq (extended_eq_pow_ramification_index K hv L),
+--   -- -- let g := f.to_semilinear_equiv,
+--   -- fconstructor,
+--   -- use f.1,
+--   -- use f.map_add,
+--   -- { rintros a ⟨v⟩,
+--   --   squeeze_simp,
+--   --   rw submodule.quotient.mk'_eq_mk,
+--   --   rw ← ideal.quotient.mk_eq_mk,
+--   --   simp only [ring_equiv.to_fun_eq_coe, ring_hom.id_apply],
+--   --   have := ideal.quot_equiv_of_eq_mk (extended_eq_pow_ramification_index K hv L) v,
+--   --   -- have hfg : f v = g v := rfl,
+--   --   -- rw hfg,
+--   --   -- rw ← g.map_smulₛₗ,
+--   --   -- haveI := ring_hom_inv_pair.of_ring_equiv f,
+--   --   -- -- haveI := ring_hom_inv_pair.symm (↑f : R →+* S) (f.symm : S →+* R),
+--   --   -- rw hfg,
     
 
-  -- },
-  -- use f.inv_fun,
-  -- use f.left_inv,
-  -- use f.right_inv,
-end
+--   -- },
+--   -- use f.inv_fun,
+--   -- use f.left_inv,
+--   -- use f.right_inv,
+-- end
 
 noncomputable!
 def quotient_linear_iso : ((integral_closure K₀ L) ⧸ (extended_max_ideal K hv L)) ≃ₗ[residue_field K₀]
@@ -401,7 +401,42 @@ def quotient_linear_iso : ((integral_closure K₀ L) ⧸ (extended_max_ideal K h
                               (local_ring.maximal_ideal (integral_closure K₀ L))
     ))) :=
 begin
+  letI := scalar_tower_extended K hv L,
+  let ϕ := (submodule.quot_equiv_of_eq _ _
+    (extended_eq_pow_ramification_index K hv L)).restrict_scalars K₀,
+  -- let γ := linear_equiv.restrict_scalars K₀ ϕ,
+  let ψ :
+  ((integral_closure K₀ L) ⧸ (extended_max_ideal K hv L))
+  →ₗ[residue_field K₀]
+  ((integral_closure K₀ L) ⧸ (local_ring.maximal_ideal (integral_closure K₀ L) ^ 
+    (ramification_idx (algebra_map K₀ (integral_closure K₀ L)) 
+                              (local_ring.maximal_ideal K₀) 
+                              (local_ring.maximal_ideal (integral_closure K₀ L))))),
+  use λ x, ϕ x,
+  apply ϕ.map_add,
+  { rintros ⟨a⟩ v,
+    convert ϕ.map_smul a v using 1,
+    simp only [submodule.quotient.quot_mk_eq_mk, quotient.mk_eq_mk,
+      embedding_like.apply_eq_iff_eq],
+    have := primo'_apply K hv L a,
+    -- apply_instance,
+    -- have temp₁ : (ideal.quotient.mk (local_ring.maximal_ideal K₀) a) • v =
+    --   a • v, sorry,
+    -- rw submodule.quotient.quot_mk_eq_mk,
+    -- rw quotient.mk_eq_mk,
+    -- -- rw temp₁,
+    -- -- simp only,--remove
+    
+    -- -- have temp : (quot.mk _ a) • v = a • v, sorry,
+    -- -- rw temp,
+    -- simp only [ring_hom_comp_triple.comp_apply],
+    -- -- simp [ϕ.map_smul],
 
+  },
+  -- sorry,
+end
+
+local attribute [instance] algebra_residue_fields
 
 lemma finite_dimensional_pow [is_separable K L] :  finite_dimensional (residue_field K₀)
     ((map
