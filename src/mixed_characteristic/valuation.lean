@@ -70,7 +70,7 @@ noncomputable! def padic'_int.equiv_valuation_subring :
   begin
     use x.1, 
     have heq : (mixed_char_local_field.with_zero.valued p (Q_p p)).v x.val =
-        extension (Q_p p) (Q_p p) x.val, { refl },
+        extended_valuation (Q_p p) (Q_p p) x.val, { refl },
     rw [valuation.mem_valuation_subring_iff, heq, trivial_extension_eq_valuation (Q_p p)],
     exact x.2,
   end,

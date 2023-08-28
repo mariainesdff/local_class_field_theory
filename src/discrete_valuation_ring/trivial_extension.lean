@@ -48,7 +48,7 @@ begin
   exact add_subgroup.mem_top _,
 end
 
-lemma trivial_extension_eq_valuation : extension K K = hv.v :=
+lemma trivial_extension_eq_valuation : extended_valuation K K = hv.v :=
 begin
   ext x,
   rw extension.apply,
