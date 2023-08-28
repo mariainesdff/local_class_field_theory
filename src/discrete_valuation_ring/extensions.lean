@@ -262,7 +262,7 @@ end
 variables (K L)
 
 --set_option trace.class_instances true
-def extension [finite_dimensional K L] : valuation L ℤₘ₀ := 
+def extended_valuation [finite_dimensional K L] : valuation L ℤₘ₀ := 
 { to_fun    := extension_def K,
   map_zero' := by rw [extension_def_apply, dif_pos rfl],
   map_one'  := 
@@ -359,17 +359,17 @@ namespace extension
 variables {K L}
 
 lemma apply [finite_dimensional K L] (x : L) : 
-   extension K L x = (if hx : x = 0 then 0 else (of_add (-1 : ℤ))^
+   extended_valuation K L x = (if hx : x = 0 then 0 else (of_add (-1 : ℤ))^
      (exists_mul_exp_extension_on_units K (is_unit_iff_ne_zero.mpr hx).unit).some) :=
 rfl
 
 lemma apply_if_neg [finite_dimensional K L] {x : L} (hx : x ≠ 0) :
-  extension K L x = ((of_add (-1 : ℤ))^
+  extended_valuation K L x = ((of_add (-1 : ℤ))^
     (exists_mul_exp_extension_on_units K (is_unit_iff_ne_zero.mpr hx).unit).some) :=
 by rw [apply, dif_neg hx]
 
 lemma le_one_iff_discrete_norm_extension_le_one [finite_dimensional K L] (x : L) :
-  extension K L x ≤ (1 : ℤₘ₀) ↔ 
+  extended_valuation K L x ≤ (1 : ℤₘ₀) ↔ 
     discrete_norm_extension (algebra.is_algebraic_of_finite K L) x ≤ 1 :=
 begin
   set h_alg := algebra.is_algebraic_of_finite K L,
@@ -413,14 +413,14 @@ begin
 end
 
 instance is_discrete_of_finite [finite_dimensional K L]  :
-  is_discrete (extension K L) := 
+  is_discrete (extended_valuation K L) := 
 begin
   set x := (exists_generating_unit K L).some,
   have hx := (exists_generating_unit K L).some_spec,
   rw ←  with_zero.coe_inj at hx,
   simp only [pow_extension_on_units, units.val_eq_coe, monoid_hom.coe_mk, coe_unzero,
     of_add_neg_nat] at hx,
-  have hπ1 : extension K L x = (multiplicative.of_add (-1 : ℤ)),
+  have hπ1 : extended_valuation K L x = (multiplicative.of_add (-1 : ℤ)),
   { rw [extension.apply_if_neg, ← with_zero.zpow_left_inj _ with_zero.coe_ne_zero 
       (nat.cast_ne_zero.mpr exp_extension_on_units_ne_zero)],
     { have hx0 : (x : L) ≠ 0, { exact units.ne_zero _ },
@@ -429,10 +429,10 @@ begin
       refl, },
     { exact zpow_ne_zero _ with_zero.coe_ne_zero,
     exact units.ne_zero _ }},
-  set π : (extension K L).valuation_subring := ⟨(exists_generating_unit K L).some, 
+  set π : (extended_valuation K L).valuation_subring := ⟨(exists_generating_unit K L).some, 
     by rw [mem_valuation_subring_iff, hπ1]; exact le_of_lt with_zero.of_add_neg_one_lt_one⟩, 
-  have hπ : extension K L (π : L) = (multiplicative.of_add (-1 : ℤ)) := hπ1,
-  apply is_discrete_of_exists_uniformizer (extension K L) hπ,
+  have hπ : extended_valuation K L (π : L) = (multiplicative.of_add (-1 : ℤ)) := hπ1,
+  apply is_discrete_of_exists_uniformizer (extended_valuation K L) hπ,
 end
 
 variables {K L}
@@ -456,7 +456,7 @@ end
 @[protected] def valued [finite_dimensional K L] : valued L ℤₘ₀ :=
 begin
   letI : normed_field L := normed_field K L,
-  exact { v := extension K L,
+  exact { v := extended_valuation K L,
   is_topological_valuation := λ U,
   begin
     have hpos : 0 < (exp_extension_on_units K L : ℝ),
@@ -544,7 +544,7 @@ variables {K L}
 
 lemma le_one_of_integer [fr : is_fraction_ring hv.v.valuation_subring K] 
   [finite_dimensional K L] (x : (integral_closure hv.v.valuation_subring L)) : 
-  extension K L (x : L) ≤ 1 :=
+  extended_valuation K L (x : L) ≤ 1 :=
 begin
   letI : is_fraction_ring hv.v.valuation_subring.to_subring K := fr,
   exact (extension.le_one_iff_discrete_norm_extension_le_one _).mpr (le_one_of_integer _ x)
@@ -555,7 +555,7 @@ variables (K L)
 lemma integral_closure_eq_integer --[is_fraction_ring hv.v.valuation_subring K] 
   [finite_dimensional K L] :
   (integral_closure hv.v.valuation_subring L).to_subring = 
-    (extension K L).valuation_subring.to_subring :=
+    (extended_valuation K L).valuation_subring.to_subring :=
 begin
   classical,
   have h_alg : algebra.is_algebraic K L := algebra.is_algebraic_of_finite K L,
@@ -585,9 +585,10 @@ namespace integral_closure
 instance discrete_valuation_ring_of_finite_extension [finite_dimensional K L] : 
   discrete_valuation_ring (integral_closure hv.v.valuation_subring L) := 
 begin
-  letI hw : valued L ℤₘ₀ := valued.mk' (extension K L),
+  letI hw : valued L ℤₘ₀ := valued.mk' (extended_valuation K L),
   letI hw_disc : is_discrete hw.v := extension.is_discrete_of_finite K L,
-  let e : (extension K L).valuation_subring ≃+* (integral_closure hv.v.valuation_subring L) :=
+  let e : (extended_valuation K L).valuation_subring
+    ≃+* (integral_closure hv.v.valuation_subring L) :=
   ring_equiv.subring_congr (integral_closure_eq_integer K L).symm,
   exact ring_equiv.discrete_valuation_ring e,
 end
@@ -602,11 +603,11 @@ end integral_closure
 
 variables [finite_dimensional K L] 
 
-local notation `L₀` := (extension K L).valuation_subring
+local notation `L₀` := (extended_valuation K L).valuation_subring
 
 def valuation_subring.algebra : algebra K₀ L₀ :=
 begin
-  have h : algebra hv.v.valuation_subring (extension K L).valuation_subring.to_subring,
+  have h : algebra hv.v.valuation_subring (extended_valuation K L).valuation_subring.to_subring,
   { rw ← integral_closure_eq_integer,
     exact (integral_closure ↥(valued.v.valuation_subring) L).algebra},
   exact h,
