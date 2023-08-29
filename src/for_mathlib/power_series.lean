@@ -252,12 +252,12 @@ of_has_unit_mul_pow_irreducible_factorization
 -- This makes inference faster
 instance : is_principal_ideal_ring (power_series K) := infer_instance
 
-instance power_series.is_noetherian_ring [field K]: 
+instance power_series.is_noetherian_ring : 
   is_noetherian_ring (power_series K) :=
 principal_ideal_ring.is_noetherian_ring
 
-
-lemma power_series.maximal_ideal_eq_span_X {K : Type*} [field K] :
+variable (K)
+lemma power_series.maximal_ideal_eq_span_X : 
   local_ring.maximal_ideal (power_series K) = ideal.span {power_series.X} :=
 begin
   have hX : (ideal.span {(power_series.X : power_series K)}).is_maximal,
@@ -295,7 +295,7 @@ begin
     exact one_ne_zero },
 end
 
-instance power_series.is_dedekind_domain [field K] : 
+instance power_series.is_dedekind_domain : 
   is_dedekind_domain (power_series K) := 
 is_principal_ideal_ring.is_dedekind_domain (power_series K)
 
@@ -314,3 +314,20 @@ begin
   rw [inv_inj, units.ext_iff, ← u.val_eq_coe, ← hu, unit_of_divided_by_X_pow_nonzero h₀.ne_zero],
   exact ((eq_divided_by_X_iff_unit h₀.ne_zero).mpr h₀).symm,
 end }
+
+open local_ring
+
+lemma constant_coeff_surj (R : Type*) [comm_ring R] : function.surjective (constant_coeff R) :=
+λ r, ⟨(C R) r, constant_coeff_C r⟩
+
+
+lemma ker_constant_coeff_eq_max_ideal : ring_hom.ker (constant_coeff K) = maximal_ideal _ :=
+ideal.ext (λ _, by rw [ring_hom.mem_ker, power_series.maximal_ideal_eq_span_X K,
+    ideal.mem_span_singleton, X_dvd_iff])
+
+
+definition residue_field_of_power_series : residue_field (power_series K) ≃+* K :=
+(ideal.quot_equiv_of_eq (ker_constant_coeff_eq_max_ideal K).symm).trans 
+    (ring_hom.quotient_ker_equiv_of_surjective (constant_coeff_surj K))
+
+    --TODO : upgrade `residue_field_of_power_series` to a `K`-algebra equivalence.
