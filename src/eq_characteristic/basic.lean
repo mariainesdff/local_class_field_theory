@@ -13,12 +13,12 @@ import ring_theory.dedekind_domain.adic_valuation
 
 /-!
 --TODO: Fix comments
-# Mixed characteristic local fields fields
+# Equal characteristic local fields
 This file defines a number field, the ring of integers corresponding to it and includes some
 basic facts about the embeddings into an algebraic closed field.
 ## Main definitions
- - `eq_char_local_field` defines a number field as a field which has characteristic zero and is
-    finite dimensional over ℚ.
+ - `eq_char_local_field` defines an equal characteristic local field as a finite dimensional
+`𝔽_[p]⟮⟮X⟯⟯`-algebra for some prime number `p`.
  - `ring_of_integers` defines the ring of integers (or number ring) corresponding to a number field
     as the integral closure of ℤ in the number field.
 ## Main Result
@@ -53,7 +53,8 @@ notation (name := prime_galois_field)
 notation (name := FpX_completion)
   `𝔽_[` p `]⟮⟮` X `⟯⟯` := FpX_completion p
 
-@[reducible] def FpX_int_completion := 
+@[reducible]
+definition FpX_int_completion :=
 (ideal_X 𝔽_[p]).adic_completion_integers (ratfunc 𝔽_[p])
 
 notation (name := FpX_int_completion)
@@ -116,7 +117,31 @@ end FpX_completion
 namespace FpX_int_completion
 
 -- Upgrade to (ratfunc Fp)-algebra iso
-noncomputable! def isom_power_series : 𝔽_[p]⟦X⟧  ≃+* (power_series 𝔽_[p]) := sorry -- F
+noncomputable!
+-- **FAE**: Siccome voglio solo un'equivalenza di anelli, mi conviene usare `ring.map` (o 
+--`ring.comap`), o al massimo `subring.map` (rsp. `subring.comap`) invece che gli equivalenti per
+-- valuation subrings.
+definition integers_equiv_power_series : (power_series 𝔽_[p]) ≃+* 𝔽_[p]⟦X⟧ :=
+begin
+  set φ := (completion_laurent_series.laurent_series_ring_equiv 𝔽_[p]).symm with hφ,
+  set A := valuation_subring.comap (FpX_int_completion p) φ.to_ring_hom with hA,
+  let fA : ↥A ≃+* (power_series 𝔽_[p]),sorry,
+  rw hA at fA,
+  let g_ps : valuation_subring.comap (FpX_int_completion p) φ.to_ring_hom ≃+*
+    (FpX_int_completion p), sorry,
+  have α := valuation_subring.comap_comap (FpX_int_completion p) φ.to_ring_hom φ.symm.to_ring_hom,
+  simp only [ring_equiv.symm_symm, ring_equiv.symm_to_ring_hom_comp_to_ring_hom] at α,
+  have hα : (FpX_int_completion p).comap 
+    (ring_hom.id (completion_laurent_series.completion_of_ratfunc (galois_field p 1))) =
+    (FpX_int_completion p),
+  { ext,  
+    simp only [valuation_subring.mem_comap, ring_hom.id_apply] },
+  -- rw hα,
+  rw hα at α,
+  use fA.symm.trans g_ps,
+  -- rw ← hA,
+end
+
 
 variable {p}
 noncomputable! lemma residue_field_card_eq_char :

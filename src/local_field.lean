@@ -4,9 +4,10 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
 
+import discrete_valuation_ring.residue_field
 import eq_characteristic.valuation
-import mixed_characteristic.valuation
 import from_mathlib.rank_one_valuation
+import mixed_characteristic.valuation
 
 
 open valuation
@@ -24,7 +25,11 @@ namespace eq_char_local_field
   [eq_char_local_field p K] : local_field K := 
 { complete             := eq_char_local_field.complete_space p K,
   is_discrete          := v.valuation.is_discrete p K,
-  finite_residue_field := sorry,
+  finite_residue_field := 
+  begin
+    have := residue_field_of_power_series 𝔽_[p],
+    have := discrete_valuation.finite_residue_field_of_unit_ball ,
+  end,
   ..(eq_char_local_field.with_zero.valued p K) }
 
 end eq_char_local_field

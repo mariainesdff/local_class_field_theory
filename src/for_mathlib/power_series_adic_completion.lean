@@ -603,17 +603,17 @@ section comparison
 open ratfunc
 
 
-lemma ovvio (f : (polynomial K)) (g : (polynomial K)) (hg : g ≠ 0) : (ratfunc.mk f g) = 
+lemma ratfunc_mk_eq_mk' (f : (polynomial K)) (g : (polynomial K)) (hg : g ≠ 0) : (ratfunc.mk f g) = 
   is_localization.mk' (ratfunc K) f ⟨g, mem_non_zero_divisors_iff_ne_zero.2 hg⟩ :=
 by simp only [mk_eq_div, is_fraction_ring.mk'_eq_div, set_like.coe_mk]
 
-lemma ovvio' (f : (polynomial K)) (g : polynomial K) (hg : g ≠ 0) : 
+lemma ratfunc_mk_val (f : (polynomial K)) (g : polynomial K) (hg : g ≠ 0) : 
   (ideal_X K).valuation ( ratfunc.mk f g) =
   ((ideal_X K).int_valuation f) / ((ideal_X K).int_valuation g) :=
-by simp only [ovvio _ _ _ hg, valuation_of_mk', set_like.coe_mk]
+by simp only [ratfunc_mk_eq_mk' _ _ _ hg, valuation_of_mk', set_like.coe_mk]
 
 --the lemma below exists almost in the same form as `polynomial.coe_coe` in `stuff`, and they 
--- must be merged
+-- shuold be merged
 lemma ratfunc.coe_coe (f : polynomial K) : (↑(algebra_map (polynomial K) (ratfunc K) f) :
   (laurent_series K)) = (algebra_map (power_series K) (laurent_series K)) f :=
 by {rw [ratfunc.coe_def, coe_alg_hom, lift_alg_hom_apply, denom_algebra_map f, map_one, div_one,
@@ -625,15 +625,14 @@ lemma ratfunc_valuation_eq_power_series (P: (ratfunc K)) : (ideal_X K).valuation
 begin
   apply ratfunc.induction_on' P,
   intros f g h,
-  convert ovvio' K f g h,
-  rw ovvio K f g h,
+  convert ratfunc_mk_val K f g h,
+  rw ratfunc_mk_eq_mk' K f g h,
   have aux : (↑(is_localization.mk' (ratfunc K) f ⟨g, mem_non_zero_divisors_iff_ne_zero.2 h⟩) : 
     laurent_series K) = ((is_localization.mk' (laurent_series K) (↑f : (power_series K))
     ⟨g, mem_non_zero_divisors_iff_ne_zero.2 $ coe_ne_zero h⟩) : laurent_series K),
   { simp only [is_fraction_ring.mk'_eq_div, set_like.coe_mk, coe_div],
     congr;
-    apply ratfunc.coe_coe K,
-   },
+    apply ratfunc.coe_coe K },
   rw aux,
   have := @valuation_of_mk' (power_series K) _ _ _ (laurent_series K) _ _ _
     (power_series.ideal_X K) ↑f ⟨g, mem_non_zero_divisors_iff_ne_zero.2 $ coe_ne_zero h⟩,
@@ -695,7 +694,7 @@ def laurent_series_pkg : abstract_completion (ratfunc K) :=
 noncomputable!
 def extension_as_ring_hom := uniform_space.completion.extension_hom (coe_alg_hom K).to_ring_hom
 
-noncomputable!
+@[reducible]
 def completion_of_ratfunc := adic_completion (ratfunc K) (ideal_X K)
 
 instance : field (completion_of_ratfunc K) := adic_completion.field (ratfunc K) (ideal_X K)
@@ -712,7 +711,7 @@ def compare_pkg : (completion_of_ratfunc K) ≃ᵤ laurent_series K :=
 
 noncomputable! 
 def  laurent_series_ring_equiv : 
-  ring_equiv (completion_of_ratfunc K) (laurent_series K) :=
+  (completion_of_ratfunc K) ≃+* (laurent_series K) :=
 { map_mul' := (extension_as_ring_hom K (unif_cont_coe K).continuous).map_mul',
   map_add' := (extension_as_ring_hom K (unif_cont_coe K).continuous).map_add',
   .. compare_pkg K }

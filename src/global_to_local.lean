@@ -18,7 +18,7 @@ namespace number_field
 variables (L : Type*) [field L] [number_field L]
   (v : is_dedekind_domain.height_one_spectrum (ring_of_integers L))
 
-def residue_char (v : is_dedekind_domain.height_one_spectrum (ring_of_integers L)) : ℕ := sorry 
+definition residue_char (v : is_dedekind_domain.height_one_spectrum (ring_of_integers L)) : ℕ := sorry 
 
 instance : fact (nat.prime (residue_char L v)) :=
 sorry
@@ -42,7 +42,7 @@ variables (v : is_dedekind_domain.height_one_spectrum (@ring_of_integers 𝔽_[p
 
 noncomputable! lemma foo (A : @ring_of_integers 𝔽_[p] L _ _ h_alg) : true := sorry
 
-def residue_char (v : is_dedekind_domain.height_one_spectrum
+definition residue_char (v : is_dedekind_domain.height_one_spectrum
   (@ring_of_integers 𝔽_[p] L _ _ h_alg)) : ℕ := sorry 
 
 
