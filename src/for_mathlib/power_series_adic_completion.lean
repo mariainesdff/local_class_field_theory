@@ -29,7 +29,7 @@ def power_series.ideal_X (K : Type*) [field K] : is_dedekind_domain.height_one_s
   is_prime := power_series.span_X_is_prime,
   ne_bot   := by { rw [ne.def, ideal.span_singleton_eq_bot], exact X_ne_zero }} 
 
--- local attribute [instance] classical.prop_decidable
+
 open multiplicity principal_ideal_ring unique_factorization_monoid
 
 lemma polynomial.norm_unit_X : norm_unit (polynomial.X : (polynomial K)) = 1 :=
@@ -284,6 +284,14 @@ begin
       simp only [ne.def, with_zero.coe_ne_zero, not_false_iff] },
 end
 
+lemma valuation_le_of_coeff_eventually_eq {f g : (laurent_series K)} {D : ℤ}
+  (H : ∀ d, d < D → g.coeff d = f.coeff d) : valued.v (f - g) ≤ ↑(multiplicative.of_add (- D)) :=
+begin
+  apply (valuation_le_iff_coeff_zero_of_lt K).mpr,
+  intros n hn,
+  rw [hahn_series.sub_coeff, sub_eq_zero],
+  exact (H n hn).symm,
+end
 
 lemma eq_coeff_of_valuation_sub_lt {d n : ℤ} {f g : laurent_series K} 
   (H : valued.v (g - f) ≤ ↑(multiplicative.of_add (- d))) :
@@ -475,14 +483,6 @@ begin
       simpa only [principal_singleton, mem_pure] using rfl }}
 end
 
-lemma valuation_le_of_coeff_eventually_eq {f g : (laurent_series K)} {D : ℤ}
-  (H : ∀ d, d < D → g.coeff d = f.coeff d) : valued.v (f - g) ≤ ↑(multiplicative.of_add (- D)) :=
-begin
-  apply (valuation_le_iff_coeff_zero_of_lt K).mpr,
-  intros n hn,
-  rw [hahn_series.sub_coeff, sub_eq_zero],
-  exact (H n hn).symm,
-end
 
 lemma cauchy.eventually₂ {ℱ : filter (laurent_series K)} (hℱ : cauchy ℱ)
   {U : set (laurent_series K)} (hU : U ∈ 𝓝 (hℱ.mk_laurent_series)) : ∀ᶠ f in ℱ, f ∈ U := 
@@ -497,7 +497,7 @@ begin
       exact zero_lt_one, },
     apply (hℱ.eventually₁ D).mono,
     intros f hf,
-    apply lt_of_le_of_lt (valuation_le_of_coeff_eventually_eq _) hD,
+    apply lt_of_le_of_lt (valuation_le_of_coeff_eventually_eq _ _) hD,
     apply hf }
 end
 
@@ -720,10 +720,46 @@ def  laurent_series_ring_equiv :
   map_add' := (extension_as_ring_hom K (unif_cont_coe K).continuous).map_add',
   .. compare_pkg K }
 
-lemma coe_X_compare : (laurent_series_ring_equiv K) (↑(@ratfunc.X K _ _) : (completion_of_ratfunc K)) =
-  (↑(@power_series.X K _) : (laurent_series K)) :=
+lemma coe_X_compare : (laurent_series_ring_equiv K) (↑(@ratfunc.X K _ _) :
+  (completion_of_ratfunc K)) = (↑(@power_series.X K _) : (laurent_series K)) :=
 by {rw [power_series.coe_X, ← ratfunc.coe_X, ← laurent_series_coe,
   ← abstract_completion.compare_coe], refl}
+
+example : has_coe (power_series K) (laurent_series K) :=
+begin
+  exact laurent_series.has_coe
+end
+
+noncomputable!
+definition power_series_as_subring : subring (laurent_series K) :=
+ring_hom.range (hahn_series.of_power_series ℤ K)
+
+noncomputable!
+definition power_series_equiv_subring : power_series K ≃+* power_series_as_subring K :=
+begin
+  rw [power_series_as_subring, ring_hom.range_eq_map],
+  use subring.top_equiv.symm.trans (subring.equiv_map_of_injective _
+    (hahn_series.of_power_series ℤ K) (hahn_series.of_power_series_injective))
+end
+
+noncomputable!
+definition power_series_ring_equiv : (power_series K) ≃+* 
+  ((ideal_X K).adic_completion_integers (ratfunc K)) :=
+begin
+  let := true,
+  -- set φ := (completion_laurent_series.laurent_series_ring_equiv K) with hφ,
+  let α := @ring_equiv.subring_map _ _ _ _ (power_series_as_subring K)
+    (laurent_series_ring_equiv K).symm,
+  let β := (power_series_equiv_subring K).trans α,
+
+  -- let R := (subring.map (laurent_series_ring_equiv K).symm.to_ring_hom (power_series_as_subring K)),
+  -- let S := ((ideal_X K).adic_completion_integers (ratfunc K)).to_subring,
+  -- have eq_subrings : R = S,sorry,
+  have eq_subrings : (subring.map (laurent_series_ring_equiv K).symm.to_ring_hom
+    (power_series_as_subring K)) = ((ideal_X K).adic_completion_integers (ratfunc K)).to_subring,
+  sorry,
+  use β.trans (ring_equiv.subring_congr eq_subrings),
+end
 
 
 end comparison

@@ -123,23 +123,11 @@ noncomputable!
 -- valuation subrings.
 definition integers_equiv_power_series : (power_series 𝔽_[p]) ≃+* 𝔽_[p]⟦X⟧ :=
 begin
-  set φ := (completion_laurent_series.laurent_series_ring_equiv 𝔽_[p]).symm with hφ,
-  set A := valuation_subring.comap (FpX_int_completion p) φ.to_ring_hom with hA,
-  let fA : ↥A ≃+* (power_series 𝔽_[p]),sorry,
-  rw hA at fA,
-  let g_ps : valuation_subring.comap (FpX_int_completion p) φ.to_ring_hom ≃+*
-    (FpX_int_completion p), sorry,
-  have α := valuation_subring.comap_comap (FpX_int_completion p) φ.to_ring_hom φ.symm.to_ring_hom,
-  simp only [ring_equiv.symm_symm, ring_equiv.symm_to_ring_hom_comp_to_ring_hom] at α,
-  have hα : (FpX_int_completion p).comap 
-    (ring_hom.id (completion_laurent_series.completion_of_ratfunc (galois_field p 1))) =
-    (FpX_int_completion p),
-  { ext,  
-    simp only [valuation_subring.mem_comap, ring_hom.id_apply] },
-  -- rw hα,
-  rw hα at α,
-  use fA.symm.trans g_ps,
-  -- rw ← hA,
+  set φ := (completion_laurent_series.laurent_series_ring_equiv 𝔽_[p]) with hφ,
+  let α := (@ring_equiv.subring_map _ _ _ _ (FpX_int_completion p).to_subring φ).symm,
+  let β : (power_series 𝔽_[p]) ≃+* subring.map φ.to_ring_hom (FpX_int_completion p).to_subring,
+    sorry,
+  use β.trans α,
 end
 
 
