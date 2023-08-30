@@ -613,7 +613,7 @@ lemma ratfunc_mk_val (f : (polynomial K)) (g : polynomial K) (hg : g ≠ 0) :
 by simp only [ratfunc_mk_eq_mk' _ _ _ hg, valuation_of_mk', set_like.coe_mk]
 
 --the lemma below exists almost in the same form as `polynomial.coe_coe` in `stuff`, and they 
--- shuold be merged
+-- should be merged
 lemma ratfunc.coe_coe (f : polynomial K) : (↑(algebra_map (polynomial K) (ratfunc K) f) :
   (laurent_series K)) = (algebra_map (power_series K) (laurent_series K)) f :=
 by {rw [ratfunc.coe_def, coe_alg_hom, lift_alg_hom_apply, denom_algebra_map f, map_one, div_one,
@@ -690,6 +690,9 @@ def laurent_series_pkg : abstract_completion (ratfunc K) :=
   uniform_inducing := coe_is_inducing K,
   dense := coe_range_dense K}
 
+@[simp]
+lemma laurent_series_coe (x : ratfunc K) : (laurent_series_pkg K).coe x =
+  (↑x : laurent_series K) := rfl
 
 noncomputable!
 def extension_as_ring_hom := uniform_space.completion.extension_hom (coe_alg_hom K).to_ring_hom
@@ -709,12 +712,19 @@ instance : uniform_space (completion_of_ratfunc K) := infer_instance
 def compare_pkg : (completion_of_ratfunc K) ≃ᵤ laurent_series K :=
   compare_equiv (ratfunc_pkg K) (laurent_series_pkg K)
 
-noncomputable! 
+-- noncomputable!
+@[reducible]
 def  laurent_series_ring_equiv : 
   (completion_of_ratfunc K) ≃+* (laurent_series K) :=
 { map_mul' := (extension_as_ring_hom K (unif_cont_coe K).continuous).map_mul',
   map_add' := (extension_as_ring_hom K (unif_cont_coe K).continuous).map_add',
   .. compare_pkg K }
+
+lemma coe_X_compare : (laurent_series_ring_equiv K) (↑(@ratfunc.X K _ _) : (completion_of_ratfunc K)) =
+  (↑(@power_series.X K _) : (laurent_series K)) :=
+by {rw [power_series.coe_X, ← ratfunc.coe_X, ← laurent_series_coe,
+  ← abstract_completion.compare_coe], refl}
+
 
 end comparison
 
