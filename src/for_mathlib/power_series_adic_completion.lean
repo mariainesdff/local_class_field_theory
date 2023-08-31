@@ -678,7 +678,7 @@ lemma unif_cont_coe : uniform_continuous (coe : (ratfunc K) → (laurent_series 
   (uniform_inducing_iff'.1 (coe_is_inducing K)).1
 
 noncomputable!
-def ratfunc_pkg : abstract_completion (ratfunc K) := uniform_space.completion.cpkg 
+def ratfunc_adic_compl_pkg : abstract_completion (ratfunc K) := uniform_space.completion.cpkg 
 
 noncomputable!
 def laurent_series_pkg : abstract_completion (ratfunc K) :=
@@ -698,37 +698,69 @@ noncomputable!
 def extension_as_ring_hom := uniform_space.completion.extension_hom (coe_alg_hom K).to_ring_hom
 
 @[reducible]
-def completion_of_ratfunc := adic_completion (ratfunc K) (ideal_X K)
+def ratfunc_adic_compl := adic_completion (ratfunc K) (ideal_X K)
 
-instance : field (completion_of_ratfunc K) := adic_completion.field (ratfunc K) (ideal_X K)
+instance : field (ratfunc_adic_compl K) := adic_completion.field (ratfunc K) (ideal_X K)
 
 instance : algebra K (polynomial K) := infer_instance
 
-instance valued_completion_of_ratfunc : valued (completion_of_ratfunc K) ℤₘ₀ :=
+instance valued_ratfunc_adic_compl : valued (ratfunc_adic_compl K) ℤₘ₀ :=
   @valued.valued_completion _ _ _ _ (ideal_X K).adic_valued
 
-instance : uniform_space (completion_of_ratfunc K) := infer_instance
+instance : uniform_space (ratfunc_adic_compl K) := infer_instance
 
-def compare_pkg : (completion_of_ratfunc K) ≃ᵤ laurent_series K :=
-  compare_equiv (ratfunc_pkg K) (laurent_series_pkg K)
+@[reducible]
+definition compare_pkg : (ratfunc_adic_compl K) ≃ᵤ laurent_series K :=
+  compare_equiv (ratfunc_adic_compl_pkg K) (laurent_series_pkg K)
+
+
+namespace abstract_completion
+
+open_locale topology
+
+variables {α β : Type*} [uniform_space α] [topological_space β]
+variables (pkg : abstract_completion α) (pkg' : abstract_completion α) 
+
+definition top_pkg : topological_space pkg.space := pkg.uniform_struct.to_topological_space
+
+definition top_pkg' : topological_space pkg'.space := pkg'.uniform_struct.to_topological_space
+
+local attribute [instance] top_pkg top_pkg'
+
+include pkg pkg'
+
+lemma extend_compare_extend [t3_space β] (f : α → β) (cont_f : continuous f) 
+  (hf : ∀ a : pkg.space, filter.tendsto f (filter.comap pkg.coe (𝓝 a))
+    (𝓝 ((pkg.dense_inducing.extend f) a))) :
+    (pkg.dense_inducing.extend f) ∘ (pkg'.compare pkg) = (pkg'.dense_inducing.extend f) :=
+begin
+  have : ∀ (x : α), (((pkg.dense_inducing.extend f)) ∘ pkg'.compare pkg) (pkg'.coe x) = f x,
+  { intro a,
+    rw [function.comp_app, compare_coe],
+    apply dense_inducing.extend_eq _ cont_f },
+  refine (dense_inducing.extend_unique (abstract_completion.dense_inducing _) this _).symm,
+  letI := pkg'.uniform_struct,
+  letI := pkg.uniform_struct,
+  refine continuous.comp _ (uniform_continuous_compare pkg' pkg).continuous,
+  apply dense_inducing.continuous_extend,
+  use λ a, ⟨(pkg.dense_inducing.extend f) a, hf a⟩,
+end
+
+end abstract_completion
 
 -- noncomputable!
 @[reducible]
-def  laurent_series_ring_equiv : 
-  (completion_of_ratfunc K) ≃+* (laurent_series K) :=
+definition laurent_series_ring_equiv : 
+  (ratfunc_adic_compl K) ≃+* (laurent_series K) :=
 { map_mul' := (extension_as_ring_hom K (unif_cont_coe K).continuous).map_mul',
   map_add' := (extension_as_ring_hom K (unif_cont_coe K).continuous).map_add',
   .. compare_pkg K }
 
 lemma coe_X_compare : (laurent_series_ring_equiv K) (↑(@ratfunc.X K _ _) :
-  (completion_of_ratfunc K)) = (↑(@power_series.X K _) : (laurent_series K)) :=
+  (ratfunc_adic_compl K)) = (↑(@power_series.X K _) : (laurent_series K)) :=
 by {rw [power_series.coe_X, ← ratfunc.coe_X, ← laurent_series_coe,
   ← abstract_completion.compare_coe], refl}
 
-example : has_coe (power_series K) (laurent_series K) :=
-begin
-  exact laurent_series.has_coe
-end
 
 noncomputable!
 definition power_series_as_subring : subring (laurent_series K) :=
@@ -742,11 +774,80 @@ begin
     (hahn_series.of_power_series ℤ K) (hahn_series.of_power_series_injective))
 end
 
+open filter abstract_completion
+open_locale with_zero_topology topology
+
+lemma aux_val (a : ((ideal_X K).adic_completion (ratfunc K))) : 
+  tendsto (@valued.v (ratfunc K) _ ℤₘ₀ _ _) (comap coe (𝓝 a)) (𝓝 (valued.v a : ℤₘ₀)) :=
+begin
+ set ψ := @valued.v (ratfunc K) _ ℤₘ₀ _ _ with hψ,
+ let := @valued.is_topological_valuation ((ideal_X K).adic_completion (ratfunc K)) _ ℤₘ₀ _ _,
+  by_cases ha : a = 0,
+  { rw tendsto_def,
+    intros S hS,
+    simp only [mem_comap, exists_prop],
+    rw [ha, map_zero, (with_zero_topology.has_basis_nhds_zero).1 S] at hS,
+    obtain ⟨γ, γ_ne_zero, γ_le⟩ := hS,
+    use {t | valued.v t < γ},
+    split,
+    { rw [ha, this],
+      use units.mk0 γ γ_ne_zero,
+      rw units.coe_mk0 },
+    { simp only [set.preimage_set_of_eq, valued.valued_completion_apply],
+      rw hψ,
+      apply set.preimage_mono γ_le }},
+    { rw [with_zero_topology.tendsto_of_ne_zero],
+      rw hψ,
+      simp only [filter.eventually_comap],
+      rw filter.eventually,
+      rw valued.mem_nhds,
+      simp only [set.set_of_subset_set_of],
+      use 1,--or whatever makes the next-next line work
+      intros y val_y b diff_b_y,
+      replace val_y : valued.v (y - a) = (0 : ℤₘ₀), sorry,
+      rw [valuation.zero_iff] at val_y,
+      rw sub_eq_zero at val_y,
+      rw ← valued.extension_extends,
+      rw diff_b_y,
+      rw val_y,
+      refl,
+      rwa valuation.ne_zero_iff, } 
+end
+
+instance : topological_space (laurent_series_pkg K).space :=
+(laurent_series_pkg K).uniform_struct.to_topological_space
+
+lemma val_laurent_series_equal_extension : (laurent_series_pkg K).dense_inducing.extend valued.v = 
+  (@valued.v (laurent_series K) _ ℤₘ₀ _ _) :=
+begin
+  sorry
+end
+
+-- lemma foo :  (@valued.v (ratfunc_adic_compl K) _ ℤₘ₀ _ _) ∘ (laurent_series_pkg K).compare
+--   (ratfunc_adic_compl_pkg K) = (@valued.v (laurent_series K) _ ℤₘ₀ _ _) :=
+-- begin
+--   set ψ := @valued.v (ratfunc K) _ ℤₘ₀ _ _ with hψ,
+--   have cont_ψ : continuous ψ := valued.continuous_valuation,
+--   have := extend_compare_extend (ratfunc_adic_compl_pkg K) (laurent_series_pkg K) ψ cont_ψ (aux_val K),
+--   rw hψ at this,
+--   rwa ← val_laurent_series_equal_extension,
+-- end
+
+lemma valuation_compare (f : laurent_series K) : (@valued.v (ratfunc_adic_compl K) _ ℤₘ₀ _ _) 
+  ((laurent_series_pkg K).compare (ratfunc_adic_compl_pkg K) f) = 
+  (valued.v f) :=
+begin
+  have := extend_compare_extend (ratfunc_adic_compl_pkg K) (laurent_series_pkg K)
+    (@valued.v (ratfunc K) _ ℤₘ₀ _ _) (valued.continuous_valuation) (aux_val K),
+  rw [← val_laurent_series_equal_extension, ← this],
+  refl,
+end
+
 noncomputable!
 definition power_series_ring_equiv : (power_series K) ≃+* 
   ((ideal_X K).adic_completion_integers (ratfunc K)) :=
 begin
-  let := true,
+  -- let := true,
   -- set φ := (completion_laurent_series.laurent_series_ring_equiv K) with hφ,
   let α := @ring_equiv.subring_map _ _ _ _ (power_series_as_subring K)
     (laurent_series_ring_equiv K).symm,
@@ -757,7 +858,32 @@ begin
   -- have eq_subrings : R = S,sorry,
   have eq_subrings : (subring.map (laurent_series_ring_equiv K).symm.to_ring_hom
     (power_series_as_subring K)) = ((ideal_X K).adic_completion_integers (ratfunc K)).to_subring,
-  sorry,
+  { ext x,
+    simp only [subring.mem_map, exists_prop, valuation_subring.mem_to_subring, 
+      mem_adic_completion_integers],
+    split,--do better?
+    { rintros ⟨f, F, h_fF⟩,
+      have : ((laurent_series_ring_equiv K).symm.to_ring_hom) f =
+        (laurent_series_pkg K).compare (ratfunc_adic_compl_pkg K) f := rfl,
+      rw [← h_fF, this, valuation_compare],
+      sorry,
+    },
+    { intro h,
+      set f := (laurent_series_ring_equiv K) x with hf,
+      have := valuation_compare K f,
+      have hx : (laurent_series_pkg K).compare (ratfunc_adic_compl_pkg K)
+        ((laurent_series_ring_equiv K) x) = x := congr_fun (inverse_compare (laurent_series_pkg K)
+        (ratfunc_adic_compl_pkg K)) x,
+      rw [hx] at this,
+      rw this at h,
+      obtain ⟨F, h_fF⟩ : ∃ F : (power_series K), ↑F = f, sorry,
+      use F,
+      split,
+      { rw [power_series_as_subring, ring_hom.mem_range],
+        exact ⟨F, refl _⟩ },
+      { -- simpa [h_fF, hf] using hx,--this works but seems slower
+        rw [h_fF, hf],
+        apply hx }}},
   use β.trans (ring_equiv.subring_congr eq_subrings),
 end
 
