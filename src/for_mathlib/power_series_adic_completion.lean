@@ -836,6 +836,23 @@ begin
     (hahn_series.of_power_series ℤ K) (hahn_series.of_power_series_injective))
 end
 
+lemma val_le_one_iff_eq_coe (f : laurent_series K) : valued.v f ≤ (1 : ℤₘ₀) ↔
+  ∃ (F : power_series K), ↑F = f :=
+begin
+  rw [← with_zero.coe_one, ← of_add_zero, ← neg_zero, valuation_le_iff_coeff_zero_of_lt],
+  refine ⟨λ h, ⟨power_series.mk (λ n, f.coeff n), _⟩, _⟩,
+  ext (_ | n),
+  { simp only [int.of_nat_eq_coe, laurent_series.coeff_coe_power_series, coeff_mk] },
+  simp only [h -[1+n] (int.neg_succ_lt_zero n)],
+  swap,
+  rintros ⟨F, rfl⟩ _ _,
+  all_goals { apply hahn_series.emb_domain_notin_range,
+              simp only [nat.coe_cast_add_monoid_hom, rel_embedding.coe_fn_mk,
+              function.embedding.coe_fn_mk, set.mem_range, not_exists, int.neg_succ_lt_zero],
+              intro},
+  linarith,
+  linarith [(int.neg_succ_lt_zero n)],--can be golfed
+end
 
 lemma power_series_ext_subring : (subring.map (laurent_series_ring_equiv K).symm.to_ring_hom
     (power_series_as_subring K)) = ((ideal_X K).adic_completion_integers (ratfunc K)).to_subring :=
@@ -843,19 +860,13 @@ begin
   { ext x,
     simp only [subring.mem_map, exists_prop, valuation_subring.mem_to_subring, 
       mem_adic_completion_integers],
-    split,--do better?
+    split,
     { rintros ⟨f, ⟨F, coe_F⟩, h_fF⟩,
       have : ((laurent_series_ring_equiv K).symm.to_ring_hom) f =
         (laurent_series_pkg K).compare (ratfunc_adic_compl_pkg K) f := rfl,
-      rw [← h_fF, this, valuation_compare, ← with_zero.coe_one, ← of_add_zero, ← neg_zero, 
-        valuation_le_iff_coeff_zero_of_lt, ← coe_F],
-      intros n hn,
-      apply hahn_series.emb_domain_notin_image_support,
-      intro abs,
-      obtain ⟨m, -, m_neg⟩ := set.mem_of_subset_of_mem (set.image_subset (nat.cast_add_monoid_hom ℤ)
-        (set.subset_univ _)) abs,
-      rw ← m_neg at hn,
-      exact not_lt_of_le (nat.cast_nonneg m) hn, },
+      rw [← h_fF, this, valuation_compare],
+      rw val_le_one_iff_eq_coe,
+      exact ⟨F, coe_F⟩ },
     { intro h,
       set f := (laurent_series_ring_equiv K) x with hf,
       have := valuation_compare K f,
@@ -864,7 +875,7 @@ begin
         (ratfunc_adic_compl_pkg K)) x,
       rw [hx] at this,
       rw this at h,
-      obtain ⟨F, h_fF⟩ : ∃ F : (power_series K), ↑F = f, sorry,
+      obtain ⟨F, h_fF⟩ := (val_le_one_iff_eq_coe K f).mp h,
       use F,
       split,
       { rw [power_series_as_subring, ring_hom.mem_range],
