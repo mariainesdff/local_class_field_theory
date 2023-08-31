@@ -756,26 +756,25 @@ definition laurent_series_ring_equiv :
   map_add' := (extension_as_ring_hom K (unif_cont_coe K).continuous).map_add',
   .. compare_pkg K }
 
-lemma coe_X_compare : (laurent_series_ring_equiv K) (↑(@ratfunc.X K _ _) :
-  (ratfunc_adic_compl K)) = (↑(@power_series.X K _) : (laurent_series K)) :=
-by {rw [power_series.coe_X, ← ratfunc.coe_X, ← laurent_series_coe,
-  ← abstract_completion.compare_coe], refl}
 
+-- lemma coe_X_compare : (laurent_series_ring_equiv K) (↑(@ratfunc.X K _ _) :
+--   (ratfunc_adic_compl K)) = (↑(@power_series.X K _) : (laurent_series K)) :=
+-- by {rw [power_series.coe_X, ← ratfunc.coe_X, ← laurent_series_coe,
+--   ← abstract_completion.compare_coe], refl}
 
-noncomputable!
-definition power_series_as_subring : subring (laurent_series K) :=
-ring_hom.range (hahn_series.of_power_series ℤ K)
+section power_series
 
-noncomputable!
-definition power_series_equiv_subring : power_series K ≃+* power_series_as_subring K :=
-begin
-  rw [power_series_as_subring, ring_hom.range_eq_map],
-  use subring.top_equiv.symm.trans (subring.equiv_map_of_injective _
-    (hahn_series.of_power_series ℤ K) (hahn_series.of_power_series_injective))
-end
+instance : topological_space (laurent_series_pkg K).space :=
+(laurent_series_pkg K).uniform_struct.to_topological_space
 
 open filter abstract_completion
 open_locale with_zero_topology topology
+
+lemma val_laurent_series_equal_extension : (laurent_series_pkg K).dense_inducing.extend valued.v = 
+  (@valued.v (laurent_series K) _ ℤₘ₀ _ _) :=
+begin
+  sorry
+end
 
 lemma aux_val (a : ((ideal_X K).adic_completion (ratfunc K))) : 
   tendsto (@valued.v (ratfunc K) _ ℤₘ₀ _ _) (comap coe (𝓝 a)) (𝓝 (valued.v a : ℤₘ₀)) :=
@@ -814,25 +813,6 @@ begin
       rwa valuation.ne_zero_iff, } 
 end
 
-instance : topological_space (laurent_series_pkg K).space :=
-(laurent_series_pkg K).uniform_struct.to_topological_space
-
-lemma val_laurent_series_equal_extension : (laurent_series_pkg K).dense_inducing.extend valued.v = 
-  (@valued.v (laurent_series K) _ ℤₘ₀ _ _) :=
-begin
-  sorry
-end
-
--- lemma foo :  (@valued.v (ratfunc_adic_compl K) _ ℤₘ₀ _ _) ∘ (laurent_series_pkg K).compare
---   (ratfunc_adic_compl_pkg K) = (@valued.v (laurent_series K) _ ℤₘ₀ _ _) :=
--- begin
---   set ψ := @valued.v (ratfunc K) _ ℤₘ₀ _ _ with hψ,
---   have cont_ψ : continuous ψ := valued.continuous_valuation,
---   have := extend_compare_extend (ratfunc_adic_compl_pkg K) (laurent_series_pkg K) ψ cont_ψ (aux_val K),
---   rw hψ at this,
---   rwa ← val_laurent_series_equal_extension,
--- end
-
 lemma valuation_compare (f : laurent_series K) : (@valued.v (ratfunc_adic_compl K) _ ℤₘ₀ _ _) 
   ((laurent_series_pkg K).compare (ratfunc_adic_compl_pkg K) f) = 
   (valued.v f) :=
@@ -843,31 +823,39 @@ begin
   refl,
 end
 
-noncomputable!
-definition power_series_ring_equiv : (power_series K) ≃+* 
-  ((ideal_X K).adic_completion_integers (ratfunc K)) :=
-begin
-  -- let := true,
-  -- set φ := (completion_laurent_series.laurent_series_ring_equiv K) with hφ,
-  let α := @ring_equiv.subring_map _ _ _ _ (power_series_as_subring K)
-    (laurent_series_ring_equiv K).symm,
-  let β := (power_series_equiv_subring K).trans α,
 
-  -- let R := (subring.map (laurent_series_ring_equiv K).symm.to_ring_hom (power_series_as_subring K)),
-  -- let S := ((ideal_X K).adic_completion_integers (ratfunc K)).to_subring,
-  -- have eq_subrings : R = S,sorry,
-  have eq_subrings : (subring.map (laurent_series_ring_equiv K).symm.to_ring_hom
-    (power_series_as_subring K)) = ((ideal_X K).adic_completion_integers (ratfunc K)).to_subring,
+noncomputable!
+definition power_series_as_subring : subring (laurent_series K) :=
+ring_hom.range (hahn_series.of_power_series ℤ K)
+
+noncomputable!
+definition power_series_equiv_subring : power_series K ≃+* power_series_as_subring K :=
+begin
+  rw [power_series_as_subring, ring_hom.range_eq_map],
+  use subring.top_equiv.symm.trans (subring.equiv_map_of_injective _
+    (hahn_series.of_power_series ℤ K) (hahn_series.of_power_series_injective))
+end
+
+
+lemma power_series_ext_subring : (subring.map (laurent_series_ring_equiv K).symm.to_ring_hom
+    (power_series_as_subring K)) = ((ideal_X K).adic_completion_integers (ratfunc K)).to_subring :=
+begin
   { ext x,
     simp only [subring.mem_map, exists_prop, valuation_subring.mem_to_subring, 
       mem_adic_completion_integers],
     split,--do better?
-    { rintros ⟨f, F, h_fF⟩,
+    { rintros ⟨f, ⟨F, coe_F⟩, h_fF⟩,
       have : ((laurent_series_ring_equiv K).symm.to_ring_hom) f =
         (laurent_series_pkg K).compare (ratfunc_adic_compl_pkg K) f := rfl,
-      rw [← h_fF, this, valuation_compare],
-      sorry,
-    },
+      rw [← h_fF, this, valuation_compare, ← with_zero.coe_one, ← of_add_zero, ← neg_zero, 
+        valuation_le_iff_coeff_zero_of_lt, ← coe_F],
+      intros n hn,
+      apply hahn_series.emb_domain_notin_image_support,
+      intro abs,
+      obtain ⟨m, -, m_neg⟩ := set.mem_of_subset_of_mem (set.image_subset (nat.cast_add_monoid_hom ℤ)
+        (set.subset_univ _)) abs,
+      rw ← m_neg at hn,
+      exact not_lt_of_le (nat.cast_nonneg m) hn, },
     { intro h,
       set f := (laurent_series_ring_equiv K) x with hf,
       have := valuation_compare K f,
@@ -884,9 +872,16 @@ begin
       { -- simpa [h_fF, hf] using hx,--this works but seems slower
         rw [h_fF, hf],
         apply hx }}},
-  use β.trans (ring_equiv.subring_congr eq_subrings),
 end
 
+
+noncomputable!
+definition power_series_ring_equiv : (power_series K) ≃+* 
+  ((ideal_X K).adic_completion_integers (ratfunc K)) :=
+((power_series_equiv_subring K).trans (@ring_equiv.subring_map _ _ _ _ (power_series_as_subring K)
+  (laurent_series_ring_equiv K).symm)).trans (ring_equiv.subring_congr (power_series_ext_subring K))
+
+end power_series
 
 end comparison
 
