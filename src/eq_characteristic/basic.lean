@@ -118,17 +118,8 @@ namespace FpX_int_completion
 
 -- Upgrade to (ratfunc Fp)-algebra iso
 noncomputable!
--- **FAE**: Siccome voglio solo un'equivalenza di anelli, mi conviene usare `ring.map` (o 
---`ring.comap`), o al massimo `subring.map` (rsp. `subring.comap`) invece che gli equivalenti per
--- valuation subrings.
 definition integers_equiv_power_series : (power_series 𝔽_[p]) ≃+* 𝔽_[p]⟦X⟧ :=
-begin
-  set φ := (completion_laurent_series.laurent_series_ring_equiv 𝔽_[p]) with hφ,
-  let α := (@ring_equiv.subring_map _ _ _ _ (FpX_int_completion p).to_subring φ).symm,
-  let β : (power_series 𝔽_[p]) ≃+* subring.map φ.to_ring_hom (FpX_int_completion p).to_subring,
-    sorry,
-  use β.trans α,
-end
+completion_laurent_series.power_series_ring_equiv 𝔽_[p]
 
 
 variable {p}
