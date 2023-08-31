@@ -620,7 +620,7 @@ by {rw [ratfunc.coe_def, coe_alg_hom, lift_alg_hom_apply, denom_algebra_map f, m
   num_algebra_map], refl}
 
 
-lemma ratfunc_valuation_eq_power_series (P: (ratfunc K)) : (ideal_X K).valuation (P) =
+lemma ratfunc_valuation_eq_laurent_series (P: (ratfunc K)) : (ideal_X K).valuation (P) =
   (power_series.ideal_X K).valuation ((↑P : (laurent_series K))) :=
 begin
   apply ratfunc.induction_on' P,
@@ -657,7 +657,7 @@ begin
       apply pre_R,
       apply hd,
       simp only,
-      erw [set.mem_set_of_eq, sub_zero, ← ratfunc.coe_sub, ← ratfunc_valuation_eq_power_series],
+      erw [set.mem_set_of_eq, sub_zero, ← ratfunc.coe_sub, ← ratfunc_valuation_eq_laurent_series],
       assumption, }},
   { rintros ⟨T, ⟨hT, pre_T⟩⟩,
     obtain ⟨d, hd⟩ := valued.mem_nhds.mp hT,
@@ -670,7 +670,7 @@ begin
       rintros _ _,
       apply hd,
       simp only,
-      erw [set.mem_set_of_eq, sub_zero, ratfunc_valuation_eq_power_series, ratfunc.coe_sub],
+      erw [set.mem_set_of_eq, sub_zero, ratfunc_valuation_eq_laurent_series, ratfunc.coe_sub],
       assumption }},
 end
 
@@ -773,9 +773,15 @@ open_locale with_zero_topology topology
 lemma val_laurent_series_equal_extension : (laurent_series_pkg K).dense_inducing.extend valued.v = 
   (@valued.v (laurent_series K) _ ℤₘ₀ _ _) :=
 begin
-  sorry
+  apply dense_inducing.extend_unique,
+  { intro x,
+    erw ratfunc_valuation_eq_laurent_series K x,
+    refl, },
+  { exact @valued.continuous_valuation (laurent_series K) _ ℤₘ₀ _ _ },
 end
 
+
+-- **FAE** The `sorry` below should be very easy, simply a matter of discreteness.
 lemma aux_val (a : ((ideal_X K).adic_completion (ratfunc K))) : 
   tendsto (@valued.v (ratfunc K) _ ℤₘ₀ _ _) (comap coe (𝓝 a)) (𝓝 (valued.v a : ℤₘ₀)) :=
 begin
@@ -792,25 +798,17 @@ begin
     { rw [ha, this],
       use units.mk0 γ γ_ne_zero,
       rw units.coe_mk0 },
-    { simp only [set.preimage_set_of_eq, valued.valued_completion_apply],
-      rw hψ,
+    { simp only [set.preimage_set_of_eq, valued.valued_completion_apply, hψ],
       apply set.preimage_mono γ_le }},
-    { rw [with_zero_topology.tendsto_of_ne_zero],
-      rw hψ,
-      simp only [filter.eventually_comap],
-      rw filter.eventually,
-      rw valued.mem_nhds,
+    { rw [with_zero_topology.tendsto_of_ne_zero ((valuation.ne_zero_iff valued.v).mpr ha), hψ, 
+        filter.eventually_comap, filter.eventually, valued.mem_nhds],
       simp only [set.set_of_subset_set_of],
       use 1,--or whatever makes the next-next line work
       intros y val_y b diff_b_y,
       replace val_y : valued.v (y - a) = (0 : ℤₘ₀), sorry,
-      rw [valuation.zero_iff] at val_y,
-      rw sub_eq_zero at val_y,
-      rw ← valued.extension_extends,
-      rw diff_b_y,
-      rw val_y,
-      refl,
-      rwa valuation.ne_zero_iff, } 
+      rw [valuation.zero_iff, sub_eq_zero] at val_y,
+      rw [← valued.extension_extends, diff_b_y, val_y],
+      refl }, 
 end
 
 lemma valuation_compare (f : laurent_series K) : (@valued.v (ratfunc_adic_compl K) _ ℤₘ₀ _ _) 
