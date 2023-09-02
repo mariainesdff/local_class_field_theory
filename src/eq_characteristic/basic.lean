@@ -7,6 +7,7 @@ Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 import algebra.char_p.subring
 import discrete_valuation_ring.complete
 import for_mathlib.power_series_adic_completion
+import for_mathlib.power_series
 import for_mathlib.rank_one_valuation
 import for_mathlib.ring_theory.valuation.algebra_instances
 import ring_theory.dedekind_domain.adic_valuation
@@ -45,6 +46,9 @@ variables (p : ℕ) [fact(nat.prime p)]
 
 notation (name := prime_galois_field)
   `𝔽_[` p `]` := galois_field p 1
+
+instance : fintype (local_ring.residue_field (power_series 𝔽_[p])) :=
+fintype.of_equiv _ (residue_field_of_power_series (𝔽_[p])).to_equiv.symm
 
 @[reducible] def FpX_completion := (ideal_X 𝔽_[p]).adic_completion (ratfunc 𝔽_[p])
 
@@ -122,13 +126,19 @@ definition integers_equiv_power_series : (power_series 𝔽_[p]) ≃+* 𝔽_[p]�
 completion_laurent_series.power_series_ring_equiv 𝔽_[p]
 
 
+noncomputable! lemma residue_field_power_series_card :
+  fintype.card (local_ring.residue_field (power_series 𝔽_[p])) = p :=
+begin
+  convert fintype.of_equiv_card ((residue_field_of_power_series 𝔽_[p]).to_equiv.symm),
+  rw [galois_field.card p 1 one_ne_zero, pow_one]
+end
+
 variable {p}
 noncomputable! lemma residue_field_card_eq_char :
   nat.card (local_ring.residue_field 𝔽_[p]⟦X⟧) = p :=
-begin
-  rw FpX_int_completion,
-  sorry
-end
+by simp only [← nat.card_congr (local_ring.residue_field.map_equiv
+  (integers_equiv_power_series p)).to_equiv, nat.card_eq_fintype_card,
+  residue_field_power_series_card p]
 
 end FpX_int_completion
 

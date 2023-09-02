@@ -27,8 +27,12 @@ namespace eq_char_local_field
   is_discrete          := v.valuation.is_discrete p K,
   finite_residue_field := 
   begin
-    have := residue_field_of_power_series 𝔽_[p],
-    have := discrete_valuation.finite_residue_field_of_unit_ball ,
+    sorry,
+    -- haveI := residue_field_of_power_series 𝔽_[p],
+    -- haveI : finite_dimensional (ratfunc (galois_field p 1)) K, sorry,
+    -- haveI : is_separable (ratfunc (galois_field p 1)) K, sorry,--this must be added as assumption, I believe
+    -- have := @discrete_valuation.finite_residue_field_of_unit_ball (ratfunc 𝔽_[p]) _ _ K _ _ _ _ _
+    -- sorry,
   end,
   ..(eq_char_local_field.with_zero.valued p K) }
 

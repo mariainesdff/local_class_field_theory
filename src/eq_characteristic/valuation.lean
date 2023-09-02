@@ -6,6 +6,7 @@ Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 
 import discrete_valuation_ring.extensions
 import eq_characteristic.basic
+import for_mathlib.power_series_adic_completion
 
 noncomputable theory
 

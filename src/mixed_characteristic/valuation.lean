@@ -60,7 +60,8 @@ lemma is_unramified_Q_p : e (Q_p p) = 1 :=
 begin
   rw [ramification_index, neg_eq_iff_eq_neg, ← to_add_of_add (-1 : ℤ)],
   apply congr_arg,
-  rw [← with_zero.coe_inj, ← padic'.valuation_p p, with_zero.coe_unzero, ← trivial_extension_eq_valuation (Q_p p)],
+  rw [← with_zero.coe_inj, ← padic'.valuation_p p, with_zero.coe_unzero,
+    ← trivial_extension_eq_valuation (Q_p p)],
   refl,
 end
 
