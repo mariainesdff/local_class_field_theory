@@ -756,12 +756,6 @@ definition laurent_series_ring_equiv :
   map_add' := (extension_as_ring_hom K (unif_cont_coe K).continuous).map_add',
   .. compare_pkg K }
 
-
--- lemma coe_X_compare : (laurent_series_ring_equiv K) (↑(@ratfunc.X K _ _) :
---   (ratfunc_adic_compl K)) = (↑(@power_series.X K _) : (laurent_series K)) :=
--- by {rw [power_series.coe_X, ← ratfunc.coe_X, ← laurent_series_coe,
---   ← abstract_completion.compare_coe], refl}
-
 section power_series
 
 instance : topological_space (laurent_series_pkg K).space :=
@@ -780,14 +774,12 @@ begin
   { exact @valued.continuous_valuation (laurent_series K) _ ℤₘ₀ _ _ },
 end
 
-
--- **FAE** The `sorry` below should be very easy, simply a matter of discreteness.
 lemma aux_val (a : ((ideal_X K).adic_completion (ratfunc K))) : 
   tendsto (@valued.v (ratfunc K) _ ℤₘ₀ _ _) (comap coe (𝓝 a)) (𝓝 (valued.v a : ℤₘ₀)) :=
 begin
  set ψ := @valued.v (ratfunc K) _ ℤₘ₀ _ _ with hψ,
  let := @valued.is_topological_valuation ((ideal_X K).adic_completion (ratfunc K)) _ ℤₘ₀ _ _,
-  by_cases ha : a = 0,
+ by_cases ha : a = 0,
   { rw tendsto_def,
     intros S hS,
     simp only [mem_comap, exists_prop],
@@ -803,23 +795,27 @@ begin
     { rw [with_zero_topology.tendsto_of_ne_zero ((valuation.ne_zero_iff valued.v).mpr ha), hψ, 
         filter.eventually_comap, filter.eventually, valued.mem_nhds],
       simp only [set.set_of_subset_set_of],
-      use 1,--or whatever makes the next-next line work
+      set γ := (valued.v a) / ((multiplicative.of_add (1 : ℤ)) : ℤₘ₀) with h_aγ,
+      have γ_ne_zero : γ ≠ 0,
+      { simpa only [ne.def, _root_.div_eq_zero_iff, valuation.zero_iff, with_zero.coe_ne_zero,
+          or_false] },
+      use units.mk0 γ γ_ne_zero,
       intros y val_y b diff_b_y,
-      replace val_y : valued.v (y - a) = (0 : ℤₘ₀), sorry,
-      rw [valuation.zero_iff, sub_eq_zero] at val_y,
-      rw [← valued.extension_extends, diff_b_y, val_y],
-      refl }, 
+      replace val_y : valued.v y = valued.v a,
+      { refine valuation.map_eq_of_sub_lt _ (val_y.trans _),
+        rw [units.coe_mk0, h_aγ, ← with_zero.coe_unzero ((valuation.ne_zero_iff valued.v).mpr ha),
+          ← with_zero.coe_div, with_zero.coe_lt_coe, div_lt_self_iff, ← of_add_zero,
+          multiplicative.of_add_lt],
+        exact int.zero_lt_one },
+      rwa [← valued.extension_extends, diff_b_y] }, 
 end
 
 lemma valuation_compare (f : laurent_series K) : (@valued.v (ratfunc_adic_compl K) _ ℤₘ₀ _ _) 
   ((laurent_series_pkg K).compare (ratfunc_adic_compl_pkg K) f) = 
   (valued.v f) :=
-begin
-  have := extend_compare_extend (ratfunc_adic_compl_pkg K) (laurent_series_pkg K)
-    (@valued.v (ratfunc K) _ ℤₘ₀ _ _) (valued.continuous_valuation) (aux_val K),
-  rw [← val_laurent_series_equal_extension, ← this],
-  refl,
-end
+by simpa only [← val_laurent_series_equal_extension, ← extend_compare_extend
+    (ratfunc_adic_compl_pkg K) (laurent_series_pkg K) (@valued.v (ratfunc K) _ ℤₘ₀ _ _)
+      (valued.continuous_valuation) (aux_val K)] using rfl
 
 
 noncomputable!
