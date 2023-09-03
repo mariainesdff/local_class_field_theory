@@ -76,11 +76,16 @@ instance : fact (nat.prime (residue_char p L v)) := infer_instance
 
 
 noncomputable!
-definition algebra_over_completion : algebra (FpX_completion p) L := sorry
+definition algebra_over_completion : algebra (FpX_completion p)
+  (is_dedekind_domain.height_one_spectrum.adic_completion L v) :=
+begin
+    sorry,
+end
 
 
-lemma is_finite_dimensional : @finite_dimensional (FpX_completion p) L _ _
-  (@algebra.to_module _ _ _ _ (algebra_over_completion p L)) := sorry
+lemma is_finite_dimensional : @finite_dimensional (FpX_completion p)
+  (is_dedekind_domain.height_one_spectrum.adic_completion L v) _ _
+  (@algebra.to_module _ _ _ _ (algebra_over_completion p L v)) := sorry
 
 
 noncomputable!
