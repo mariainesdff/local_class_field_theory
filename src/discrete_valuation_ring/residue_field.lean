@@ -111,8 +111,6 @@ begin
     apply extended_max_ideal_not_is_unit K hv L (is_unit_iff.mpr h) },
 end
 
-set_option profiler true
-
 -- elaboration of ramification_idx_extended_ne_zero took 12.8s vs
 -- elaboration of ramification_idx_extended_ne_zero took 9.72s (with explicit dd)
 -- elaboration of ramification_idx_extended_ne_zero took 6.63s (removing unused have)
@@ -122,38 +120,18 @@ lemma ramification_idx_extended_ne_zero :
     (local_ring.maximal_ideal K₀) (extended_max_ideal K hv L)) :=
 begin
   apply ne_zero.mk,
-  /- have := (((discrete_valuation_ring.tfae (integral_closure K₀ L) _).out 0 6).mp _),
-  specialize this (extended_max_ideal K hv L) (extended_max_ideal_ne_zero K hv L), -/
   apply ramification_idx_ne_zero nat.one_ne_zero,
   { rw [pow_one, extended_max_ideal],
-    exact le_refl _,
-    /- simp only [le_refl], -/},
+    exact le_refl _ },
   { rw [← extended_max_ideal, one_add_one_eq_two, not_le],
     apply pow_lt_self,
     apply extended_max_ideal_ne_zero,
     { intro h,
       rw ← is_unit_iff at h,
       exact extended_max_ideal_not_is_unit K hv L h },
-    exact le_refl _,
-    /- simp only [le_refl] -/ },
- -- { apply discrete_valuation_ring.not_is_field },
-  --apply_instance,
+    exact le_refl _ }
 end
 
-#exit
-
--- lemma ramification_idx_ne_zero' : ramification_idx
---   (algebra_map K₀ (integral_closure K₀ L))
---   (local_ring.maximal_ideal K₀) (extended_max_ideal K hv L) ≠ 0 :=
--- begin
---   sorry,
---   -- apply is_dedekind_domain.ramification_idx_ne_zero (extended_max_ideal_ne_zero K hv L),
---   -- { apply_instance },
---   -- { apply local_ring.le_maximal_ideal,
---   --   intro h,
---   --   rw ← is_unit_iff at h,
---   --   exact extended_max_ideal_not_is_unit K hv L h },
--- end
 
 -- elaboration of algebra_residue_fields took 762ms
 noncomputable!
@@ -188,40 +166,6 @@ begin
   { apply_instance }, -/
 end
 
-
--- lemma extended_eq_pow_ramification_index' : ideal.map (algebra_map K₀ (integral_closure K₀ L))
---       (local_ring.maximal_ideal K₀) = local_ring.maximal_ideal (integral_closure K₀ L) ^
---       (ramification_idx (algebra_map K₀ (integral_closure K₀ L)) 
---                               (local_ring.maximal_ideal K₀) 
---                               (local_ring.maximal_ideal (integral_closure K₀ L))
---       ) :=
--- begin
---   have := (((discrete_valuation_ring.tfae (integral_closure K₀ L) _).out 0 6).mp _),
---   obtain ⟨n, hn⟩ := this (extended_max_ideal K hv L) (extended_max_ideal_ne_zero K hv L),
---   rw [← extended_max_ideal, hn],
---   { congr,
---     rw ramification_idx_spec,
---     { rw [← extended_max_ideal],
---       apply le_of_eq hn },
---     { rw [not_le, ← extended_max_ideal, hn],
---       apply pow_succ_lt_pow,
---       apply discrete_valuation_ring.not_a_field }},
---   { apply discrete_valuation_ring.not_is_field },
---   { apply_instance, },
--- end
-
--- lemma minchia : @submodule.quotient_rel (integral_closure K₀ L) (integral_closure K₀ L) _ _ _
---   (extended_max_ideal K hv L) = @submodule.quotient_rel (integral_closure K₀ L)
---   (integral_closure K₀ L) _ _ _
---   (local_ring.maximal_ideal (integral_closure K₀ L) ^
---       (ramification_idx (algebra_map K₀ (integral_closure K₀ L)) 
---                               (local_ring.maximal_ideal K₀) 
---                               (local_ring.maximal_ideal (integral_closure K₀ L))
---       )) :=
--- begin
---   rw extended_max_ideal,
---   rw extended_eq_pow_ramification_index',
--- end
 
 -- elaboration of algebra_mod_power_e took 3.08s
 @[reducible]
@@ -305,19 +249,7 @@ begin
   rwa algebra_map_comp_power_e,
 end
 
--- lemma primo''_apply (a : (residue_field K₀)) : (algebra_map (residue_field K₀)
---     ((integral_closure K₀ L) ⧸ (extended_max_ideal K hv L))
---       ) a =
---   ideal.quotient.mk (extended_max_ideal K hv L) (algebra_map (residue_field K₀)
---     (residue_field (integral_closure K₀ L)) a) :=
--- begin
---   have : ((algebra_map (residue_field K₀)
---     ((integral_closure K₀ L) ⧸ (extended_max_ideal K hv L))
---       ) ∘ (ideal.quotient.mk (local_ring.maximal_ideal K₀))) a =
---   (ideal.quotient.mk (extended_max_ideal K hv L) ∘ (algebra_map K₀ (integral_closure K₀ L))) a,
---   rw primo',
---   exact this,
--- end
+
 
 -- elaboration of scalar_tower_extended took 2.72s
 lemma scalar_tower_extended : is_scalar_tower K₀ (residue_field K₀)
@@ -358,90 +290,6 @@ begin
   refl,
   rw [algebra_map_comp, ← algebra_map_comp_extended, algebra_map_eq_quot_mk],
 end
-
--- noncomputable!
--- def quotient_alg_equiv : ((integral_closure K₀ L) ⧸ (extended_max_ideal K hv L))
---   ≃ₗ[residue_field K₀]
---   ((integral_closure K₀ L) ⧸ (local_ring.maximal_ideal (integral_closure K₀ L) ^ 
---     (ramification_idx (algebra_map K₀ (integral_closure K₀ L)) 
---                               (local_ring.maximal_ideal K₀) 
---                               (local_ring.maximal_ideal (integral_closure K₀ L))))) :=
--- begin
---   -- letI := scalar_tower_extended K hv L,
---   -- letI := scalar_tower_power K hv L,--needed? if not, remove declaration above
-
---   -- let f :=  ideal.quotient_equiv_alg_of_eq K₀ (extended_eq_pow_ramification_index K hv L),
---   -- let φ := f.to_linear_equiv,--forse usare submodule.quot_equiv_of_eq
---   let ϕ := submodule.quot_equiv_of_eq _ _ (extended_eq_pow_ramification_index K hv L),
---   let ψ :
---   ((integral_closure K₀ L) ⧸ (extended_max_ideal K hv L))
---   →ₗ[residue_field K₀]
---   ((integral_closure K₀ L) ⧸ (local_ring.maximal_ideal (integral_closure K₀ L) ^ 
---     (ramification_idx (algebra_map K₀ (integral_closure K₀ L)) 
---                               (local_ring.maximal_ideal K₀) 
---                               (local_ring.maximal_ideal (integral_closure K₀ L))))),
---   use ϕ,
---   sorry,
---   { rintros ⟨a⟩ v,
-    
-
---   },
-
--- end
-
--- #exit
-
---   let g :
---   ((integral_closure K₀ L) ⧸ (extended_max_ideal K hv L))
---   →ₐ[residue_field K₀]
---   ((integral_closure K₀ L) ⧸ (local_ring.maximal_ideal (integral_closure K₀ L) ^ 
---     (ramification_idx (algebra_map K₀ (integral_closure K₀ L)) 
---                               (local_ring.maximal_ideal K₀) 
---                               (local_ring.maximal_ideal (integral_closure K₀ L))))),
---   use λ x, f x,
---   simp only [_root_.map_one],
---   sorry,
---   sorry,
---   sorry,
---   -- any_goals {simp},
---   { intro a,
---     -- squeeze_simp,
-    
---     --rintro ⟨a⟩,
---     -- rw primo'_apply K hv L a,
-
---   },
---   -- use f.1,  
---   -- let := @alg_equiv.of_bijective (residue_field K₀) _ _ _ _ _ (algebra_mod_extended K hv L)
---   --   (algebra_mod_power_e K hv L),
-  
-
-
---   -- let f := ideal.quotient_equiv_alg_of_eq (extended_eq_pow_ramification_index K hv L),
---   -- let f := ideal.quot_equiv_of_eq (extended_eq_pow_ramification_index K hv L),
---   -- -- let g := f.to_semilinear_equiv,
---   -- fconstructor,
---   -- use f.1,
---   -- use f.map_add,
---   -- { rintros a ⟨v⟩,
---   --   squeeze_simp,
---   --   rw submodule.quotient.mk'_eq_mk,
---   --   rw ← ideal.quotient.mk_eq_mk,
---   --   simp only [ring_equiv.to_fun_eq_coe, ring_hom.id_apply],
---   --   have := ideal.quot_equiv_of_eq_mk (extended_eq_pow_ramification_index K hv L) v,
---   --   -- have hfg : f v = g v := rfl,
---   --   -- rw hfg,
---   --   -- rw ← g.map_smulₛₗ,
---   --   -- haveI := ring_hom_inv_pair.of_ring_equiv f,
---   --   -- -- haveI := ring_hom_inv_pair.symm (↑f : R →+* S) (f.symm : S →+* R),
---   --   -- rw hfg,
-    
-
---   -- },
---   -- use f.inv_fun,
---   -- use f.left_inv,
---   -- use f.right_inv,
--- end
 
 -- elaboration of quotient_linear_iso took 14.8s
 noncomputable!
@@ -599,4 +447,4 @@ def finite_residue_field_of_unit_ball [is_separable K L]
 
 end discrete_valuation
 
-#lint
+--#lint
