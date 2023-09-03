@@ -74,27 +74,32 @@ definition residue_char (v : is_dedekind_domain.height_one_spectrum
 
 instance : fact (nat.prime (residue_char p L v)) := infer_instance
 
--- notation (name := FpX_completion)
---   `𝔽_[` p `]⟮⟮` X `⟯⟯` := FpX_completion p
 
--- definition h_alg : algebra (𝔽_[p]⟮⟮X⟯⟯) L 
-definition h_alg : algebra (FpX_adic_completion p) L := sorry
+noncomputable!
+definition algebra_over_completion : algebra (FpX_completion p) L := sorry
 
-noncomputable! instance adic_completion.eq_char_local_field : 
+
+lemma is_finite_dimensional : @finite_dimensional (FpX_completion p) L _ _
+  (@algebra.to_module _ _ _ _ (algebra_over_completion p L)) := sorry
+
+
+noncomputable!
+instance adic_completion.eq_char_local_field : 
+-- definition adic_completion.eq_char_local_field : 
   eq_char_local_field (residue_char p L v)
-    (is_dedekind_domain.height_one_spectrum.adic_completion L v) :=
-{ smul := _,
-  to_fun := _,
-  map_one' := _,
-  map_mul' := _,
-  map_zero' := _,
-  map_add' := _,
-  commutes' := _,
-  smul_def' := _,
-  to_finite_dimensional := _ }
--- begin
---   haveI h_alg : algebra 𝔽_[p]⟮⟮X⟯⟯ L, sorry,
---   have : finite_dimensional 𝔽_[p]⟮⟮X⟯⟯ L, sorry,
--- end
+    (is_dedekind_domain.height_one_spectrum.adic_completion L v) := sorry
+-- { smul := 
+--   begin
+--     sorry,
+--   end,
+--   to_fun := sorry,
+--   map_one' := sorry,
+--   map_mul' := sorry,
+--   map_zero' := sorry,
+--   map_add' := sorry,
+--   commutes' := sorry,
+--   smul_def' := sorry,
+--   to_finite_dimensional := is_finite_dimensional p L, }
+  
 
 end function_field
