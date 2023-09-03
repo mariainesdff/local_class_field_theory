@@ -39,40 +39,22 @@ def extended_max_ideal : ideal (integral_closure K₀ L) :=
 /- span {algebra_map K₀ (integral_closure K₀ L)
   (submodule.is_principal.generator (local_ring.maximal_ideal K₀))} -/
 
-
--- elaboration of extended_max_ideal_not_is_unit took 1.99s (after moving it here)
---elaboration of extended_max_ideal_not_is_unit took 1.63s
+-- elaboration of extended_max_ideal_not_is_unit took 1.37s
 lemma extended_max_ideal_not_is_unit : ¬ is_unit (extended_max_ideal K hv L) :=
 begin
   have h₁ : algebra.is_integral K₀ (integral_closure K₀ L) := 
     le_integral_closure_iff_is_integral.mp (le_refl _),
   have h₂ : ring_hom.ker (algebra_map K₀ (integral_closure K₀ L)) ≤
     local_ring.maximal_ideal K₀,
-  { apply local_ring.le_maximal_ideal,
-    apply ring_hom.ker_ne_top },
+  { exact local_ring.le_maximal_ideal (ring_hom.ker_ne_top _), },
   obtain ⟨Q, hQ_max, hQ⟩ := exists_ideal_over_maximal_of_is_integral h₁
      (local_ring.maximal_ideal K₀) h₂,
   rw [extended_max_ideal, ← hQ, is_unit_iff],
-  apply ne_top_of_le_ne_top hQ_max.ne_top,
-  apply map_comap_le,
+  exact ne_top_of_le_ne_top hQ_max.ne_top map_comap_le,
 end
 
 
 variables [is_discrete hv.v]
-/- @[priority 10000]
-instance dd : is_dedekind_domain (integral_closure K₀ L) := 
-is_principal_ideal_ring.is_dedekind_domain (integral_closure (hv.v.valuation_subring) L)
-
-@[priority 10000]
-noncomputable! lemma ufd : unique_factorization_monoid (ideal(integral_closure K₀ L)) :=
-@ideal.unique_factorization_monoid (integral_closure K₀ L) _ _ _
-
-noncomputable! def ccm : cancel_comm_monoid_with_zero (ideal(integral_closure K₀ L)) :=
-@ideal.cancel_comm_monoid_with_zero (integral_closure K₀ L) _ _ _ -/
-
---instance : discrete_valuation_ring (integral_closure K₀ L) := infer_instance
-
---instance : local_ring (integral_closure K₀ L) := infer_instance
 
 -- elaboration of extended_max_ideal_ne_zero took 1.62s
 -- elaboration of extended_max_ideal_ne_zero took 1.75s, without the local_ring instance
@@ -89,53 +71,76 @@ begin
   { exact no_zero_smul_divisors.algebra_map_injective _ _ }
 end
 
+
 variables [finite_dimensional K L]
 
 -- elaboration of integral_closure.is_noetherian took 1.5s
 instance [is_separable K L] : is_noetherian K₀ (integral_closure K₀ L) :=
-by exact is_integral_closure.is_noetherian K₀ K L (integral_closure K₀ L)
+is_integral_closure.is_noetherian K₀ K L (integral_closure K₀ L)
 
 variables [complete_space K] 
 
--- elaboration of ramification_idx_maximal_ne_zero took 6.36s
--- elaboration of ramification_idx_maximal_ne_zero took 5.9s
+
+@[priority 10000]
+instance dd : is_dedekind_domain (integral_closure K₀ L) := 
+is_principal_ideal_ring.is_dedekind_domain (integral_closure (hv.v.valuation_subring) L)
+
+/- @[priority 10000]
+noncomputable! lemma ufd : unique_factorization_monoid (ideal(integral_closure K₀ L)) :=
+@ideal.unique_factorization_monoid (integral_closure K₀ L) _ _ _ -/
+
+/-
+noncomputable! def ccm : cancel_comm_monoid_with_zero (ideal(integral_closure K₀ L)) :=
+@ideal.cancel_comm_monoid_with_zero (integral_closure K₀ L) _ _ _ -/
+
+/- instance : discrete_valuation_ring (integral_closure K₀ L) := infer_instance
+
+instance : local_ring (integral_closure K₀ L) := infer_instance -/
+
+-- elaboration of ramification_idx_maximal_ne_zero took 6.36s, vs
+-- elaboration of ramification_idx_maximal_ne_zero took 3.87s (with explicit dd)
 lemma ramification_idx_maximal_ne_zero : ne_zero (ramification_idx
-  (algebra_map K₀ (integral_closure K₀ L))
-  (local_ring.maximal_ideal K₀)
+  (algebra_map K₀ (integral_closure K₀ L)) (local_ring.maximal_ideal K₀)
   (local_ring.maximal_ideal (integral_closure K₀ L))) :=
 begin
   apply ne_zero.mk,
   apply is_dedekind_domain.ramification_idx_ne_zero (extended_max_ideal_ne_zero K hv L),
-  { apply_instance },
+  { apply is_maximal.is_prime' },
   { apply local_ring.le_maximal_ideal,
     intro h,
-    rw ← is_unit_iff at h,
-    exact extended_max_ideal_not_is_unit K hv L h },
+    apply extended_max_ideal_not_is_unit K hv L (is_unit_iff.mpr h) },
 end
 
--- elaboration of ramification_idx_extended_ne_zero took 12.8s
-lemma ramification_idx_extended_ne_zero : ne_zero
-  (ramification_idx
-     (algebra_map K₀ (integral_closure K₀ L))
-     (local_ring.maximal_ideal K₀) (extended_max_ideal K hv L)) :=
+set_option profiler true
+
+-- elaboration of ramification_idx_extended_ne_zero took 12.8s vs
+-- elaboration of ramification_idx_extended_ne_zero took 9.72s (with explicit dd)
+-- elaboration of ramification_idx_extended_ne_zero took 6.63s (removing unused have)
+-- elaboration of ramification_idx_extended_ne_zero took 5.71s (removinf simp onlys)
+lemma ramification_idx_extended_ne_zero : 
+  ne_zero (ramification_idx (algebra_map K₀ (integral_closure K₀ L))
+    (local_ring.maximal_ideal K₀) (extended_max_ideal K hv L)) :=
 begin
-  sorry
-  /- apply ne_zero.mk,
-  have := (((discrete_valuation_ring.tfae (integral_closure K₀ L) _).out 0 6).mp _),
-  specialize this (extended_max_ideal K hv L) (extended_max_ideal_ne_zero K hv L),
+  apply ne_zero.mk,
+  /- have := (((discrete_valuation_ring.tfae (integral_closure K₀ L) _).out 0 6).mp _),
+  specialize this (extended_max_ideal K hv L) (extended_max_ideal_ne_zero K hv L), -/
   apply ramification_idx_ne_zero nat.one_ne_zero,
   { rw [pow_one, extended_max_ideal],
-    simp only [le_refl],},
+    exact le_refl _,
+    /- simp only [le_refl], -/},
   { rw [← extended_max_ideal, one_add_one_eq_two, not_le],
     apply pow_lt_self,
     apply extended_max_ideal_ne_zero,
     { intro h,
       rw ← is_unit_iff at h,
       exact extended_max_ideal_not_is_unit K hv L h },
-    simp only [le_refl] },
-  { apply discrete_valuation_ring.not_is_field },
-  apply_instance, -/
+    exact le_refl _,
+    /- simp only [le_refl] -/ },
+ -- { apply discrete_valuation_ring.not_is_field },
+  --apply_instance,
 end
+
+#exit
 
 -- lemma ramification_idx_ne_zero' : ramification_idx
 --   (algebra_map K₀ (integral_closure K₀ L))
