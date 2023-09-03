@@ -18,10 +18,31 @@ namespace number_field
 variables (L : Type*) [field L] [number_field L]
   (v : is_dedekind_domain.height_one_spectrum (ring_of_integers L))
 
-definition residue_char (v : is_dedekind_domain.height_one_spectrum (ring_of_integers L)) : ℕ := sorry 
+definition integer_ideal_below
+  (v : is_dedekind_domain.height_one_spectrum (ring_of_integers L)) : (ideal ℤ) :=
+v.as_ideal.comap (algebra_map ℤ (ring_of_integers L))
+
+instance is_prime_integer_ideal_below : (integer_ideal_below L v).is_prime :=
+v.as_ideal.comap_is_prime (algebra_map ℤ (ring_of_integers L))
+
+lemma integer_ideal_below_ne_bot :(integer_ideal_below L v) ≠ ⊥ :=
+begin
+  obtain ⟨⟨x, x_int⟩, h_mem, ne_zero⟩ := (submodule.ne_bot_iff _).mp v.ne_bot,
+  refine ideal.comap_ne_bot_of_algebraic_mem ne_zero h_mem (is_integral.is_algebraic _ _),
+  exact number_field.is_integral_of_mem_ring_of_integers x_int,
+end 
+
+@[reducible]
+definition residue_char (v : is_dedekind_domain.height_one_spectrum (ring_of_integers L)) : ℕ :=
+(submodule.is_principal.generator (integer_ideal_below L v)).nat_abs
 
 instance : fact (nat.prime (residue_char L v)) :=
-sorry
+begin
+  rw [residue_char, ← int.prime_iff_nat_abs_prime],
+  apply fact.mk,
+  exact submodule.is_principal.prime_generator_of_is_prime (integer_ideal_below L v)
+    (integer_ideal_below_ne_bot L v),
+end
 
 noncomputable! instance adic_completion.mixed_char_local_field : 
   mixed_char_local_field (residue_char L v)
@@ -40,17 +61,40 @@ variables (L : Type) [field L] [h_alg : algebra 𝔽_[p][X] L]  [algebra (ratfun
   [is_separable (ratfunc 𝔽_[p]) L]
 variables (v : is_dedekind_domain.height_one_spectrum (@ring_of_integers 𝔽_[p] L _ _ h_alg))
 
-noncomputable! lemma foo (A : @ring_of_integers 𝔽_[p] L _ _ h_alg) : true := sorry
 
+-- **FAE* What was the point of this `foo`?
+-- noncomputable! lemma foo (A : @ring_of_integers 𝔽_[p] L _ _ h_alg) : true := sorry
+
+-- **FAE** For the `residue_char` of an `equal_char` field, I think we can simply define it to be
+-- `p`, no?
+@[reducible]
 definition residue_char (v : is_dedekind_domain.height_one_spectrum
-  (@ring_of_integers 𝔽_[p] L _ _ h_alg)) : ℕ := sorry 
+  (@ring_of_integers 𝔽_[p] L _ _ h_alg)) : ℕ := p 
 
 
-instance : fact (nat.prime (residue_char p L v)) :=
-sorry
+instance : fact (nat.prime (residue_char p L v)) := infer_instance
+
+-- notation (name := FpX_completion)
+--   `𝔽_[` p `]⟮⟮` X `⟯⟯` := FpX_completion p
+
+-- definition h_alg : algebra (𝔽_[p]⟮⟮X⟯⟯) L 
+definition h_alg : algebra (FpX_adic_completion p) L := sorry
 
 noncomputable! instance adic_completion.eq_char_local_field : 
   eq_char_local_field (residue_char p L v)
-    (is_dedekind_domain.height_one_spectrum.adic_completion L v) := sorry
+    (is_dedekind_domain.height_one_spectrum.adic_completion L v) :=
+{ smul := _,
+  to_fun := _,
+  map_one' := _,
+  map_mul' := _,
+  map_zero' := _,
+  map_add' := _,
+  commutes' := _,
+  smul_def' := _,
+  to_finite_dimensional := _ }
+-- begin
+--   haveI h_alg : algebra 𝔽_[p]⟮⟮X⟯⟯ L, sorry,
+--   have : finite_dimensional 𝔽_[p]⟮⟮X⟯⟯ L, sorry,
+-- end
 
 end function_field
