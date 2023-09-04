@@ -543,9 +543,10 @@ namespace padic_int
 
 definition residue_field : local_ring.residue_field ℤ_[p] ≃+* (zmod p) := 
 begin
-  --have : function.surjective padic_int.to_zmod,-- := 
-  let H:= zmod.ring_hom_surjective padic_int.to_zmod,
-  -- let α := ring_hom.quotient_ker_equiv_of_right_inverse ,
+  let α := ring_hom.quotient_ker_equiv_of_surjective
+    (zmod.ring_hom_surjective (@padic_int.to_zmod p _)),
+  rw padic_int.ker_to_zmod at α,
+  use α, 
 end
 
 end padic_int
