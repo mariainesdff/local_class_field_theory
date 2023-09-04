@@ -10,8 +10,8 @@ import from_mathlib.rank_one_valuation
 import mixed_characteristic.valuation
 
 
-open valuation discrete_valuation FpX_completion FpX_int_completion
-open_locale discrete_valuation --FpX_completion
+open valuation discrete_valuation
+open_locale discrete_valuation
 
 class local_field (K : Type*) [field K] extends valued K ℤₘ₀ :=
 (complete : complete_space K)
@@ -21,36 +21,35 @@ class local_field (K : Type*) [field K] extends valued K ℤₘ₀ :=
 
 namespace eq_char_local_field
 
+open FpX_completion
+
 @[priority 100] noncomputable! instance (p : out_param ℕ) [fact(nat.prime p)] (K : Type*) [field K]
-  [eq_char_local_field p K] : local_field K := 
+  [eq_char_local_field p K] [is_separable 𝔽_[p]⟮⟮X⟯⟯ K]: local_field K := 
 { complete             := eq_char_local_field.complete_space p K,
   is_discrete          := v.valuation.is_discrete p K,
   finite_residue_field := 
   begin
-    letI : is_separable 𝔽_[p]⟮⟮X⟯⟯ K,sorry,
-    apply finite_residue_field_of_unit_ball 𝔽_[p]⟮⟮X⟯⟯ FpX_completion.with_zero.valued K,
-    have := @FpX_int_completion.foo p _,
-    use this,
+    apply finite_residue_field_of_unit_ball,
+    apply FpX_int_completion.residue_field_fintype_of_completion,
   end,
   ..(eq_char_local_field.with_zero.valued p K) }
 
 end eq_char_local_field
 
-namespace local_field
-
-end local_field
-
--- #exit
-
 namespace mixed_char_local_field
+open padic
 
 --TODO: generalize is_discrete lemma to adic_valued completion
 @[priority 100] noncomputable instance (p : out_param ℕ) [fact(nat.prime p)] (K : Type*) [field K] 
   [mixed_char_local_field p K] : local_field K := 
 { complete             := mixed_char_local_field.complete_space p K,
   is_discrete          := v.valuation.is_discrete p K,
-  finite_residue_field := sorry,
+  finite_residue_field :=
+  begin
+    apply finite_residue_field_of_unit_ball,
+    apply ring_of_integers.residue_field_fintype_of_completion,
+  end,
   ..(mixed_char_local_field.with_zero.valued p K) }
-
+  
 end mixed_char_local_field
 
