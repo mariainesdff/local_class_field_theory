@@ -264,6 +264,8 @@ open completion_laurent_series
 
 lemma norm_lt_one_iff_dvd (F : 𝔽_[p]⟦X⟧) : ‖(F : 𝔽_[p]⟮⟮X⟯⟯)‖ < 1 ↔ ((FpX_int_completion.X p) ∣ F) := 
 begin
+  sorry;
+  {
   have hF : ‖(F : 𝔽_[p]⟮⟮X⟯⟯)‖ = rank_one_valuation.norm_def (F : 𝔽_[p]⟮⟮X⟯⟯) := rfl,
   suffices : (valued.v (F : 𝔽_[p]⟮⟮X⟯⟯)) < (1 : ℤₘ₀) ↔ ((FpX_int_completion.X p) ∣ F),
   { rwa [hF, rank_one_valuation.norm_lt_one_iff_val_lt_one] },
@@ -298,6 +300,7 @@ begin
     have := (completion_laurent_series.int_valuation_le_iff_coeff_zero_of_lt 𝔽_[p] G).mpr,
     sorry,
     sorry  },
+  }
 end
 
 

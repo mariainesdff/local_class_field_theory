@@ -832,11 +832,11 @@ by simpa only [← val_laurent_series_equal_extension, ← extend_compare_extend
       (valued.continuous_valuation) (aux_val K)] using rfl
 
 
-noncomputable!
+@[reducible]
 definition power_series_as_subring : subring (laurent_series K) :=
 ring_hom.range (hahn_series.of_power_series ℤ K)
 
-noncomputable!
+-- @[reducible]
 definition power_series_equiv_subring : power_series K ≃+* power_series_as_subring K :=
 begin
   rw [power_series_as_subring, ring_hom.range_eq_map],
@@ -894,11 +894,29 @@ begin
 end
 
 
-noncomputable!
+@[reducible]
 definition power_series_ring_equiv : (power_series K) ≃+* 
   ((ideal_X K).adic_completion_integers (ratfunc K)) :=
 ((power_series_equiv_subring K).trans (@ring_equiv.subring_map _ _ _ _ (power_series_as_subring K)
   (laurent_series_ring_equiv K).symm)).trans (ring_equiv.subring_congr (power_series_ext_subring K))
+
+-- @[simp]
+lemma power_series_ring_equiv_coe (G : power_series K) :
+((laurent_series_ring_equiv K).symm ↑G) = (power_series_ring_equiv K G) :=
+begin
+  rw power_series_ring_equiv,
+  apply congr_arg,
+  simp only [ring_equiv.to_mul_equiv_eq_coe, mul_equiv.to_equiv_eq_coe, mul_equiv.coe_to_equiv,
+    ring_equiv.coe_to_mul_equiv, subtype.val_eq_coe],
+  -- refl,
+  rw power_series_equiv_subring,
+  simp only [eq_mpr_eq_cast, cast_cast],
+  erw subring.top_equiv_symm_apply_coe,
+  simp only [ring_hom.to_fun_eq_coe],-- hahn_series.of_power_series_apply],
+  apply congr_arg,
+  -- rw subring.top_equiv_symm_apply_coe,
+end
+
 
 end power_series
 
