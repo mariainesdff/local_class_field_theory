@@ -7,6 +7,7 @@ Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 import analysis.specific_limits.basic
 import discrete_valuation_ring.complete
 import number_theory.padics.padic_integers
+import number_theory.padics.ring_homs
 import ring_theory.dedekind_domain.adic_valuation
 import for_mathlib.ring_theory.dedekind_domain.ideal
 import for_mathlib.stuff_for_laurent_series
@@ -538,6 +539,19 @@ noncomputable!
 definition padic_int_ring_equiv :  (Z_p p) ≃+* ℤ_[p] :=
 (ring_equiv.subring_map _).trans (ring_equiv.subring_congr (padic_int_ring_equiv_range p))
 
+namespace padic_int
+
+definition residue_field : local_ring.residue_field ℤ_[p] ≃+* (zmod p) := 
+begin
+  --have : function.surjective padic_int.to_zmod,-- := 
+  let H:= zmod.ring_hom_surjective padic_int.to_zmod,
+  -- let α := ring_hom.quotient_ker_equiv_of_right_inverse ,
+end
+
+end padic_int
+
+definition residue_field : local_ring.residue_field (Z_p p) ≃+* (zmod p) := 
+(local_ring.residue_field.map_equiv (padic_int_ring_equiv p)).trans (padic_int.residue_field p)
 
 
 end padic_comparison
