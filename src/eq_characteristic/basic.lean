@@ -50,12 +50,14 @@ notation (name := prime_galois_field)
 instance : fintype (local_ring.residue_field (power_series 𝔽_[p])) :=
 fintype.of_equiv _ (residue_field_of_power_series (𝔽_[p])).to_equiv.symm
 
+
 @[reducible] def FpX_completion := (ideal_X 𝔽_[p]).adic_completion (ratfunc 𝔽_[p])
 
 --local attribute [reducible] FpX_completion
 
 notation (name := FpX_completion)
   `𝔽_[` p `]⟮⟮` X `⟯⟯` := FpX_completion p
+
 
 @[reducible]
 definition FpX_int_completion :=
@@ -70,6 +72,8 @@ char_p_of_injective_algebra_map ((algebra_map 𝔽_[p] (ratfunc 𝔽_[p])).injec
 namespace FpX_completion
 
 variable {p}
+
+-- localized "notation (name := FpX_completion) `𝔽_[` p `]⟮⟮` X `⟯⟯` := FpX_completion p" in FpX_completion
 
 instance : has_coe (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯ := ⟨algebra_map (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯⟩
 
@@ -134,15 +138,26 @@ begin
 end
 
 variable {p}
-noncomputable! lemma residue_field_card_eq_char :
+noncomputable!
+lemma residue_field_card_eq_char :
   nat.card (local_ring.residue_field 𝔽_[p]⟦X⟧) = p :=
 by simp only [← nat.card_congr (local_ring.residue_field.map_equiv
   (integers_equiv_power_series p)).to_equiv, nat.card_eq_fintype_card,
   residue_field_power_series_card p]
 
+variable (p)
+noncomputable!
+instance : fintype (local_ring.residue_field (𝔽_[p]⟦X⟧)) :=
+fintype.of_equiv _ (local_ring.residue_field.map_equiv (integers_equiv_power_series p)).to_equiv
+
+noncomputable!
+lemma residue_field_fintype_of_completion : fintype (local_ring.residue_field (𝔽_[p]⟦X⟧)) := 
+  infer_instance
+
 end FpX_int_completion
 
 namespace FpX_completion
+-- open_locale FpX_completion
 
 lemma valuation_base_eq_char : 
   valuation.base 𝔽_[p]⟮⟮X⟯⟯ valued.v = p :=
@@ -156,6 +171,7 @@ end
 end FpX_completion
 
 namespace FpX_int_completion
+-- open_locale FpX_completion
 
 variable {p}
 
@@ -182,6 +198,7 @@ def X : 𝔽_[p]⟦X⟧ := ⟨algebra_map (ratfunc 𝔽_[p]) _ X, FpX_completion
 end FpX_int_completion
 
 namespace FpX_completion
+-- open_locale FpX_completion
 
 def X := algebra_map 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ (FpX_int_completion.X p)
 
@@ -231,6 +248,7 @@ norm_def_is_nonarchimedean _ _
 end FpX_completion
 
 namespace FpX_int_completion
+-- open_locale FpX_completion
 
 variables (p) 
 
@@ -263,6 +281,7 @@ end FpX_int_completion
 --TODO: Which version to keep?
 -- For instances and lemmas that only need `K` to be an `𝔽_[p]⟮⟮X⟯⟯`-algebra
 namespace adic_algebra
+-- open_locale FpX_completion
 
 -- NOTE: The instances in this section are not found by infer_instance, but at least the
 -- `by apply` is no longer needed.
@@ -286,12 +305,18 @@ valuation_subring.algebra_map_injective _ L
 
 end adic_algebra
 
+-- open_locale FpX_completion
+
 variable (p)
+
+-- #where
 /-- An equal characteristic local field is a field which is finite
 dimensional over `𝔽_p((X))`, for some prime `p`. -/
 class eq_char_local_field (p : out_param(ℕ)) [fact(nat.prime p)] (K : Type*) [field K] 
   extends algebra 𝔽_[p]⟮⟮X⟯⟯ K :=
 [to_finite_dimensional : finite_dimensional 𝔽_[p]⟮⟮X⟯⟯ K]
+
+-- #check eq_char_local_field p
 
 attribute [priority 100, instance] eq_char_local_field.to_finite_dimensional
 

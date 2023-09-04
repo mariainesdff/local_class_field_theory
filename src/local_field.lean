@@ -10,8 +10,8 @@ import from_mathlib.rank_one_valuation
 import mixed_characteristic.valuation
 
 
-open valuation
-open_locale discrete_valuation
+open valuation discrete_valuation FpX_completion FpX_int_completion
+open_locale discrete_valuation --FpX_completion
 
 class local_field (K : Type*) [field K] extends valued K ℤₘ₀ :=
 (complete : complete_space K)
@@ -27,12 +27,10 @@ namespace eq_char_local_field
   is_discrete          := v.valuation.is_discrete p K,
   finite_residue_field := 
   begin
-    sorry,
-    -- haveI := residue_field_of_power_series 𝔽_[p],
-    -- haveI : finite_dimensional (ratfunc (galois_field p 1)) K, sorry,
-    -- haveI : is_separable (ratfunc (galois_field p 1)) K, sorry,--this must be added as assumption, I believe
-    -- have := @discrete_valuation.finite_residue_field_of_unit_ball (ratfunc 𝔽_[p]) _ _ K _ _ _ _ _
-    -- sorry,
+    letI : is_separable 𝔽_[p]⟮⟮X⟯⟯ K,sorry,
+    apply finite_residue_field_of_unit_ball 𝔽_[p]⟮⟮X⟯⟯ FpX_completion.with_zero.valued K,
+    have := @FpX_int_completion.foo p _,
+    use this,
   end,
   ..(eq_char_local_field.with_zero.valued p K) }
 
