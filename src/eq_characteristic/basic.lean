@@ -270,41 +270,34 @@ begin
   set G := (power_series_ring_equiv 𝔽_[p]).symm F with h_GF,
   set f : 𝔽_[p]⟮⟮X⟯⟯ := ↑F with h_Ff,
   set g := (laurent_series_ring_equiv 𝔽_[p]) f with h_fg,
-  have h_Gg : ↑G = g, sorry,
-  -- simp,
+  have h_Gg : g = G, sorry,
+  -- -- simp,
   have uff : (laurent_series_ring_equiv 𝔽_[p]).symm g = f,
   {rw [h_fg, ring_equiv.symm_apply_apply] },
   have temp := valuation_compare 𝔽_[p] g,
-  split,
-  -- squeeze_simp at temp,
-  { --have := (completion_laurent_series.val_le_one_iff_eq_coe 𝔽_[p] ↑g).mpr ⟨g, rfl⟩,
-    intro h,
-    rw ← with_zero.coe_one at h,
-    rw ← of_add_zero at h,
-    rw ← neg_zero at h,
-    replace h : valued.v g < ↑(of_add (- (0 : ℤ))),
-    { rw ← temp, convert h },
-    -- replace h : valued.v (G : (laurent_series 𝔽_[p])) < ↑(of_add (- (0 : ℤ))),
-    
-    -- rw power_series_ring_equiv at uff,
-    -- rw uff at temp,
-    -- nth_rewrite 0 h_gf at temp,
-    -- rw power_series_ring_equiv at temp,
-    -- have inv := abstract_completion.inverse_compare (laurent_series_pkg 𝔽_[p])
-    --   (ratfunc_adic_compl_pkg (galois_field p 1)),
-    -- rw uff at temp,
-    
+  rw ← with_zero.coe_one,
+  rw ← of_add_zero,
+  rw ← neg_zero,
+  -- rw temp,
+  refine ⟨λ h, _, λ h, _⟩,
+  { --rw ← with_zero.coe_one at h,
+    -- rw ← of_add_zero at h,
+    -- rw ← neg_zero at h,
+    replace h : valued.v (G : (laurent_series 𝔽_[p])) < ↑(of_add (- (0 : ℤ))),
+    { rw ← h_Gg,
+      rw ← temp,
+      convert h },
     have := (completion_laurent_series.int_valuation_le_iff_coeff_zero_of_lt 𝔽_[p] G).mp
       (le_of_lt h),
-
-  },
-
-  /- rw height_one_spectrum.valued_adic_completion_def,
-
-  rw ← ideal.mem_span_singleton, -/
-
-  --rw ← height_one_spectrum.valuation_lt_one_iff_dvd, --not for completion
-  sorry
+    sorry },
+  { convert_to valued.v (G : (laurent_series 𝔽_[p])) < ↑(of_add (- (0 : ℤ))),
+    { rw ← h_Gg,
+      rw ← temp,
+      apply congr_arg,
+      convert uff.symm },
+    have := (completion_laurent_series.int_valuation_le_iff_coeff_zero_of_lt 𝔽_[p] G).mpr,
+    sorry,
+    sorry  },
 end
 
 
