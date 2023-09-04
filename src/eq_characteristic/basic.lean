@@ -266,11 +266,12 @@ lemma norm_lt_one_iff_dvd (f : 𝔽_[p]⟦X⟧) : ‖(f : 𝔽_[p]⟮⟮X⟯⟯)
 -- end
 begin
   have hf : ‖(f : 𝔽_[p]⟮⟮X⟯⟯)‖ = rank_one_valuation.norm_def (f : 𝔽_[p]⟮⟮X⟯⟯) := rfl,
-  suffices : (valued.v f) < (1 : ℤₘ₀) ↔ ((FpX_int_completion.X p) ∣ f),
-  rw [hf, height_one_spectrum.norm_lt_one_iff_val_lt_one],
-  rw height_one_spectrum.valued_adic_completion_def,
+  suffices : (valued.v (f : 𝔽_[p]⟮⟮X⟯⟯)) < (1 : ℤₘ₀) ↔ ((FpX_int_completion.X p) ∣ f),
+  { rwa [hf, rank_one_valuation.norm_lt_one_iff_val_lt_one] },
 
-  rw ← ideal.mem_span_singleton,
+  /- rw height_one_spectrum.valued_adic_completion_def,
+
+  rw ← ideal.mem_span_singleton, -/
 
   --rw ← height_one_spectrum.valuation_lt_one_iff_dvd, --not for completion
   sorry

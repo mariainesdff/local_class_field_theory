@@ -4,7 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
 
-import discrete_valuation_ring.extensions
+--import discrete_valuation_ring.extensions
+import discrete_valuation_ring.trivial_extension
 import eq_characteristic.basic
 import for_mathlib.power_series_adic_completion
 
@@ -56,12 +57,13 @@ lemma is_unramified : e 𝔽_[p]⟮⟮X⟯⟯ = 1 :=
 begin
   have hX : (eq_char_local_field.with_zero.valued p (FpX_completion p)).v (X p) = 
     (of_add (-1 : ℤ)),
-  { rw ← @valuation_X p _, 
-    /- rw FpX_completion.X,
-    rw FpX_int_completion.X,
-    simp only [adic_algebra.int_algebra_map_def], -/
-    congr,
-    sorry }, -- NOTE: The valuation diamond causes trouble here
+  { have heq : (eq_char_local_field.with_zero.valued p (FpX_completion p)).v =
+    extended_valuation (FpX_completion p) (FpX_completion p),
+    { refl },
+    rw [← @valuation_X p _, FpX_completion.X, FpX_int_completion.X,
+      eq_char_local_field.with_zero.valued, heq,
+      discrete_valuation.extension.trivial_extension_eq_valuation],
+    refl },
   rw [ramification_index, neg_eq_iff_eq_neg, ← to_add_of_add (-1 : ℤ)],
   apply congr_arg,
   rw [← with_zero.coe_inj, ← hX, with_zero.coe_unzero],
