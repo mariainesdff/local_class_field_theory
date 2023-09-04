@@ -163,4 +163,24 @@ noncomputable def ring_of_integers_equiv (p : ℕ) [fact(nat.prime p)] :
   ring_of_integers p (Q_p p) ≃+* (Z_p p) :=
 ring_of_integers.equiv p (Z_p p)
 
+
+namespace ring_of_integers
+open discrete_valuation
+open_locale mixed_char_local_field
+
+variables (K : Type*) [field K] [mixed_char_local_field p K]
+
+instance : discrete_valuation_ring (𝓞 p K) := infer_instance
+
+-- noncomputable!
+instance : fintype (local_ring.residue_field (𝓞 p K)) :=
+-- fintype.of_equiv _ (local_ring.residue_field.map_equiv (integers_equiv_power_series p)).to_equiv
+
+-- noncomputable!
+-- lemma residue_field_fintype_of_completion : fintype (local_ring.residue_field (𝔽_[p]⟦X⟧)) := 
+--   infer_instance
+
+
+end ring_of_integers
+
 end padic
