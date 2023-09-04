@@ -260,14 +260,44 @@ begin
   exact ratfunc.X_ne_zero,
 end
 
-lemma norm_lt_one_iff_dvd (f : 𝔽_[p]⟦X⟧) : ‖(f : 𝔽_[p]⟮⟮X⟯⟯)‖ < 1 ↔ ((FpX_int_completion.X p) ∣ f) := 
--- begin
---   sorry
--- end
+open completion_laurent_series
+
+lemma norm_lt_one_iff_dvd (F : 𝔽_[p]⟦X⟧) : ‖(F : 𝔽_[p]⟮⟮X⟯⟯)‖ < 1 ↔ ((FpX_int_completion.X p) ∣ F) := 
 begin
-  have hf : ‖(f : 𝔽_[p]⟮⟮X⟯⟯)‖ = rank_one_valuation.norm_def (f : 𝔽_[p]⟮⟮X⟯⟯) := rfl,
-  suffices : (valued.v (f : 𝔽_[p]⟮⟮X⟯⟯)) < (1 : ℤₘ₀) ↔ ((FpX_int_completion.X p) ∣ f),
-  { rwa [hf, rank_one_valuation.norm_lt_one_iff_val_lt_one] },
+  have hF : ‖(F : 𝔽_[p]⟮⟮X⟯⟯)‖ = rank_one_valuation.norm_def (F : 𝔽_[p]⟮⟮X⟯⟯) := rfl,
+  suffices : (valued.v (F : 𝔽_[p]⟮⟮X⟯⟯)) < (1 : ℤₘ₀) ↔ ((FpX_int_completion.X p) ∣ F),
+  { rwa [hF, rank_one_valuation.norm_lt_one_iff_val_lt_one] },
+  set G := (power_series_ring_equiv 𝔽_[p]).symm F with h_GF,
+  set f : 𝔽_[p]⟮⟮X⟯⟯ := ↑F with h_Ff,
+  set g := (laurent_series_ring_equiv 𝔽_[p]) f with h_fg,
+  have h_Gg : ↑G = g, sorry,
+  -- simp,
+  have uff : (laurent_series_ring_equiv 𝔽_[p]).symm g = f,
+  {rw [h_fg, ring_equiv.symm_apply_apply] },
+  have temp := valuation_compare 𝔽_[p] g,
+  split,
+  -- squeeze_simp at temp,
+  { --have := (completion_laurent_series.val_le_one_iff_eq_coe 𝔽_[p] ↑g).mpr ⟨g, rfl⟩,
+    intro h,
+    rw ← with_zero.coe_one at h,
+    rw ← of_add_zero at h,
+    rw ← neg_zero at h,
+    replace h : valued.v g < ↑(of_add (- (0 : ℤ))),
+    { rw ← temp, convert h },
+    -- replace h : valued.v (G : (laurent_series 𝔽_[p])) < ↑(of_add (- (0 : ℤ))),
+    
+    -- rw power_series_ring_equiv at uff,
+    -- rw uff at temp,
+    -- nth_rewrite 0 h_gf at temp,
+    -- rw power_series_ring_equiv at temp,
+    -- have inv := abstract_completion.inverse_compare (laurent_series_pkg 𝔽_[p])
+    --   (ratfunc_adic_compl_pkg (galois_field p 1)),
+    -- rw uff at temp,
+    
+    have := (completion_laurent_series.int_valuation_le_iff_coeff_zero_of_lt 𝔽_[p] G).mp
+      (le_of_lt h),
+
+  },
 
   /- rw height_one_spectrum.valued_adic_completion_def,
 

@@ -756,6 +756,20 @@ definition laurent_series_ring_equiv :
   map_add' := (extension_as_ring_hom K (unif_cont_coe K).continuous).map_add',
   .. compare_pkg K }
 
+@[simp]
+lemma laurent_series_ring_equiv_apply (x : (ratfunc_adic_compl K)) : laurent_series_ring_equiv K x =
+  compare_equiv (ratfunc_adic_compl_pkg K) (laurent_series_pkg K) x := rfl
+
+@[simp]
+lemma laurent_series_ring_equiv_apply' (x : (ratfunc_adic_compl K)) : laurent_series_ring_equiv K x =
+  (ratfunc_adic_compl_pkg K).compare (laurent_series_pkg K) x := rfl
+
+@[simp]
+lemma laurent_series_ring_equiv_symm_apply (x : (laurent_series K)) :
+  (laurent_series_ring_equiv K).symm x = compare_equiv
+    (laurent_series_pkg K) (ratfunc_adic_compl_pkg K) x :=
+by simpa only [ring_equiv.apply_symm_apply]
+
 section power_series
 
 instance : topological_space (laurent_series_pkg K).space :=
