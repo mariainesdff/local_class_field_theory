@@ -41,8 +41,8 @@ open multiplicative with_zero equiv
 
 namespace multiplicative
 
--- lemma of_add_pow_comm (a b : ℤ) : (of_add a)^b = (of_add b)^a :=
--- by rw [← int.of_add_mul, mul_comm, int.of_add_mul]
+lemma of_add_pow_comm (a b : ℤ) : (of_add a)^b = (of_add b)^a :=
+by rw [← int.of_add_mul, mul_comm, int.of_add_mul]
 
 lemma of_add_inj {x y : multiplicative ℤ} (hxy : of_add x = of_add y) : x = y := hxy
 
@@ -123,6 +123,20 @@ theorem zpow_left_inj {n : ℤ} {a b : ℤₘ₀} (ha : a ≠ 0) (hb : b ≠ 0) 
 set.inj_on.eq_iff (zpow_left_inj_on hn) (set.mem_Ioi.mpr (zero_lt_iff.mpr ha)) 
     (set.mem_Ioi.mpr (zero_lt_iff.mpr hb))
 /- (zpow_left_injective hn).eq_iff -/
+
+lemma of_add_neg_nat (n : ℕ) : 
+  (of_add (-n : ℤ) : ℤₘ₀) = (of_add (-1 : ℤ))^n :=
+by rw [← with_zero.coe_pow, with_zero.coe_inj, ← one_mul (n : ℤ), ← neg_mul, 
+  int.of_add_mul, zpow_coe_nat]
+
+lemma of_add_neg_one_lt_one : ((multiplicative.of_add ((-1 : ℤ))) : ℤₘ₀) < (1 : ℤₘ₀) := 
+begin
+  rw [← with_zero.coe_one, with_zero.coe_lt_coe, ← of_add_zero],
+  exact neg_one_lt_zero,
+end
+
+lemma lt_iff_le_sub (n m : ℤ) :
+((of_add n) : ℤₘ₀) < ((of_add m) : ℤₘ₀) ↔ ((of_add n) : ℤₘ₀) < (of_add (m-1) : ℤₘ₀) := sorry
 
 end with_zero
 
