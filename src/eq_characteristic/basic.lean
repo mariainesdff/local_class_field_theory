@@ -264,44 +264,74 @@ open completion_laurent_series
 
 lemma norm_lt_one_iff_dvd (F : 𝔽_[p]⟦X⟧) : ‖(F : 𝔽_[p]⟮⟮X⟯⟯)‖ < 1 ↔ ((FpX_int_completion.X p) ∣ F) := 
 begin
-  sorry;
-  {
   have hF : ‖(F : 𝔽_[p]⟮⟮X⟯⟯)‖ = rank_one_valuation.norm_def (F : 𝔽_[p]⟮⟮X⟯⟯) := rfl,
   suffices : (valued.v (F : 𝔽_[p]⟮⟮X⟯⟯)) < (1 : ℤₘ₀) ↔ ((FpX_int_completion.X p) ∣ F),
   { rwa [hF, rank_one_valuation.norm_lt_one_iff_val_lt_one] },
-  set G := (power_series_ring_equiv 𝔽_[p]).symm F with h_GF,
   set f : 𝔽_[p]⟮⟮X⟯⟯ := ↑F with h_Ff,
   set g := (laurent_series_ring_equiv 𝔽_[p]) f with h_fg,
-  have h_Gg : g = G, sorry,
-  -- -- simp,
-  have uff : (laurent_series_ring_equiv 𝔽_[p]).symm g = f,
+  have once : (laurent_series_ring_equiv 𝔽_[p]).symm g = f,--used only once?
   {rw [h_fg, ring_equiv.symm_apply_apply] },
-  have temp := valuation_compare 𝔽_[p] g,
   rw ← with_zero.coe_one,
   rw ← of_add_zero,
   rw ← neg_zero,
-  -- rw temp,
   refine ⟨λ h, _, λ h, _⟩,
-  { --rw ← with_zero.coe_one at h,
-    -- rw ← of_add_zero at h,
-    -- rw ← neg_zero at h,
-    replace h : valued.v (G : (laurent_series 𝔽_[p])) < ↑(of_add (- (0 : ℤ))),
-    { rw ← h_Gg,
-      rw ← temp,
-      convert h },
-    have := (completion_laurent_series.int_valuation_le_iff_coeff_zero_of_lt 𝔽_[p] G).mp
-      (le_of_lt h),
-    sorry },
-  { convert_to valued.v (G : (laurent_series 𝔽_[p])) < ↑(of_add (- (0 : ℤ))),
-    { rw ← h_Gg,
-      rw ← temp,
-      apply congr_arg,
-      convert uff.symm },
-    have := (completion_laurent_series.int_valuation_le_iff_coeff_zero_of_lt 𝔽_[p] G).mpr,
-    sorry,
-    sorry  },
-  }
+  { replace h : valued.v g < ↑(of_add (- (0 : ℤ))),
+    { rw ← valuation_compare,
+      convert h, },
+    obtain ⟨G, h_Gg⟩ := (val_le_of_add_neg_zero_iff_eq_coe 𝔽_[p] g).mp (le_of_lt h),
+    rw ← h_Gg at h,
+    replace h : valued.v ↑G ≤ ↑(of_add (-1 : ℤ)), sorry,
+    have := ((int_valuation_le_iff_coeff_zero_of_lt 𝔽_[p] G).mp h 0 zero_lt_one),
+    rw [power_series.coeff_zero_eq_constant_coeff, ← power_series.X_dvd_iff] at this,
+    obtain ⟨C, hC⟩ := dvd_iff_exists_eq_mul_left.mp this,
+    refine dvd_of_mul_left_eq ⟨(laurent_series_ring_equiv 𝔽_[p]).symm C, _⟩ _,
+    { erw [FpX_completion.mem_FpX_int_completion, valuation_compare, val_le_one_iff_eq_coe],
+      use ⟨C, refl _⟩ },
+    apply_fun (algebra_map 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯) using subtype.val_injective,
+    apply_fun (laurent_series_ring_equiv 𝔽_[p]),
+    erw [algebra_map_eq_coe, algebra_map_eq_coe, ← h_Ff, ← h_fg, ← h_Gg, map_mul, hC, 
+      power_series.coe_mul, ring_equiv.apply_symm_apply, ← (coe_X_compare 𝔽_[p])],
+    refl, },
+  {sorry,},
+
+
 end
+
+-- #exit
+
+--   set G := (power_series_ring_equiv 𝔽_[p]).symm F with h_GF,
+--   set f : 𝔽_[p]⟮⟮X⟯⟯ := ↑F with h_Ff,
+--   set g := (laurent_series_ring_equiv 𝔽_[p]) f with h_fg,
+--   have h_Gg : g = G, sorry,
+--   -- -- simp,
+--   have uff : (laurent_series_ring_equiv 𝔽_[p]).symm g = f,
+--   {rw [h_fg, ring_equiv.symm_apply_apply] },
+--   have temp := valuation_compare 𝔽_[p] g,
+--   rw ← with_zero.coe_one,
+--   rw ← of_add_zero,
+--   rw ← neg_zero,
+--   -- rw temp,
+--   refine ⟨λ h, _, λ h, _⟩,
+--   { --rw ← with_zero.coe_one at h,
+--     -- rw ← of_add_zero at h,
+--     -- rw ← neg_zero at h,
+--     replace h : valued.v (G : (laurent_series 𝔽_[p])) < ↑(of_add (- (0 : ℤ))),
+--     { rw ← h_Gg,
+--       rw ← temp,
+--       convert h },
+--     have := (completion_laurent_series.int_valuation_le_iff_coeff_zero_of_lt 𝔽_[p] G).mp
+--       (le_of_lt h),
+--     sorry },
+--   { convert_to valued.v (G : (laurent_series 𝔽_[p])) < ↑(of_add (- (0 : ℤ))),
+--     { rw ← h_Gg,
+--       rw ← temp,
+--       apply congr_arg,
+--       convert uff.symm },
+--     have := (completion_laurent_series.int_valuation_le_iff_coeff_zero_of_lt 𝔽_[p] G).mpr,
+--     sorry,
+--     sorry  },
+--   }
+-- end
 
 
 end FpX_int_completion
