@@ -41,8 +41,8 @@ open multiplicative with_zero equiv
 
 namespace multiplicative
 
-lemma of_add_pow_comm (a b : ℤ) : (of_add a)^b = (of_add b)^a :=
-by rw [← int.of_add_mul, mul_comm, int.of_add_mul]
+-- lemma of_add_pow_comm (a b : ℤ) : (of_add a)^b = (of_add b)^a :=
+-- by rw [← int.of_add_mul, mul_comm, int.of_add_mul]
 
 lemma of_add_inj {x y : multiplicative ℤ} (hxy : of_add x = of_add y) : x = y := hxy
 

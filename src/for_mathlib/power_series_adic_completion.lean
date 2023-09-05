@@ -9,7 +9,7 @@ import discrete_valuation_ring.basic
 import for_mathlib.stuff_for_laurent_series 
 import from_mathlib.PR18604_well_founded
 import topology.uniform_space.abstract_completion
-import with_zero
+import for_mathlib.with_zero
 
 noncomputable theory
 
