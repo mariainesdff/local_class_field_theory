@@ -124,6 +124,27 @@ set.inj_on.eq_iff (zpow_left_inj_on hn) (set.mem_Ioi.mpr (zero_lt_iff.mpr ha))
     (set.mem_Ioi.mpr (zero_lt_iff.mpr hb))
 /- (zpow_left_injective hn).eq_iff -/
 
+lemma of_add_neg_nat (n : ℕ) : 
+  (of_add (-n : ℤ) : ℤₘ₀) = (of_add (-1 : ℤ))^n :=
+by rw [← with_zero.coe_pow, with_zero.coe_inj, ← one_mul (n : ℤ), ← neg_mul, 
+  int.of_add_mul, zpow_coe_nat]
+
+lemma of_add_neg_one_lt_one : ((multiplicative.of_add ((-1 : ℤ))) : ℤₘ₀) < (1 : ℤₘ₀) := 
+begin
+  rw [← with_zero.coe_one, with_zero.coe_lt_coe, ← of_add_zero],
+  exact neg_one_lt_zero,
+end
+
+lemma lt_succ_iff_le (x : ℤₘ₀) (m : ℤ) :
+  x < ((of_add (m+1)) : ℤₘ₀) ↔ x ≤ (of_add m : ℤₘ₀) :=
+begin
+  by_cases hx : x = 0,
+  { simpa only [hx, zero_le', iff_true, zero_lt_iff] using with_zero.coe_ne_zero },
+  { obtain ⟨γ, rfl⟩ := with_zero.ne_zero_iff_exists.mp hx,
+    rw [coe_le_coe, coe_lt_coe, ← to_add_le, ← to_add_lt, to_add_of_add,  to_add_of_add],
+    exact ⟨int.le_of_lt_add_one, int.lt_add_one_of_le⟩} 
+end
+
 end with_zero
 
 /-- Given `e : ℝ≥0`, we define a map `ℤₘ₀ → ℝ≥0` sending `0 ↦ 0` and 

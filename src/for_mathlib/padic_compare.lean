@@ -13,9 +13,6 @@ import for_mathlib.ring_theory.dedekind_domain.ideal
 import for_mathlib.stuff_for_laurent_series
 
 
---import for_mathlib.laurent_series_iso.old_power_series_adic_completion
---set_option profiler true
-
 noncomputable theory
 
 open is_dedekind_domain is_dedekind_domain.height_one_spectrum nnreal polynomial valuation 
