@@ -135,8 +135,15 @@ begin
   exact neg_one_lt_zero,
 end
 
-lemma lt_iff_le_sub (n m : ℤ) :
-((of_add n) : ℤₘ₀) < ((of_add m) : ℤₘ₀) ↔ ((of_add n) : ℤₘ₀) < (of_add (m-1) : ℤₘ₀) := sorry
+lemma lt_succ_iff_le (x : ℤₘ₀) (m : ℤ) :
+  x < ((of_add (m+1)) : ℤₘ₀) ↔ x ≤ (of_add m : ℤₘ₀) :=
+begin
+  by_cases hx : x = 0,
+  { simpa only [hx, zero_le', iff_true, zero_lt_iff] using with_zero.coe_ne_zero },
+  { obtain ⟨γ, rfl⟩ := with_zero.ne_zero_iff_exists.mp hx,
+    rw [coe_le_coe, coe_lt_coe, ← to_add_le, ← to_add_lt, to_add_of_add,  to_add_of_add],
+    exact ⟨int.le_of_lt_add_one, int.lt_add_one_of_le⟩} 
+end
 
 end with_zero
 

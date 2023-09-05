@@ -280,7 +280,14 @@ begin
       convert h, },
     obtain ⟨G, h_Gg⟩ := (val_le_of_add_neg_zero_iff_eq_coe 𝔽_[p] g).mp (le_of_lt h),
     rw ← h_Gg at h,
-    replace h : valued.v ↑G ≤ ↑(of_add (-1 : ℤ)), sorry,
+    replace h : valued.v ↑G ≤ ↑(of_add (-1 : ℤ)),
+    { have := multiplicative.lt_succ_iff_le,
+      sorry,
+      -- rw ← to_add_lt at h,
+      -- -- rw with_zero.unzero_coe
+      -- rw to_add_of_add at h,
+      
+    },
     have := ((int_valuation_le_iff_coeff_zero_of_lt 𝔽_[p] G).mp h 0 zero_lt_one),
     rw [power_series.coeff_zero_eq_constant_coeff, ← power_series.X_dvd_iff] at this,
     obtain ⟨C, hC⟩ := dvd_iff_exists_eq_mul_left.mp this,
