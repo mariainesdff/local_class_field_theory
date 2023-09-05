@@ -1,40 +1,274 @@
+%%
+%% This is file `sample-sigplan.tex',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% samples.dtx  (with options: `sigplan')
+%% 
+%% IMPORTANT NOTICE:
+%% 
+%% For the copyright see the source file.
+%% 
+%% Any modified versions of this file must be renamed
+%% with new filenames distinct from sample-sigplan.tex.
+%% 
+%% For distribution of the original source see the terms
+%% for copying and modification in the file samples.dtx.
+%% 
+%% This generated file may be distributed as long as the
+%% original source files, as listed above, are part of the
+%% same distribution. (The sources need not necessarily be
+%% in the same archive or directory.)
+%%
+%%
+%% Commands for TeXCount
+%TC:macro \cite [option:text,text]
+%TC:macro \citep [option:text,text]
+%TC:macro \citet [option:text,text]
+%TC:envir table 0 1
+%TC:envir table* 0 1
+%TC:envir tabular [ignore] word
+%TC:envir displaymath 0 word
+%TC:envir math 0 word
+%TC:envir comment 0 0
+%%
+%%
+%% The first command in your LaTeX source must be the \documentclass
+%% command.
+%%
+%% For submission and review of your manuscript please change the
+%% command to \documentclass[manuscript, screen, review]{acmart}.
+%%
+%% When submitting camera ready or to TAPS, please change the command
+%% to \documentclass[sigconf]{acmart} or whichever template is required
+%% for your publication.
+%%
+%%
+%\documentclass[sigplan,screen]{acmart}
 \documentclass[sigplan,10pt,anonymous,review]{acmart}\settopmatter{printfolios=true,printccs=false,printacmref=false}
-\include{preamble}
 
-\author[M.~I.~de Frutos Fernández]{María Inés de Frutos Fernández}
-\author[F.~A.~E.~Nuccio]{Filippo Alberto Edoardo Nuccio Mortarino Majno di Capriglio}
-\title{later}
+%preamble
+
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Typography
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\fil}[1]{{\color{red} #1}}
+\newcommand{\mi}[1]{{\color{purple} #1}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Math commands
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand*{\ZZ}{\mathbb{Z}}
+\newcommand*{\RR}{\mathbb{R}}
+\newcommand*{\QQ}{\mathbb{Q}}
+\newcommand*{\FF}[1][p]{\mathbb{F}_{#1}}
+\newcommand*{\laurentseries}[1][{\FF}]{#1(\!(X)\!)}
+\newcommand*{\powerseries}[1][{\FF}]{#1[\![X]\!]}
+
+%end of preamble
+
+%%
+%% \BibTeX command to typeset BibTeX logo in the docs
+\AtBeginDocument{%
+  \providecommand\BibTeX{{%
+    Bib\TeX}}}
+
+%% Rights management information.  This information is sent to you
+%% when you complete the rights form.  These commands have SAMPLE
+%% values in them; it is your responsibility as an author to replace
+%% the commands and values with those provided to you when you
+%% complete the rights form.
+\setcopyright{acmcopyright}
+\copyrightyear{2018}
+\acmYear{2018}
+\acmDOI{XXXXXXX.XXXXXXX}
+
+%% These commands are for a PROCEEDINGS abstract or paper.
+\acmConference[Conference acronym 'XX]{Make sure to enter the correct
+  conference title from your rights confirmation emai}{June 03--05,
+  2018}{Woodstock, NY}
+%%
+%%  Uncomment \acmBooktitle if the title of the proceedings is different
+%%  from ``Proceedings of ...''!
+%%
+%%\acmBooktitle{Woodstock '18: ACM Symposium on Neural Gaze Detection,
+%%  June 03--05, 2018, Woodstock, NY}
+\acmPrice{15.00}
+\acmISBN{978-1-4503-XXXX-X/18/06}
+
+
+%%
+%% Submission ID.
+%% Use this when submitting an article to a sponsored event. You'll
+%% receive a unique submission ID from the organizers
+%% of the event, and this ID should be used as the parameter to this command.
+%%\acmSubmissionID{123-A56-BU3}
+
+%%
+%% For managing citations, it is recommended to use bibliography
+%% files in BibTeX format.
+%%
+%% You can then either use BibTeX with the ACM-Reference-Format style,
+%% or BibLaTeX with the acmnumeric or acmauthoryear sytles, that include
+%% support for advanced citation of software artefact from the
+%% biblatex-software package, also separately available on CTAN.
+%%
+%% Look at the sample-*-biblatex.tex files for templates showcasing
+%% the biblatex styles.
+%%
+
+%%
+%% The majority of ACM publications use numbered citations and
+%% references.  The command \citestyle{authoryear} switches to the
+%% "author year" style.
+%%
+%% If you are preparing content for an event
+%% sponsored by ACM SIGGRAPH, you must use the "author year" style of
+%% citations and references.
+%% Uncommenting
+%% the next command will enable that style.
+%%\citestyle{acmauthoryear}
+
+
+%%
+%% end of the preamble, start of the body of the document source.
 \begin{document}
+
+%%
+%% The "title" command has an optional parameter,
+%% allowing the author to define a "short title" to be used in page headers.
+\title[A Formalization of Complete DVRs and Local Fields]{A Formalization of Complete Discrete Valuation Rings and Local Fields}
+
+%%
+%% The "author" command and its associated commands are used to define
+%% the authors and their affiliations.
+%% Of note is the shared affiliation of the first two authors, and the
+%% "authornote" and "authornotemark" commands
+%% used to denote shared contribution to the research.
+\iffalse
+\author{Ben Trovato}
+\authornote{Both authors contributed equally to this research.}
+\email{trovato@corporation.com}
+\orcid{1234-5678-9012}
+\author{G.K.M. Tobin}
+\authornotemark[1]
+\email{webmaster@marysville-ohio.com}
+\affiliation{%
+  \institution{Institute for Clarity in Documentation}
+  \streetaddress{P.O. Box 1212}
+  \city{Dublin}
+  \state{Ohio}
+  \country{USA}
+  \postcode{43017-6221}
+}\fi
+
+% \author[M.~I.~de Frutos Fernández]{María Inés de Frutos Fernández}
+\author{María Inés de Frutos Fernández}
+\email{maria.defrutos@uam.es}
+\orcid{0000-0002-5085-7446}
+\affiliation{%
+  \institution{Universidad Aut\'onoma de Madrid}
+  \streetaddress{Ciudad Universitaria de Cantoblanco}
+   \postcode{28049}
+  \city{Madrid}
+  \country{Spain}
+}
+
+%\author[F.~A.~E.~Nuccio]{Filippo Alberto Edoardo Nuccio Mortarino Majno di Capriglio}
+\author{Filippo Alberto Edoardo Nuccio Mortarino Majno di Capriglio}
+\email{}
+\orcid{}
+\affiliation{%
+	\institution{}
+	\city{}
+	\country{France}
+}
+
+
+%%
+%% By default, the full list of authors will be used in the page
+%% headers. Often, this list is too long, and will overlap
+%% other information printed in the page headers. This command allows
+%% the author to define a more concise list
+%% of authors' names for this purpose.
+\renewcommand{\shortauthors}{M.~I.~de Frutos Fernández and F.~A.~E.~Nuccio }
+
+%%
+%% The abstract is a short summary of the work to be presented in the
+%% article.
+\begin{abstract}
+  TODO
+\end{abstract}
+
+%%
+%% The code below is generated by the tool at http://dl.acm.org/ccs.cfm.
+%% Please copy and paste the code instead of the example below. (DONE)
+%%
+\begin{CCSXML}
+	<ccs2012>
+	<concept>
+	<concept_id>10003752.10003790.10002990</concept_id>
+	<concept_desc>Theory of computation~Logic and verification</concept_desc>
+	<concept_significance>500</concept_significance>
+	</concept>
+	<concept>
+	<concept_id>10003752.10003790.10003792</concept_id>
+	<concept_desc>Theory of computation~Proof theory</concept_desc>
+	<concept_significance>500</concept_significance>
+	</concept>
+	</ccs2012>
+\end{CCSXML}
+
+\ccsdesc[500]{Theory of computation~Logic and verification}
+\ccsdesc[500]{Theory of computation~Proof theory}
+
+
+%%
+%% Keywords. The author(s) should pick words that accurately describe
+%% the work being presented. Separate the keywords with commas.
+\keywords{formal mathematics, Lean, mathlib, algebraic number theory, local fields, discrete valuation rings.}
+
+
+%\received{20 February 2007}
+%\received[revised]{12 March 2009}
+%\received[accepted]{5 June 2009}
+
+%%
+%% This command processes the author and affiliation and title
+%% information and builds the first part of the formatted document.
 \maketitle
+
 \section{Introduction}
 \section {Discrete Valuation Rings}
 \subsection{Valuations}
 \begin{itemize}
-\item Properties of valuations valued in $\ZZ_{m0}$, and the \texttt{multiplicative} and \texttt{with\_zero} classes, and clashes with "usual" intuition. Keep in mind that \texttt{with\_zero multiplicative} $\ZZ$ is "the same" as $q^{-\ZZ}\cup \{0\}$.
-\item Difference between \texttt{valued} (which is a class, and carries a topology/uniformity) and \texttt{valuation} that is just a function.
-\item We put \texttt{valued} instances on fields but "never" on rings that are not fields.
-\item There is something called \texttt{valuation\_ring} that has (almost) nothing to do; but \texttt{valuation\_subring} has.
-\item Comment about the choice of \texttt{.integers} vs. \texttt{.valuation\_subring}
+	\item Properties of valuations valued in $\ZZ_{m0}$, and the \texttt{multiplicative} and \texttt{with\_zero} classes, and clashes with "usual" intuition. Keep in mind that \texttt{with\_zero multiplicative} $\ZZ$ is "the same" as $q^{-\ZZ}\cup \{0\}$.
+	\item Difference between \texttt{valued} (which is a class, and carries a topology/uniformity) and \texttt{valuation} that is just a function.
+	\item We put \texttt{valued} instances on fields but "never" on rings that are not fields.
+	\item There is something called \texttt{valuation\_ring} that has (almost) nothing to do; but \texttt{valuation\_subring} has.
+	\item Comment about the choice of \texttt{.integers} vs. \texttt{.valuation\_subring}
 \end{itemize}
 \subsection{Definition of Discrete Valuation Rings}
 \begin{itemize}
-\item True Math definition and the \texttt{mathlib\_tfae} (in particular, local and PID)
-\item \texttt{is\_discrete} : observe that if the value group were $2\ZZ$ this would still be mathematically "discrete", but we make the choice of surjectivity in coherence with Serre/so that the notion of equivalence collapses to equality: there is a unique normalized one.
-\item \texttt{uniformizer}'s and equivalence of their existence with discreteness
-\item The unit ball of a field with a discrete valuation (be it valued or not) is a DVR; and the adic valuation (ref to María Inés' paper) on the field of fractions of a DVR \texttt{is\_discrete}.
+	\item True Math definition and the \texttt{mathlib\_tfae} (in particular, local and PID)
+	\item \texttt{is\_discrete} : observe that if the value group were $2\ZZ$ this would still be mathematically "discrete", but we make the choice of surjectivity in coherence with Serre/so that the notion of equivalence collapses to equality: there is a unique normalized one.
+	\item \texttt{uniformizer}'s and equivalence of their existence with discreteness
+	\item The unit ball of a field with a discrete valuation (be it valued or not) is a DVR; and the adic valuation (ref to María Inés' paper) on the field of fractions of a DVR \texttt{is\_discrete}.
 \end{itemize}
 \subsection{Complete Discrete Valuation Rings and their Extensions}
 \begin{itemize}
-\item The completion of a discretely valued field is again discretely valued (and so its ring of integers is a DVR by the above)
-\item The equality of the two valuations (the adic one coming from the max'l ideal, since DVR implies local) and the uniform completion of the valuation we begun with
-\item When viewing $K_v$ as the completion of $K$, its \texttt{valued} instance comes from the completion of the valuation on $K$, and this is of course different from the \texttt{valued} instance on the fraction field of $R_v$, itself isomorphic to $K_v$, that instead comes from the \path{discrete_valuation_ring} instance on $R_v$.
-\item Still, the isomorphism is known and one can compare the two valuations on $K_v$ which is \emph{a fraction field}; this is done in \path{v_1=v_2}.
-\item Recall (María Inés' paper): there is a norm associated to a valuation; and if the field below is complete and the extension is finite, then this norm is unique (extending the one below).
-\item Speak about the work to define the normalized \texttt{discrete} valuation "above"
-\item [MAYBE] Mention the lemma \texttt{w\_le\_one\_iff\_disc\_norm\_extension\_le\_one}
-\item The proof (from previous project) and instance that a finite extension of a complete field is again complete
-\item The lemma \path{integral_closure_eq_integer} and the theorem \path{dvr_of_finite_extension}
-\item The extension of the valuation is not a valued instance because this would create a diamond for every valued field K. But we do get a DVR instance on the integral closure of the integers.
+	\item The completion of a discretely valued field is again discretely valued (and so its ring of integers is a DVR by the above)
+	\item The equality of the two valuations (the adic one coming from the max'l ideal, since DVR implies local) and the uniform completion of the valuation we begun with
+	\item When viewing $K_v$ as the completion of $K$, its \texttt{valued} instance comes from the completion of the valuation on $K$, and this is of course different from the \texttt{valued} instance on the fraction field of $R_v$, itself isomorphic to $K_v$, that instead comes from the \path{discrete_valuation_ring} instance on $R_v$.
+	\item Still, the isomorphism is known and one can compare the two valuations on $K_v$ which is \emph{a fraction field}; this is done in \path{v_1=v_2}.
+	\item Recall (María Inés' paper): there is a norm associated to a valuation; and if the field below is complete and the extension is finite, then this norm is unique (extending the one below).
+	\item Speak about the work to define the normalized \texttt{discrete} valuation "above"
+	\item [MAYBE] Mention the lemma \texttt{w\_le\_one\_iff\_disc\_norm\_extension\_le\_one}
+	\item The proof (from previous project) and instance that a finite extension of a complete field is again complete
+	\item The lemma \path{integral_closure_eq_integer} and the theorem \path{dvr_of_finite_extension}
+	\item The extension of the valuation is not a valued instance because this would create a diamond for every valued field K. But we do get a DVR instance on the integral closure of the integers.
 \end{itemize}
 \section{Local Fields}
 Give our definition and the claims that \mi{TODO : finite extensions of $\laurentseries$ and of $\QQ_p$ are local fields.}\\
@@ -42,39 +276,64 @@ The valued instance on a mixed/equal characteristic local field causes a diamond
 $\laurentseries$.
 \subsection{Equal characteristic}
 \begin{itemize}
-\item Unlike the $p$-adic, the completion of the ring of rational functions had not yet been defined in mathlib.
-\item Put both a valuation and a norm on $\laurentseries$
-\item iso between Laurent series and the completion
-\item Definition of Eq char local field
-\item Our definition of ring of integers is the integral closure of $\powerseries$ in $K$, mainly to adapt to what has been done for number fields.
-\item The definition \path{ring_of_integers_algebra}
-\item $\laurentseries$ is an eq. char. local ring \fil{(and also $\laurentseries[{\FF[q]}]$?)}
-
+	\item Unlike the $p$-adic, the completion of the ring of rational functions had not yet been defined in mathlib.
+	\item Put both a valuation and a norm on $\laurentseries$
+	\item iso between Laurent series and the completion
+	\item Definition of Eq char local field
+	\item Our definition of ring of integers is the integral closure of $\powerseries$ in $K$, mainly to adapt to what has been done for number fields.
+	\item The definition \path{ring_of_integers_algebra}
+	\item $\laurentseries$ is an eq. char. local ring \fil{(and also $\laurentseries[{\FF[q]}]$?)}
+	
 \end{itemize}
 \subsection{Mixed characteristic}
 \begin{itemize}
-\item Definition of Mixed char local field
-\item Our definition of ring of integers is the integral closure of $\ZZ_p$ in $K$, mainly to adapt to what has been done for number fields.
-\item The definition \path{ring_of_integers_algebra}, "equal" to the one for eq. char. local fields
-\item The proof that a $\QQ_p$ is a mixed char local field.
-\item Discussion about the two $\QQ_p$'s from a mathematical point of view.
-\item Say that most of the techniques used for the iso about Laurent series adapted to \path{padic_ring_equiv} IF TRUE
-\item A proof that the ring of integers is a DVR (once $\ZZ_p$ becomes the right $\ZZ_p$ --- so, not only a DVR, which it is, but the \path{valuation_subring} of $\QQ_p$ --- this will follow from the general results about DVR's).
+	\item Definition of Mixed char local field
+	\item Our definition of ring of integers is the integral closure of $\ZZ_p$ in $K$, mainly to adapt to what has been done for number fields.
+	\item The definition \path{ring_of_integers_algebra}, "equal" to the one for eq. char. local fields
+	\item The proof that a $\QQ_p$ is a mixed char local field.
+	\item Discussion about the two $\QQ_p$'s from a mathematical point of view.
+	\item Say that most of the techniques used for the iso about Laurent series adapted to \path{padic_ring_equiv} IF TRUE
+	\item A proof that the ring of integers is a DVR (once $\ZZ_p$ becomes the right $\ZZ_p$ --- so, not only a DVR, which it is, but the \path{valuation_subring} of $\QQ_p$ --- this will follow from the general results about DVR's).
 \end{itemize}
 
 
 \section{Discussion}
 \begin{itemize}
-\item Future work (not too much, but towards LCFT)
-\item Related works
+	\item Future work (not too much, but towards LCFT)
+	\item Related works
 \end{itemize}
 \subsection{Implementation Details}
 \begin{itemize}
-\item bundled vs unbundled \texttt{uniformizer}'s and the choice of having them in K or in R or in R.int\dots
-\item insert here the "double" $Q_p$ in particular the fact we found a \path{metric} instance on $\QQ$.
-\item the loop forcing the instance \texttt{discretely\_normed\_field} to be only a local one
-\item [MAY BE] Discuss working in $\ZZ_{m0}$ vs in $\RR$ for the DVR\_extension
-\item The instance of \path{valued} at the end of basic is defined on THE fraction ring and not on A fraction field because otherwise this would get into a diamond. Look at the examples in \path{extension}. Observe that \path{height_one_spectrum.valued_adic_completion K v} takes as argument $K$ (that is A fraction ring of $R$), whereas \path{discrete_valuation.with_zero.valued} takes as argument a DVR (in this case, $R_v$). Since the completion at $v$ of the fraction ring $frac R$ is not equal to $K_v$, this leads to no problem.
+	\item bundled vs unbundled \texttt{uniformizer}'s and the choice of having them in K or in R or in R.int\dots
+	\item insert here the "double" $Q_p$ in particular the fact we found a \path{metric} instance on $\QQ$.
+	\item the loop forcing the instance \texttt{discretely\_normed\_field} to be only a local one
+	\item [MAY BE] Discuss working in $\ZZ_{m0}$ vs in $\RR$ for the DVR\_extension
+	\item The instance of \path{valued} at the end of basic is defined on THE fraction ring and not on A fraction field because otherwise this would get into a diamond. Look at the examples in \path{extension}. Observe that \path{height_one_spectrum.valued_adic_completion K v} takes as argument $K$ (that is A fraction ring of $R$), whereas \path{discrete_valuation.with_zero.valued} takes as argument a DVR (in this case, $R_v$). Since the completion at $v$ of the fraction ring $frac R$ is not equal to $K_v$, this leads to no problem.
 \end{itemize}
-%\section*{Acknowledgement}--LATER (fundings?)
+
+%%
+%% The acknowledgments section is defined using the "acks" environment
+%% (and NOT an unnumbered section). This ensures the proper
+%% identification of the section in the article metadata, and the
+%% consistent spelling of the heading.
+%TODO We should add the funding ack. here (this is commented out by the `anonymous` option).
+\begin{acks}
+\mi{}
+\end{acks}
+
+%%
+%% The next two lines define the bibliography style to be used, and
+%% the bibliography file.
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{paper}
+
+
+%%
+%% If your work has an appendix, this is the place to put it.
+%\appendix
+
+
 \end{document}
+\endinput
+%%
+%% End of file `sample-sigplan.tex'.
