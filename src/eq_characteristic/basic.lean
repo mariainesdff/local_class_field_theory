@@ -269,37 +269,47 @@ begin
   { rwa [hF, rank_one_valuation.norm_lt_one_iff_val_lt_one] },
   set f : 𝔽_[p]⟮⟮X⟯⟯ := ↑F with h_Ff,
   set g := (laurent_series_ring_equiv 𝔽_[p]) f with h_fg,
-  have once : (laurent_series_ring_equiv 𝔽_[p]).symm g = f,--used only once?
-  {rw [h_fg, ring_equiv.symm_apply_apply] },
-  rw ← with_zero.coe_one,
-  rw ← of_add_zero,
-  rw ← neg_zero,
+  have h_gf : (laurent_series_ring_equiv 𝔽_[p]).symm g = f,
+  { rw [h_fg, ring_equiv.symm_apply_apply] },
+  erw [← h_gf, valuation_compare 𝔽_[p] g, ← with_zero.coe_one, ← of_add_zero, ← neg_zero],
   refine ⟨λ h, _, λ h, _⟩,
-  { replace h : valued.v g < ↑(of_add (- (0 : ℤ))),
-    { rw ← valuation_compare,
-      convert h, },
-    obtain ⟨G, h_Gg⟩ := (val_le_of_add_neg_zero_iff_eq_coe 𝔽_[p] g).mp (le_of_lt h),
-    rw ← h_Gg at h,
-    replace h : valued.v ↑G ≤ ↑(of_add (-1 : ℤ)),
-    { have := multiplicative.lt_succ_iff_le,
-      sorry,
-      -- rw ← to_add_lt at h,
-      -- -- rw with_zero.unzero_coe
-      -- rw to_add_of_add at h,
-      
-    },
-    have := ((int_valuation_le_iff_coeff_zero_of_lt 𝔽_[p] G).mp h 0 zero_lt_one),
-    rw [power_series.coeff_zero_eq_constant_coeff, ← power_series.X_dvd_iff] at this,
-    obtain ⟨C, hC⟩ := dvd_iff_exists_eq_mul_left.mp this,
+  { obtain ⟨G, h_Gg⟩ := (val_le_of_add_neg_zero_iff_eq_coe 𝔽_[p] g).mp (le_of_lt h),
+    rw [neg_zero, ← neg_add_self (1 : ℤ), with_zero.lt_succ_iff_le] at h,
+    rw [← h_Gg, ← int.coe_nat_one, int_valuation_le_iff_coeff_zero_of_lt] at h,
+    specialize h 0 zero_lt_one,
+    rw [power_series.coeff_zero_eq_constant_coeff, ← power_series.X_dvd_iff] at h,
+    obtain ⟨C, rfl⟩ := dvd_iff_exists_eq_mul_left.mp h,
     refine dvd_of_mul_left_eq ⟨(laurent_series_ring_equiv 𝔽_[p]).symm C, _⟩ _,
     { erw [FpX_completion.mem_FpX_int_completion, valuation_compare, val_le_one_iff_eq_coe],
       use ⟨C, refl _⟩ },
     apply_fun (algebra_map 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯) using subtype.val_injective,
     apply_fun (laurent_series_ring_equiv 𝔽_[p]),
-    erw [algebra_map_eq_coe, algebra_map_eq_coe, ← h_Ff, ← h_fg, ← h_Gg, map_mul, hC, 
+    erw [algebra_map_eq_coe, algebra_map_eq_coe, ← h_Ff, ← h_fg, ← h_Gg, map_mul,
       power_series.coe_mul, ring_equiv.apply_symm_apply, ← (coe_X_compare 𝔽_[p])],
     refl, },
-  {sorry,},
+  { have val_g : valued.v g ≤ (1 : ℤₘ₀), sorry,
+    obtain ⟨G, h_Gg⟩ := (val_le_of_add_neg_zero_iff_eq_coe 𝔽_[p] g).mp val_g,
+    rw [neg_zero, ← neg_add_self (1 : ℤ), with_zero.lt_succ_iff_le],--uguale a sopra
+    rw [← h_Gg, ← int.coe_nat_one, int_valuation_le_iff_coeff_zero_of_lt],--uguale
+    intros n hn,
+    replace hn : n = 0, sorry,
+    rw hn,
+    rw [power_series.coeff_zero_eq_constant_coeff, ← power_series.X_dvd_iff],--uguale
+    obtain ⟨Y, hY⟩ := dvd_iff_exists_eq_mul_left.mp h, -- uguale
+    obtain ⟨Z, hZ⟩ : ∃ (Z : (power_series 𝔽_[p])), ((laurent_series_ring_equiv 𝔽_[p]) Y) = Z,sorry,
+    refine dvd_of_mul_left_eq Z _,
+    apply_fun (hahn_series.of_power_series ℤ 𝔽_[p]) using hahn_series.of_power_series_injective,
+    rw ← laurent_series.coe_power_series,
+    rw ← laurent_series.coe_power_series,
+    rw h_Gg,
+    rw power_series.coe_mul,
+    rw ← hZ,
+    apply_fun (laurent_series_ring_equiv 𝔽_[p]).symm,
+    sorry,
+
+
+
+  },
 
 
 end
