@@ -871,35 +871,65 @@ lemma val_le_of_add_neg_zero_iff_eq_coe (f : laurent_series K) :
 by rw [neg_zero, of_add_zero, with_zero.coe_one, val_le_one_iff_eq_coe]
 
 
+lemma mem_integers_of_power_series (F : (power_series K)) : (laurent_series_ring_equiv K).symm F ∈ 
+  (ideal_X K).adic_completion_integers (ratfunc K) := sorry
+
+-- lemma exists_power_series_of_mem_integers' {f : (laurent_series K)}
+--   (hf : (laurent_series_ring_equiv K).symm f ∈ (ideal_X K).adic_completion_integers (ratfunc K)) : 
+--   ∃ F : (power_series K), f = ↑F := sorry
+
+lemma exists_power_series_of_mem_integers {x : (ratfunc_adic_compl K)}
+  (hx : x ∈ (ideal_X K).adic_completion_integers (ratfunc K)) : 
+  ∃ F : (power_series K), (laurent_series_ring_equiv K).symm F = x := sorry
+
 lemma power_series_ext_subring : (subring.map (laurent_series_ring_equiv K).symm.to_ring_hom
     (power_series_as_subring K)) = ((ideal_X K).adic_completion_integers (ratfunc K)).to_subring :=
 begin
   ext x,
-  simp only [subring.mem_map, exists_prop, valuation_subring.mem_to_subring, 
-    mem_adic_completion_integers],
+  -- simp only [subring.mem_map, exists_prop, valuation_subring.mem_to_subring, 
+  --   mem_adic_completion_integers],
   split,
   { rintros ⟨f, ⟨F, coe_F⟩, h_fF⟩,
-    have : ((laurent_series_ring_equiv K).symm.to_ring_hom) f =
-      (laurent_series_pkg K).compare (ratfunc_adic_compl_pkg K) f := rfl,
-    rw [← h_fF, this, valuation_compare],
-    rw val_le_one_iff_eq_coe,
-    exact ⟨F, coe_F⟩ },
-  { intro h,
-    set f := (laurent_series_ring_equiv K) x with hf,
-    have := valuation_compare K f,
-    have hx : (laurent_series_pkg K).compare (ratfunc_adic_compl_pkg K)
-      ((laurent_series_ring_equiv K) x) = x := congr_fun (inverse_compare (laurent_series_pkg K)
-      (ratfunc_adic_compl_pkg K)) x,
-    rw [hx] at this,
-    rw this at h,
-    obtain ⟨F, h_fF⟩ := (val_le_one_iff_eq_coe K f).mp h,
-    use F,
-    split,
-    { rw [power_series_as_subring, ring_hom.mem_range],
-      exact ⟨F, refl _⟩ },
-    { -- simpa [h_fF, hf] using hx,--this works but seems slower
-      rw [h_fF, hf],
-      apply hx }},
+    simp only [valuation_subring.mem_to_subring, ← h_fF, ← coe_F],
+    apply mem_integer_of_power_series },
+
+  { intro H,
+    -- set f := (laurent_series_ring_equiv K) x with hf,
+    -- have hx : x = (laurent_series_ring_equiv K).symm f, sorry,
+    -- rw hx at H,
+    -- simp only [valuation_subring.mem_to_subring] at h,
+    obtain ⟨F, hF⟩ := exists_power_series_of_mem_integers K H,
+    simp only [equiv.to_fun_as_coe, uniform_equiv.coe_to_equiv, exists_exists_eq_and,
+      uniform_equiv.coe_symm_to_equiv, subring.mem_map, equiv.inv_fun_as_coe],
+    exact ⟨F, ⟨F, rfl⟩, hF⟩,
+    
+    -- exact ⟨F, ⟨⟨F, rfl⟩, by erw [← hF, ← hx]⟩⟩,
+
+
+  },
+
+  -- { rintros ⟨f, ⟨F, coe_F⟩, h_fF⟩,
+  --   have : ((laurent_series_ring_equiv K).symm.to_ring_hom) f =
+  --     (laurent_series_pkg K).compare (ratfunc_adic_compl_pkg K) f := rfl,
+  --   rw [← h_fF, this, valuation_compare],
+  --   rw val_le_one_iff_eq_coe,
+  --   exact ⟨F, coe_F⟩ },
+  -- { intro h,
+  --   set f := (laurent_series_ring_equiv K) x with hf,
+  --   have := valuation_compare K f,
+  --   have hx : (laurent_series_pkg K).compare (ratfunc_adic_compl_pkg K)
+  --     ((laurent_series_ring_equiv K) x) = x := congr_fun (inverse_compare (laurent_series_pkg K)
+  --     (ratfunc_adic_compl_pkg K)) x,
+  --   rw [hx] at this,
+  --   rw this at h,
+  --   obtain ⟨F, h_fF⟩ := (val_le_one_iff_eq_coe K f).mp h,
+  --   use F,
+  --   split,
+  --   { rw [power_series_as_subring, ring_hom.mem_range],
+  --     exact ⟨F, refl _⟩ },
+  --   { -- simpa [h_fF, hf] using hx,--this works but seems slower
+  --     rw [h_fF, hf],
+  --     apply hx }},
 end
 
 
