@@ -1,0 +1,54 @@
+\usepackage[T1]{fontenc}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{amsfonts, amsthm, amsmath}
+\usepackage{soul}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Typography
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\fil}[1]{{\color{blue} #1}}
+\newcommand{\mi}[1]{{\color{purple} #1}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%Theorems
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{notation}[theorem]{Notation}
+%
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%Lists
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newlist{listResults}{enumerate}{1}
+\setlist[listResults]{label={\arabic*}.}
+\newlist{sublistResults}{enumerate}{1}
+\setlist[sublistResults]{label={\arabic{listResultsi}}-\,\alph*\textup{)}}
+\newlist{listConditions}{enumerate}{1}
+\setlist[listConditions]{label=\textup{({\Alph*})}}
+\newlist{listDef}{enumerate}{1}
+\setlist[listDef]{label={\roman*}\textup{)}}
+\newlist{listHyp}{enumerate}{1}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Math commands
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%Fields
+\newcommand*{\NN}{\mathbb{N}}
+\newcommand*{\ZZ}{\mathbb{Z}}
+\newcommand*{\RR}{\mathbb{R}}
+\newcommand*{\QQ}{\mathbb{Q}}
+\newcommand*{\FF}[1][p]{\mathbb{F}_{#1}}
+\DeclareMathOperator{\Frac}{Frac} %the fraction field
+%%Algebraic
+\newcommand*{\laurentseries}[1][{\FF}]{#1(\!(X)\!)} %Laurent series
+\newcommand*{\powerseries}[1][{\FF}]{#1{[\![X]\!]}} %Power series
+\newcommand*{\maxid}[1][R]{\mathfrak{m}_{#1}} %Maximal ideal (of R)
+\newcommand{\unit}[1]{{#1}^\times} % units
+%% Arithmetic
+\newcommand{\rint}[1]{\mathcal{O}_{#1}} % ring of integers
+%%General set-theoretic
+\newcommand*{\longtwoheadrightarrow}{\joinrel\relbar\joinrel\twoheadrightarrow}%Long surjective arrow
