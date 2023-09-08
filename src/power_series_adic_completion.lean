@@ -7,6 +7,7 @@ Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 import algebra.group.with_one.units
 import discrete_valuation_ring.basic
 import for_mathlib.stuff_for_laurent_series 
+import for_mathlib.ring_theory.dedekind_domain.ideal
 import from_mathlib.PR18604_well_founded
 import topology.uniform_space.abstract_completion
 import for_mathlib.with_zero
@@ -30,7 +31,7 @@ def power_series.ideal_X (K : Type*) [field K] : is_dedekind_domain.height_one_s
   ne_bot   := by { rw [ne.def, ideal.span_singleton_eq_bot], exact X_ne_zero }} 
 
 
-open multiplicity principal_ideal_ring unique_factorization_monoid
+open multiplicity /- principal_ideal_ring -/ unique_factorization_monoid
 
 lemma polynomial.norm_unit_X : norm_unit (polynomial.X : (polynomial K)) = 1 :=
 begin
@@ -53,10 +54,10 @@ lemma factors_in_pol_eq_power_series (P : (polynomial K)) (hP : P ≠ 0) :
   (normalized_factors (ideal.span {↑P})).count (power_series.ideal_X K).as_ideal =
   (normalized_factors (ideal.span {P})).count (ideal.span {polynomial.X} : ideal (polynomial K)) :=
 begin
-  have for_pol := principal_ideal_ring.count_normalized_factors_eq_count_normalized_factors_span hP
+  have for_pol := normalization_monoid.count_normalized_factors_eq_count_normalized_factors_span hP
     polynomial.X_ne_zero (polynomial.norm_unit_X K) polynomial.prime_X,
   rw [← for_pol],
-  have for_pow := principal_ideal_ring.count_normalized_factors_eq_count_normalized_factors_span
+  have for_pow := normalization_monoid.count_normalized_factors_eq_count_normalized_factors_span
     (coe_ne_zero hP) power_series.X_ne_zero (power_series.norm_unit_X K) power_series.X_prime,
   erw [← for_pow],
   have aux_pol := @multiplicity_eq_count_normalized_factors (polynomial K) _ _ _ _ _ _ 
@@ -94,8 +95,9 @@ begin
     ne.def, ideal.span_singleton_eq_bot, hP, polynomial.X_ne_zero, not_false_iff, and_self],
     have span_X_prime : (ideal.span {polynomial.X} : ideal (polynomial K)).is_prime,
     { apply (@ideal.span_singleton_prime (polynomial K) _ _ polynomial.X_ne_zero).mpr prime_X },
-    have := count_normalized_factors_eq_associates_count (polynomial K) (ideal.span {P})
-    (ideal.span {polynomial.X}) span_ne_zero.1 ((@ideal.span_singleton_prime (polynomial K) _ _ 
+    have := normalization_monoid.count_normalized_factors_eq_associates_count (polynomial K)
+      (ideal.span {P}) (ideal.span {polynomial.X}) span_ne_zero.1 ((@ideal.span_singleton_prime
+       (polynomial K) _ _ 
     polynomial.X_ne_zero).mpr prime_X) span_ne_zero.2,
     convert this.symm,
     have span_ne_zero' : (ideal.span {↑P} : ideal (power_series K)) ≠ 0 ∧
@@ -103,10 +105,11 @@ begin
       ideal.zero_eq_bot, ideal.span_singleton_eq_bot, coe_ne_zero hP, power_series.X_ne_zero,
       not_false_iff, and_self, (power_series.ideal_X K).3],
     rw [← factors_in_pol_eq_power_series _ _ hP],
-    convert (count_normalized_factors_eq_associates_count (power_series K) (ideal.span {↑P})
-    (power_series.ideal_X K).as_ideal span_ne_zero'.1 (power_series.ideal_X K).2
-      span_ne_zero'.2).symm }
+    convert (normalization_monoid.count_normalized_factors_eq_associates_count (power_series K)
+      (ideal.span {↑P}) (power_series.ideal_X K).as_ideal span_ne_zero'.1 (power_series.ideal_X K).2
+      span_ne_zero'.2).symm },
 end
+
 
 instance : valued (laurent_series K) ℤₘ₀ := valued.mk' (power_series.ideal_X K).valuation
 
@@ -230,8 +233,9 @@ begin
       rw [← hF, ← coe_power_series] at F_mul,
       rwa [F_mul, map_mul, ← hd, hs, neg_sub, sub_eq_add_neg, of_add_add, valuation_of_single_zpow, 
         neg_neg, with_zero.coe_mul, mul_le_mul_left₀],
-      simp only [ne.def, with_zero.coe_ne_zero, not_false_iff] }}
+      simp only [ne.def, with_zero.coe_ne_zero, not_false_iff] }},
 end
+
 
 lemma valuation_le_iff_coeff_zero_of_lt {D : ℤ} {f : laurent_series K} :
   valued.v f ≤ ↑(multiplicative.of_add ((- D) : ℤ)) ↔ (∀ n : ℤ, n < D → f.coeff n = 0) :=
@@ -397,6 +401,8 @@ begin
   refine ne_bot_unique_principal hK (hℱ.map (uniform_continuous_coeff K hK n)).1
     (aux_coeff_map _ _) (hN n hn),
 end
+
+-- #exit
 
 /-- The following lemma shows that for every `d` smaller than the minimum between the integers
 produced in `cauchy.bot₁` and `cauchy.bot₂`, for almost all series in `ℱ` the `d`th coefficient

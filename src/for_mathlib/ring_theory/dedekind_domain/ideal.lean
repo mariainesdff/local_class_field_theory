@@ -31,9 +31,9 @@ begin
   { rwa [ne.def, ideal.zero_eq_bot, ideal.span_singleton_eq_bot] },
 end
 
-end normalization_monoid
+-- end normalization_monoid
 
-namespace is_dedekind_domain
+-- namespace is_dedekind_domain
 
 open_locale classical --TODO: it would be better if we could put decidable instances instead
 
@@ -58,10 +58,13 @@ instance asdf (R : Type*) [comm_ring R] [is_domain R] [is_dedekind_domain R] :
   multiset.count J (@normalized_factors (ideal R) (foo R) dec (bar R) (asdf R) I) = 
   (@associates.count (ideal R) (foo R) dec_p dec' (associates.mk J)) 
   (@associates.factors (ideal R) (foo R) (asdf R) dec dec' (associates.mk I)) -/ 
+
+--Keeping `R` explicit speeds up compilation a bit
 lemma count_normalized_factors_eq_associates_count 
-  {R : Type*} [comm_ring R] [is_domain R] [is_dedekind_domain R]
-  {I J : ideal R} (hI : I ≠ 0) (hJ : J.is_prime) (hJ₀ : J ≠ ⊥) :
-  multiset.count J (normalized_factors I) = (associates.mk J).count (associates.mk I).factors :=
+(R : Type*) [comm_ring R]
+  [is_domain R] [is_principal_ideal_ring R] (I J : ideal R) (hI : I ≠ 0) (hJ : J.is_prime )
+  (hJ₀ : J ≠ ⊥) : multiset.count J (normalized_factors I)=
+  (associates.mk J).count (associates.mk I).factors :=
 begin
   replace hI : associates.mk I ≠ 0,
   { apply associates.mk_ne_zero.mpr hI },
@@ -77,4 +80,4 @@ begin
     linarith },
 end
 
-end is_dedekind_domain
+end normalization_monoid
