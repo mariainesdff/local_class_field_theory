@@ -5,7 +5,7 @@ Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
 
 import for_mathlib.ring_theory.valuation.algebra_instances
-import for_mathlib.padic_compare
+import padic_compare
 import number_theory.padics.padic_integers
 import ring_theory.dedekind_domain.integral_closure
 import ring_theory.discrete_valuation_ring.basic

@@ -6,7 +6,7 @@ Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 
 import algebra.char_p.subring
 import discrete_valuation_ring.complete
-import for_mathlib.power_series_adic_completion
+import power_series_adic_completion
 import for_mathlib.power_series
 import for_mathlib.rank_one_valuation
 import for_mathlib.ring_theory.valuation.algebra_instances
