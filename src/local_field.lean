@@ -39,7 +39,6 @@ end eq_char_local_field
 namespace mixed_char_local_field
 open padic
 
---TODO: generalize is_discrete lemma to adic_valued completion
 @[priority 100] noncomputable instance (p : out_param ℕ) [fact(nat.prime p)] (K : Type*) [field K] 
   [mixed_char_local_field p K] : local_field K := 
 { complete             := mixed_char_local_field.complete_space p K,
