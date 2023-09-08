@@ -1,5 +1,6 @@
 \usepackage[T1]{fontenc}
-\usepackage{xcolor}
+% \PassOptionsToPackage{rgb, dvipsnames}{xcolor}
+\definecolor{Burgundy}{RGB}{128,0,32}
 \usepackage{enumitem}
 \usepackage{amsfonts, amsthm, amsmath}
 \usepackage{soul}
@@ -9,6 +10,20 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \newcommand{\fil}[1]{{\color{blue} #1}}
 \newcommand{\mi}[1]{{\color{purple} #1}}
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%Lean-related typography
+%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{listings}
+\def\lstlanguagefiles{lstleanCPP.sty}
+\lstset{language=lean}
+%\definecolor{keywordcolor}{rgb}{0.7, 0.1, 0.1}   % red
+%\definecolor{commentcolor}{rgb}{0.4, 0.4, 0.4}   % grey
+%\definecolor{symbolcolor}{rgb}{0.4, 0.4, 0.4}    % grey
+\renewcommand{\lstlistingname}{Code Sample}
+\newcommand{\LClistingname}{\MakeLowercase{\lstlistingname}}
+\newcommand{\code}[1]{\lstinline{#1}}
+\newcommand{\mcode}[1]{\mathtt{\ #1\ }}
+\newcommand*{\lean}[1][3]{\texttt{lean-{#1}}\xspace}
 \newcommand*{\mathlib}{\texttt{mathlib}\xspace}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%Theorems
