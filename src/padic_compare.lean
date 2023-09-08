@@ -10,6 +10,7 @@ import number_theory.padics.padic_integers
 import number_theory.padics.ring_homs
 import ring_theory.dedekind_domain.adic_valuation
 import for_mathlib.ring_theory.dedekind_domain.ideal
+-- import for_mathlib.ring
 import for_mathlib.stuff_for_laurent_series
 
 
@@ -78,7 +79,7 @@ begin
       multiplicity_eq_count_normalized_factors hp.irreducible hx, int.normalize_coe_nat,
       part_enat.coe_inj, count_normalized_factors_eq_count_normalized_factors_span hx 
         (ne_zero.ne p) rfl hp, 
-      is_dedekind_domain.count_normalized_factors_eq_associates_count hx' hp' hpne],
+      normalization_monoid.count_normalized_factors_eq_associates_count _ _ _ hx' hp' hpne],
     refl },
 end
 
