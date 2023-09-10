@@ -6,7 +6,7 @@ Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 
 import ring_theory.dedekind_domain.adic_valuation
 import discrete_valuation_ring.basic
-import for_mathlib.stuff_for_laurent_series--only to have int_valuation_apply
+import for_mathlib.rank_one_valuation
 
 open_locale discrete_valuation
 open multiplicative

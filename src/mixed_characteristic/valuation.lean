@@ -10,7 +10,7 @@ import mixed_characteristic.basic
 noncomputable theory
 
 open discrete_valuation discrete_valuation.extension is_dedekind_domain multiplicative nnreal 
-  padic_comparison padic_comparison.padic' polynomial ratfunc 
+  padic_comparison padic_comparison.padic' polynomial
 open_locale mixed_char_local_field nnreal discrete_valuation
 
 namespace mixed_char_local_field

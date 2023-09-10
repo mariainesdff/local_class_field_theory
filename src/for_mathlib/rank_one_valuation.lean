@@ -3,7 +3,7 @@ Copyright (c) 2023 María Inés de Frutos-Fernández, Filippo A. E. Nuccio. All 
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
-
+import ring_theory.dedekind_domain.adic_valuation
 import from_mathlib.normed_valued
 
 open_locale discrete_valuation
@@ -66,3 +66,11 @@ def mul_ring_norm_def : mul_ring_norm L :=
   eq_zero_of_map_eq_zero' := λ x, norm_def_eq_zero }
 
 end rank_one_valuation
+
+namespace is_dedekind_domain.height_one_spectrum
+
+lemma int_valuation_apply {R : Type*} [comm_ring R] [is_domain R] [is_dedekind_domain R] 
+  (v : is_dedekind_domain.height_one_spectrum R) {r : R} :
+  int_valuation v r = int_valuation_def v r := refl _
+
+end is_dedekind_domain.height_one_spectrum
