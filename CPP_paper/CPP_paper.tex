@@ -123,33 +123,35 @@
 %%
 %% The "title" command has an optional parameter,
 %% allowing the author to define a "short title" to be used in page headers.
-\title[A Formalization of Complete DVRs and Local Fields]{A Formalization of Complete Discrete Valuation Rings and Local Fields}
+\title[A Formalization of Complete DVRs and Local Fields]{A Formalization of Complete Discrete Valuation Rings and Local Fields -- OLD ONE, FORGET THIS FILE}
 
-%%
-%% The "author" command and its associated commands are used to define
-%% the authors and their affiliations.
-%% Of note is the shared affiliation of the first two authors, and the
-%% "authornote" and "authornotemark" commands
-%% used to denote shared contribution to the research.
-\iffalse
-\author{Ben Trovato}
-\authornote{Both authors contributed equally to this research.}
-\email{trovato@corporation.com}
-\orcid{1234-5678-9012}
-\author{G.K.M. Tobin}
-\authornotemark[1]
-\email{webmaster@marysville-ohio.com}
-\affiliation{%
-  \institution{Institute for Clarity in Documentation}
-  \streetaddress{P.O. Box 1212}
-  \city{Dublin}
-  \state{Ohio}
-  \country{USA}
-  \postcode{43017-6221}
-}\fi
+%%%
+%%% The "author" command and its associated commands are used to define
+%%% the authors and their affiliations.
+%%% Of note is the shared affiliation of the first two authors, and the
+%%% "authornote" and "authornotemark" commands
+%%% used to denote shared contribution to the research.
+%\iffalse
+%\author{Ben Trovato}
+%\authornote{Both authors contributed equally to this research.}
+%\email{trovato@corporation.com}
+%\orcid{1234-5678-9012}
+%\author{G.K.M. Tobin}
+%\authornotemark[1]
+%\email{webmaster@marysville-ohio.com}
+%\affiliation{%
+%  \institution{Institute for Clarity in Documentation}
+%  \streetaddress{P.O. Box 1212}
+%  \city{Dublin}
+%  \state{Ohio}
+%  \country{USA}
+%  \postcode{43017-6221}
+%}\fi
 
 % \author[M.~I.~de Frutos Fernández]{María Inés de Frutos Fernández}
 \author{María Inés de Frutos Fernández}
+\authornote{Both authors contributed equally to this research.}
+\authornotemark[1]
 \email{maria.defrutos@uam.es}
 \orcid{0000-0002-5085-7446}
 \affiliation{%
@@ -162,11 +164,15 @@
 
 %\author[F.~A.~E.~Nuccio]{Filippo Alberto Edoardo Nuccio Mortarino Majno di Capriglio}
 \author{Filippo Alberto Edoardo Nuccio Mortarino Majno di Capriglio}
-\email{}
-\orcid{}
+\authornote{Both authors contributed equally to this research.}
+\authornotemark[2]
+\email{filippo.nuccio@univ-st-etienne.fr}
+\orcid{0000-0002-5318-9869}
 \affiliation{%
-	\institution{}
-	\city{}
+	\institution{Université Jean Monnet Saint-Etienne}%%Add ICJ?
+	\streetaddress{23, rue du docteur Paul Michelon}
+   \postcode{42023}
+	\city{Saint-Étienne}
 	\country{France}
 }
 
@@ -234,12 +240,12 @@
 \item Say all rings are commutative and unitary.
 \item Remember to create the graph
 \item Acknowledge de Frutos-Fernández and Yaël Dillies for allowing us to use their work.
-\item Add  \href{https://github.com/mariainesdff/local_class_field_theory}{link to repository}. \mi{Links are rendered in black with the "review" option, which means they will probably be missed. In the sphere eversion paper they have a symbol next to each link; do you know how to achieve this? Otherwise we could ask them.}
+\item Add  \href{https://github.com/mariainesdff/local_class_field_theory}{link to repository}. \mi{Links are rendered in black with the "review" option, which means they will probably be missed. In the sphere eversion paper they have a symbol next to each link; do you know how to achieve this? Otherwise we could ask them.}\fil{I added this and you can use the \code{extlink} command (see what I did for the \code{valuation} structure). Yet, in that case (see my comment there) I would also add the corresponding lean code, no? Now that it is available, do we want to systematically add this external link to \mathlib, though, even when we are simply mentioning the library, as in \mathlib\href{https://leanprover-community.github.io/mathlib_docs/}{\extlink}?}
 \end{itemize}
 \section {Discrete Valuation Rings}\label{section:dvr}
 
 \subsection{Valuations}\label{subsection:valuations}
-Let $R$ be a ring. A \textit{valuation} $v$ on $R$ is a map $v : R \to \Gamma_0$  to a linearly ordered commutative monoid with zero $\Gamma_0$ such that
+Let $R$ be a ring. A \emph{valuation} $v$ on $R$ is a map $v \colon R \to \Gamma_0$  to a linearly ordered commutative monoid with zero \fil{say what this is, perhaps spend a world on ``linearly'' and say that $0$ is smaller than everyhing} and  $\Gamma_0$ such that
 \begin{enumerate}
 	\item $v (0) = 0$,
 	\item $v (1) = 1$,
@@ -247,23 +253,29 @@ Let $R$ be a ring. A \textit{valuation} $v$ on $R$ is a map $v : R \to \Gamma_0$
 	\item $v (x + y) \le \max {v (x), v (y)}$ for all $x, y \in R$.
 \end{enumerate}
 
-For instance, when $R$ is a Dedekind domain of Krull dimension 1 with fraction field $K$ and $\m$ is a maximal ideal of $R$, we can define a function $c_\m : R \to \ZZ \cup \{ \infty\}$ by sending zero to $\infty$ and any nonzero $r \in R$ to the number of times that $\m$ appears in the factorization of the principal ideal $(r)$. Note that this number is well defined because ideals in a Dedekind domain admit a unique factorization into maximal ideals, up to reordering. We can extend the function $c_\m$ to $K$ by setting $c_\m (r/s) := c_\m (r) - c_\m (s)$ for any $r, s \in R$ with $s \ne 0$.
+For instance, when $R$ is a Dedekind domain of Krull dimension 1 with fraction field $K$ and $\m$ is a maximal ideal of $R$, we can define a function $c_\m \colon R \to \ZZ \cup \{ \infty\}$ \fil{we need to say that ``monoiod with $0$`` or ``monoid with infinity`` are the same thing...} by sending zero to $\infty$ and any nonzero $r \in R$ to the number of times that $\m$ appears in the factorization of the principal ideal $(r)$. Note that this number is well defined because ideals in a Dedekind domain admit a unique factorization into maximal ideals, up to reordering. We can extend the function $c_\m$ to $K$ by setting $c_\m (r/s) := c_\m (r) - c_\m (s)$ for any $r, s \in R$ with $s \ne 0$.
 
 Then, for any real number $n_\m > 1$, it is easy to check that the function
-$ v_\m: K \to n_\m^{\mathbb{Z} \cup \{-\infty\}} = n_\m^\mathbb{Z} \cup \{0\}$ sending $x$ to $n_\m^{-c_\m(x)}$ is a valuation on $K$, which we call the \textit{$\m$-adic valuation}. For example, when $R = \ZZ$, $K = \QQ$ and $\m = (p)$ is the ideal generated by a prime number $p$, $v_p$ is the $p$-adic (multiplicative) valuation on $\QQ$, also known as the $p$-adic absolute value.
+$ v_{\m}\colon K \to n_\m^{\mathbb{Z} \cup \{-\infty\}} = n_\m^\mathbb{Z} \cup \{0\}$ sending $x$ to $n_\m^{-c_\m(x)}$ is a valuation on $K$, which we call the \textit{$\m$-adic valuation}. For example, when $R = \ZZ$, $K = \QQ$ and $\m = (p)$ is the ideal generated by a prime number $p$, $v_p$ is the $p$-adic (multiplicative) valuation on $\QQ$, also known as the $p$-adic absolute value.
 
 Note that the choice of number $n_\m > 1$ in the definition of $v_\m$ is not relevant, in the sense that any two such choices will give rise to equivalent valuations. In our formalization, we abstract the codomain $n_\m^\mathbb{Z} \cup \{0\}$ using the type
-\texttt{with\_zero (multiplicative $\mathbb{Z}$)}, denoted $\ZZ_{m0}$,
+\texttt{with\_zero (multiplicative $\mathbb{Z}$)}, denoted $\wzmZZ$,
 which carries the multiplicative structure corresponding to the additive structure on $\ZZ$, as well as an added zero element.
 
-For example, the rational numbers $20$ and $25$ have $5$-adic valuation $(-1 : \ZZ_{m0})$ and $(-2 : \ZZ_{m0})$, respectively, so $25$ is smaller than $20$ in the $p$-adic topology. \mi{Do you want to add anything else about this?}
+For example, the rational numbers $20$ and $25$ have $5$-adic valuation $(-1 : \wzmZZ)$ and $(-2 : \wzmZZ)$, respectively, so $25$ is smaller than $20$ in the $p$-adic topology. \mi{Do you want to add anything else about this?}\fil{Probably, in the previous paragraph, I would add some of the main properties of $\wzmZZ$: something like $2+3=6$, that there are three elements $0:\wzmZZ,1:\wzmZZ=$\code{to_add}$0:\ZZ$ and \code{to_add}$1:\ZZ$ that are different, and some formulae with inequalities.}
 
-We represent valuations in Lean using the \href{https://leanprover-community.github.io/mathlib_docs/ring_theory/valuation/basic.html#valuation}{valuation} structure available in mathlib, which encodes our above definition. A valuation on a ring $R$ induces a topology on $R$ for which the ring operations are continuous, hence turning $R$ into a topological ring.
+We represent valuations in Lean using the valuation structure \href{https://leanprover-community.github.io/mathlib_docs/ring_theory/valuation/basic.html#valuation}{\extlink}
+ available in mathlib, which encodes our above definition. A valuation on a ring $R$ induces a topology on $R$ for which the ring operations are continuous, hence turning $R$ into a topological ring.
 
-Mathlib also provides the class \href{https://leanprover-community.github.io/mathlib_docs/topology/algebra/valuation.html#valued}{valued}, which bundles together a ring with a
+Mathlib also provides the class \href{https://leanprover-community.github.io/mathlib_docs/topology/algebra/valuation.html#valued}{valued}\fil{why not inserting the}
+\begin{lstlisting}
+class (R : Type*) [ring R] valued : extends...
+\end{lstlisting}
+\fil{?}
+, which bundles together a ring with a
 uniform space structure and a distinguished valuation that induces it. This class is designed for rings in which there is a canonical valuation. For example, on the field $\QQ_p$ of $p$-adic numbers, there is a unique nontrivial valuation, which we register as an instance of the valued class. By contrast, on the rational numbers there are infinitely many valuations, none of them preferred over the others, so we do not put a global valued instance on $\QQ$.
 
-\mi{I would like to move this paragraph to section 2.2, after  valuations in DVRs have been discussed }. When implementing valuations on a discrete valuation ring $R$ with field of fractions $K$, we made the design choice to put an instance of the valued class on $K$, but not on the ring $R$ itself. The reason is that, if needed, we can recover the
+\mi{I would like to move this paragraph to section 2.2, after valuations in DVRs have been discussed }. When implementing valuations on a discrete valuation ring $R$ with field of fractions $K$, we made the design choice to put an instance of the valued class on $K$, but not on the ring $R$ itself. The reason is that, if needed, we can recover the
 topological structure on $R$ from the one on $K$, so we prefer not to duplicate this information. \mi{This choice is consistent with mathlib's file \url{ring_theory.dedekind_domain.adic_valuation}, in which valued instances are only put on fields (should we mention this?)}
 
 Given a ring $R$ with a valuation $v$, the \textit{unit ball} \mi {or  \textit{ring of integers}} of $R$ is defined as the subring $R_0$ of elements with valuation less than or equal to one. In mathlib, this subring is denoted \href{https://leanprover-community.github.io/mathlib_docs/ring_theory/valuation/integers.html#valuation.integer}{valuation.integer}. If $R$ is a field, then $R_0$ is a \textit{valuation subring}, that is, a subring such that for every element $r$ of $R$, either $r \in R_0$ or $r^{-1} \in R_0$.
@@ -271,7 +283,7 @@ To take advantage of the results about valuation subrings available in \href{htt
  
 \mi{
 \begin{itemize}
-	\item Properties of valuations valued in $\ZZ_{m0}$, together with the \code{multiplicative} and \texttt{with\_zero} classes, and clashes with "usual" intuition. Keep in mind that \texttt{with\_zero multiplicative} $\ZZ$ is "the same" as $q^{-\ZZ}\cup \{0\}$.
+	\item Properties of valuations valued in $\wzmZZ$, together with the \code{multiplicative} and \texttt{with\_zero} classes, and clashes with "usual" intuition. Keep in mind that \emph{with\_zero multiplicative} $\ZZ$ is ``the same'' as $q^{-\ZZ}\cup \{0\}$.
 	\item Difference between \texttt{valued} (which is a class, and carries a topology/uniformity) and \texttt{valuation} that is just a function.
 	\item We put \texttt{valued} instances on fields but "never" on rings that are not fields.
 	\item There is something called \texttt{valuation\_ring} that has (almost) nothing to do; but \texttt{valuation\_subring} has.
@@ -300,7 +312,7 @@ definition (K : Type*) [field K] : is_discrete
 \end{lstlisting}
 This \fil{differs} from the usual definition (see, for instance~\cite[Proposition~I.1]{Ser62}), where one declares a valuation to be discrete when its image is isomorphic to a subgroup of $\ZZ$ (enriched with an element $\infty$), and observes that such a valuation can always be normalized to become surjective. In particular, with our definition, a valuation is discrete if and only if there exists a uniformizer, which we prove in the following form:
 \begin{lstlisting}
-lemma is_discrete_of_exists_uniformizer {K : Type*} [field K] (v : valuation K \ZZ_{m0}) {$\pi$ : K} (h$\pi$ : is_uniformizer v $\pi$) : is_discrete v := sorry
+lemma is_discrete_of_exists_uniformizer {K : Type*} [field K] (v : valuation K $\wzmZZ$) {$\pi$ : K} (h$\pi$ : is_uniformizer v $\pi$) : is_discrete v := sorry
 \end{lstlisting}
 together with the lemma \code{is_discrete_of_exists_uniformizer} proving the reverse implication. Similarly, the aforementioned correspondance between uniformizers for a normalised valuation and generators of $\maxid$ takes the form
 \begin{lstlisting}
@@ -390,7 +402,7 @@ $\laurentseries$.
 	\item \mi{bundled vs unbundled \texttt{uniformizer}'s and the choice of having them in K or in R or in R.int\dots}
 	\item \fil{insert here the "double" $Q_p$ in particular the fact we found a \code{metric} instance on $\QQ$}.
 	\item \mi{the loop forcing the instance \texttt{discretely\_normed\_field} to be only a local one
-	\item [MAY BE] Discuss working in $\ZZ_{m0}$ vs in $\RR$ for the DVR\_extension
+	\item [MAY BE] Discuss working in $\wzmZZ$ vs in $\RR$ for the DVR\_extension
 	\item The instance of \code{valued} at the end of basic is defined on THE fraction ring and not on A fraction field because otherwise this would get into a diamond. Look at the examples in \code{extension}. Observe that \code{height_one_spectrum.valued_adic_completion K v} takes as argument $K$ (that is A fraction ring of $R$), whereas \code{discrete_valuation.with_zero.valued} takes as argument a DVR (in this case, $R_v$). Since the completion at $v$ of the fraction ring $frac R$ is not equal to $K_v$, this leads to no problem.}
 \end{itemize}
 

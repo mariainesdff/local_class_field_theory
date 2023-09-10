@@ -10,8 +10,6 @@ import number_theory.padics.padic_integers
 import number_theory.padics.ring_homs
 import ring_theory.dedekind_domain.adic_valuation
 import for_mathlib.ring_theory.dedekind_domain.ideal
--- import for_mathlib.ring
-import for_mathlib.stuff_for_laurent_series
 
 
 noncomputable theory

@@ -5,10 +5,18 @@ Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
 
 import field_theory.finite.galois_field
-import ring_theory.dedekind_domain.adic_valuation
-import ring_theory.dedekind_domain.integral_closure
+-- import ring_theory.dedekind_domain.adic_valuation
+-- import ring_theory.dedekind_domain.integral_closure
 import ring_theory.power_series.basic
 import ring_theory.valuation.valuation_subring
+import for_mathlib.discrete_uniformity
+-- import for_mathlib.power_series
+import for_mathlib.polynomial
+import algebra.order.hom.monoid
+-- import ring_theory.dedekind_domain.adic_valuation
+-- import ring_theory.dedekind_domain.ideal
+import ring_theory.laurent_series
+import ring_theory.power_series.well_known
 
 open_locale discrete_valuation
 
@@ -132,84 +140,6 @@ if hf : f = 0 then 1 else
   inv := divided_by_X_pow_inv hf,
   val_inv := divided_by_X_pow_inv_right_inv hf,
   inv_val := divided_by_X_pow_inv_left_inv hf }
--- begin
---   set d := f.order.get (power_series.order_finite_iff_ne_zero.mpr hf) with hd,
---   have f_const : power_series.coeff K d f ≠ 0 := by apply power_series.coeff_order,
---   have dvd := power_series.X_pow_order_dvd (power_series.order_finite_iff_ne_zero.mpr hf),
---   let const : Kˣ,
---   { haveI : invertible (power_series.constant_coeff K (divided_by_X_pow hf)),
---     { apply invertible_of_nonzero,
---       convert f_const,
---       rw [← power_series.coeff_zero_eq_constant_coeff, ← zero_add d],
---       convert (power_series.coeff_X_pow_mul ((exists_eq_mul_right_of_dvd
---         (power_series.X_pow_order_dvd (power_series.order_finite_iff_ne_zero.mpr hf))).some) 
---           d 0).symm,
---       exact (self_eq_X_pow_mul_divided_by_X_pow hf).symm },
---       use unit_of_invertible (power_series.constant_coeff K (divided_by_X_pow hf)) },
---   use ⟨divided_by_X_pow hf, power_series.inv_of_unit ((divided_by_X_pow hf)) const,
---     mul_inv_of_unit (divided_by_X_pow hf) const rfl, by {rw mul_comm, exact mul_inv_of_unit
---     (divided_by_X_pow hf) const rfl}⟩,
--- end
-
-/-Given a non-zero power series, the power series obtained in `divided_by_X_pow` is a unit-/
--- lemma is_unit_divided_by_X_pow {f : power_series K} (hf : f ≠ 0) :
---   is_unit (divided_by_X_pow hf) :=
--- begin
---   set d := f.order.get (power_series.order_finite_iff_ne_zero.mpr hf) with hd,
---   have f_const : power_series.coeff K d f ≠ 0 := by apply power_series.coeff_order,
---   have dvd := power_series.X_pow_order_dvd (power_series.order_finite_iff_ne_zero.mpr hf),
---   let const : Kˣ,
---   { haveI : invertible (power_series.constant_coeff K (divided_by_X_pow hf)),
---     { apply invertible_of_nonzero,
---       convert f_const,
---       rw [← power_series.coeff_zero_eq_constant_coeff, ← zero_add d],
---       convert (power_series.coeff_X_pow_mul ((exists_eq_mul_right_of_dvd
---         (power_series.X_pow_order_dvd (power_series.order_finite_iff_ne_zero.mpr hf))).some) 
---           d 0).symm,
---       exact (self_eq_X_pow_mul_divided_by_X_pow hf).symm },
---       use unit_of_invertible (power_series.constant_coeff K (divided_by_X_pow hf)) },
---   exact ⟨⟨divided_by_X_pow hf, power_series.inv_of_unit ((divided_by_X_pow hf)) const,
---     mul_inv_of_unit (divided_by_X_pow hf) const rfl, by {rw mul_comm, exact mul_inv_of_unit
---     (divided_by_X_pow hf) const rfl}⟩, rfl⟩,
--- end
-
--- /-Given a non-zero power series, the power series obtained in `divided_by_X_pow` is invertible-/
--- lemma is_invertible_divided_by_X_pow {f : power_series K} (hf : f ≠ 0) :
---   invertible (divided_by_X_pow hf) :=
--- begin
---   set d := f.order.get (power_series.order_finite_iff_ne_zero.mpr hf) with hd,
---   have f_const : power_series.coeff K d f ≠ 0 := by apply power_series.coeff_order,
---   have dvd := power_series.X_pow_order_dvd (power_series.order_finite_iff_ne_zero.mpr hf),
---   let const : Kˣ,
---   { haveI : invertible (power_series.constant_coeff K (divided_by_X_pow hf)),
---     { apply invertible_of_nonzero,
---       convert f_const,
---       rw [← power_series.coeff_zero_eq_constant_coeff, ← zero_add d],
---       convert (power_series.coeff_X_pow_mul ((exists_eq_mul_right_of_dvd
---         (power_series.X_pow_order_dvd (power_series.order_finite_iff_ne_zero.mpr hf))).some) 
---           d 0).symm,
---       exact (self_eq_X_pow_mul_divided_by_X_pow hf).symm },
---     use unit_of_invertible (power_series.constant_coeff K (divided_by_X_pow hf)) },
---   apply invertible.mk (power_series.inv_of_unit ((divided_by_X_pow hf)) const),
---   rw mul_comm,
---   all_goals {exact power_series.mul_inv_of_unit (divided_by_X_pow hf) const rfl},
--- end
-
-
-/-Given a non-zero power series, the unit obtained in `divide_X_pow_order_is_unit`-/
--- noncomputable
--- def unit_of_divided_by_X_pow (f : power_series K) : (power_series K)ˣ :=
--- if hf : f = 0 then 1 else 
--- -- begin
---   -- @unit_of_invertible _ _ (divided_by_X_pow hf) (is_invertible_divided_by_X_pow hf)
---   (is_unit_divided_by_X_pow hf).some
--- end
-
--- lemma unit_of_divided_by_X_pow_nonzero {f : power_series K} (hf : f ≠ 0) :
---   unit_of_divided_by_X_pow f = f 
---   unit_of_divided_by_X_pow f = @unit_of_invertible _ _ (divided_by_X_pow hf)
---     (is_invertible_divided_by_X_pow hf) := by simp only [unit_of_divided_by_X_pow, dif_neg hf]
-
 
 lemma is_unit_divided_by_X_pow {f : power_series K} (hf : f ≠ 0): is_unit (divided_by_X_pow hf) :=
 ⟨unit_of_divided_by_X_pow f, by simp only [unit_of_divided_by_X_pow, dif_neg hf, units.coe_mk]⟩
@@ -330,4 +260,56 @@ definition residue_field_of_power_series : residue_field (power_series K) ≃+* 
 (ideal.quot_equiv_of_eq (ker_constant_coeff_eq_max_ideal K).symm).trans 
     (ring_hom.quotient_ker_equiv_of_surjective (constant_coeff_surj K))
 
-    --TODO : upgrade `residue_field_of_power_series` to a `K`-algebra equivalence.
+
+variable {K}
+
+namespace polynomial
+
+open ratfunc power_series
+
+lemma coe_coe (P : polynomial K) : (P : laurent_series K) = (↑P : ratfunc K) :=
+  by { erw [ratfunc.coe_def, ratfunc.coe_alg_hom, lift_alg_hom_apply, ratfunc.num_algebra_map,
+    ratfunc.denom_algebra_map P, map_one, div_one], refl}
+
+lemma coe_ne_zero {f : polynomial K} : f ≠ 0 → (↑f : (power_series K)) ≠ 0 :=
+by simp only [ne.def, coe_eq_zero_iff, imp_self]
+
+end polynomial
+
+namespace hahn_series
+
+lemma single_pow {R : Type*} [ring R] (n : ℕ) : (hahn_series.single (n : ℤ) (1 : R)) =
+  (hahn_series.single (1 : ℤ) 1) ^ n :=
+begin
+induction n with n h_ind,
+    { simp only [nat.nat_zero_eq_zero, int.of_nat_eq_coe, zmod.nat_cast_self, zpow_zero],
+     refl, },
+    { rw [← int.coe_nat_add_one_out, ← one_mul (1 : R), ← hahn_series.single_mul_single, h_ind,
+      pow_succ', one_mul (1 : R)]},
+end
+
+lemma single_inv (d : ℤ) (α : K) (hα : α ≠ 0) : (hahn_series.single (d : ℤ) (α : K))⁻¹ 
+  = hahn_series.single (-d) (α⁻¹ : K) :=
+by {rw [inv_eq_of_mul_eq_one_left], simpa only [hahn_series.single_mul_single, 
+  add_left_neg, inv_mul_cancel hα]}
+
+lemma single_zpow (n : ℤ) : (hahn_series.single (n : ℤ) (1 : K)) =
+  (hahn_series.single (1 : ℤ) 1) ^ n :=
+begin
+  induction n with n_pos n_neg,
+  { apply single_pow },
+  { rw [int.neg_succ_of_nat_coe, int.coe_nat_add, nat.cast_one, ← inv_one,
+    ← single_inv ((n_neg + 1) : ℤ) (1 : K) one_ne_zero, zpow_neg, ← nat.cast_one, ← int.coe_nat_add,
+    algebra_map.coe_one, inv_inj, zpow_coe_nat, single_pow, inv_one] },
+end
+
+end hahn_series
+
+
+-- namespace is_dedekind_domain.height_one_spectrum
+
+-- lemma int_valuation_apply {R : Type*} [comm_ring R] [is_domain R] [is_dedekind_domain R] 
+--   (v : is_dedekind_domain.height_one_spectrum R) {r : R} :
+--   int_valuation v r = int_valuation_def v r := refl _
+
+-- end is_dedekind_domain.height_one_spectrum

@@ -10,8 +10,6 @@ import number_theory.padics.padic_integers
 import ring_theory.dedekind_domain.integral_closure
 import ring_theory.discrete_valuation_ring.basic
 
--- import for_mathlib.algebra_comp
-
 /-!
 --TODO: Fix comments
 # Mixed characteristic local fields
