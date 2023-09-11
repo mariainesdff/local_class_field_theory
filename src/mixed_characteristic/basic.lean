@@ -74,7 +74,7 @@ end
 /-- Given an algebra between two local fields over Q_p, create an algebra between their two rings
 of integers. For now, this is not an instance by default as it creates an equal-but-not-defeq
 diamond with `algebra.id` when `K = L`. This is caused by `x = ⟨x, x.prop⟩` not being defeq on
-subtypes. This will likely change in Lean 4. -/
+subtypes. It will be an instance when ported to Lean 4, since the above will not be an issue. -/
 def ring_of_integers_algebra [algebra K L] [is_scalar_tower (Q_p p) K L] :
   algebra (𝓞 p K) (𝓞 p L) := 
 valuation_subring.valuation_subring_algebra _ K L
