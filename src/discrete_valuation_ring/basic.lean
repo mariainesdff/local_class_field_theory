@@ -118,7 +118,7 @@ whose valuation is exactly `with_zero.multiplicative (- 1) : ℤₘ₀`-/
 class is_discrete (v : valuation A ℤₘ₀) : Prop :=
 (surj : function.surjective v)
 
-open valuation ideal is_dedekind_domain multiplicative with_zero
+open valuation ideal multiplicative with_zero
 
 variables {R : Type*} [comm_ring R] (vR : valuation R ℤₘ₀)
 
@@ -214,12 +214,14 @@ end valuation
 
 namespace discrete_valuation
 
-open valuation ideal is_dedekind_domain multiplicative with_zero local_ring
+open valuation ideal /- is_dedekind_domain -/ multiplicative with_zero local_ring
 
 variables {K : Type*} [field K] (v : valuation K ℤₘ₀)
 
-/-When the valuation is defined on a field instead that simply on a (commutative) ring, we use the 
-notion of `valuation_subring` instead of the weaker one of `integer`s. -/
+/- When the valuation is defined on a field instead that simply on a (commutative) ring, we use the 
+notion of `valuation_subring` instead of the weaker one of `integer`s to access the corresponding
+API. -/
+
 local notation `K₀` := v.valuation_subring
 
 lemma uniformizer_of_associated {π₁ π₂ : K₀} (h1 : is_uniformizer v π₁) (H : associated π₁ π₂) :
@@ -366,41 +368,24 @@ rfl
 
 end rank_one
 
--- [FAE] refactor using the above four lemmas
 lemma ideal_is_principal (I : ideal K₀) : I.is_principal:=
 begin
-  classical,
-  have π := (uniformizer.nonempty v).some,
-  by_cases hI : I = ⊥,
-  {rw hI, exact bot_is_principal},
-  { rw ← ne.def at hI,
-    let P : ℕ → Prop := λ n, π.1^n ∈ I,
-    have H : ∃ n, P n,
-    { obtain ⟨x, ⟨hx_mem, hx₀⟩⟩ := submodule.exists_mem_ne_zero_of_ne_bot hI,
-      obtain ⟨n, ⟨u, hu⟩⟩ := pow_uniformizer v hx₀ π,
-      use n,
-      simp_rw P,
-      rwa [← mul_unit_mem_iff_mem I u.is_unit, ← hu] },
-    let N := nat.find H,
-    use π.1^N,
-    ext r,
-    split,
-    { intro hr,
-      by_cases hr₀ : r = 0,
-      { rw hr₀, exact zero_mem _ },
-      { obtain ⟨m, ⟨u, hu⟩⟩ := pow_uniformizer v hr₀ π,
-        rw submodule_span_eq,
-        rw mem_span_singleton',
-        use u * π.1^(m - N),
-        rw [mul_assoc, ← pow_add, nat.sub_add_cancel, mul_comm, hu],
-        apply nat.find_min',
-        simp_rw P,
-        rwa [← mul_unit_mem_iff_mem I u.is_unit, ← hu] } },
-    { intro hr,    
-      rw [submodule_span_eq, mem_span_singleton'] at hr,
-      obtain ⟨a, ha⟩ := hr,
-      rw ← ha,
-      exact I.mul_mem_left a (nat.find_spec H), }},
+  suffices : (∀ (P : ideal K₀), P.is_prime → submodule.is_principal P),
+  exact (is_principal_ideal_ring.of_prime this).principal I,
+  intros P hP,
+  by_cases h_ne_bot : P = ⊥,
+  {rw h_ne_bot, exact bot_is_principal},
+  { let π := (uniformizer.nonempty v).some,
+    obtain ⟨x, ⟨hx_mem, hx₀⟩⟩ := submodule.exists_mem_ne_zero_of_ne_bot h_ne_bot,
+    obtain ⟨n, ⟨u, hu⟩⟩ := pow_uniformizer v hx₀ π,
+    by_cases hn : n = 0,
+  { rw [hu, hn, pow_zero, one_mul] at hx_mem,
+    exact (hP.ne_top (ideal.eq_top_of_is_unit_mem P hx_mem u.is_unit)).elim },
+  { rw [hu, ideal.mul_unit_mem_iff_mem P u.is_unit, is_prime.pow_mem_iff_mem hP _
+      (pos_iff_ne_zero.mpr hn), ← ideal.span_singleton_le_iff_mem, ← uniformizer_is_generator v π]
+      at hx_mem,
+    rw [← ideal.is_maximal.eq_of_le (local_ring.maximal_ideal.is_maximal K₀) hP.ne_top hx_mem],
+    use ⟨π.1, uniformizer_is_generator v π⟩ } },
 end
 
 lemma integer_is_principal_ideal_ring : is_principal_ideal_ring K₀:= 
@@ -414,16 +399,14 @@ instance dvr_of_is_discrete : discrete_valuation_ring K₀ :=
 
 variables (A : Type*) [comm_ring A] [is_domain A] [discrete_valuation_ring A]
 
-open is_dedekind_domain.height_one_spectrum 
+open is_dedekind_domain is_dedekind_domain.height_one_spectrum 
 
 /-- The maximal ideal of a DVR-/
 def maximal_ideal : height_one_spectrum A :=
 { as_ideal := maximal_ideal A,
   is_prime := ideal.is_maximal.is_prime (maximal_ideal.is_maximal A),
-  ne_bot   := begin
-    rw [ne.def, ← is_field_iff_maximal_ideal_eq],
-    exact discrete_valuation_ring.not_is_field A,
-  end }
+  ne_bot   := by simpa [ne.def, ← is_field_iff_maximal_ideal_eq] using 
+    discrete_valuation_ring.not_is_field A }
 
 variable {A}
 
