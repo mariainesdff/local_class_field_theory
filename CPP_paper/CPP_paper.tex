@@ -1,27 +1,3 @@
-%%
-%% This is file `sample-sigplan.tex',
-%% generated with the docstrip utility.
-%%
-%% The original source files were:
-%%
-%% samples.dtx  (with options: `sigplan')
-%% 
-%% IMPORTANT NOTICE:
-%% 
-%% For the copyright see the source file.
-%% 
-%% Any modified versions of this file must be renamed
-%% with new filenames distinct from sample-sigplan.tex.
-%% 
-%% For distribution of the original source see the terms
-%% for copying and modification in the file samples.dtx.
-%% 
-%% This generated file may be distributed as long as the
-%% original source files, as listed above, are part of the
-%% same distribution. (The sources need not necessarily be
-%% in the same archive or directory.)
-%%
-%%
 %% Commands for TeXCount
 %TC:macro \cite [option:text,text]
 %TC:macro \citep [option:text,text]
@@ -33,9 +9,6 @@
 %TC:envir math 0 word
 %TC:envir comment 0 0
 %%
-%%
-%% The first command in your LaTeX source must be the \documentclass
-%% command.
 %%
 %% For submission and review of your manuscript please change the
 %% command to \documentclass[manuscript, screen, review]{acmart}.
@@ -79,8 +52,8 @@
 %%
 %%\acmBooktitle{Woodstock '18: ACM Symposium on Neural Gaze Detection,
 %%  June 03--05, 2018, Woodstock, NY}
-\acmPrice{15.00}
-\acmISBN{978-1-4503-XXXX-X/18/06}
+%\acmPrice{15.00}
+%\acmISBN{978-1-4503-XXXX-X/18/06}
 
 
 %%
@@ -120,7 +93,6 @@
 %% end of the preamble, start of the body of the document source.
 \begin{document}
 
-%%
 %% The "title" command has an optional parameter,
 %% allowing the author to define a "short title" to be used in page headers.
 \title[A Formalization of Complete DVRs and Local Fields]{A Formalization of Complete Discrete Valuation Rings and Local Fields -- OLD ONE, FORGET THIS FILE}
@@ -183,7 +155,7 @@
 %% other information printed in the page headers. This command allows
 %% the author to define a more concise list
 %% of authors' names for this purpose.
-\renewcommand{\shortauthors}{M.~I.~de Frutos Fernández and F.~A.~E.~Nuccio }
+\renewcommand{\shortauthors}{M.~I.~de Frutos Fernández and F.~A.~E.~Nuccio}
 
 %%
 %% The abstract is a short summary of the work to be presented in the
@@ -226,9 +198,9 @@
 \keywords{formal mathematics, Lean, mathlib, algebraic number theory, local fields, discrete valuation rings.}
 
 
-%\received{20 February 2007}
-%\received[revised]{12 March 2009}
-%\received[accepted]{5 June 2009}
+%\received{}
+%\received[revised]{}
+%\received[accepted]{}
 
 %%
 %% This command processes the author and affiliation and title
@@ -238,6 +210,7 @@
 \section{Introduction}
 \begin{itemize}
 \item Say all rings are commutative and unitary.
+\item Say something, or give a reference, to the role played by ``type classes'', ``instances'' and class-type inference in \lean and/or \mathlib.
 \item Remember to create the graph
 \item Acknowledge de Frutos-Fernández and Yaël Dillies for allowing us to use their work.
 \item Add  \href{https://github.com/mariainesdff/local_class_field_theory}{link to repository}. \mi{Links are rendered in black with the "review" option, which means they will probably be missed. In the sphere eversion paper they have a symbol next to each link; do you know how to achieve this? Otherwise we could ask them.}\fil{I added this and you can use the \code{extlink} command (see what I did for the \code{valuation} structure). Yet, in that case (see my comment there) I would also add the corresponding lean code, no? Now that it is available, do we want to systematically add this external link to \mathlib, though, even when we are simply mentioning the library, as in \mathlib\href{https://leanprover-community.github.io/mathlib_docs/}{\extlink}?}
@@ -262,11 +235,10 @@ Note that the choice of number $n_\m > 1$ in the definition of $v_\m$ is not rel
 \texttt{with\_zero (multiplicative $\mathbb{Z}$)}, denoted $\wzmZZ$,
 which carries the multiplicative structure corresponding to the additive structure on $\ZZ$, as well as an added zero element.
 
-For example, the rational numbers $20$ and $25$ have $5$-adic valuation $(-1 : \wzmZZ)$ and $(-2 : \wzmZZ)$, respectively, so $25$ is smaller than $20$ in the $p$-adic topology. \mi{Do you want to add anything else about this?}\fil{Probably, in the previous paragraph, I would add some of the main properties of $\wzmZZ$: something like $2+3=6$, that there are three elements $0:\wzmZZ,1:\wzmZZ=$\code{to_add}$0:\ZZ$ and \code{to_add}$1:\ZZ$ that are different, and some formulae with inequalities.}
+For example, the rational numbers $20$ and $25$ have $5$-adic valuation $(-1 : \wzmZZ)$ and $(-2 : \wzmZZ)$, respectively, so $25$ is smaller than $20$ in the $p$-adic topology. \mi{Do you want to add anything else about this?}\fil{Probably, in the previous paragraph, I would add some of the main properties of $\wzmZZ$: something like $2+3=6$, that there are three elements $0:\wzmZZ,1:\wzmZZ=$\code{to_add}$0:\ZZ$ and \code{to_add}$1:\ZZ$ that are different, and some formulae with inequalities. Observe that. for our definition of uniformizer, the term \code{to_add}$-1:\ZZ$ is essential.}
 
-We represent valuations in Lean using the valuation structure \href{https://leanprover-community.github.io/mathlib_docs/ring_theory/valuation/basic.html#valuation}{\extlink}
- available in mathlib, which encodes our above definition. A valuation on a ring $R$ induces a topology on $R$ for which the ring operations are continuous, hence turning $R$ into a topological ring.
-
+We represent valuations in Lean using the \code{valuation} structure \href{https://leanprover-community.github.io/mathlib_docs/ring_theory/valuation/basic.html#valuation}{\extlink}
+ available in \mathlib, which encodes our above definition. A valuation on a ring $R$ induces a topology on $R$ for which the ring operations are continuous, hence turning $R$ into a topological ring.
 Mathlib also provides the class \href{https://leanprover-community.github.io/mathlib_docs/topology/algebra/valuation.html#valued}{valued}\fil{why not inserting the}
 \begin{lstlisting}
 class (R : Type*) [ring R] valued : extends...
@@ -275,46 +247,51 @@ class (R : Type*) [ring R] valued : extends...
 , which bundles together a ring with a
 uniform space structure and a distinguished valuation that induces it. This class is designed for rings in which there is a canonical valuation. For example, on the field $\QQ_p$ of $p$-adic numbers, there is a unique nontrivial valuation, which we register as an instance of the valued class. By contrast, on the rational numbers there are infinitely many valuations, none of them preferred over the others, so we do not put a global valued instance on $\QQ$.
 
-\mi{I would like to move this paragraph to section 2.2, after valuations in DVRs have been discussed }. When implementing valuations on a discrete valuation ring $R$ with field of fractions $K$, we made the design choice to put an instance of the valued class on $K$, but not on the ring $R$ itself. The reason is that, if needed, we can recover the
-topological structure on $R$ from the one on $K$, so we prefer not to duplicate this information. \mi{This choice is consistent with mathlib's file \url{ring_theory.dedekind_domain.adic_valuation}, in which valued instances are only put on fields (should we mention this?)}
+\mi{I would like to move this paragraph to section 2.2, after valuations in DVRs have been discussed }.\fil{I am fine with this: please move it to wherever seems suitable to you, putting the whole of it in the \code{\\mi} field, so that I will find it easily.} When implementing valuations on a discrete valuation ring $R$ with field of fractions $K$, we made the design choice to put an instance of the valued class on $K$, but not on the ring $R$ itself. The reason is that, if needed, we can recover the
+topological structure on $R$ from the one on $K$, so we prefer not to duplicate this information. \mi{This choice is consistent with \mathlib's file \url{ring_theory.dedekind_domain.adic_valuation}, in which valued instances are only put on fields (should we mention this?)}
 
-Given a ring $R$ with a valuation $v$, the \textit{unit ball} \mi {or  \textit{ring of integers}} of $R$ is defined as the subring $R_0$ of elements with valuation less than or equal to one. In mathlib, this subring is denoted \href{https://leanprover-community.github.io/mathlib_docs/ring_theory/valuation/integers.html#valuation.integer}{valuation.integer}. If $R$ is a field, then $R_0$ is a \textit{valuation subring}, that is, a subring such that for every element $r$ of $R$, either $r \in R_0$ or $r^{-1} \in R_0$.
-To take advantage of the results about valuation subrings available in \href{https://leanprover-community.github.io/mathlib_docs/ring_theory/valuation/valuation_subring.html#valuation_subring}{mathlib}, when $R$ is a field we use the definition \href{https://leanprover-community.github.io/mathlib_docs/ring_theory/valuation/valuation_subring.html#valuation.valuation_subring}{valuation.valuation\_subring} to define the unit ball. This should not be confused with mathlib's \href{https://leanprover-community.github.io/mathlib_docs/ring_theory/valuation/valuation_ring.html#valuation_ring}{valuation\_ring} class.
+Given a ring $R$ with a valuation $v$, the \textit{unit ball} \mi {or  \textit{ring of integers}} of $R$ is defined as the subring $R_0$ of elements with valuation less than or equal to one. In \mathlib, this subring is defined as \code{valuation.integer R} \href{https://leanprover-community.github.io/mathlib_docs/ring_theory/valuation/integers.html#valuation.integer}{\extlink}. If $R$ is a field, then $\ball{R}$ is a \emph{valuation subring}, that is, a subring such that for every element $r$ of $R$, either $r \in \ball{R}$ or $r^{-1} \in \ball{R}$.
+To take advantage of the results about valuation subrings available in \href{https://leanprover-community.github.io/mathlib_docs/ring_theory/valuation/valuation_subring.html#valuation_subring}{mathlib}, when $R$ is a field we rely on the declaration \code{valuation.valuation\_subring}\href{https://leanprover-community.github.io/mathlib_docs/ring_theory/valuation/valuation_subring.html#valuation.valuation_subring}{\extlink} to define the unit ball. This should not be confused with \mathlib's \code{valuation\_ring} \href{https://leanprover-community.github.io/mathlib_docs/ring_theory/valuation/valuation_ring.html#valuation_ring}{\extlink} class \fil{should we explain the difference and the relation with this latter class with the \code{valuation_subring} one?}
  
 \mi{
 \begin{itemize}
-	\item Properties of valuations valued in $\wzmZZ$, together with the \code{multiplicative} and \texttt{with\_zero} classes, and clashes with "usual" intuition. Keep in mind that \emph{with\_zero multiplicative} $\ZZ$ is ``the same'' as $q^{-\ZZ}\cup \{0\}$.
-	\item Difference between \texttt{valued} (which is a class, and carries a topology/uniformity) and \texttt{valuation} that is just a function.
-	\item We put \texttt{valued} instances on fields but "never" on rings that are not fields.
-	\item There is something called \texttt{valuation\_ring} that has (almost) nothing to do; but \texttt{valuation\_subring} has.
+%	\item Properties of valuations valued in $\wzmZZ$, together with the \code{multiplicative} and \texttt{with\_zero} classes, and clashes with "usual" intuition. Keep in mind that \emph{with\_zero multiplicative} $\ZZ$ is ``the same'' as $q^{-\ZZ}\cup \{0\}$.
+%	\item Difference between \texttt{valued} (which is a class, and carries a topology/uniformity) and \texttt{valuation} that is just a function.
+%	\item We put \texttt{valued} instances on fields but "never" on rings that are not fields.
+%	\item There is something called \texttt{valuation\_ring} that has (almost) nothing to do; but \texttt{valuation\_subring} has.
 	\item Comment about the choice of \texttt{.integers} instead of \texttt{.valuation\_subring}
 \end{itemize}
 }
 \subsection{Definition of Discrete Valuation Rings}\label{subsection:def_dvr}
-Let $R$ be a ring, \fil{as above assumed} commutative and unitary. We begin by recalling a classical result:
-\begin{theorem}[see\dots]\label{thm:dvr_tfae}
+Our main reference for the general theory of discrete valuation rings are~\cite{Ser62} and~\cite[Chapitre~VI]{Bou85}. We refer to~\cite{Bou07}, in particular to \cite[Chapitre~IV]{Bou07}, for the main results about ring theory and commutative algebra that we will need.
+
+Let $R$ be a ring, \fil{as above assumed} commutative and unitary. We begin by recalling the following equivalence
+\begin{theorem}[{\cite[Chapitre~VI, \S3, n$^\circ$~6, Proposition~8]{Bou85} and~\cite[Chapitre I, \S2, Propositions~2 and~3]{Ser62}}]\label{thm:dvr_tfae}
 The following properties are equivalent:
 \begin{listResults}
-\item foo
-\item foo
-\item foo
+\item $R$ is a Noetherian local ring whose maximal ideal $\maxid$ is generated by a non-nilpotent element;
+\item $R$ is a Noetherian local integral domain that is integrally closed and is not a field;
+\item $R$ is a local PID that is not a field;
 \end{listResults}
 \end{theorem}
+\begin{remark}
+In~\cite[Chapitre~VI, \S3, n$^\circ$ 6, Proposition~8]{Bou85} other equivalences are proved, but we will not need them.
+\end{remark}
 A ring satisfying the equivalent properties of Theorem~\ref{thm:dvr_tfae} is called a discrete valuation ring (often shortened as DVR). The definition is motivated by the fact that a DVR $R$ can always be endowed with a class of valuations, 
 \[
 v\colon R\longrightarrow \ZZ\cup\{+\infty\}\fil{\text{ or use the mathlib convention?}}.
 \]
-For each of these valuations, the image $\image(v)\subseteq\ZZ\cup \{+\infty\}$ is the free monoid generated by $v(r)$, where $r$ is any generator of the maximal ideal $\maxid$ of $R$. Upon replacing $v$ by $v/v(r)$, for some generator $r$ of $\maxid$, we can assume that this free monoid coincides with $\NN$: in this case the valuation is said to be normalised, and the elements of valuation equal to $1$ are called uniformizers. One basic result is that, for a normalised valuation, the uniformisers are exactly the set of generators of $\maxid$, \fil{because \dots}. Moreover, there exists a unique normalised valuation on a DVR, since every valuation is uniquely determined by its value on the generators of $\maxid$. We denote it by ${\normalised}_R$, or simply by $\normalised$ when the DVR $R$ can be understood.
+For each of these valuations, the image $\image(v)\subseteq\ZZ\cup \{+\infty\}$ is the free monoid generated by $v(r)$, where $r$ is any generator of the maximal ideal $\maxid$ of $R$. Upon replacing $v$ by $v/v(r)$, for some generator $r$ of $\maxid$, we can assume that this free monoid coincides with $\NN$: in this case the valuation is said to be normalised, and the elements of valuation equal to $1$ are called uniformizers. One basic result is that, for a normalised valuation, the uniformisers are exactly the set of generators of $\maxid$, \fil{because \dots}. Moreover, there exists a unique normalised valuation on a DVR, since every valuation is uniquely determined by its value on the generators of $\maxid$. We denote it by ${\normalised}_{,R}$ --- or simply by $\normalised$ when the DVR $R$ can be understood.
 
-This point of view differs slightly from the classical one (as found, for instance, in~\cite[Chapitre~I]{Ser62} or in~\cite[Chapitre~VII]{Bou07}), who only consider the normalised valuation on a DVR, and regard it as being ``canonical''. This should not come as a surprise in the setting of a formalisation work: on the one hand, regarding ``the'' valuation as part of the data would \fil{rigidify the situation too much NOT NICE}, as in \fil{give a REF to some discussion in our DD paper about fraction fields} and, on the other, there might be different constructions of a valuation on a ring that would turn out to be propositionally equal albeit not definitionally equal. The corresponding pairs $(R,v)$, for the several possible constructions of $v$, would all be mathematically intercheangable yet represented by different, although equivalent types; this would lead to unnecessary verbosity while keeping track of the equivalences: in \fil{\S\dots and in \S\dots we will see explicit examples of this phenomenon, supporting our decision of avoiding the choice of a preferred valuation on $R$}. In particular, the definition we propose of a discrete valuation is the following:
+This point of view differs slightly from the classical one (as found, for instance, in~\cite[Chapitre~I]{Ser62} or in~\cite[???]{Bou85}), who \fil{only FALSE} consider the normalised valuation on a DVR, and regard it as being ``canonical''. This should not come as a surprise in the setting of a formalisation work: on the one hand, regarding ``the'' valuation as part of the data would \fil{rigidify the situation too much NOT NICE}, as in \fil{give a REF to some discussion in our DD paper about fraction fields} and, on the other, there might be different constructions of a valuation on a ring that would turn out to be propositionally equal albeit not definitionally equal. The corresponding pairs $(R,v)$, for the several possible constructions of $v$, would all be mathematically intercheangable yet represented by different, although equivalent types; this would lead to unnecessary verbosity while keeping track of the equivalences: in \fil{\S\dots and in \S\dots we will see explicit examples of this phenomenon, supporting our decision of avoiding the choice of a preferred valuation on $R$}. In particular, the definition we propose of a discrete valuation is encoded in the following class:
 \begin{lstlisting}
-definition (K : Type*) [field K] : is_discrete
+class is_discrete (v : valuation A $\wzmZZ$) : Prop := (surj : function.surjective v)
 \end{lstlisting}
-This \fil{differs} from the usual definition (see, for instance~\cite[Proposition~I.1]{Ser62}), where one declares a valuation to be discrete when its image is isomorphic to a subgroup of $\ZZ$ (enriched with an element $\infty$), and observes that such a valuation can always be normalized to become surjective. In particular, with our definition, a valuation is discrete if and only if there exists a uniformizer, which we prove in the following form:
+This \fil{differs} from the usual definition (see, for instance~\cite[Proposition~I.1]{Ser62}), where one declares a valuation to be discrete when its image is isomorphic to a subgroup of $\ZZ$ (enriched with an element $\infty$), and observes that such a valuation can always be normalized to become surjective. \fil{say that we rigidify things by forcing the map $v$ to be $\wzmZZ$-valued}. In particular, with our definition, a valuation is discrete if and only if there exists a uniformizer, which we prove in the following form:
 \begin{lstlisting}
 lemma is_discrete_of_exists_uniformizer {K : Type*} [field K] (v : valuation K $\wzmZZ$) {$\pi$ : K} (h$\pi$ : is_uniformizer v $\pi$) : is_discrete v := sorry
 \end{lstlisting}
-together with the lemma \code{is_discrete_of_exists_uniformizer} proving the reverse implication. Similarly, the aforementioned correspondance between uniformizers for a normalised valuation and generators of $\maxid$ takes the form
+The lemma \code{exists_uniformizer_of_discrete} provides the reverse implication . Similarly, the aforementioned correspondance between uniformizers for a normalised valuation and generators of $\maxid$ takes the form
 \begin{lstlisting}
 lemma uniformizer_is_generator ($\pi$ : uniformizer v) : maximal_ideal v.valuation_subring = ideal.span {$\pi.1$} := sorry
 \end{lstlisting}
@@ -325,6 +302,15 @@ lemma is_uniformizer_of_generator {r : K$_0$} [v.is_discrete]
 \end{lstlisting}
 the assumption that \code{v} is discrete --- implemented as the \code{class} assumption \code{[v.is_discrete]} --- becomes necessary.
 
+Given a DVR, that we implement in \lean using the \mathlib class \code{discrete_valuation_ring}\href{https://leanprover-community.github.io/mathlib_docs/ring_theory/discrete_valuation_ring/basic.html#discrete_valuation_ring}{extlink} --- this \fil{corresponds to property...??? in the above theorem} --- we can consider the adic valuation $\normalised$ attached to its maximal ideal, \fil{as discussed above}. We produce an \fil{check A vs R}
+\begin{lstlisting}
+instance discrete_valuation.is_discrete : (@valued.v (fraction_ring A) _ $\wzmZZ$ _ _) := sorry
+\end{lstlisting}
+showing that $\normalised$ is discrete according to our definition. Anticipating subsequent applications to algebraic number \fil{theory and to a global-to-local approach that\dots}, we also prove the 
+\begin{lstlisting}
+lemma (R : Type*) [comm_ring R] [is_domain R] [is_dedekind_domain R] (K : Type*) [field K] [algebra R K] [is_fraction_ring R K] ($\maxid$ : height_one_spectrum R) is_dedekind_domain.height_one_spectrum.adic_valuation.is_discrete : is_discrete (adic_valued $\maxid$).v := 
+\end{lstlisting}
+It shows that starting with a Dedekind domain $R$ \fil{GIVE REF}, a maximal ideal $\maxid$ in it, the associated $\maxid$-adic valuation is discrete with respect to our definition and therefore defines a \code{valued} structure on the field $K=\Frac(R)$. {As an application, in this setting, both the localization $R_{\maxid}$ and the completion $\widehat{R_{\maxid}}$ get a structure of a DVR}.
 
 Since a DVR is an integral domain, it is possible to extend the valuation to its field of fractions $K=\Frac(R)$ by setting $v(a/b)=v(b)-v(a)$ \fil{or...}. If the valuation $v$ on $R$ is normalised, we obtain a \emph{surjective} valuation
 \[
@@ -333,19 +319,37 @@ K\longtwoheadrightarrow \ZZ\cup\{+\infty\}\text{\fil{or\dots}}
 whose kernel coincides with $\unit{R}$. \fil{With the definitions introduced in} \S\ref{subsection:valuations}, this turns $K$ into a discretely valued field. 
 
 
-Both DVRs and valuations had already been defined in \fil{\mathlib SAY WHAT THIS IS SOMEWERE} before our project, but nothing beyong their basic properties was available. In particular, no definition of uniformisers or the relation between generators of $\maxid$ and the valuation on a DVR was available. More crucially, two fundamental constructions were not formalised in \mathlib nor, \fil{to the best of our knowledge, in any other proof assistant CHECK}: extensions and completions of DVR. The next section is devoted to a description of our formalisation of these \fil{notions? constructions?}.
-\begin{itemize}
-	\item True Math definition and the \texttt{mathlib\_tfae} (in particular, local and PID)
-	\item \texttt{is\_discrete} : observe that if the value group were $2\ZZ$ this would still be mathematically "discrete", but we make the choice of surjectivity in coherence with Serre/so that the notion of equivalence collapses to equality: there is a unique normalized one.
-	\item \texttt{uniformizer}'s and equivalence of their existence with discreteness
-	\fil{\item The unit ball of a field with a discrete valuation (be it valued or not) is a DVR; and the adic valuation (ref to María Inés' paper) on the field of fractions of a DVR \texttt{is\_discrete}}.
-\end{itemize}
+Both DVRs and valuations had already been defined in \fil{\mathlib SAY WHAT THIS IS SOMEWERE} before our project, but nothing beyong their basic properties was available. In particular, no definition of uniformisers or the relation between generators of $\maxid$ and the valuation on a DVR was available. 
+
+More crucially, two fundamental constructions were not formalised in \mathlib nor, \fil{to the best of our knowledge, in any other proof assistant CHECK}: extensions and completions of DVR. The next section is devoted to a description of our formalisation of these \fil{notions? constructions?}.
+
+We close this section by mentioning the result
+\begin{lstlisting}
+instance dvr_of_is_discrete {K : Type*} [field K] (v: valuation K $\wzmZZ$)
+[hv : v.is_discrete] : discrete_valuation_ring $\ball{K}$ := sorry
+\end{lstlisting}
+Thanks to the above \fil{lemma/def/instance?},if $K$ is a field endowed with a discrete valuation $v$, its \fil{unit ball} $\ball{K}$ as defined in \S\ref{subsection:valuations} is itself a DVR. \fil{Should we say something about the proof?}. We then prove \fil{in the declaration\dots}
+\begin{lstlisting}
+bla bla
+\end{lstlisting}
+that the field of fractions $\Frac(\ball{K})$ has the structure of a \code{fraction_ring}$\mcode{\ball{K}}$ \href{https://leanprover-community.github.io/mathlib_docs/ring_theory/localization/fraction_ring.html#fraction_ring}{\extlink} (we refer to~\cite[\S4.5]{BaaDahNarNuc22} for a discussion on how \mathlib treats fraction rings and, in particular, for an explanation of our choice of writing ``a fraction ring'' rather than ``the fraction ring/field''). Finally, we prove in
+\begin{lstlisting}
+\end{lstlisting}
+\fil{that the unique normalised valuation on the DVR $\ball{K}$, once extended to its field of fractions $K$ as explained above, gives rise to a valuation that, up to rescaling, coincides with $v$ DONE?!?}
+%\begin{itemize}
+%	\item True Math definition and the \texttt{mathlib\_tfae} (in particular, local and PID)
+%	\item \texttt{is\_discrete} : observe that if the value group were $2\ZZ$ this would still be mathematically "discrete", but we make the choice of surjectivity in coherence with Serre/so that the notion of equivalence collapses to equality: there is a unique normalized one.
+%	\item \texttt{uniformizer}'s and equivalence of their existence with discreteness
+%	\fil{\item The unit ball of a field with a discrete valuation (be it valued or not) is a DVR; and the adic valuation (ref to María Inés' paper) on the field of fractions of a DVR \texttt{is\_discrete}}.
+%\end{itemize}
 \subsection{Complete Discrete Valuation Rings and their Extensions}\label{subsec:complete_DVR}
 Suppose now that $R$ is a DVR. \fil{As discussed in \S\ref{subsection:def_dvr}, $R$ is a local ring of Krull} dimension $1$ that is a principal ideal domain (shortened as PID). Its unique maximal ideal $\maxid$ is a height-one prime, and one can consider the adic valuation associated to this prime, \fil{as defined, for instance, in\dots}. In fact, it turns out that since $R$ is a PID, it is in particular (\fil{see\dots}) a Dedekind domain: now, Baanen~\emph{et al.}~have formalised in~\cite{BaaDahNarNuc21} and~\cite{BaaDahNarNuc22} the general theory of Dedekind domains in \lean, and de~Frutos-Fernández \fil{is this the right paper?} has formalised in \lean the main properties of adic valuations on Dedekind domains and on their extensions. The main result connecting the two theories is that the $\maxid$-adic valuation $v_{\maxid}$ associated to the prime ideal $\maxid$ coincides with the normalised valuation $\normalised$ on $R$. Although this is mathematically trivial, and the two functions
 \[
 \normalised,v_{\maxid}\colon R\longrightarrow \ZZ\cup\{+\infty\}
 \]
 are considered identical in pen-and-paper mathematics, they actually belong to different types and hence are different terms. \fil{Indeed\dots WAIT FOR A THROUGHOUT DISCUSSION OF ADIC VAL'S} 
+
+\fil{add the valued structure on the field of fractions of a dvr, see dvr.basics line 431}
 
 \vspace{3cm}
 
