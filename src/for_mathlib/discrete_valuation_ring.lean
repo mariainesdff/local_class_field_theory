@@ -1,10 +1,11 @@
-/-
-Copyright (c) 2023 María Inés de Frutos-Fernández, Filippo A. E. Nuccio. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
--/
-
 import ring_theory.discrete_valuation_ring.basic
+
+/-!
+## Main result
+
+* `ring_equiv.discrete_valuation_ring` shows that if a ring is equivalent to a DVR, it is itself
+  a DVR
+-/
 
 theorem ring_equiv.discrete_valuation_ring {A  B : Type*} [comm_ring A] [is_domain A]
   [discrete_valuation_ring A] [comm_ring B] [is_domain B] (e : A ≃+* B) :
