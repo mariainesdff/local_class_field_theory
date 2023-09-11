@@ -59,7 +59,7 @@ variables [is_discrete hv.v]
 lemma extended_max_ideal_ne_zero : 
   extended_max_ideal K L ≠ 0 :=
 begin
-  obtain ⟨π, hπ⟩ := discrete_valuation.exists_uniformizer hv.v, 
+  obtain ⟨π, hπ⟩ := discrete_valuation.exists_uniformizer_of_discrete hv.v, 
   rw [extended_max_ideal, ideal.map, ne.def, zero_eq_bot, span_eq_bot],
   simp only [set.mem_image, set_like.mem_coe, mem_maximal_ideal, mem_nonunits_iff, 
     forall_exists_index, and_imp, forall_apply_eq_imp_iff₂, not_forall, exists_prop],

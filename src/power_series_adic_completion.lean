@@ -30,7 +30,7 @@ def power_series.ideal_X (K : Type*) [field K] : is_dedekind_domain.height_one_s
   ne_bot   := by { rw [ne.def, ideal.span_singleton_eq_bot], exact X_ne_zero }} 
 
 
-open multiplicity /- principal_ideal_ring -/ unique_factorization_monoid
+open multiplicity unique_factorization_monoid
 
 lemma polynomial.norm_unit_X : norm_unit (polynomial.X : (polynomial K)) = 1 :=
 begin

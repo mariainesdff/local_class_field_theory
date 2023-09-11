@@ -85,7 +85,7 @@ lemma valuation_X :
   valued.v ((algebra_map (ratfunc (galois_field p 1)) 𝔽_[p]⟮⟮X⟯⟯) X) = of_add (-1 : ℤ) :=
 begin
   erw [valued_adic_completion_def, FpX_completion.algebra_map_eq_coe, valued.extension_extends,
-    val_X_eq_one],
+    val_X_eq_neg_one],
 end
 
 lemma mem_FpX_int_completion {x : 𝔽_[p]⟮⟮X⟯⟯} : x ∈ 𝔽_[p]⟦X⟧ ↔ (valued.v x : ℤₘ₀) ≤ 1 := iff.rfl
@@ -208,7 +208,7 @@ lemma X_eq_coe : X p = ↑(@ratfunc.X 𝔽_[p] _ _) := rfl
 lemma norm_X : ‖ X p ‖ = 1/(p : ℝ) :=
 begin
   have hv : valued.v (X p) = multiplicative.of_add (-1 : ℤ),
-  { rw [← val_X_eq_one 𝔽_[p], height_one_spectrum.valued_adic_completion_def,
+  { rw [← val_X_eq_neg_one 𝔽_[p], height_one_spectrum.valued_adic_completion_def,
       FpX_completion.X_eq_coe, valued.extension_extends], refl, },
   have hX : ‖X p‖ = is_rank_one.hom  _ (valued.v (X p)) := rfl,
   rw [hX, hv, discrete_valuation.is_rank_one_hom_def],

@@ -50,7 +50,7 @@ rank_one_valuation.valued_field.to_normed_field K ℤₘ₀
 def nontrivially_discretely_normed_field : nontrivially_normed_field K :=
 { non_trivial := 
   begin
-    obtain ⟨x, hx⟩ := exists_uniformizer hv.v,
+    obtain ⟨x, hx⟩ := exists_uniformizer_of_discrete hv.v,
     use x.1⁻¹,
     erw [@norm_inv K (@normed_field.to_normed_division_ring K (discretely_normed_field K)),
       one_lt_inv_iff, rank_one_valuation.norm_lt_one_iff_val_lt_one,

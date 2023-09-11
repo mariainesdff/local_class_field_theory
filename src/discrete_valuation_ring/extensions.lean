@@ -93,7 +93,7 @@ by rw [(int.subgroup_cyclic (map (pow_extension_on_units K L)
 lemma exp_extension_on_units_ne_zero [finite_dimensional K L] : exp_extension_on_units K L ≠ 0 :=
 begin
   have h_alg : algebra.is_algebraic K L := algebra.is_algebraic_of_finite K L,
-  obtain ⟨x, hx⟩ := exists_uniformizer hv.v,
+  obtain ⟨x, hx⟩ := exists_uniformizer_of_discrete hv.v,
   have hx_unit : is_unit (x : K),
   { exact is_unit_iff_ne_zero.mpr (uniformizer_ne_zero hv.v hx) },
   set z : Lˣ := units.map (algebra_map K L).to_monoid_hom (is_unit.unit hx_unit) with hz,
@@ -183,7 +183,7 @@ lemma exp_extension_on_units_dvd [finite_dimensional K L] :
   exp_extension_on_units K L ∣ finrank K L :=
 begin
   have h_alg := algebra.is_algebraic_of_finite K L,
-  obtain ⟨π, hπ⟩ := exists_uniformizer hv.v,
+  obtain ⟨π, hπ⟩ := exists_uniformizer_of_discrete hv.v,
   set u : L := algebra_map K L (π : K) with hu_def,
   have hu0 : u ≠ 0,
   { rw [hu_def, ne.def, _root_.map_eq_zero],
