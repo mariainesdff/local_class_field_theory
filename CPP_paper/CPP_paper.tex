@@ -213,12 +213,15 @@
 \item Say something, or give a reference, to the role played by ``type classes'', ``instances'' and class-type inference in \lean and/or \mathlib.
 \item Remember to create the graph
 \item Acknowledge de Frutos-Fernández and Yaël Dillies for allowing us to use their work.
-\item Add  \href{https://github.com/mariainesdff/local_class_field_theory}{link to repository}. \mi{Links are rendered in black with the "review" option, which means they will probably be missed. In the sphere eversion paper they have a symbol next to each link; do you know how to achieve this? Otherwise we could ask them.}\fil{I added this and you can use the \code{extlink} command (see what I did for the \code{valuation} structure). Yet, in that case (see my comment there) I would also add the corresponding lean code, no? Now that it is available, do we want to systematically add this external link to \mathlib, though, even when we are simply mentioning the library, as in \mathlib\href{https://leanprover-community.github.io/mathlib_docs/}{\extlink}?}
+\item Update link to repository \href{https://github.com/mariainesdff/local_class_field_theory}{\extlink}.
+\item Mention dot notation when discussing Lean and mathlib.
+
+% \mi{Links are rendered in black with the "review" option, which means they will probably be missed. In the sphere eversion paper they have a symbol next to each link; do you know how to achieve this? Otherwise we could ask them.}\fil{I added this and you can use the \code{extlink} command (see what I did for the \code{valuation} structure). Yet, in that case (see my comment there) I would also add the corresponding lean code, no? Now that it is available, do we want to systematically add this external link to \mathlib, though, even when we are simply mentioning the library, as in \mathlib\href{https://leanprover-community.github.io/mathlib_docs/}{\extlink}?}
 \end{itemize}
 \section {Discrete Valuation Rings}\label{section:dvr}
 
 \subsection{Valuations}\label{subsection:valuations}
-Let $R$ be a ring. A \emph{valuation} $v$ on $R$ is a map $v \colon R \to \Gamma_0$  to a linearly ordered commutative monoid with zero \fil{say what this is, perhaps spend a world on ``linearly'' and say that $0$ is smaller than everyhing} and  $\Gamma_0$ such that
+Let $R$ be a ring \mi{and let $\Gamma_0$ be a linearly ordered commutative monoid with zero, that is, a monoid with a partial order in which any two elements are comparable, and an added zero element that is smaller than all the others}. A \emph{valuation} $v$ on $R$ is a map $v \colon R \to \Gamma_0$ such that
 \begin{enumerate}
 	\item $v (0) = 0$,
 	\item $v (1) = 1$,
@@ -247,11 +250,10 @@ class (R : Type*) [ring R] valued : extends...
 , which bundles together a ring with a
 uniform space structure and a distinguished valuation that induces it. This class is designed for rings in which there is a canonical valuation. For example, on the field $\QQ_p$ of $p$-adic numbers, there is a unique nontrivial valuation, which we register as an instance of the valued class. By contrast, on the rational numbers there are infinitely many valuations, none of them preferred over the others, so we do not put a global valued instance on $\QQ$.
 
-\mi{I would like to move this paragraph to section 2.2, after valuations in DVRs have been discussed }.\fil{I am fine with this: please move it to wherever seems suitable to you, putting the whole of it in the \code{\\mi} field, so that I will find it easily.} When implementing valuations on a discrete valuation ring $R$ with field of fractions $K$, we made the design choice to put an instance of the valued class on $K$, but not on the ring $R$ itself. The reason is that, if needed, we can recover the
-topological structure on $R$ from the one on $K$, so we prefer not to duplicate this information. \mi{This choice is consistent with \mathlib's file \url{ring_theory.dedekind_domain.adic_valuation}, in which valued instances are only put on fields (should we mention this?)}
+Given any ring $R$ with a valuation $v$, we can define the \textit{unit ball} of $R$ as the subring $\ball{R}$ of elements with valuation less than or equal to one. In \mathlib, this subring is called \code{valuation.integer v} \href{https://leanprover-community.github.io/mathlib_docs/ring_theory/valuation/integers.html#valuation.integer}{\extlink}. \mi{Moreover, when $K$ is a field, then its subring $\ball{K}$ has the property that for every element $k$ of $K$, either $k \in \ball{K}$ or $k^{-1} \in \ball{K}$. Such a subring is called a \emph{valuation subring}. Note that the definition of valuation subring involves taking inverses, and hence is only available for fields. Therefore, when working with a general ring $R$, we will formalize $\ball{R}$ as \code{v.integer}, but when working with a field $K$ we will use the stronger definition \code{v.valuation_subring}, which gives us access to extra results about valuation fields available in mathlib} \href{https://leanprover-community.github.io/mathlib_docs/ring_theory/valuation/valuation_subring.html#valuation_subring}{\extlink}.
 
-Given a ring $R$ with a valuation $v$, the \textit{unit ball} \mi {or  \textit{ring of integers}} of $R$ is defined as the subring $R_0$ of elements with valuation less than or equal to one. In \mathlib, this subring is defined as \code{valuation.integer R} \href{https://leanprover-community.github.io/mathlib_docs/ring_theory/valuation/integers.html#valuation.integer}{\extlink}. If $R$ is a field, then $\ball{R}$ is a \emph{valuation subring}, that is, a subring such that for every element $r$ of $R$, either $r \in \ball{R}$ or $r^{-1} \in \ball{R}$.
-To take advantage of the results about valuation subrings available in \href{https://leanprover-community.github.io/mathlib_docs/ring_theory/valuation/valuation_subring.html#valuation_subring}{mathlib}, when $R$ is a field we rely on the declaration \code{valuation.valuation\_subring}\href{https://leanprover-community.github.io/mathlib_docs/ring_theory/valuation/valuation_subring.html#valuation.valuation_subring}{\extlink} to define the unit ball. This should not be confused with \mathlib's \code{valuation\_ring} \href{https://leanprover-community.github.io/mathlib_docs/ring_theory/valuation/valuation_ring.html#valuation_ring}{\extlink} class \fil{should we explain the difference and the relation with this latter class with the \code{valuation_subring} one?}
+
+\mi{TODO} This should not be confused with \mathlib's \code{valuation\_ring} \href{https://leanprover-community.github.io/mathlib_docs/ring_theory/valuation/valuation_ring.html#valuation_ring}{\extlink} class \fil{should we explain the difference and the relation with this latter class with the \code{valuation_subring} one?}
  
 \mi{
 \begin{itemize}
@@ -318,6 +320,8 @@ K\longtwoheadrightarrow \ZZ\cup\{+\infty\}\text{\fil{or\dots}}
 \]
 whose kernel coincides with $\unit{R}$. \fil{With the definitions introduced in} \S\ref{subsection:valuations}, this turns $K$ into a discretely valued field. 
 
+\mi{When implementing valuations on a discrete valuation ring $R$ with field of fractions $K$, we made the design choice to put an instance of the valued class on $K$, but not on the ring $R$ itself. The reason is that, if needed, we can recover the
+topological structure on $R$ from the one on $K$, so we prefer not to duplicate this information. This choice is consistent with \mathlib's file \url{ring_theory.dedekind_domain.adic_valuation}, in which valued instances are only put on fields.}
 
 Both DVRs and valuations had already been defined in \fil{\mathlib SAY WHAT THIS IS SOMEWERE} before our project, but nothing beyong their basic properties was available. In particular, no definition of uniformisers or the relation between generators of $\maxid$ and the valuation on a DVR was available. 
 
