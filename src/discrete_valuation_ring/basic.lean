@@ -1,9 +1,3 @@
-/-
-Copyright (c) 2023 María Inés de Frutos-Fernández, Filippo A. E. Nuccio. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
--/
-
 import ring_theory.dedekind_domain.adic_valuation
 import ring_theory.dedekind_domain.pid
 import ring_theory.discrete_valuation_ring.basic
@@ -11,28 +5,20 @@ import ring_theory.ideal.basic
 import ring_theory.valuation.valuation_subring
 import topology.algebra.valued_field
 import topology.algebra.with_zero_topology
-
 import for_mathlib.rank_one_valuation
 import for_mathlib.with_zero
 
+/-!
+# Discrete Valuation Rings
+
+## Main Results
+
+## Main Definitions
+-/
+
 open_locale discrete_valuation nnreal
 
--- namespace with_zero
-
 open multiplicative
-
--- lemma of_add_neg_nat (n : ℕ) : 
---   (of_add (-n : ℤ) : ℤₘ₀) = (of_add (-1 : ℤ))^n :=
--- by rw [← with_zero.coe_pow, with_zero.coe_inj, ← one_mul (n : ℤ), ← neg_mul, 
---   int.of_add_mul, zpow_coe_nat]
-
--- lemma of_add_neg_one_lt_one : ((multiplicative.of_add ((-1 : ℤ))) : ℤₘ₀) < (1 : ℤₘ₀) := 
--- begin
---   rw [← with_zero.coe_one, with_zero.coe_lt_coe, ← of_add_zero],
---   exact neg_one_lt_zero,
--- end
-
--- end with_zero
 
 namespace valuation
 
@@ -100,8 +86,7 @@ end
 
 end integer
 
-
-/- We insist that `v` takes values in ℤₘ₀ in order to define uniformizers as the elements in `K`
+/-- We insist that `v` takes values in ℤₘ₀ in order to define uniformizers as the elements in `K`
 whose valuation is exactly `with_zero.multiplicative (- 1) : ℤₘ₀`-/
 class is_discrete (v : valuation A ℤₘ₀) : Prop :=
 (surj : function.surjective v)
