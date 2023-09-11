@@ -1,5 +1,5 @@
 1) Remove copyright.
-2) Add a header with a brief (3-5 lines) description of the content of the file.
+2) Add a header with a brief (3-5 lines) description of the content of the file. It should come after the imports.
 3) Check all declaration names to avoid "foo", "bleah", etc. If time permits, have a look at local variables inside proofs as well.
 4) Each time something gets renamed, check that neither the file at sight nor other files importing it break.
 5) Erase all comments and commented stuff.

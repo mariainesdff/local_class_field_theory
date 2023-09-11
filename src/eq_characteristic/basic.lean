@@ -1,9 +1,3 @@
-/-
-Copyright (c) 2023 María Inés de Frutos-Fernández, Filippo A. E. Nuccio. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
--/
-
 import algebra.char_p.subring
 import discrete_valuation_ring.complete
 import power_series_adic_completion
@@ -12,36 +6,33 @@ import for_mathlib.rank_one_valuation
 import for_mathlib.ring_theory.valuation.algebra_instances
 import ring_theory.dedekind_domain.adic_valuation
 
-/-!
---TODO: Fix comments
-# Equal characteristic local fields
-This file defines a number field, the ring of integers corresponding to it and includes some
-basic facts about the embeddings into an algebraic closed field.
-## Main definitions
- - `eq_char_local_field` defines an equal characteristic local field as a finite dimensional
-`𝔽_[p]⟮⟮X⟯⟯`-algebra for some prime number `p`.
- - `ring_of_integers` defines the ring of integers (or number ring) corresponding to a number field
-    as the integral closure of ℤ in the number field.
-## Main Result
- - `eq_roots`: let `x ∈ K` with `K` number field and let `A` be an algebraic closed field of
-    char. 0, then the images of `x` by the embeddings of `K` in `A` are exactly the roots in
-    `A` of the minimal polynomial of `x` over `ℚ`.
-## Implementation notes
-The definitions that involve a field of fractions choose a canonical field of fractions,
-but are independent of that choice.
-## References
-* [D. Marcus, *Number Fields*][marcus1977number]
-* [J.W.S. Cassels, A. Fröhlich, *Algebraic Number Theory*][cassels1967algebraic]
-* [P. Samuel, *Algebraic Theory of Numbers*][samuel1970algebraic]
-## Tags
-number field, ring of integers
+/-
+# Main definitions
+* `FpX_completion` is the adic completion of the rational functions `𝔽_p(X)`. It is denoted by
+  `𝔽_[p]⟮⟮X⟯⟯.
+* `FpX_int_completion` is the unit ball in the adic completion of the rational functions `𝔽_p(X)`.
+   It is denoted by `𝔽_[p]⟦X⟧`.
+* `isom_laurent` is the ring isomorphism `𝔽_[p]⟮⟮X⟯⟯ ≃+* (laurent_series 𝔽_[p])`
+* `integers_equiv_power_series` is the ring isomorphism `(power_series 𝔽_[p]) ≃+* 𝔽_[p]⟦X⟧`. It
+  goes in the *opposite* direction as `isom_laurent`.
+* `eq_char_local_field` defines an equal characteristic local field as a finite dimensional
+`𝔽_[p]⟮⟮X⟯⟯`-algebra for some prime number `p`. 
+
+#  Main Result
+* `residue_field_card_eq_char` stated the the (natural) cardinality of the residue field of
+  `𝔽_[p]⟦X⟧` is `p`.
+* For the comparison between the `valued` structures on `𝔽_[p]⟮⟮X⟯⟯` (as adic completion) and on 
+ `(laurent_series 𝔽_[p])` (coming from its `X`-adic valuation), see `valuation_compare` in 
+  `power_series_adic_completion`.
+* We record as an `instance` that `𝔽_[p]⟮⟮X⟯⟯` itself is an equal characteristic local field and that
+  its `ring_of_integers` is isomorphic to `𝔽_[p]⟦X⟧` := 
 -/
 
 noncomputable theory
 
 open_locale discrete_valuation
 open polynomial multiplicative ratfunc is_dedekind_domain is_dedekind_domain.height_one_spectrum
-  rank_one_valuation valuation_subring
+  rank_one_valuation valuation_subring power_series
 variables (p : ℕ) [fact(nat.prime p)] 
 
 notation (name := prime_galois_field)
@@ -51,14 +42,15 @@ instance : fintype (local_ring.residue_field (power_series 𝔽_[p])) :=
 fintype.of_equiv _ (residue_field_of_power_series (𝔽_[p])).to_equiv.symm
 
 
+/-- `FpX_completion` is the adic completion of the rational functions `𝔽_p(X)`. -/
 @[reducible] def FpX_completion := (ideal_X 𝔽_[p]).adic_completion (ratfunc 𝔽_[p])
 
---local attribute [reducible] FpX_completion
 
 notation (name := FpX_completion)
   `𝔽_[` p `]⟮⟮` X `⟯⟯` := FpX_completion p
 
-
+/--
+`FpX_int_completion` is the unit ball in the adic completion of the rational functions `𝔽_p(X)`. -/
 @[reducible]
 definition FpX_int_completion :=
 (ideal_X 𝔽_[p]).adic_completion_integers (ratfunc 𝔽_[p])
@@ -73,8 +65,6 @@ namespace FpX_completion
 
 variable {p}
 
--- localized "notation (name := FpX_completion) `𝔽_[` p `]⟮⟮` X `⟯⟯` := FpX_completion p" in FpX_completion
-
 instance : has_coe (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯ := ⟨algebra_map (ratfunc 𝔽_[p]) 𝔽_[p]⟮⟮X⟯⟯⟩
 
 lemma algebra_map_eq_coe (f : ratfunc 𝔽_[p]) : 
@@ -83,24 +73,23 @@ lemma algebra_map_eq_coe (f : ratfunc 𝔽_[p]) :
 instance char_p : char_p 𝔽_[p]⟮⟮X⟯⟯ p := 
 char_p_of_injective_algebra_map ((algebra_map (ratfunc (galois_field p 1)) 𝔽_[p]⟮⟮X⟯⟯).injective) p 
 
---I made this a def so that we can refer to it by this shorter name. Or we could make a
--- local notation for it?
+/-- The `valued` structure on the adic completion `𝔽_[p]⟮⟮X⟯⟯`. -/
 def with_zero.valued : valued 𝔽_[p]⟮⟮X⟯⟯ ℤₘ₀ :=
 height_one_spectrum.valued_adic_completion (ratfunc 𝔽_[p]) (ideal_X 𝔽_[p])
 
 lemma valuation_X :
   valued.v ((algebra_map (ratfunc (galois_field p 1)) 𝔽_[p]⟮⟮X⟯⟯) X) = of_add (-1 : ℤ) :=
 begin
-  rw [valued_adic_completion_def],
-  erw [FpX_completion.algebra_map_eq_coe, valued.extension_extends, val_X_eq_one],
+  erw [valued_adic_completion_def, FpX_completion.algebra_map_eq_coe, valued.extension_extends,
+    val_X_eq_one],
 end
 
 lemma mem_FpX_int_completion {x : 𝔽_[p]⟮⟮X⟯⟯} : x ∈ 𝔽_[p]⟦X⟧ ↔ (valued.v x : ℤₘ₀) ≤ 1 := iff.rfl
 
 lemma X_mem_FpX_int_completion : algebra_map (ratfunc 𝔽_[p]) _ X ∈ 𝔽_[p]⟦X⟧ :=
 begin
-  erw [FpX_completion.mem_FpX_int_completion, FpX_completion.valuation_X],
-  rw [← with_zero.coe_one, with_zero.coe_le_coe, ← of_add_zero, of_add_le],
+  erw [FpX_completion.mem_FpX_int_completion, FpX_completion.valuation_X, ← with_zero.coe_one,
+    with_zero.coe_le_coe, ← of_add_zero, of_add_le],
   linarith,
 end
 
@@ -116,7 +105,8 @@ lemma mem_FpX_int_completion' {x : FpX_completion p} :
 by erw [FpX_completion.mem_FpX_int_completion, norm_le_one_iff_val_le_one]
 
 variable (p)
--- Upgrade to (ratfunc Fp)-algebra iso
+
+/-- `isom_laurent` is the ring isomorphism `𝔽_[p]⟮⟮X⟯⟯ ≃+* (laurent_series 𝔽_[p])`. -/
 def isom_laurent : 𝔽_[p]⟮⟮X⟯⟯  ≃+* (laurent_series 𝔽_[p]) := 
 completion_laurent_series.laurent_series_ring_equiv 𝔽_[p]
 
@@ -124,7 +114,8 @@ end FpX_completion
 
 namespace FpX_int_completion
 
--- Upgrade to (ratfunc Fp)-algebra iso
+/-- `integers_equiv_power_series` is the ring isomorphism `(power_series 𝔽_[p]) ≃+* 𝔽_[p]⟦X⟧`.
+Beware that it goes in the *opposite* direction as `isom_laurent`. -/
 noncomputable!
 definition integers_equiv_power_series : (power_series 𝔽_[p]) ≃+* 𝔽_[p]⟦X⟧ :=
 completion_laurent_series.power_series_ring_equiv 𝔽_[p]
@@ -146,18 +137,19 @@ by simp only [← nat.card_congr (local_ring.residue_field.map_equiv
   residue_field_power_series_card p]
 
 variable (p)
+
 noncomputable!
 instance : fintype (local_ring.residue_field (𝔽_[p]⟦X⟧)) :=
 fintype.of_equiv _ (local_ring.residue_field.map_equiv (integers_equiv_power_series p)).to_equiv
 
+/-- The `fintype` structure on the residue field of `𝔽_[p]⟦X⟧`. -/
 noncomputable!
-lemma residue_field_fintype_of_completion : fintype (local_ring.residue_field (𝔽_[p]⟦X⟧)) := 
+definition residue_field_fintype_of_completion : fintype (local_ring.residue_field (𝔽_[p]⟦X⟧)) := 
   infer_instance
 
 end FpX_int_completion
 
 namespace FpX_completion
--- open_locale FpX_completion
 
 lemma valuation_base_eq_char : 
   valuation.base 𝔽_[p]⟮⟮X⟯⟯ valued.v = p :=
@@ -171,7 +163,6 @@ end
 end FpX_completion
 
 namespace FpX_int_completion
--- open_locale FpX_completion
 
 variable {p}
 
@@ -190,16 +181,22 @@ instance is_fraction_ring : is_fraction_ring 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯�
   ((ideal_X 𝔽_[p]).adic_completion (ratfunc 𝔽_[p])))
 
 variable (p)
+
 instance : is_integral_closure 𝔽_[p]⟦X⟧ 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ := 
 is_integrally_closed.is_integral_closure
 
+
+/-- `FpX_int_completions.X` is the polynomial variable `X : ratfunc 𝔽_[p]`, first coerced to the
+completion `𝔽_[p]⟮⟮X⟯⟯` and then regarded as an integral element using the bound on its norm. -/
 def X : 𝔽_[p]⟦X⟧ := ⟨algebra_map (ratfunc 𝔽_[p]) _ X, FpX_completion.X_mem_FpX_int_completion⟩
 
 end FpX_int_completion
 
 namespace FpX_completion
--- open_locale FpX_completion
 
+/-- `FpX_completions.X` is the image of `FpX_int_completions.X` along the `algebra_map` given by the
+embedding of the ring of integers in the whole space `𝔽_[p]⟮⟮X⟯⟯` The next lemma shows that this is
+simply the coercion of `X : ratfunc 𝔽_[p]` to its adic completion `𝔽_[p]⟮⟮X⟯⟯`. -/
 def X := algebra_map 𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ (FpX_int_completion.X p)
 
 lemma X_eq_coe : X p = ↑(@ratfunc.X 𝔽_[p] _ _) := rfl
@@ -248,7 +245,6 @@ norm_def_is_nonarchimedean _ _
 end FpX_completion
 
 namespace FpX_int_completion
--- open_locale FpX_completion
 
 variables (p) 
 
@@ -317,7 +313,6 @@ begin
   refl,
 end
 
-
 lemma norm_lt_one_iff_dvd (F : 𝔽_[p]⟦X⟧) : ‖(F : 𝔽_[p]⟮⟮X⟯⟯)‖ < 1 ↔ ((FpX_int_completion.X p) ∣ F) := 
 begin
   have hF : ‖(F : 𝔽_[p]⟮⟮X⟯⟯)‖ = rank_one_valuation.norm_def (F : 𝔽_[p]⟮⟮X⟯⟯) := rfl,
@@ -326,17 +321,9 @@ begin
   exact ⟨dvd_of_norm_lt_one p, norm_lt_one_of_dvd p⟩,
 end
 
-
-
 end FpX_int_completion
 
---TODO: Which version to keep?
--- For instances and lemmas that only need `K` to be an `𝔽_[p]⟮⟮X⟯⟯`-algebra
 namespace adic_algebra
--- open_locale FpX_completion
-
--- NOTE: The instances in this section are not found by infer_instance, but at least the
--- `by apply` is no longer needed.
 
 variables {p} (K L : Type*) [field K] [algebra 𝔽_[p]⟮⟮X⟯⟯ K] [field L] [algebra 𝔽_[p]⟮⟮X⟯⟯ L]
 
@@ -357,18 +344,14 @@ valuation_subring.algebra_map_injective _ L
 
 end adic_algebra
 
--- open_locale FpX_completion
-
 variable (p)
 
--- #where
 /-- An equal characteristic local field is a field which is finite
 dimensional over `𝔽_p((X))`, for some prime `p`. -/
 class eq_char_local_field (p : out_param(ℕ)) [fact(nat.prime p)] (K : Type*) [field K] 
   extends algebra 𝔽_[p]⟮⟮X⟯⟯ K :=
 [to_finite_dimensional : finite_dimensional 𝔽_[p]⟮⟮X⟯⟯ K]
 
--- #check eq_char_local_field p
 
 attribute [priority 100, instance] eq_char_local_field.to_finite_dimensional
 
@@ -389,12 +372,12 @@ localized "notation (name := ring_of_integers)
 lemma mem_ring_of_integers (x : K) : x ∈ 𝓞 p K ↔ is_integral 𝔽_[p]⟦X⟧ x := iff.rfl
 
 -- TODO: Delete? Has been generalized.
-lemma is_integral_of_mem_ring_of_integers {x : K} (hx : x ∈ 𝓞 p K) :
-  is_integral 𝔽_[p]⟦X⟧ (⟨x, hx⟩ : 𝓞 p K) :=
-is_integral_of_mem_ring_of_integers _ K _
+-- lemma is_integral_of_mem_ring_of_integers {x : K} (hx : x ∈ 𝓞 p K) :
+--   is_integral 𝔽_[p]⟦X⟧ (⟨x, hx⟩ : 𝓞 p K) :=
+-- is_integral_of_mem_ring_of_integers _ K _
 
-/-- Given an algebra between two local fields over 𝔽_[p]⟮⟮X⟯⟯, create an algebra between their two
-  rings of integers. For now, this is not an instance by default as it creates an
+/-- Given an extension of two local fields over 𝔽_[p]⟮⟮X⟯⟯, we define an algebra structure between
+  their two rings of integers. For now, this is not an instance by default as it creates an
   equal-but-not-defeq diamond with `algebra.id` when `K = L`. This is caused by `x = ⟨x, x.prop⟩`
   not being defeq on subtypes. This will likely change in Lean 4. -/
 def ring_of_integers_algebra [algebra K L] [is_scalar_tower 𝔽_[p]⟮⟮X⟯⟯ K L] :
@@ -405,14 +388,13 @@ namespace ring_of_integers
 
 variables {K}
 
--- Making FpX_int_completion.is_fraction_ring explicit speeds out the proof
+
 instance : is_fraction_ring (𝓞 p K) K := 
 @integral_closure.is_fraction_ring_of_finite_extension 
   𝔽_[p]⟦X⟧ 𝔽_[p]⟮⟮X⟯⟯ _ _ K _ _ _ FpX_int_completion.is_fraction_ring _ _ _ _
 
 instance : is_integral_closure (𝓞 p K) 𝔽_[p]⟦X⟧ K := integral_closure.is_integral_closure _ _
 
--- These two instances speed up the proof of `equiv` a bit.
 instance : algebra 𝔽_[p]⟦X⟧ (𝓞 p K) := infer_instance
 
 instance : is_scalar_tower 𝔽_[p]⟦X⟧ (𝓞 p K) K := infer_instance
@@ -420,7 +402,6 @@ instance : is_scalar_tower 𝔽_[p]⟦X⟧ (𝓞 p K) K := infer_instance
 lemma is_integral_coe (x : 𝓞 p K) : is_integral 𝔽_[p]⟦X⟧ (x : K) := x.2
 
 /-- The ring of integers of `K` is equivalent to any integral closure of `𝔽_[p]⟦X⟧` in `K` -/
--- TODO: go back to old proof?
 protected noncomputable! def equiv (R : Type*) [comm_ring R] [algebra 𝔽_[p]⟦X⟧ R] [algebra R K]
   [is_scalar_tower 𝔽_[p]⟦X⟧ R K] [is_integral_closure R 𝔽_[p]⟦X⟧ K] : 𝓞 p K ≃+* R :=
 begin
@@ -448,22 +429,15 @@ open eq_char_local_field
 
 open_locale eq_char_local_field
 
--- TODO: change comment
+
 instance eq_char_local_field (p : ℕ) [fact(nat.prime p)] : 
   eq_char_local_field p 𝔽_[p]⟮⟮X⟯⟯ :=
-{ to_finite_dimensional :=
-  -- The vector space structure of `ℚ` over itself can arise in multiple ways:
-  -- all fields are vector spaces over themselves (used in `rat.finite_dimensional`)
-  -- all char 0 fields have a canonical embedding of `ℚ` (used in `mixed_char_local_field`).
-  -- Show that these coincide:
-  by convert (infer_instance : finite_dimensional 𝔽_[p]⟮⟮X⟯⟯ 𝔽_[p]⟮⟮X⟯⟯), }
+{ to_finite_dimensional := by convert (infer_instance : finite_dimensional 𝔽_[p]⟮⟮X⟯⟯ 𝔽_[p]⟮⟮X⟯⟯), }
 
--- NOTE: Helping out the type class inference system speeds out the proof a lot.
-/-- The ring of integers of `𝔽_[p]⟮⟮X⟯⟯` as a mixed characteristic local field is just `𝔽_[p]⟦X⟧`. -/
+/-- The ring of integers of `𝔽_[p]⟮⟮X⟯⟯` as a mixed characteristic local field is `𝔽_[p]⟦X⟧`. -/
 def ring_of_integers_equiv (p : ℕ) [fact(nat.prime p)] :
   ring_of_integers p 𝔽_[p]⟮⟮X⟯⟯ ≃+* 𝔽_[p]⟦X⟧ := 
---by apply ring_of_integers.equiv --10.4s
-begin  --1.3s
+begin
   have h := @ring_of_integers.equiv p _ 𝔽_[p]⟮⟮X⟯⟯ _ _ 𝔽_[p]⟦X⟧ _ _ (FpX_int_completion p).algebra
     (is_scalar_tower.left 𝔽_[p]⟦X⟧), 
   have h1 := FpX_int_completion.FpX_completion.is_integral_closure p,

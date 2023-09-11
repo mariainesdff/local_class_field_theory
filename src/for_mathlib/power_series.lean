@@ -1,28 +1,33 @@
-/-
-Copyright (c) 2023 María Inés de Frutos-Fernández, Filippo A. E. Nuccio. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
--/
-
 import field_theory.finite.galois_field
--- import ring_theory.dedekind_domain.adic_valuation
--- import ring_theory.dedekind_domain.integral_closure
 import ring_theory.power_series.basic
 import ring_theory.valuation.valuation_subring
 import for_mathlib.discrete_uniformity
--- import for_mathlib.power_series
 import for_mathlib.polynomial
 import algebra.order.hom.monoid
--- import ring_theory.dedekind_domain.adic_valuation
--- import ring_theory.dedekind_domain.ideal
 import ring_theory.laurent_series
 import ring_theory.power_series.well_known
+
+/-
+# Main Results
+In this file we gather some general results concerning power series. In particular, given a
+power series `f`, we define `divided_by_X_pow f` to be the power series obtained by dividing `f` by
+the largest power of `X` occurring in `f`, namely `f.order` (also equal to its `X`-adic valuation,
+up to some type-theoretical difference). We obtain instances of Dedekind domain and of normalization
+monoid on the power series with coefficients in a field. The `residue_field_of_power_series`
+definition is the ring isomorphism between the residue field of the ring of power series valued in
+a field `K` and `K` itself.
+
+In the final section, we prove `single_pow`, `single_inv` and `single_zpow` relating the powers and
+the inverse of the Hahn series `single 1 1` with the Hahn series `single n 1` for `n : ℤ`.
+-/
+
+namespace power_series
 
 open_locale discrete_valuation
 
 noncomputable theory
 
-lemma power_series.coeff_zero_eq_eval {K : Type*} [semiring K] (f : power_series K) :
+lemma coeff_zero_eq_eval {K : Type*} [semiring K] (f : power_series K) :
   (power_series.coeff K 0) f = f 0 :=
 by simp only [power_series.coeff, mv_power_series.coeff, linear_map.coe_proj,
   function.eval_apply, finsupp.single_zero]
@@ -38,14 +43,14 @@ end
 
 variables {K : Type*} [field K]
 
-lemma power_series.irreducible_X : irreducible (power_series.X : (power_series K)) :=
+lemma irreducible_X : irreducible (power_series.X : (power_series K)) :=
 prime.irreducible power_series.X_prime
 
 
 open discrete_valuation_ring power_series
 open_locale classical
 
-/- Given a non-zero power series `f`, this is the power series obtained by dividing out the largest
+/-- Given a non-zero power series `f`, this is the power series obtained by dividing out the largest
   power of X that divides `f`-/
 def divided_by_X_pow {f : power_series K} (hf : f ≠ 0) : (power_series K) :=
 (exists_eq_mul_right_of_dvd (power_series.X_pow_order_dvd (order_finite_iff_ne_zero.mpr hf))).some
@@ -84,7 +89,7 @@ begin
 end
  
 
-/- `first_unit_coeff` is the non-zero coefficient whose index is `f.order`, seen as a unit of the
+/-- `first_unit_coeff` is the non-zero coefficient whose index is `f.order`, seen as a unit of the
   field.-/
 def first_unit_coeff {f : power_series K} (hf : f ≠ 0) : Kˣ := 
 begin
@@ -101,30 +106,10 @@ begin
   use unit_of_invertible (power_series.constant_coeff K (divided_by_X_pow hf)),
 end
 
+/-- `divided_by_X_pow_inv` is the inverse of the element obtained by diving a non-zero power series
+by the larges power of `X` dividing it. Useful to create a term of type `units` -/
 def divided_by_X_pow_inv {f : power_series K} (hf : f ≠ 0) : power_series K :=
-begin
-  use power_series.inv_of_unit ((divided_by_X_pow hf)) (first_unit_coeff hf),
-
-  -- set d := f.order.get (power_series.order_finite_iff_ne_zero.mpr hf) with hd,
-  -- have f_const : power_series.coeff K d f ≠ 0 := by apply power_series.coeff_order,
-  -- have dvd := power_series.X_pow_order_dvd (power_series.order_finite_iff_ne_zero.mpr hf),
-  -- let const : Kˣ,
-  -- { haveI : invertible (power_series.constant_coeff K (divided_by_X_pow hf)),
-  --   { apply invertible_of_nonzero,
-  --     convert f_const,
-  --     rw [← power_series.coeff_zero_eq_constant_coeff, ← zero_add d],
-  --     convert (power_series.coeff_X_pow_mul ((exists_eq_mul_right_of_dvd
-  --       (power_series.X_pow_order_dvd (power_series.order_finite_iff_ne_zero.mpr hf))).some) 
-  --         d 0).symm,
-  --     exact (self_eq_X_pow_mul_divided_by_X_pow hf).symm },
-  --     use unit_of_invertible (power_series.constant_coeff K (divided_by_X_pow hf)) },
-  
-  -- use power_series.inv_of_unit ((divided_by_X_pow hf)) const,
-
-  -- use ⟨divided_by_X_pow hf, 
-    -- mul_inv_of_unit (divided_by_X_pow hf) const rfl, by {rw mul_comm, exact mul_inv_of_unit
-    -- (divided_by_X_pow hf) const rfl}⟩,
-end
+power_series.inv_of_unit ((divided_by_X_pow hf)) (first_unit_coeff hf)
 
 lemma divided_by_X_pow_inv_right_inv {f : power_series K} (hf : f ≠ 0) :
   (divided_by_X_pow hf) * (divided_by_X_pow_inv hf) = 1 :=
@@ -134,6 +119,8 @@ lemma divided_by_X_pow_inv_left_inv {f : power_series K} (hf : f ≠ 0) :
    (divided_by_X_pow_inv hf) * (divided_by_X_pow hf) = 1 :=
 by {rw mul_comm, exact mul_inv_of_unit (divided_by_X_pow hf) (first_unit_coeff hf) rfl}
 
+/-- `unit_of_divided_by_X_pow` is the unit of power series obtained by dividing a non-zero power
+series by the largest power of `X` that divides it. -/
 def unit_of_divided_by_X_pow (f : power_series K) : (power_series K)ˣ :=
 if hf : f = 0 then 1 else 
 { val := (divided_by_X_pow hf),
@@ -161,7 +148,7 @@ begin
   simp only [this, pow_zero, one_mul]
 end ⟩
 
-lemma power_series.has_unit_mul_pow_irreducible_factorization : 
+lemma has_unit_mul_pow_irreducible_factorization : 
   has_unit_mul_pow_irreducible_factorization (power_series K) :=
 ⟨power_series.X, and.intro power_series.irreducible_X 
   begin
@@ -179,15 +166,14 @@ instance : discrete_valuation_ring (power_series K) :=
 of_has_unit_mul_pow_irreducible_factorization
   power_series.has_unit_mul_pow_irreducible_factorization
 
--- This makes inference faster
 instance : is_principal_ideal_ring (power_series K) := infer_instance
 
-instance power_series.is_noetherian_ring : 
+instance is_noetherian_ring : 
   is_noetherian_ring (power_series K) :=
 principal_ideal_ring.is_noetherian_ring
 
 variable (K)
-lemma power_series.maximal_ideal_eq_span_X : 
+lemma maximal_ideal_eq_span_X : 
   local_ring.maximal_ideal (power_series K) = ideal.span {power_series.X} :=
 begin
   have hX : (ideal.span {(power_series.X : power_series K)}).is_maximal,
@@ -211,7 +197,7 @@ begin
   rw local_ring.eq_maximal_ideal hX,
 end
 
-lemma power_series.not_is_field (R : Type*) [comm_ring R] [nontrivial R] :
+lemma not_is_field (R : Type*) [comm_ring R] [nontrivial R] :
   ¬ is_field (power_series R) :=
 begin
   nontriviality R,
@@ -225,7 +211,7 @@ begin
     exact one_ne_zero },
 end
 
-instance power_series.is_dedekind_domain : 
+instance is_dedekind_domain : 
   is_dedekind_domain (power_series K) := 
 is_principal_ideal_ring.is_dedekind_domain (power_series K)
 
@@ -255,13 +241,15 @@ lemma ker_constant_coeff_eq_max_ideal : ring_hom.ker (constant_coeff K) = maxima
 ideal.ext (λ _, by rw [ring_hom.mem_ker, power_series.maximal_ideal_eq_span_X K,
     ideal.mem_span_singleton, X_dvd_iff])
 
-
+/--The ring isomorphism between the residue field of the ring of power series valued in a field `K`
+and `K` itself. -/
 definition residue_field_of_power_series : residue_field (power_series K) ≃+* K :=
 (ideal.quot_equiv_of_eq (ker_constant_coeff_eq_max_ideal K).symm).trans 
     (ring_hom.quotient_ker_equiv_of_surjective (constant_coeff_surj K))
 
+end power_series
 
-variable {K}
+variables {K : Type*} [field K]
 
 namespace polynomial
 
@@ -304,12 +292,3 @@ begin
 end
 
 end hahn_series
-
-
--- namespace is_dedekind_domain.height_one_spectrum
-
--- lemma int_valuation_apply {R : Type*} [comm_ring R] [is_domain R] [is_dedekind_domain R] 
---   (v : is_dedekind_domain.height_one_spectrum R) {r : R} :
---   int_valuation v r = int_valuation_def v r := refl _
-
--- end is_dedekind_domain.height_one_spectrum
