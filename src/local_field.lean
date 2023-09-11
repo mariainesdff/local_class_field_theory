@@ -1,18 +1,31 @@
-/-
-Copyright (c) 2023 María Inés de Frutos-Fernández, Filippo A. E. Nuccio. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
--/
-
 import discrete_valuation_ring.residue_field
 import eq_characteristic.valuation
--- import from_mathlib.rank_one_valuation
 import mixed_characteristic.valuation
+
+/-!
+# Local fields
+In this file we define the `class local_field` on a valued field `K`, requiring that it is 
+* complete (with respect to the uniform structure induced by the valuation)
+* that its valuation is discrete
+* that the residue field of its unit ball is finite
+
+## Main Definitions
+* `local_field` is the key definition, see above.
+
+
+## Main Results
+* For an `eq_char_local_field p K` that is separable over `𝔽_[p]⟮⟮X⟯⟯` we provide an instance
+  `local_field K`. The separability assumption is required to use some result in mathlib concerning
+  the finiteness of the ring of integers.
+* For a `mixed_char_local_field p K` we provide an instance `local_field K`.
+-/
 
 
 open valuation discrete_valuation
 open_locale discrete_valuation
 
+/-- The class `local_field`, extending `valued K ℤₘ₀` by requiring that `K` is complete, that the
+valuation is discrete, and that the residue field of the unit ball is finite. -/
 class local_field (K : Type*) [field K] extends valued K ℤₘ₀ :=
 (complete : complete_space K)
 (is_discrete : is_discrete (@valued.v K _ ℤₘ₀ _ _))
@@ -52,3 +65,4 @@ open padic
   
 end mixed_char_local_field
 
+#lint
