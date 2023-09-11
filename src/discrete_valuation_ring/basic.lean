@@ -11,9 +11,36 @@ import for_mathlib.with_zero
 /-!
 # Discrete Valuation Rings
 
-## Main Results
+In this file we prove basic results about Discrete Valuation Rings, building on the main definitions
+provided in `ring_theory.discrete_valuation_ring.basic`. We focus in particular on discrete
+valuations and on `valued` structures on the field of fractions of a DVR, as well as on a DVR
+structure on the unit ball of a `valued` field whose valuation is discrete.
 
 ## Main Definitions
+* `is_discrete`: We define a valuation to be discrete if it is ℤₘ₀-valued and surjective.
+* `is_uniformizer`: Given a ℤₘ₀-valued valuation `v` on a ring `R`, an element `π : R` is a
+  uniformizer if `v π = multiplicative.of_add (- 1 : ℤ) : ℤₘ₀`.
+* `uniformizer`: A strucure bundling an element of a ring and a proof that it is a uniformizer.
+* `base`: Given a valued field `K`, if the residue field of its unit ball (that is a local field)
+  is finite, then `valuation_base` is the cardinal of the residue field, and otherwise it takes the
+  value `6` which  is not a prime power.
+* The `instance dvr_of_is_discrete` is the formalization of Chapter I, Section 1, Proposition 1 in
+  Serre's **Local Fields** showing that the unit ball of a discretely-valued field is a DVR.
+
+
+## Main Results
+* `associated_of_uniformizer` An element associated to a uniformizer is itself a uniformizer
+* `uniformizer_of_associated` If two elements are uniformizers, they are associated.
+* `is_uniformizer_is_generator` A generator of the maximal ideal is a uniformizer if the valuation
+  is discrete.
+* `is_discrete_of_exists_uniformizer` If there exists a uniformizer, the valuation is discrete.
+* `exists_uniformizer_of_discrete` Conversely, if the valuation is discrete there exists a
+  uniformizer.
+* `is_uniformizer_of_generator` A uniformizer generates the maximal ideal.
+* `discrete_valuation.is_discrete` Given a DVR, the valuation induced on its ring of fractions is
+  discrete.
+* `is_dedekind_domain.height_one_spectrum.adic_valuation.is_discrete` Given a Dedekind domain and a
+  height-one prime in it, the associated adic valuation is discrete.
 -/
 
 open_locale discrete_valuation nnreal
@@ -95,6 +122,7 @@ open valuation ideal is_dedekind_domain multiplicative with_zero
 
 variables {R : Type*} [comm_ring R] (vR : valuation R ℤₘ₀)
 
+/-- An element `π : R` is a uniformizer if `v π = multiplicative.of_add (- 1 : ℤ) : ℤₘ₀`.-/
 def is_uniformizer (π : R) : Prop := 
 vR π = (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)
 
@@ -103,10 +131,14 @@ lemma is_uniformizer_iff {π : R} : is_uniformizer vR π ↔
   vR π = (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀) := refl _
 
 variable (vR)
+
+/-- The structure `uniformizer` bundles together the term in the ring and a proof that it is a
+  uniformizer.-/
 @[ext] structure uniformizer :=
 (val : vR.integer)
 (valuation_eq_neg_one : is_uniformizer vR val)
 
+/-- A constructor for uniformizers.-/
 def uniformizer.mk' (x : R) (hx : is_uniformizer vR x) : uniformizer vR :=
 { val := ⟨x, by {rw [mem_integer, is_uniformizer_iff.mp hx],
    exact (le_of_lt with_zero.of_add_neg_one_lt_one)}⟩,
@@ -160,8 +192,7 @@ by {rw is_uniformizer_iff.mp hπ, exact of_add_neg_one_lt_one}
 open_locale nnreal
 
 /-- If the residue field is finite, then `valuation_base` is the cardinal of the residue field, and
-otherwise it takes the value `6` which is not a prime power.
--/
+otherwise it takes the value `6` which is not a prime power.-/
 noncomputable
 def base (K : Type*) [field K] (v : valuation K ℤₘ₀) : ℝ≥0 :=
 if 1 < nat.card (local_ring.residue_field v.valuation_subring)
@@ -188,11 +219,8 @@ open valuation ideal is_dedekind_domain multiplicative with_zero local_ring
 variables {K : Type*} [field K] (v : valuation K ℤₘ₀)
 
 /-When the valuation is defined on a field instead that simply on a (commutative) ring, we use the 
-notion of `valuation_subring` instead of the weaker one of `integer`s.
--/
+notion of `valuation_subring` instead of the weaker one of `integer`s. -/
 local notation `K₀` := v.valuation_subring
-
--- localized "notation `K₀` := v.valuation_subring" in discrete_valuation
 
 lemma uniformizer_of_associated {π₁ π₂ : K₀} (h1 : is_uniformizer v π₁) (H : associated π₁ π₂) :
   is_uniformizer v π₂ :=
@@ -280,7 +308,7 @@ by rw [← ideal.span_singleton_pow, uniformizer_is_generator]
 
 variable [is_discrete v]
 
-lemma exists_uniformizer : ∃ π : K₀, is_uniformizer v (π : K) := 
+lemma exists_uniformizer_of_discrete : ∃ π : K₀, is_uniformizer v (π : K) := 
 begin
   letI surj_v : is_discrete v, apply_instance,
   refine ⟨⟨(surj_v.surj (multiplicative.of_add (- 1 : ℤ) : ℤₘ₀)).some, _⟩, 
@@ -290,12 +318,12 @@ begin
 end
 
 instance : nonempty (uniformizer v) := 
-⟨⟨(exists_uniformizer v).some, (exists_uniformizer v).some_spec⟩⟩
+⟨⟨(exists_uniformizer_of_discrete v).some, (exists_uniformizer_of_discrete v).some_spec⟩⟩
 
 
 lemma not_is_field : ¬ is_field K₀ :=
 begin
-  obtain ⟨π, hπ⟩ := exists_uniformizer v,
+  obtain ⟨π, hπ⟩ := exists_uniformizer_of_discrete v,
   rintros ⟨-, -, h⟩,
   have := uniformizer_ne_zero v hπ,
   simp only [uniformizer_ne_zero v hπ, ne.def, subring.coe_eq_zero_iff] at this,
@@ -312,7 +340,7 @@ begin
     rw [h, set.singleton_zero, span_zero] at hr,
     exact ring.ne_bot_of_is_maximal_of_not_is_field (maximal_ideal.is_maximal v.valuation_subring)
     (not_is_field v) hr },
-  obtain ⟨π, hπ⟩ := exists_uniformizer v,
+  obtain ⟨π, hπ⟩ := exists_uniformizer_of_discrete v,
   obtain ⟨n, u, hu⟩ := pow_uniformizer v hr₀ ⟨π, hπ⟩,
   rw [uniformizer_is_generator v ⟨π, hπ⟩, span_singleton_eq_span_singleton] at hr,
   exact uniformizer_of_associated v hπ hr,
@@ -327,7 +355,7 @@ noncomputable instance is_rank_one : is_rank_one v :=
   strict_mono := with_zero_mult_int_to_nnreal_strict_mono (one_lt_base K v),
   nontrivial  := 
   begin
-    obtain ⟨π, hπ⟩ := exists_uniformizer v,
+    obtain ⟨π, hπ⟩ := exists_uniformizer_of_discrete v,
     exact ⟨π, ne_of_gt (uniformizer_valuation_pos v hπ),
       ne_of_lt (uniformizer_valuation_lt_one v hπ)⟩,
   end }
@@ -337,15 +365,6 @@ lemma is_rank_one_hom_def :
 rfl
 
 end rank_one
-
-
--- lemma pow_uniformizer_of_pow_generator {r : K₀} (n : ℕ) 
---   (hr : (maximal_ideal v.valuation_subring) ^ n = ideal.span {r ^ n}) : is_uniformizer v r := 
--- begin
---   rw [← ideal.span_singleton_pow] at hr,sorry,
---   -- by rw [← ideal.span_singleton_pow, generator_of_uniformizer]
--- end
-
 
 -- [FAE] refactor using the above four lemmas
 lemma ideal_is_principal (I : ideal K₀) : I.is_principal:=
@@ -387,7 +406,7 @@ end
 lemma integer_is_principal_ideal_ring : is_principal_ideal_ring K₀:= 
 ⟨λ I, ideal_is_principal v I⟩
 
--- This is Chapter I, Section 1, Proposition 1 in Serre's Local Fields (TODO: proper reference)
+/-- This is Chapter I, Section 1, Proposition 1 in Serre's Local Fields -/
 instance dvr_of_is_discrete : discrete_valuation_ring K₀ :=
 { to_is_principal_ideal_ring := integer_is_principal_ideal_ring v,
   to_local_ring := infer_instance,
@@ -397,6 +416,7 @@ variables (A : Type*) [comm_ring A] [is_domain A] [discrete_valuation_ring A]
 
 open is_dedekind_domain.height_one_spectrum 
 
+/-- The maximal ideal of a DVR-/
 def maximal_ideal : height_one_spectrum A :=
 { as_ideal := maximal_ideal A,
   is_prime := ideal.is_maximal.is_prime (maximal_ideal.is_maximal A),
@@ -407,13 +427,8 @@ def maximal_ideal : height_one_spectrum A :=
 
 variable {A}
 
--- This gives problems
--- noncomputable instance {L : Type*} [field L] [algebra A L] [fraction_ring A]: valued L ℤₘ₀ := 
--- (maximal_ideal A).adic_valued
-
 noncomputable instance : valued (fraction_ring A) ℤₘ₀ := 
 (maximal_ideal A).adic_valued
-
 
 instance : is_discrete (@valued.v (fraction_ring A) _ ℤₘ₀ _ _) :=
 is_discrete_of_exists_uniformizer valued.v
@@ -427,15 +442,16 @@ open valuation discrete_valuation
 
 variables (K : Type*) [field K] [hv : valued K ℤₘ₀] 
 
+/-- The definition of being a uniformizer for an element of a valued field-/
 def is_uniformizer := valuation.is_uniformizer hv.v
 
-def uniformizer := valuation.uniformizer hv.v
+/-- The structure `uniformizer` for a valued field-/
+definition uniformizer := valuation.uniformizer hv.v
 
 instance [hv : valued K ℤₘ₀] [is_discrete hv.v] : nonempty (uniformizer K) := 
-⟨⟨(exists_uniformizer hv.v).some, (exists_uniformizer hv.v).some_spec⟩⟩
+⟨⟨(exists_uniformizer_of_discrete hv.v).some, (exists_uniformizer_of_discrete hv.v).some_spec⟩⟩
 
 end discretely_valued
-
 
 namespace is_dedekind_domain.height_one_spectrum.adic_valuation
 
@@ -443,7 +459,7 @@ open is_dedekind_domain is_dedekind_domain.height_one_spectrum valuation
 
 variables (R : Type*) [comm_ring R] [is_domain R] [is_dedekind_domain R] (v : height_one_spectrum R)
 variables (K : Type*) [field K] [algebra R K] [is_fraction_ring R K]
-  
+
 lemma is_discrete : 
   is_discrete (@adic_valued R _ _ _ K _ _ _ v).v := 
 begin
