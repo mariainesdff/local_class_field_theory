@@ -1,11 +1,21 @@
-/-
-Copyright (c) 2023 María Inés de Frutos-Fernández, Filippo A. E. Nuccio. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
--/
-
 import algebra.order.group.type_tags
 import ring_theory.valuation.valuation_subring
+
+/-!
+# Algebra instances
+
+This file contains several `algebra` and `is_scalar_tower` instances related to extensions
+of a field with a valuation, as well as their unit balls.
+
+# Main Definitions
+* `valuation_subring_algebra` : Given an algebra between two field extensions `L` and `E` of a 
+  field `K` with a valuation, create an algebra between their two rings of integers.
+
+# Main Results
+
+* `integral_closure_algebra_map_injective` : the unit ball of a field `K` with respect to a
+  valuation injects into its integral closure in a field extension `L` of `K`.
+-/
 
 open function valuation
 
@@ -21,7 +31,7 @@ algebra.of_subring v.valuation_subring.to_subring
 @[simp] lemma algebra_map_def : algebra_map v.valuation_subring L = 
   (valuation_subring.algebra' v L).to_ring_hom := rfl 
 
-/- @[priority 10000]  -/instance : is_scalar_tower v.valuation_subring K L :=
+instance : is_scalar_tower v.valuation_subring K L :=
 is_scalar_tower.subsemiring v.valuation_subring.to_subsemiring
 
 lemma algebra_map_injective : 
@@ -40,18 +50,18 @@ end
 
 variables (E : Type*) [field E] [algebra K E] [algebra L E] [is_scalar_tower K L E] 
 
-/- @[priority 1000]  -/instance int_is_scalar_tower :
-  is_scalar_tower v.valuation_subring L E :=
+instance int_is_scalar_tower : is_scalar_tower v.valuation_subring L E :=
 { smul_assoc := λ x y z,
   begin
     nth_rewrite 0 [← one_smul K y],
     rw [← one_smul K (y • z), ← smul_assoc, ← smul_assoc, ← smul_assoc],
   end }
 
-/-- Given an algebra between two local fields over 𝔽_[p]⟮⟮X⟯⟯, create an algebra between their two
-  rings of integers. For now, this is not an instance by default as it creates an
-  equal-but-not-defeq diamond with `algebra.id` when `K = L`. This is caused by `x = ⟨x, x.prop⟩`
-  not being defeq on subtypes. This will likely change in Lean 4. -/
+/-- Given an algebra between two field extensions `L` and `E` of a field `K` with a valuation `v`,
+  create an algebra between their two rings of integers. For now, this is not an instance by 
+  default as it creates an equal-but-not-defeq diamond with `algebra.id` when `L = E`. 
+  This is caused by `x = ⟨x, x.prop⟩` not being defeq on subtypes. It will be an instance when 
+  ported to Lean 4, since the above will not be an issue. -/
 def valuation_subring_algebra :
   algebra (integral_closure v.valuation_subring L) (integral_closure v.valuation_subring E) := 
 ring_hom.to_algebra
@@ -63,6 +73,9 @@ ring_hom.to_algebra
   map_mul'  := λ x y, subtype.ext $ 
     by simp only [subalgebra.coe_mul,  _root_.map_mul, subtype.coe_mk] }
 
+
+/-- A ring equivalence between the integral closure of the valuation subring of `K` in `L`
+  and a ring `R` satisfying `is_integral_closure R ↥(v.valuation_subring) L`. -/
 protected noncomputable def equiv (R : Type*) [comm_ring R] [algebra v.valuation_subring R] 
   [algebra R L] [is_scalar_tower v.valuation_subring R L] 
   [is_integral_closure R v.valuation_subring L] : 

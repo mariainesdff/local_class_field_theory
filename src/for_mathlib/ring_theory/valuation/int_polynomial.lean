@@ -1,10 +1,19 @@
-/-
-Copyright (c) 2023 María Inés de Frutos-Fernández, Filippo A. E. Nuccio. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
--/
 
 import for_mathlib.ring_theory.valuation.algebra_instances
+
+/-!
+# Polynomials over the valuation subring.
+
+Given a field `K` with a valuation `v`, in this file we construct a map from polynomials in `K[X]` 
+with integer coefficients to `v.valuation_subring[X]`. We provide several lemmas to deal with
+coefficients, degree, and evaluation of `int_polynomial`.
+This is useful when dealing with integral elements in an extension of fields.
+
+# Main Definitions
+* `valuation.int_polynomial` : given a polynomial in `K[X]` with coefficients in a field `K` with a
+  valuation `v` such that all coefficients belong to `v.valuation_subring`, `int_polynomial` is the 
+  corresponding polynomial in `v.valuation_subring[X]`.
+-/
 
 open_locale discrete_valuation
 
@@ -16,6 +25,8 @@ open polynomial
 
 open_locale polynomial
 
+/-- Given a polynomial in `K[X]` such that all coefficients belong to `v.valuation_subring`, 
+  `int_polynomial` is the corresponding polynomial in `v.valuation_subring[X]`. -/
 def int_polynomial {P : K[X]} (hP : ∀ n : ℕ, (P.coeff n) ∈ v.valuation_subring) :
   v.valuation_subring[X] := 
 { to_finsupp := 

@@ -1,10 +1,16 @@
-/-
-Copyright (c) 2023 María Inés de Frutos-Fernández, Filippo A. E. Nuccio. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
--/
-
 import ring_theory.integral_closure
+
+/-!
+# Integral closure
+
+This file contains two lemmas about integral closures. 
+
+# Main Results
+
+* `is_integral_iff_of_equiv` : if `R` and `T` are isomorphic commutative rings and `S` is an
+  `R`-algebra and a `T`-algebra in a compatible way, then an element `a ∈ S` is integral over `R`
+  if and only if it is integral over `T`.
+-/
 
 open ring_hom
 
@@ -12,6 +18,9 @@ theorem mem_integral_closure_iff (R A : Type*) [comm_ring R] [comm_ring A] [alge
   a ∈ integral_closure R A ↔ is_integral R a :=
 iff.rfl
 
+/- If `R` and `T` are isomorphic commutative rings and `S` is an `R`-algebra and a `T`-algebra in 
+  a compatible way, then an element `a ∈ S` is integral over `R` if and only if it is integral
+  over `T`.-/
 theorem is_integral_iff_of_equiv {R S T : Type*} [comm_ring R] [comm_ring S] [comm_ring T] 
   [algebra R S] [algebra T S] (φ : R ≃+* T)
   (h : (algebra_map T S).comp φ.to_ring_hom = (algebra_map R S)) (a : S) :
