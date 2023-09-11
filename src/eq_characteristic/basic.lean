@@ -375,11 +375,6 @@ localized "notation (name := ring_of_integers)
 
 lemma mem_ring_of_integers (x : K) : x ∈ 𝓞 p K ↔ is_integral 𝔽_[p]⟦X⟧ x := iff.rfl
 
--- TODO: Delete? Has been generalized.
--- lemma is_integral_of_mem_ring_of_integers {x : K} (hx : x ∈ 𝓞 p K) :
---   is_integral 𝔽_[p]⟦X⟧ (⟨x, hx⟩ : 𝓞 p K) :=
--- is_integral_of_mem_ring_of_integers _ K _
-
 /-- Given an extension of two local fields over 𝔽_[p]⟮⟮X⟯⟯, we define an algebra structure between
   their two rings of integers. For now, this is not an instance by default as it creates an
   equal-but-not-defeq diamond with `algebra.id` when `K = L`. This is caused by `x = ⟨x, x.prop⟩`
