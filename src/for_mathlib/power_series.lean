@@ -7,18 +7,27 @@ import algebra.order.hom.monoid
 import ring_theory.laurent_series
 import ring_theory.power_series.well_known
 
-/-
-# Main Results
-In this file we gather some general results concerning power series. In particular, given a
-power series `f`, we define `divided_by_X_pow f` to be the power series obtained by dividing `f` by
-the largest power of `X` occurring in `f`, namely `f.order` (also equal to its `X`-adic valuation,
-up to some type-theoretical difference). We obtain instances of Dedekind domain and of normalization
-monoid on the power series with coefficients in a field. The `residue_field_of_power_series`
-definition is the ring isomorphism between the residue field of the ring of power series valued in
-a field `K` and `K` itself.
+/-!
+# Generalities on power series
+In this file we gather some general results concerning power series. 
 
-In the final section, we prove `single_pow`, `single_inv` and `single_zpow` relating the powers and
-the inverse of the Hahn series `single 1 1` with the Hahn series `single n 1` for `n : ℤ`.
+## Main Definitions
+* Given a  power series `f`, we define `divided_by_X_pow f` to be the power series obtained by
+dividing `f` bythe largest power of `X` occurring in `f`, namely `f.order` (this is also equal to
+its `X`-adic valuation, up to some type-theoretical difference). 
+
+## Main Results
+We obtain instances of Dedekind domain and of normalization monoid on the power series with
+coefficients in a field. 
+* The definition `residue_field_of_power_series` is the ring isomorphism between the residue field
+of the ring of power series valued in a field `K` and `K` itself.
+
+In the final section, we prove 
+* `single_pow`
+* `single_inv`
+* `single_zpow`
+relating the powers and the inverse of the Hahn series `single 1 1` with the Hahn series 
+`single n 1` for `n : ℤ`.
 -/
 
 namespace power_series

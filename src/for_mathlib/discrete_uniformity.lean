@@ -1,11 +1,13 @@
 import order.filter.basic
 import topology.uniform_space.cauchy
 
-/-
+/-!
+# Discrete uniformity
+This file contains generalities about Cauchy filters (and convergence theoref) in spaces endowed
+with the discrete uniformity. 
+
 # Main Results
 
-This file contains generalities about Cauchy filters (and convergence theoref) in spaces endowed
-with the discrete uniformity. The main results are
 * `cauchy_discrete_is_constant` stating that a Cauchy filter in a discrete space is actually a
 principal filter
 * `ne_bot_unique_principal` saying that in a non-empty discrete space, two principal filters that

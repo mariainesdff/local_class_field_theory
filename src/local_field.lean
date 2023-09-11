@@ -6,7 +6,7 @@ Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 
 import discrete_valuation_ring.residue_field
 import eq_characteristic.valuation
-import from_mathlib.rank_one_valuation
+-- import from_mathlib.rank_one_valuation
 import mixed_characteristic.valuation
 
 

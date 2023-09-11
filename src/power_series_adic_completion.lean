@@ -6,12 +6,10 @@ Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 
 import algebra.group.with_one.units
 import discrete_valuation_ring.basic
--- import for_mathlib.stuff_for_laurent_series 
 import for_mathlib.power_series
 import from_mathlib.PR18604_well_founded
 import for_mathlib.ring_theory.dedekind_domain.ideal
 import topology.uniform_space.abstract_completion
-import for_mathlib.with_zero
 
 noncomputable theory
 

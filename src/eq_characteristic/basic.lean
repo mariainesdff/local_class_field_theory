@@ -1,15 +1,19 @@
 import algebra.char_p.subring
 import discrete_valuation_ring.complete
 import power_series_adic_completion
-import for_mathlib.power_series
-import for_mathlib.rank_one_valuation
 import for_mathlib.ring_theory.valuation.algebra_instances
 import ring_theory.dedekind_domain.adic_valuation
 
-/-
-# Main definitions
+/-!
+# Equal characteristic local fields
+
+In this file we focus on the `X`-adic completion `𝔽_[p]⟮⟮X⟯⟯` of the ring of rational functions over
+the finite field `𝔽_[p]` and we define an equal characteristic local field as a finite extension of 
+`𝔽_[p]⟮⟮X⟯⟯`.
+
+## Main Definitions
 * `FpX_completion` is the adic completion of the rational functions `𝔽_p(X)`. It is denoted by
-  `𝔽_[p]⟮⟮X⟯⟯.
+  `𝔽_[p]⟮⟮X⟯⟯`.
 * `FpX_int_completion` is the unit ball in the adic completion of the rational functions `𝔽_p(X)`.
    It is denoted by `𝔽_[p]⟦X⟧`.
 * `isom_laurent` is the ring isomorphism `𝔽_[p]⟮⟮X⟯⟯ ≃+* (laurent_series 𝔽_[p])`
@@ -18,7 +22,7 @@ import ring_theory.dedekind_domain.adic_valuation
 * `eq_char_local_field` defines an equal characteristic local field as a finite dimensional
 `𝔽_[p]⟮⟮X⟯⟯`-algebra for some prime number `p`. 
 
-#  Main Result
+##  Main Theorems
 * `residue_field_card_eq_char` stated the the (natural) cardinality of the residue field of
   `𝔽_[p]⟦X⟧` is `p`.
 * For the comparison between the `valued` structures on `𝔽_[p]⟮⟮X⟯⟯` (as adic completion) and on 
@@ -49,8 +53,8 @@ fintype.of_equiv _ (residue_field_of_power_series (𝔽_[p])).to_equiv.symm
 notation (name := FpX_completion)
   `𝔽_[` p `]⟮⟮` X `⟯⟯` := FpX_completion p
 
-/--
-`FpX_int_completion` is the unit ball in the adic completion of the rational functions `𝔽_p(X)`. -/
+/-- `FpX_int_completion` is the unit ball in the adic completion of the rational functions
+`𝔽_p(X)`. -/
 @[reducible]
 definition FpX_int_completion :=
 (ideal_X 𝔽_[p]).adic_completion_integers (ratfunc 𝔽_[p])
