@@ -496,6 +496,7 @@ begin
 end
 
 -- elaboration of finite_residue_field_of_integral_closure took 587ms
+noncomputable!
 def finite_residue_field_of_integral_closure [is_separable K L] 
   (hres : fintype (residue_field K₀)) :
   fintype (residue_field (integral_closure K₀ L)) :=
@@ -506,6 +507,7 @@ begin
 end
 
 -- elaboration of finite_residue_field_of_unit_ball took 118ms
+noncomputable!
 def finite_residue_field_of_unit_ball [is_separable K L] 
   (hres : fintype (local_ring.residue_field K₀)) :
  fintype (residue_field (extended_valuation K L).valuation_subring) :=
