@@ -222,12 +222,12 @@
 
 \subsection{Valuations}\label{subsection:valuations}
 Let $R$ be a ring and let $\Gamma_0$ be a linearly ordered commutative monoid with zero\fil{: by definition, this means that $\Gamma_0$ is the union $\Gamma\cup\{0\}$ where $\Gamma$ is a multiplicative monoid in which every two elements are comparable, and $0\notin \Gamma$ is an added element. We endow $\Gamma_0$ with a total order by declaring that $0< x$ for all $x\in\Gamma$, and we extend the multiplication from $\Gamma$ to $\Gamma_0$ by declaring that $x\cdot 0=0\cdot x = 0$ for all $x\in\Gamma_0$.} A \fil{$\Gamma_0$-valued }valuation $v$ on $R$ is a map $v \colon R \to \Gamma_0$ such that
-\begin{enumerate}
-	\item $v (0) = 0$,
-	\item $v (1) = 1$,
-	\item $v (x \cdot y) = v (x) \cdot v (y)$ for all $x, y \in R$, and
-	\item $v (x + y) \le \max {v (x), v (y)}$ for all $x, y \in R$.
-\end{enumerate}
+\begin{listDef}\label{def:valuation}
+	\item $v (0) = 0$,\label{def_valuation:zero}
+	\item $v (1) = 1$,\label{def_valuation:one}
+	\item $v (x \cdot y) = v (x) \cdot v (y)$ for all $x, y \in R$, and\label{def_valuation:mul}
+	\item $v (x + y) \le \max {v (x), v (y)}$ for all $x, y \in R$.\label{def_valuation:add}
+\end{listDef}
 
 \fil{I believe that the next paragraph needs to be expanded. We might not want to take for granted that readers are familiar with Dedekind domains or Krull dimensions, and that they can easily see $\ZZ\cup\{\infty\}=\wzmZZ$. One good example would be simply using polynomial over a field, perhaps?}For instance, when $R$ is a Dedekind domain of Krull dimension 1 with fraction field $K$ and $\m$ is a maximal ideal of $R$, we can define a function $c_\m \colon R \to \ZZ \cup \{ \infty\}$ \fil{we need to say that ``monoid with $0$`` or ``monoid with infinity`` are the same thing...} by sending zero to $\infty$ and any nonzero $r \in R$ to the number of times that $\m$ appears in the factorization of the principal ideal $(r)$. Note that this number is well defined because ideals in a Dedekind domain admit a unique factorization into maximal ideals, up to reordering. We can extend the function $c_\m$ to $K$ by setting $c_\m (r/s) := c_\m (r) - c_\m (s)$ for any $r, s \in R$ with $s \ne 0$.
 
@@ -236,12 +236,12 @@ $ v_{\m}\colon K \to n_\m^{\mathbb{Z} \cup \{-\infty\}} = n_\m^\mathbb{Z} \cup \
 
 Note that the choice of number $n_\m > 1$ in the definition of $v_\m$ is not relevant, in the sense that any two such choices will give rise to equivalent valuations. In our formalization, we abstract the codomain $n_\m^\mathbb{Z} \cup \{0\}$ using the type
 \texttt{with\_zero (multiplicative $\mathbb{Z}$)}, denoted $\wzmZZ$,
-which carries the multiplicative structure corresponding to the additive structure on $\ZZ$, as well as an added zero element. \fil{Isn't this the place to insert and define the maps \code{to_add} and \code{of_add}?}
+which carries the multiplicative structure corresponding to the additive structure on $\ZZ$, as well as an added zero element. \fil{Similarly, we denote by $\wzmNN$ the monoid with zero \code{multiplicative} $\mcode{\NN}\cup \mcode{0}$}. \fil{Isn't this the place to insert and define the maps \code{to_add} and \code{of_add}?}.
 
 For example, the rational numbers $20$ and $25$ have $5$-adic valuation $(-1 : \wzmZZ)$ and $(-2 : \wzmZZ)$, respectively, so $25$ is smaller than $20$ in the $p$-adic topology. \mi{Do you want to add anything else about this?}\fil{Probably, in the previous paragraph, I would add some of the main properties of $\wzmZZ$: something like $2+3=6$, that there are three elements $0:\wzmZZ,1:\wzmZZ=$\code{to_add}$0:\ZZ$ and \code{to_add}$1:\ZZ$ that are different, and some formulae with inequalities. Observe that. for our definition of uniformizer, the term \code{to_add}$-1:\ZZ$ is essential. We should also explain to the reader used to think that the valuation of a uniformizer is $1$ what is going on here.}
 
 We represent valuations in Lean using the \code{valuation} structure \href{https://leanprover-community.github.io/mathlib_docs/ring_theory/valuation/basic.html#valuation}{\extlink}
- available in \mathlib, which encodes our above definition. A valuation on a ring $R$ induces a topology \fil{Say which one?} on $R$ for which the ring operations are continuous, hence turning $R$ into a topological ring.
+ available in \mathlib, which encodes our above definition. A valuation on a ring $R$ induces a topology \fil{Say which one, or at least provide a reference?} on $R$ for which the ring operations are continuous, hence turning $R$ into a topological ring.
 \mathlib also provides the class \href{https://leanprover-community.github.io/mathlib_docs/topology/algebra/valuation.html#valued}{valued}\fil{why not inserting the}
 \begin{lstlisting}
 class (R : Type*) [ring R] valued : extends...
@@ -271,10 +271,11 @@ Given any ring $R$ with a valuation $v$, we can define the \textit{unit ball} of
 %	\item We put \texttt{valued} instances on fields but "never" on rings that are not fields.
 %	\item There is something called \texttt{valuation\_ring} that has (almost) nothing to do; but \texttt{valuation\_subring} has.
 	\item Comment about the choice of \texttt{.integers} instead of \texttt{.valuation\_subring}
-\end{itemize}
+	\item Add that there is a lot of API for valuations taking valued in \code{valuation.group}$=K^\times/R^\times$ but we want to land in $\wzmZZ$. \fil{This is needed later to compare with Bourbaki's definition of ``discrete''.  that we call the quotient $K^\times/R^\times\cup\{\infty\}$ the \emph{value group}, translating (this bit in a footnote?) the term {groupe des valeurs} from~\cite[Chapitre~VI, \S3, n$^\circ$~2]{Bou85}}
+\end{itemize} 
 }
 \subsection{Definition of Discrete Valuation Rings}\label{subsection:def_dvr}
-Our general references for the theory of discrete valuation rings are~\cite{Ser62} and~\cite[Chapitre~VI]{Bou85}. We refer to~\cite{Bou07}, in particular to \cite[Chapitre~IV]{Bou07}, for the main results about ring theory and commutative algebra that we will need.
+Our general references for the theory of discrete valuation rings are~\cite{Ser62} and~\cite[Chapitre~VI]{Bou85}. One notable difference is that in \cite[Chapitre~VI]{Bou85} valuations take value in an \emph{additive} commutative monoid, enriched with one element $\infty$, whereas we stick to the multiplicative convention introduced in \S\ref{subsection:valuations}, which is the approcah chosen in \mathlib. We refer to~\cite{Bou07}, in particular to \cite[Chapitre~IV]{Bou07}, for the main results about ring theory and commutative algebra that we will need.
 
 Let $R$ be a ring, \fil{as above assumed} commutative and unitary. We begin by recalling the following equivalence
 \begin{theorem}[{\cite[Chapitre~VI, \S3, n$^\circ$~6, Proposition~8]{Bou85} and~\cite[Chapitre I, \S2, Propositions~2 and~3]{Ser62}}]\label{thm:dvr_tfae}
@@ -282,20 +283,22 @@ The following properties are equivalent:
 \begin{listResults}
 \item $R$ is a Noetherian local ring whose maximal ideal $\maxid$ is generated by a non-nilpotent element;
 \item $R$ is a Noetherian local integral domain that is integrally closed and is not a field;
-\item $R$ is a local PID that is not a field;
+\item $R$ is a local principal ideal domain \textup{(}PID\textup{)} that is not a field;
 \item \fil{$R$ is an integral domain that coincides with the unit ball of~$\Frac(R)$ with respect to a valuation $v\colon \Frac{R}\to\wzmZZ$.}\label{dvr_tfae:pts_val}
 \end{listResults}
 \end{theorem}
 \begin{remark}
-In~\cite[Chapitre~VI, \S3, n$^\circ$ 6, Proposition~8]{Bou85} other equivalences are proved, but we will not need them.
+In~\cite[Chapitre~VI, \S3, n$^\circ$~6, Proposition~8]{Bou85} other equivalences are proved, but we will not need them.
 \end{remark}
-A ring satisfying the equivalent properties of Theorem~\ref{thm:dvr_tfae} is called a discrete valuation ring (often shortened as DVR). The nomenclature is motivated by point~\ref{dvr_tfae:pts_val} \ibid: given a DVR $R$, it is possible to find a valuation
+A ring satisfying the equivalent properties of Theorem~\ref{thm:dvr_tfae} is called a discrete valuation ring (often shortened as DVR). The nomenclature is motivated by point~\ref{dvr_tfae:pts_val}~\ibid: given a DVR $R$, it is possible to find a valuation
 \[
 v\colon \Frac(R)\longrightarrow \wzmZZ
 \]
-such that $R=\ball{\Frac R}$: \fil{as observed above, this valuation will not be unique, because\dots}. For each of these valuations, the image $\image(v)\subseteq\wzmZZ$ is the free monoid generated by $v(r)$, where $r$ is any generator of the maximal ideal $\maxid$ of $R$. Upon replacing $v$ by $v/v(r)$, for some generator $r$ of $\maxid$, we can assume that this free monoid coincides with $\NN$: in this case the valuation is said to be normalised, and the elements of valuation equal \fil{to $(-1)$ }are called uniformizers. One basic result is that, for a normalised valuation, the uniformisers are exactly the set of generators of $\maxid$, \fil{because \dots}. Moreover, there exists a unique normalised valuation on a DVR, since every valuation is uniquely determined by its value on the generators of $\maxid$. We denote it by ${\normalised}_{,R}$ --- or simply by $\normalised$ when the DVR $R$ can be understood.
+such that $R=\ball{\Frac R}$: \fil{as observed above, this valuation will not be unique, because\dots}. For each of these valuations, the image $\image(v)\subseteq\wzmZZ$ is the free monoid generated by $v(r)$ (together with $0$), where $r$ is any generator of the maximal ideal $\maxid$ of $R$. Upon replacing $v$ by $v/v(r)$, for some generator $r$ of $\maxid$, we can assume that this free monoid coincides with $\wzmNN$: in this case the valuation is said to be \emph{normalised}, and the elements of valuation equal \fil{to $(-1)$ }are called uniformizers. One basic result is that, for a normalised valuation, the uniformisers are exactly the set of generators of $\maxid$, because properties \label{def_valuation:one} and \label{def_valuation:one} of Definition~\label{def:valuation} show that an element $u\in R$ is a unit if and only if $v(u)=1=$ \code{to_add}$\mcode{0}$\fil{true}?. Moreover, there exists a unique normalised valuation on a DVR, since the same argument shows that every valuation is uniquely determined by its value on one, or any, generator of $\maxid$. %We denote this normalised valuation by ${\normalised}_{,R}$ --- or simply by $\normalised$ when the DVR $R$ can be understood.
 
-This point of view differs slightly from the classical one (as found, for instance, in~\cite[Chapitre~I]{Ser62} or in~\cite[???]{Bou85}), who \fil{only FALSE} consider the normalised valuation on a DVR, and regard it as being ``canonical''. This should not come as a surprise in the setting of a formalisation work: on the one hand, regarding ``the'' valuation as part of the data would \fil{rigidify the situation too much NOT NICE}, as in \fil{give a REF to some discussion in our DD paper about fraction fields} and, on the other, there might be different constructions of a valuation on a ring that would turn out to be propositionally equal albeit not definitionally equal. The corresponding pairs $(R,v)$, for the several possible constructions of $v$, would all be mathematically intercheangable yet represented by different, although equivalent types; this would lead to unnecessary verbosity while keeping track of the equivalences: in \fil{\S\dots and in \S\dots we will see explicit examples of this phenomenon, supporting our decision of avoiding the choice of a preferred valuation on $R$}. In particular, the definition we propose of a discrete valuation is encoded in the following class:
+This points of view taken in~\cite[Chapitre~I]{Ser62} and in~\cite[Chapitre~VI, \S3, n$^\circ$ 6]{Bou85}, are not identical: in the former, the valuations occurring in point~\ref{dvr_tfae:pts_val} of Theorem~\ref{thm:dvr_tfae} take values in $\ZZ\cup\{\infty\}$ (or $\wzmZZ$, up to our translation), whereas in the latter they are valued in the value group $\Frac(R)\times/R^\times \cup\{\infty\}$ but under the assumption that there is an isomorphism $\Frac(R)\times/R^\times\cong \ZZ$. In both cases they are called ``discrete''; they are said to be normalized, as above, when they are surjective. Often results are stated assuming that the valuation is normalised, relying on the possibility of achieving this normalisation without harm, .
+
+In the setting of a formalisation work, we need to put more care on the choice of normalising the valuation: on the one hand, regarding ``the'' valuation as part of the data would \fil{rigidify the situation too much NOT NICE}, as in \fil{give a REF to some discussion in our DD paper about fraction fields} and, on the other, there might be different constructions of a valuation on a ring that would turn out to be propositionally equal albeit not definitionally equal. The corresponding pairs $(R,v)$, for the several possible constructions of $v$, would all be mathematically intercheangable yet represented by different, although equivalent, types; this would lead to unnecessary verbosity while keeping track of the equivalences. Moreover, there might be different normalisation procedures and proofs must be provided to show that these yield definitionally equal valuations. In \fil{\S\dots and in \S\dots we will see explicit examples of this phenomenon, supporting our decision of avoiding the choice of a preferred valuation on $R$}. In light of the above discussion, we decided to call a valuation ``discrete'' when it is \emph{also} normalised, and we encode this notion in the following class:
 \begin{lstlisting}
 class is_discrete (v : valuation A $\wzmZZ$) : Prop := (surj : function.surjective v)
 \end{lstlisting}
