@@ -14,10 +14,11 @@ In this file we define the `class local_field` on a valued field `K`, requiring 
 
 
 ## Main Results
-* For an `eq_char_local_field p K` that is separable over `𝔽_[p]⟮⟮X⟯⟯` we provide an instance
-  `local_field K`. The separability assumption is required to use some result in mathlib concerning
+* For an `eq_char_local_field p K` that is separable over `𝔽_[p]⟮⟮X⟯⟯` we show that `K` is a local
+  field. The separability assumption is required to use some result in mathlib concerning
   the finiteness of the ring of integers.
-* For a `mixed_char_local_field p K` we provide an instance `local_field K`.
+  TODO: remove the separability assumtion.
+* For a `mixed_char_local_field p K`, we show that `K` is a local field.
 -/
 
 
@@ -26,7 +27,7 @@ open_locale discrete_valuation
 
 /-- The class `local_field`, extending `valued K ℤₘ₀` by requiring that `K` is complete, that the
 valuation is discrete, and that the residue field of the unit ball is finite. -/
-class local_field (K : Type*) [field K] extends valued K ℤₘ₀ :=
+class local_field (K : Type*) [field K] [valued K ℤₘ₀] :=
 (complete : complete_space K)
 (is_discrete : is_discrete (@valued.v K _ ℤₘ₀ _ _))
 (finite_residue_field :
@@ -36,8 +37,11 @@ namespace eq_char_local_field
 
 open FpX_completion
 
-@[priority 100] noncomputable! instance (p : out_param ℕ) [fact(nat.prime p)] (K : Type*) [field K]
-  [eq_char_local_field p K] [is_separable 𝔽_[p]⟮⟮X⟯⟯ K]: local_field K := 
+/-- An `eq_char_local_field p K` that is separable over `𝔽_[p]⟮⟮X⟯⟯` is a local field.
+  The separability assumption is required to use some result in mathlib concerning
+  the finiteness of the ring of integers.-/
+@[priority 100] noncomputable def local_field (p : out_param ℕ) [fact(nat.prime p)] (K : Type*)
+  [field K] [eq_char_local_field p K] [is_separable 𝔽_[p]⟮⟮X⟯⟯ K] : local_field K := 
 { complete             := eq_char_local_field.complete_space p K,
   is_discrete          := v.valuation.is_discrete p K,
   finite_residue_field := 
@@ -52,8 +56,9 @@ end eq_char_local_field
 namespace mixed_char_local_field
 open padic
 
-@[priority 100] noncomputable instance (p : out_param ℕ) [fact(nat.prime p)] (K : Type*) [field K] 
-  [mixed_char_local_field p K] : local_field K := 
+/-- A `mixed_char_local_field` is a local field. -/
+@[priority 100] noncomputable def local_field (p : out_param ℕ) [fact(nat.prime p)] (K : Type*)
+  [field K] [mixed_char_local_field p K] : local_field K := 
 { complete             := mixed_char_local_field.complete_space p K,
   is_discrete          := v.valuation.is_discrete p K,
   finite_residue_field :=
@@ -64,5 +69,3 @@ open padic
   ..(mixed_char_local_field.with_zero.valued p K) }
   
 end mixed_char_local_field
-
-#lint
