@@ -8,7 +8,7 @@ import discrete_valuation_ring.discrete_norm
 import for_mathlib.discrete_valuation_ring
 import for_mathlib.ring_theory.valuation.int_polynomial
 import for_mathlib.ring_theory.valuation.minpoly
-import for_mathlib.field_theory.minpoly.normal
+import for_mathlib.field_theory.minpoly.is_integrally_closed
 
 noncomputable theory
 

@@ -5,7 +5,7 @@ Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
 
 import discrete_valuation_ring.basic
-import for_mathlib.field_theory.minpoly.normal
+import for_mathlib.field_theory.minpoly.is_integrally_closed
 import spectral_norm
 
 noncomputable theory

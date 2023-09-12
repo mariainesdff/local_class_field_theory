@@ -1,10 +1,16 @@
-/-
-Copyright (c) 2023 María Inés de Frutos-Fernández, Filippo A. E. Nuccio. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
--/
-
 import discrete_valuation_ring.extensions
+
+/-!
+# Trivial extensions of discrete valuations
+
+When `K` is a complete, discretely valued field, the trivial extension of the valuation 
+`extended_valuation K K` is mathematically, but not definitionally, equal to the valuation on `K`.
+In this file, we provide some rewrite lemmas for dealing with this trivial extension.
+
+##  Main Theorems
+* `trivial_extension_eq_valuation` : the extension of the valuation on `K` to itself is equal to 
+  the original valuation.
+-/
 
 open add_subgroup discrete_valuation polynomial valuation with_zero
 open_locale discrete_valuation
@@ -19,7 +25,7 @@ lemma trivial_pow_extension_on_units_eq_valuation (x : Kˣ):
   pow_extension_on_units K K x = unzero (valuation.unit_ne_zero hv.v x) :=
 begin
   rw [pow_extension_on_units_apply],
-  congr,
+  congr' 1,
   simp only [finite_dimensional.finrank_self, minpoly.eq_X_sub_C',units.val_eq_coe, coeff_sub, 
     coeff_X_zero, coeff_C_zero, zero_sub, valuation.map_neg, nat_degree_X_sub_C, nat.div_self, 
     nat.lt_one_iff, pow_one],
@@ -48,6 +54,7 @@ begin
   exact add_subgroup.mem_top _,
 end
 
+/-- The extension of the valuation on `K` to itself is equal to the original valuation. -/
 lemma trivial_extension_eq_valuation : extended_valuation K K = hv.v :=
 begin
   ext x,
@@ -62,6 +69,5 @@ begin
         coeff_sub, coeff_X_zero, coeff_C_zero, zero_sub, valuation.map_neg, nat_degree_X_sub_C,
         nat.div_self, nat.lt_one_iff, pow_one] }}
 end
-
 
 end discrete_valuation.extension
