@@ -27,6 +27,7 @@ open_locale discrete_valuation
 
 /-- The class `local_field`, extending `valued K ℤₘ₀` by requiring that `K` is complete, that the
 valuation is discrete, and that the residue field of the unit ball is finite. -/
+noncomputable!
 class local_field (K : Type*) [field K] [valued K ℤₘ₀] :=
 (complete : complete_space K)
 (is_discrete : is_discrete (@valued.v K _ ℤₘ₀ _ _))
@@ -37,15 +38,20 @@ namespace eq_char_local_field
 
 open FpX_completion
 
+variables (p : out_param ℕ) [fact(nat.prime p)] 
+variables (K : Type*) [field K] [eq_char_local_field p K]
+
 /-- An `eq_char_local_field p K` that is separable over `𝔽_[p]⟮⟮X⟯⟯` is a local field.
   The separability assumption is required to use some result in mathlib concerning
   the finiteness of the ring of integers.-/
-@[priority 100] noncomputable def local_field (p : out_param ℕ) [fact(nat.prime p)] (K : Type*)
-  [field K] [eq_char_local_field p K] [is_separable 𝔽_[p]⟮⟮X⟯⟯ K] : local_field K := 
+@[priority 100]
+noncomputable!
+definition local_field [fact (is_separable 𝔽_[p]⟮⟮X⟯⟯ K)] : local_field K := 
 { complete             := eq_char_local_field.complete_space p K,
   is_discrete          := v.valuation.is_discrete p K,
   finite_residue_field := 
   begin
+    haveI : is_separable 𝔽_[p]⟮⟮X⟯⟯ K := fact.out _,
     apply finite_residue_field_of_unit_ball,
     apply FpX_int_completion.residue_field_fintype_of_completion,
   end,
@@ -56,9 +62,13 @@ end eq_char_local_field
 namespace mixed_char_local_field
 open padic
 
+variables (p : out_param ℕ) [fact(nat.prime p)] 
+variables (K : Type*) [field K] [mixed_char_local_field p K]
+
 /-- A `mixed_char_local_field` is a local field. -/
-@[priority 100] noncomputable def local_field (p : out_param ℕ) [fact(nat.prime p)] (K : Type*)
-  [field K] [mixed_char_local_field p K] : local_field K := 
+@[priority 100] 
+noncomputable 
+definition local_field : local_field K := 
 { complete             := mixed_char_local_field.complete_space p K,
   is_discrete          := v.valuation.is_discrete p K,
   finite_residue_field :=
