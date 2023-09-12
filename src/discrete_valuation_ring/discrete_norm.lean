@@ -1,12 +1,34 @@
-/-
-Copyright (c) 2023 María Inés de Frutos-Fernández, Filippo A. E. Nuccio. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
--/
-
 import discrete_valuation_ring.basic
 import for_mathlib.field_theory.minpoly.is_integrally_closed
 import spectral_norm
+
+/-!
+# Extensions of discrete norms
+
+Let `K` be a field complete with respect to a discrete valuation, and let `L/K` be an algebraic 
+field extension. We endow `K` with the `norm` induced by its discrete valuation and construct
+the unique norm on `L` extending the norm on `K`. 
+
+##  Main Definitions
+* `discretely_normed_field` : the normed field structure on `K` induced by its discrete valuation. 
+* `nontrivially_discretely_normed_field` : the nontrivially normed field structure on `K` induced 
+  by its discrete valuation.
+* `discrete_norm_extension` : the unique norm on `L` extending the norm on `K`.
+
+##  Main Theorems
+* `eq_root_zero_coeff` : for any `x : L`, `discrete_norm_extension h_alg x` is equal to the norm of 
+  the zeroth coefficient of the minimal polynomial of `x` over `K`, raised to the
+  `(1/(minpoly K x).nat_degree` power.
+
+## Implementation Remarks
+
+Note that in Lean 3 it is not possible to turn `discretely_normed_field K` into a global instance,
+since this together with `valued K ℤₘ₀` leads to an infinite type class inference loop. This 
+will not be the case in Lean 4 (the Lean 4 type class algorithm can detect and get out of simple
+loops like this one), so we will turn it into an instance when we port the project to Lean 4. 
+In the meantime, we create definitions for all of the needed structures on `K` (like `has_norm K`,
+`semi_normed_comm_ring K`, etc) which can be derived from `discretely_normed_field K`.
+-/
 
 noncomputable theory
 
@@ -44,9 +66,11 @@ include hv
 
 section discrete_norm
 
+/-- The normed field structure on `K` induced by its discrete valuation. -/
 definition discretely_normed_field : normed_field K :=
 rank_one_valuation.valued_field.to_normed_field K ℤₘ₀
 
+/-- The nontrivially normed field structure on `K` induced by its discrete valuation. -/
 def nontrivially_discretely_normed_field : nontrivially_normed_field K :=
 { non_trivial := 
   begin
@@ -60,17 +84,21 @@ def nontrivially_discretely_normed_field : nontrivially_normed_field K :=
   ..(@rank_one_valuation.valued_field.to_normed_field K _ ℤₘ₀ _ _
       (discrete_valuation.is_rank_one _)) } 
 
-def has_discrete_norm : has_norm K :=begin
+/-- The norm on `K` induced by its discrete valuation. -/
+def has_discrete_norm : has_norm K :=
+begin
   letI : nontrivially_normed_field K := nontrivially_discretely_normed_field K,
   apply_instance,
 end
 
+/-- The seminormed commutative ring structure on `K` induced by its discrete valuation. -/
 def discretely_semi_normed_comm_ring : semi_normed_comm_ring K :=
 begin
   letI : nontrivially_normed_field K := nontrivially_discretely_normed_field K,
   apply_instance,
 end
 
+/-- The seminormed ring structure on `K` induced by its discrete valuation. -/
 def discretely_semi_normed_ring : semi_normed_ring K :=
 begin
   letI : nontrivially_normed_field K := nontrivially_discretely_normed_field K,
@@ -86,25 +114,30 @@ rank_one_valuation.norm_le_one_iff_val_le_one x
 
 variables {K} [complete_space K] {L : Type*} [field L] [algebra K L] 
 
+/-- The unique norm on `L` extending the norm on `K`. -/
 def discrete_norm_extension (h_alg : algebra.is_algebraic K L) : 
   @mul_algebra_norm K (discretely_semi_normed_comm_ring K) L _ _ :=
 @spectral_mul_alg_norm K (nontrivially_discretely_normed_field K) L _ _ h_alg _ 
   (norm_is_nonarchimedean K)
 
+/-- The `normed_field` structure on `L` induced by `discrete_norm_extension h_alg` -/
 def discretely_normed_field_extension (h_alg : algebra.is_algebraic K L) : normed_field L :=
 @spectral_norm_to_normed_field K (nontrivially_discretely_normed_field K) L _ _ _ h_alg 
   (norm_is_nonarchimedean K)
 
+/-- The `uniform_space` structure on `L` induced by `discrete_norm_extension h_alg` -/
 def discretely_normed_field_extension_uniform_space (h_alg : algebra.is_algebraic K L) : 
   uniform_space L :=
 by haveI := discretely_normed_field_extension h_alg; apply_instance
-
 
 namespace discrete_norm_extension
 
 lemma zero (h_alg : algebra.is_algebraic K L) : discrete_norm_extension h_alg 0 = 0 :=
 @spectral_norm_zero K (discretely_normed_field K) L _ _
 
+/-- For any `x : L`, `discrete_norm_extension h_alg x` is equal to the norm of the zeroth
+  coefficient of the minimal polynomial of `x` over `K`, raised to the
+  `(1/(minpoly K x).nat_degree` power. -/
 lemma eq_root_zero_coeff (h_alg : algebra.is_algebraic K L) (x : L) :
   discrete_norm_extension h_alg x = (with_zero_mult_int_to_nnreal (base_ne_zero K hv.v)
     (valued.v ((minpoly K x).coeff 0)))^(1/(minpoly K x).nat_degree : ℝ) :=
@@ -152,7 +185,6 @@ begin
   simp_rw norm_le_one_iff_val_le_one,
 end
 
--- TODO : Type class inference doesn't work well on this section (explain in paper).
 lemma of_integer [fr : is_fraction_ring hv.v.valuation_subring.to_subring K] 
   (h_alg : algebra.is_algebraic K L) (x : (integral_closure hv.v.valuation_subring.to_subring L)) : 
   discrete_norm_extension h_alg x =  @spectral_value K (discretely_semi_normed_ring K) 
