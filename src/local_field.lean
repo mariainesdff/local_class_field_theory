@@ -27,12 +27,10 @@ open_locale discrete_valuation
 
 /-- The class `local_field`, extending `valued K ℤₘ₀` by requiring that `K` is complete, that the
 valuation is discrete, and that the residue field of the unit ball is finite. -/
-noncomputable!
-class local_field (K : Type*) [field K] [valued K ℤₘ₀] :=
+class local_field (K : Type*) [field K] [hv : valued K ℤₘ₀] :=
 (complete : complete_space K)
-(is_discrete : is_discrete (@valued.v K _ ℤₘ₀ _ _))
-(finite_residue_field :
-  fintype (local_ring.residue_field ((@valued.v K _ ℤₘ₀ _ _).valuation_subring)))
+(is_discrete : is_discrete hv.v)
+(finite_residue_field : fintype (local_ring.residue_field hv.v.valuation_subring))
 
 namespace eq_char_local_field
 
@@ -45,7 +43,7 @@ variables (K : Type*) [field K] [eq_char_local_field p K]
   The separability assumption is required to use some result in mathlib concerning
   the finiteness of the ring of integers.-/
 @[priority 100]
-noncomputable!
+noncomputable
 definition local_field [fact (is_separable 𝔽_[p]⟮⟮X⟯⟯ K)] : local_field K := 
 { complete             := eq_char_local_field.complete_space p K,
   is_discrete          := v.valuation.is_discrete p K,
