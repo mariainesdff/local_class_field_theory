@@ -1,11 +1,14 @@
-/-
-Copyright (c) 2023 María Inés de Frutos-Fernández, Filippo A. E. Nuccio. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
--/
-
 import ring_theory.dedekind_domain.adic_valuation
 import discrete_valuation_ring.basic
+
+/-!
+# Global-to-local results.
+
+Let `R` be a Dedekind domain which is not a field, let `K` be a fraction field of `R` and let `v`
+be a maximal ideal of `R`. We show that the adic valuation on the completion `K_v` of `K` with
+respect to the `v`-adic valuation is discrete, and that its unit ball `R_v` is a discrete
+valuation ring.
+-/
 
 namespace is_dedekind_domain.height_one_spectrum
 
@@ -38,12 +41,13 @@ begin
   exact le_of_lt (with_zero.of_add_neg_one_lt_one)
 end
 
+/-- The canonical valuation on the `v`-adic completion `K_v` of `K` is discrete. -/
 instance : is_discrete (@valued.v K_v _ ℤₘ₀ _ _) := 
 is_discrete_of_exists_uniformizer _
   (valuation_completion_integers_exists_uniformizer R K v).some_spec
 
+/-- The unit ball `R_v` of `K_v` is a discrete valuation ring. -/
 instance : discrete_valuation_ring R_v :=
 discrete_valuation.dvr_of_is_discrete (@valued.v K_v _ ℤₘ₀ _ _)
-
 
 end is_dedekind_domain.height_one_spectrum
