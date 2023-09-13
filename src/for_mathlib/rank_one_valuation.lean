@@ -1,18 +1,38 @@
-/-
-Copyright (c) 2023 María Inés de Frutos-Fernández, Filippo A. E. Nuccio. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
--/
 import ring_theory.dedekind_domain.adic_valuation
 import from_mathlib.normed_valued
+
+/-!
+# Rank one valuations
+
+We introduce some lemmas relating the values of a rank one valuation and of the norm it induces.
+
+Let `L` be a valued field whose valuation has rank one.
+
+## Main Definitions
+
+* `mul_ring_norm_def` : the multiplicative ring norm induced by a rank one valuation on a field.
+
+
+## Main Results
+
+* `norm_le_one_iff_val_le_one` : the norm of `x : L` is `≤ 1` if and only if the valuation of `x` 
+  is `≤ 1`. 
+* `norm_lt_one_iff_val_lt_one` : the norm of `x : L` is `< 1` if and only if the valuation of `x` 
+  is `< 1`. 
+* `norm_pos_iff_val_pos` : `x ; L` has positive norm if and only if it has positive valuation.
+
+
+## Tags
+
+valuation, rank_one_valuation
+-/
+
 
 open_locale discrete_valuation
 
 namespace rank_one_valuation
 
-variables {L : Type*} [field L] [valued L ℤₘ₀]
-
-variables [hv: is_rank_one (@valued.v L _ ℤₘ₀ _ _)]
+variables {L : Type*} [field L] [valued L ℤₘ₀] [hv : is_rank_one (@valued.v L _ ℤₘ₀ _ _)]
 
 include hv 
 
@@ -55,6 +75,8 @@ include val hv
 lemma norm_def_is_nonarchimedean : is_nonarchimedean (@norm_def L _ Γ₀ _ val hv) := 
 norm_def_add_le
 
+/-- If `L` is a valued field with respect to a rank one valuation, `mul_ring_norm_def` is the
+  multiplicative norm on `L` induced by this valuation. -/
 def mul_ring_norm_def : mul_ring_norm L :=
 { to_fun    := norm_def,
   map_zero' := by simp only [norm_def, map_zero, nonneg.coe_zero],

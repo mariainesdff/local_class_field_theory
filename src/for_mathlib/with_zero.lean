@@ -1,9 +1,3 @@
-/-
-Copyright (c) 2023 María Inés de Frutos-Fernández, Filippo A. E. Nuccio. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
--/
-
 import algebra.group.with_one.units
 import data.real.nnreal
 import logic.equiv.transfer_instance
@@ -12,8 +6,8 @@ import ring_theory.valuation.basic
 /-!
 # with_zero
 
-In this file we define the field `ℂ_[p]` of `p`-adic complex numbers and we give it both a normed 
-field and a valued field structure, induced by the unique extension of the `p`-adic norm to `ℂ_[p]`.
+In this file we provide some basic API lemmas for the `with_zero` construction and we define
+the morphism `with_zero_mult_int_to_nnreal`.
 
 ## Main Definitions
 
@@ -22,7 +16,7 @@ field and a valued field structure, induced by the unique extension of the `p`-a
 
 ## Main Results
 
-* `with_zero_mult_int_to_nnreal_strict_mono` :  The map `with_zero_mult_int_to_nnreal` is strictly
+* `with_zero_mult_int_to_nnreal_strict_mono` : The map `with_zero_mult_int_to_nnreal` is strictly
    monotone whenever `1 < e`.
 
 
@@ -30,8 +24,6 @@ field and a valued field structure, induced by the unique extension of the `p`-a
 
 with_zero, multiplicative, nnreal
 -/
-
-
 
 noncomputable theory
 
@@ -87,8 +79,9 @@ begin
     λ h, mul_lt_mul_of_lt_of_le₀ (le_refl _) (ne_of_gt hc) h⟩,
 end
 
-lemma lt_mul_left₀ {α : Type*} {b c : α} [linear_ordered_comm_group_with_zero α] {a : α} (h : b < c)
-   (ha : a ≠ 0) : a * b < a * c := by simpa only [mul_comm a _] using mul_lt_right₀ a h ha
+lemma lt_mul_left₀ {α : Type*} {b c : α} [linear_ordered_comm_group_with_zero α] {a : α} 
+  (h : b < c) (ha : a ≠ 0) : a * b < a * c := 
+by simpa only [mul_comm a _] using mul_lt_right₀ a h ha
 
 theorem one_lt_div' {α : Type*} [linear_ordered_comm_group_with_zero α] (a : α)
   {b : α} (hb : b ≠ 0) : 1 < a / b ↔ b < a :=
@@ -122,7 +115,6 @@ theorem zpow_left_inj {n : ℤ} {a b : ℤₘ₀} (ha : a ≠ 0) (hb : b ≠ 0) 
   a ^ n = b ^ n ↔ a = b :=
 set.inj_on.eq_iff (zpow_left_inj_on hn) (set.mem_Ioi.mpr (zero_lt_iff.mpr ha)) 
     (set.mem_Ioi.mpr (zero_lt_iff.mpr hb))
-/- (zpow_left_injective hn).eq_iff -/
 
 lemma of_add_neg_nat (n : ℕ) : 
   (of_add (-n : ℤ) : ℤₘ₀) = (of_add (-1 : ℤ))^n :=
@@ -155,7 +147,7 @@ def with_zero_mult_int_to_nnreal_def (e : nnreal) : ℤₘ₀ → ℝ≥0 :=
 
 open with_zero
 
-/-- Given a nonzero `e : ℝ≥0`, the map `ℤₘ₀ → ℝ≥0` sending `0 ↦ 0` and 
+/-- Given a nonzero `e : ℝ≥0`, this is the map `ℤₘ₀ → ℝ≥0` sending `0 ↦ 0` and 
   `x ↦ e^(multiplicative.to_add (with_zero.unzero hx)` when `x ≠ 0` as a `monoid_with_zero_hom`. -/
 def with_zero_mult_int_to_nnreal {e : nnreal} (he : e ≠ 0)  : ℤₘ₀ →*₀ ℝ≥0 := 
 { to_fun    := with_zero_mult_int_to_nnreal_def e,
