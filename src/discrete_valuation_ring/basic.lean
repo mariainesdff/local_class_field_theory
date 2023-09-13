@@ -7,6 +7,7 @@ import topology.algebra.valued_field
 import topology.algebra.with_zero_topology
 import for_mathlib.rank_one_valuation
 import for_mathlib.with_zero
+import for_mathlib.ring_theory.valuation.integers
 
 /-!
 # Discrete Valuation Rings
@@ -398,8 +399,9 @@ instance dvr_of_is_discrete : discrete_valuation_ring K₀ :=
   not_a_field' := by rw [ne.def, ← is_field_iff_maximal_ideal_eq]; exact not_is_field v }
 
 variables (A : Type*) [comm_ring A] [is_domain A] [discrete_valuation_ring A]
+variables (L : Type*) [field L] [algebra A L] [is_fraction_ring A L]
 
-open is_dedekind_domain is_dedekind_domain.height_one_spectrum 
+open is_dedekind_domain is_dedekind_domain.height_one_spectrum subring discrete_valuation_ring
 
 /-- The maximal ideal of a DVR-/
 def maximal_ideal : height_one_spectrum A :=
@@ -410,12 +412,63 @@ def maximal_ideal : height_one_spectrum A :=
 
 variable {A}
 
-noncomputable instance : valued (fraction_ring A) ℤₘ₀ := 
-(maximal_ideal A).adic_valued
+noncomputable instance : valued L ℤₘ₀ := (maximal_ideal A).adic_valued
 
-instance : is_discrete (@valued.v (fraction_ring A) _ ℤₘ₀ _ _) :=
+
+instance : is_discrete valued.v :=
 is_discrete_of_exists_uniformizer valued.v
-  (valuation_exists_uniformizer (fraction_ring A) (maximal_ideal A)).some_spec
+  (valuation_exists_uniformizer L (maximal_ideal A)).some_spec
+
+
+lemma bar {x : L} (H : valued.v x ≤ (1 : ℤₘ₀)) : ∃ a : A, (algebra_map A L a) = x :=
+begin
+  obtain ⟨π, hπ⟩ := exists_irreducible A,
+  obtain ⟨a, ⟨b, ⟨hb, h_frac⟩⟩⟩ := @is_fraction_ring.div_surjective A _ _ _ _ _ _ x,
+  by_cases ha : a = 0,
+  { rw ← h_frac,
+    use 0,
+    rw [ha, _root_.map_zero, zero_div] },
+  { rw ← h_frac at H,
+    obtain ⟨n, u, rfl⟩ := eq_unit_mul_pow_irreducible ha hπ,
+    obtain ⟨m, v, rfl⟩ := eq_unit_mul_pow_irreducible (non_zero_divisors.ne_zero hb) hπ,
+    replace hb := (mul_mem_non_zero_divisors.mp hb).2,
+    erw [mul_comm ↑v _, _root_.map_mul, _root_.map_mul, ← mul_div, div_mul_eq_div_mul_one_div, 
+      valuation.map_mul, valuation.map_mul, valuation_one_of_is_unit u.is_unit, one_mul, one_div,
+      map_inv₀, valuation_one_of_is_unit v.is_unit, inv_one, mul_one,
+      ← @is_fraction_ring.mk'_mk_eq_div _ _ _ L _ _ _ (π^n) (π^m) hb,
+      @valuation_of_mk' A _ _ _ L _ _ _ (maximal_ideal A) (π^n) ⟨π^m, hb⟩, valuation.map_pow, 
+      set_like.coe_mk, valuation.map_pow] at H,
+    have h_mn : m ≤ n, sorry, -- should follow from `H`
+    use u * π^(n-m) * v.2,
+    simp only [← h_frac, units.inv_eq_coe_inv, _root_.map_mul, _root_.map_pow, map_units_inv, mul_assoc,
+      mul_div_assoc ((algebra_map A L) ↑u) _ _],
+    congr,
+    rw [div_eq_mul_inv, mul_inv, mul_comm ((algebra_map A L) ↑v)⁻¹ _,
+      ← mul_assoc _ _ ((algebra_map A L) ↑v)⁻¹],
+    congr,
+    rw [pow_sub₀ _ _ h_mn],
+    apply is_fraction_ring.to_map_ne_zero_of_mem_non_zero_divisors,
+    rw mem_non_zero_divisors_iff_ne_zero,
+    exacts [hπ.ne_zero, valuation_le_one (maximal_ideal A), valuation_le_one (maximal_ideal A)] }
+end
+
+lemma alg_map_eq_integers : subring.map (algebra_map A L) ⊤ =
+  valued.v.valuation_subring.to_subring :=
+begin
+  ext,
+  refine ⟨λ h, _, λ h, _⟩,
+  { obtain ⟨_, _ , rfl⟩ := subring.mem_map.mp h,
+    apply valuation_le_one },
+  { obtain ⟨y, rfl⟩ := bar L h,
+    rw subring.mem_map,
+    exact ⟨y, mem_top _, rfl⟩ },
+end
+
+noncomputable
+definition dvr_equiv_unit_ball : A ≃+* (@valued.v L _ ℤₘ₀ _ _).valuation_subring :=
+(top_equiv.symm).trans ((equiv_map_of_injective _ (algebra_map A L)
+  (is_fraction_ring.injective A L)).trans (ring_equiv.subring_congr (alg_map_eq_integers L)))
+
 
 end discrete_valuation
 
