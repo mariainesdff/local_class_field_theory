@@ -401,7 +401,10 @@ instance dvr_of_is_discrete : discrete_valuation_ring K₀ :=
   not_a_field' := by rw [ne.def, ← is_field_iff_maximal_ideal_eq]; exact not_is_field v }
 
 variables (A : Type*) [comm_ring A] [is_domain A] [discrete_valuation_ring A]
-variables (L : Type*) [field L] [algebra A L] [is_fraction_ring A L]
+-- variables (L : Type*) [field L] [algebra A L] [is_fraction_ring A L]
+/-probably should change is_faction_ring to fraction_field and remove L; 
+comment above and in the paper
+-/
 
 open is_dedekind_domain is_dedekind_domain.height_one_spectrum subring discrete_valuation_ring
 
@@ -414,14 +417,15 @@ def maximal_ideal : height_one_spectrum A :=
 
 variable {A}
 
-noncomputable instance : valued L ℤₘ₀ := (maximal_ideal A).adic_valued
+noncomputable instance : valued (fraction_ring A) ℤₘ₀ := (maximal_ideal A).adic_valued
 
 instance : is_discrete valued.v :=
 is_discrete_of_exists_uniformizer valued.v
-  (valuation_exists_uniformizer L (maximal_ideal A)).some_spec
+  (valuation_exists_uniformizer (fraction_ring A) (maximal_ideal A)).some_spec
 
 
-lemma exists_of_le_one {x : L} (H : valued.v x ≤ (1 : ℤₘ₀)) : ∃ a : A, (algebra_map A L a) = x :=
+lemma exists_of_le_one {x : (fraction_ring A)} (H : valued.v x ≤ (1 : ℤₘ₀)) :
+  ∃ a : A, (algebra_map A (fraction_ring A) a) = x :=
 begin
   obtain ⟨π, hπ⟩ := exists_irreducible A,
   obtain ⟨a, ⟨b, ⟨hb, h_frac⟩⟩⟩ := @is_fraction_ring.div_surjective A _ _ _ _ _ _ x,
@@ -433,12 +437,19 @@ begin
     obtain ⟨n, u, rfl⟩ := eq_unit_mul_pow_irreducible ha hπ,
     obtain ⟨m, v, rfl⟩ := eq_unit_mul_pow_irreducible (non_zero_divisors.ne_zero hb) hπ,
     replace hb := (mul_mem_non_zero_divisors.mp hb).2,
-    erw [mul_comm ↑v _, _root_.map_mul, _root_.map_mul, ← mul_div, div_mul_eq_div_mul_one_div, 
-      valuation.map_mul, valuation.map_mul, valuation_one_of_is_unit u.is_unit, one_mul, one_div,
-      map_inv₀, valuation_one_of_is_unit v.is_unit, inv_one, mul_one,
-      ← @is_fraction_ring.mk'_mk_eq_div _ _ _ L _ _ _ (π^n) (π^m) hb,
-      @valuation_of_mk' A _ _ _ L _ _ _ (maximal_ideal A) (π^n) ⟨π^m, hb⟩, valuation.map_pow, 
-      set_like.coe_mk, valuation.map_pow] at H,
+    erw [mul_comm ↑v _, _root_.map_mul _ ↑u _, _root_.map_mul _ _ ↑v] at H, /- ← mul_div, -/ /- div_mul_eq_div_mul_one_div,  -/
+      
+    erw [valuation.map_mul] at H,  
+    erw [valuation.map_mul] at H, 
+    erw [valuation_one_of_is_unit u.is_unit, one_mul] at H,
+    erw [_root_.map_mul (algebra_map A (fraction_ring A)) (π ^ m) (v : A)],
+      -- valuation.map_mul, valuation.map_mul, valuation_one_of_is_unit u.is_unit, one_mul, one_div,
+      -- map_inv₀, valuation_one_of_is_unit v.is_unit, inv_one, mul_one,
+      -- ← @is_fraction_ring.mk'_mk_eq_div _ _ _ (fraction_ring A) _ _ _ (π^n) (π^m) hb,
+      -- @valuation_of_mk' A _ _ _ (fraction_ring A) _ _ _ (maximal_ideal A) (π^n) ⟨π^m, hb⟩,
+      -- valuation.map_pow, set_like.coe_mk, valuation.map_pow] at H,
+
+
     have h_mn : m ≤ n, 
     { have π_lt_one := (int_valuation_lt_one_iff_dvd (maximal_ideal A) π).mpr
         (dvd_of_eq ((irreducible_iff_uniformizer _).mp hπ)),
@@ -465,22 +476,22 @@ begin
     exacts [hπ.ne_zero, valuation_le_one (maximal_ideal A), valuation_le_one (maximal_ideal A)] }
 end
 
-lemma alg_map_eq_integers : subring.map (algebra_map A L) ⊤ =
+lemma alg_map_eq_integers : subring.map (algebra_map A (fraction_ring A)) ⊤ =
   valued.v.valuation_subring.to_subring :=
 begin
   ext,
   refine ⟨λ h, _, λ h, _⟩,
   { obtain ⟨_, _ , rfl⟩ := subring.mem_map.mp h,
     apply valuation_le_one },
-  { obtain ⟨y, rfl⟩ := exists_of_le_one L h,
+  { obtain ⟨y, rfl⟩ := exists_of_le_one h,
     rw subring.mem_map,
     exact ⟨y, mem_top _, rfl⟩ },
 end
 
 noncomputable
-definition dvr_equiv_unit_ball : A ≃+* (@valued.v L _ ℤₘ₀ _ _).valuation_subring :=
-(top_equiv.symm).trans ((equiv_map_of_injective _ (algebra_map A L)
-  (is_fraction_ring.injective A L)).trans (ring_equiv.subring_congr (alg_map_eq_integers L)))
+definition dvr_equiv_unit_ball : A ≃+* (@valued.v (fraction_ring A) _ ℤₘ₀ _ _).valuation_subring :=
+(top_equiv.symm).trans ((equiv_map_of_injective _ (algebra_map A (fraction_ring A))
+  (is_fraction_ring.injective A _)).trans (ring_equiv.subring_congr alg_map_eq_integers ))
 
 
 end discrete_valuation
