@@ -6,7 +6,6 @@ Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 
 import ring_theory.dedekind_domain.adic_valuation
 import discrete_valuation_ring.basic
--- import for_mathlib.rank_one_valuation
 
 open_locale discrete_valuation
 open multiplicative
@@ -37,12 +36,6 @@ maximal ideal.
   when `L=K`.
 -- For the "same" reason we do not put an instance of an `K₀` algebra on the unit ball `L₀` wrt a
   finite extension `L/K`.
-
--- Upshot: we put valued instances on fields, but not on other rings (there we only
-  define the valuation)
--- When working with the basics about field extensions we only put valuations rather than valued
-  instances in order to be able to adapt it to the setting of a finite ext. of number fields with
-    some chosen valuation.
 -/
 
 noncomputable theory

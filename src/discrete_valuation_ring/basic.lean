@@ -40,6 +40,8 @@ structure on the unit ball of a `valued` field whose valuation is discrete.
 * `is_uniformizer_of_generator` A uniformizer generates the maximal ideal.
 * `discrete_valuation.is_discrete` Given a DVR, the valuation induced on its ring of fractions is
   discrete.
+* `discrete_valuation.dvr_equiv_unit_ball` The ring isomorphism between a DVR and the unit ball in 
+  its field of fractions endowed with the adic valuation of the maximal ideal.
 * `is_dedekind_domain.height_one_spectrum.adic_valuation.is_discrete` Given a Dedekind domain and a
   height-one prime in it, the associated adic valuation is discrete.
 -/
@@ -414,13 +416,12 @@ variable {A}
 
 noncomputable instance : valued L ℤₘ₀ := (maximal_ideal A).adic_valued
 
-
 instance : is_discrete valued.v :=
 is_discrete_of_exists_uniformizer valued.v
   (valuation_exists_uniformizer L (maximal_ideal A)).some_spec
 
 
-lemma bar {x : L} (H : valued.v x ≤ (1 : ℤₘ₀)) : ∃ a : A, (algebra_map A L a) = x :=
+lemma exists_of_le_one {x : L} (H : valued.v x ≤ (1 : ℤₘ₀)) : ∃ a : A, (algebra_map A L a) = x :=
 begin
   obtain ⟨π, hπ⟩ := exists_irreducible A,
   obtain ⟨a, ⟨b, ⟨hb, h_frac⟩⟩⟩ := @is_fraction_ring.div_surjective A _ _ _ _ _ _ x,
@@ -438,10 +439,22 @@ begin
       ← @is_fraction_ring.mk'_mk_eq_div _ _ _ L _ _ _ (π^n) (π^m) hb,
       @valuation_of_mk' A _ _ _ L _ _ _ (maximal_ideal A) (π^n) ⟨π^m, hb⟩, valuation.map_pow, 
       set_like.coe_mk, valuation.map_pow] at H,
-    have h_mn : m ≤ n, sorry, -- should follow from `H`
+    have h_mn : m ≤ n, 
+    { have π_lt_one := (int_valuation_lt_one_iff_dvd (maximal_ideal A) π).mpr
+        (dvd_of_eq ((irreducible_iff_uniformizer _).mp hπ)),
+      rw ← int_valuation_apply at π_lt_one,
+      have : (maximal_ideal A).int_valuation π ≠ 0 := int_valuation_ne_zero _ _ hπ.ne_zero,
+      zify,
+      rw ← sub_nonneg,
+      rw [← coe_unzero this, ← with_zero.coe_one] at H π_lt_one,
+      rw [← with_zero.coe_pow, ← with_zero.coe_pow, div_eq_mul_inv, ← with_zero.coe_inv,
+        ← with_zero.coe_mul, with_zero.coe_le_coe, ← zpow_coe_nat, ← zpow_coe_nat, ← zpow_sub,
+        ← of_add_zero, ← of_add_to_add (unzero _ ^ (↑n - ↑m)), of_add_le, int.to_add_zpow] at H,
+      apply nonneg_of_mul_nonpos_right H,
+      rwa [← to_add_one, to_add_lt, ← with_zero.coe_lt_coe] },
     use u * π^(n-m) * v.2,
-    simp only [← h_frac, units.inv_eq_coe_inv, _root_.map_mul, _root_.map_pow, map_units_inv, mul_assoc,
-      mul_div_assoc ((algebra_map A L) ↑u) _ _],
+    simp only [← h_frac, units.inv_eq_coe_inv, _root_.map_mul, _root_.map_pow, map_units_inv,
+      mul_assoc, mul_div_assoc ((algebra_map A L) ↑u) _ _],
     congr,
     rw [div_eq_mul_inv, mul_inv, mul_comm ((algebra_map A L) ↑v)⁻¹ _,
       ← mul_assoc _ _ ((algebra_map A L) ↑v)⁻¹],
@@ -459,7 +472,7 @@ begin
   refine ⟨λ h, _, λ h, _⟩,
   { obtain ⟨_, _ , rfl⟩ := subring.mem_map.mp h,
     apply valuation_le_one },
-  { obtain ⟨y, rfl⟩ := bar L h,
+  { obtain ⟨y, rfl⟩ := exists_of_le_one L h,
     rw subring.mem_map,
     exact ⟨y, mem_top _, rfl⟩ },
 end
@@ -508,3 +521,5 @@ begin
 end
 
 end is_dedekind_domain.height_one_spectrum.adic_valuation
+
+#lint
