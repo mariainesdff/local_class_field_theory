@@ -44,6 +44,11 @@ structure on the unit ball of a `valued` field whose valuation is discrete.
   its field of fractions endowed with the adic valuation of the maximal ideal.
 * `is_dedekind_domain.height_one_spectrum.adic_valuation.is_discrete` Given a Dedekind domain and a
   height-one prime in it, the associated adic valuation is discrete.
+
+## Implementation details
+In the section `discrete_valuation` we put a `valued` instance only on `fraction_field A`, where
+`A` is the DVR, and not on any field `L` such that `[is_fraction_field A L]` because this creates
+loops in the type-class inference mechanism.
 -/
 
 open_locale discrete_valuation nnreal
@@ -282,7 +287,7 @@ begin
   exact uniformizer_ne_zero' _ π,
 end
 
-/--This proof of the lemma does not need the valuation to be discrete, although the fact that a
+/-- This proof of the lemma does not need the valuation to be discrete, although the fact that a
 uniformizer exists forces the condition.-/
 lemma uniformizer_is_generator (π : uniformizer v) :
   maximal_ideal v.valuation_subring = ideal.span {π.1} :=
@@ -401,10 +406,6 @@ instance dvr_of_is_discrete : discrete_valuation_ring K₀ :=
   not_a_field' := by rw [ne.def, ← is_field_iff_maximal_ideal_eq]; exact not_is_field v }
 
 variables (A : Type*) [comm_ring A] [is_domain A] [discrete_valuation_ring A]
--- variables (L : Type*) [field L] [algebra A L] [is_fraction_ring A L]
-/-probably should change is_faction_ring to fraction_field and remove L; 
-comment above and in the paper
--/
 
 open is_dedekind_domain is_dedekind_domain.height_one_spectrum subring discrete_valuation_ring
 
@@ -436,36 +437,12 @@ begin
     obtain ⟨n, u, rfl⟩ := eq_unit_mul_pow_irreducible ha hπ,
     obtain ⟨m, v, rfl⟩ := eq_unit_mul_pow_irreducible (non_zero_divisors.ne_zero hb) hπ,
     replace hb := (mul_mem_non_zero_divisors.mp hb).2,
-    rw [mul_comm ↑v _] at H,
-    rw [_root_.map_mul _ ↑u _, _root_.map_mul _ _ ↑v] at H,
-    rw div_eq_mul_inv at H,
-    rw mul_assoc at H,
-    rw valuation.map_mul at H,
-    rw [valuation_one_of_is_unit u.is_unit, one_mul] at H,
-    rw mul_inv at H,
-    rw ← mul_assoc at H,
-    rw valuation.map_mul at H,
-    rw map_inv₀ at H,
-    rw [valuation_one_of_is_unit v.is_unit] at H,
-    rw inv_one at H,
-    rw mul_one at H,
-    rw ← div_eq_mul_inv at H,
-    rw [← @is_fraction_ring.mk'_mk_eq_div _ _ _ (fraction_ring A) _ _ _ (π^n) _ hb] at H,
-    erw [@valuation_of_mk' A _ _ _ (fraction_ring A) _ _ _ (maximal_ideal A) (π^n) ⟨π^m, hb⟩] at H,
-    rw set_like.coe_mk at H,
-    rw valuation.map_pow at H,
-    rw valuation.map_pow at H,
-
-
-    -- rw valuation.map_mul at H,
-    -- rw _root_.map_pow at H,
-    -- rw _root_.map_pow at H,
-    -- rw valuation.map_pow at H,
-    -- rw zpow_coe_nat
-
-    -- erw [valuation.map_mul, mul_comm ↑v _, _root_.map_mul _ ↑u _, _root_.map_mul _ _ ↑v,
-    --   valuation.map_mul, valuation_one_of_is_unit u.is_unit, one_mul, map_inv₀, valuation.map_mul, 
-    --   valuation_one_of_is_unit v.is_unit, mul_one] at H,
+    erw [mul_comm ↑v _, _root_.map_mul _ ↑u _, _root_.map_mul _ _ ↑v, div_eq_mul_inv, mul_assoc, 
+      valuation.map_mul, valuation_one_of_is_unit u.is_unit, one_mul, mul_inv, ← mul_assoc, 
+      valuation.map_mul, map_inv₀, valuation_one_of_is_unit v.is_unit, inv_one, mul_one, 
+      ← div_eq_mul_inv, ← @is_fraction_ring.mk'_mk_eq_div _ _ _ (fraction_ring A) _ _ _ (π^n) _ hb,
+      @valuation_of_mk' A _ _ _ (fraction_ring A) _ _ _ (maximal_ideal A) (π^n) ⟨π^m, hb⟩, 
+      set_like.coe_mk, valuation.map_pow, valuation.map_pow] at H,
     have h_mn : m ≤ n,
     { have π_lt_one := (int_valuation_lt_one_iff_dvd (maximal_ideal A) π).mpr
         (dvd_of_eq ((irreducible_iff_uniformizer _).mp hπ)),
@@ -473,20 +450,10 @@ begin
       have : (maximal_ideal A).int_valuation π ≠ 0 := int_valuation_ne_zero _ _ hπ.ne_zero,
       zify,
       rw ← sub_nonneg,
-      -- have aa := coe_unzero this,
       rw [← coe_unzero this, ← with_zero.coe_one] at H π_lt_one,
-      -- rw ← map_inv₀ at H,
-      rw  div_eq_mul_inv at H,
-      rw ← with_zero.coe_pow at H,
-      rw ← with_zero.coe_pow at H,
-      rw ← with_zero.coe_inv at H,
-      rw [← zpow_coe_nat] at H,
-      rw [← zpow_coe_nat] at H,
-
-      rw [← with_zero.coe_mul,
-        with_zero.coe_le_coe] at H,
-      rw [← zpow_sub] at H,
-      rw  [← of_add_zero, ← of_add_to_add (unzero _ ^ (↑n - ↑m)), of_add_le, int.to_add_zpow] at H,
+      rw [div_eq_mul_inv, ← with_zero.coe_pow, ← with_zero.coe_pow, ← with_zero.coe_inv, 
+        ← zpow_coe_nat, ← zpow_coe_nat, ← with_zero.coe_mul,with_zero.coe_le_coe, ← zpow_sub, 
+        ← of_add_zero, ← of_add_to_add (unzero _ ^ (↑n - ↑m)), of_add_le, int.to_add_zpow] at H,
       apply nonneg_of_mul_nonpos_right H,
       rwa [← to_add_one, to_add_lt, ← with_zero.coe_lt_coe] },
     use u * π^(n-m) * v.2,
@@ -499,7 +466,7 @@ begin
     rw [pow_sub₀ _ _ h_mn],
     apply is_fraction_ring.to_map_ne_zero_of_mem_non_zero_divisors,
     rw mem_non_zero_divisors_iff_ne_zero,
-    exacts [hπ.ne_zero, valuation_le_one (maximal_ideal A), valuation_le_one (maximal_ideal A)] },
+    exacts [hπ.ne_zero, valuation_le_one (maximal_ideal A), valuation_le_one (maximal_ideal A)] }
 end
 
 lemma alg_map_eq_integers : subring.map (algebra_map A (fraction_ring A)) ⊤ =
@@ -514,6 +481,8 @@ begin
     exact ⟨y, mem_top _, rfl⟩ },
 end
 
+/-- The ring isomorphism between a DVR and the unit ball in 
+  its field of fractions endowed with the adic valuation of the maximal ideal.-/
 noncomputable
 definition dvr_equiv_unit_ball : A ≃+* (@valued.v (fraction_ring A) _ ℤₘ₀ _ _).valuation_subring :=
 (top_equiv.symm).trans ((equiv_map_of_injective _ (algebra_map A (fraction_ring A))
@@ -558,5 +527,3 @@ begin
 end
 
 end is_dedekind_domain.height_one_spectrum.adic_valuation
-
-#lint
