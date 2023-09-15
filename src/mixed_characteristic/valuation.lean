@@ -43,6 +43,16 @@ variables (p : out_param (ℕ)) [hp : fact (p.prime)]
 
 include hp
 
+lemma padic'.mem_integers_iff (y : Q_p p) : y ∈ 𝓞 p (Q_p p) ↔ ‖ y ‖ ≤ 1 :=
+begin
+  rw [mixed_char_local_field.mem_ring_of_integers, is_integrally_closed.is_integral_iff, 
+    norm_le_one_iff_val_le_one],
+  refine ⟨λ h, _, λ h, ⟨⟨y, h⟩, rfl⟩⟩,
+  { obtain ⟨x, hx⟩ := h,
+    rw [← hx, ← mem_adic_completion_integers],
+    exact x.2, },
+end
+
 namespace mixed_char_local_field
 
 variables (K : Type*) [field K] [mixed_char_local_field p K]
@@ -77,15 +87,6 @@ localized "notation (name := ramification_index)
 
 variable (p)
 
-lemma padic.mem_integers_iff (y : Q_p p) : y ∈ 𝓞 p (Q_p p) ↔ ‖ y ‖ ≤ 1 :=
-begin
-  rw [mem_ring_of_integers, is_integrally_closed.is_integral_iff, norm_le_one_iff_val_le_one],
-  refine ⟨λ h, _, λ h, ⟨⟨y, h⟩, rfl⟩⟩,
-  { obtain ⟨x, hx⟩ := h,
-    rw [← hx, ← mem_adic_completion_integers],
-    exact x.2, },
-end
-
 /-- The local field `Q_p p` is unramified. -/
 lemma is_unramified_Q_p : e (Q_p p) = 1 :=
 begin
@@ -98,7 +99,7 @@ end
 
 /-- A ring equivalence between `Z_p p` and the valuation subring of `Q_p p` viewed as a mixed
   characteristic local field. -/
-noncomputable! def padic'_int.equiv_valuation_subring : 
+noncomputable! def padic_int.equiv_valuation_subring : 
   Z_p p ≃+* ↥(mixed_char_local_field.with_zero.valued p (Q_p p)).v.valuation_subring := 
 { to_fun    := λ x,
   begin
@@ -121,9 +122,9 @@ noncomputable! def padic'_int.equiv_valuation_subring :
 
 variable {p}
 
-lemma padic'_int.equiv_valuation_subring_comm :
+lemma padic_int.equiv_valuation_subring_comm :
   (algebra_map (mixed_char_local_field.with_zero.valued p (Q_p p)).v.valuation_subring K).comp 
-    (padic'_int.equiv_valuation_subring p).to_ring_hom = algebra_map (Z_p p) K :=
+    (padic_int.equiv_valuation_subring p).to_ring_hom = algebra_map (Z_p p) K :=
 rfl
 
 end mixed_char_local_field
