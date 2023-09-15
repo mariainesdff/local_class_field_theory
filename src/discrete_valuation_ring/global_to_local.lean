@@ -8,6 +8,9 @@ Let `R` be a Dedekind domain which is not a field, let `K` be a fraction field o
 be a maximal ideal of `R`. We show that the adic valuation on the completion `K_v` of `K` with
 respect to the `v`-adic valuation is discrete, and that its unit ball `R_v` is a discrete
 valuation ring.
+
+We also prove the lemma `is_dedekind_domain.height_one_spectrum.adic_valuation.is_discrete`: given
+a Dedekind domain and a height-one prime in it, the associated adic valuation is discrete.
 -/
 
 namespace is_dedekind_domain.height_one_spectrum
@@ -51,3 +54,23 @@ instance : discrete_valuation_ring R_v :=
 discrete_valuation.dvr_of_is_discrete (@valued.v K_v _ ℤₘ₀ _ _)
 
 end is_dedekind_domain.height_one_spectrum
+
+namespace is_dedekind_domain.height_one_spectrum.adic_valuation
+
+open is_dedekind_domain is_dedekind_domain.height_one_spectrum valuation
+
+variables (R : Type*) [comm_ring R] [is_domain R] [is_dedekind_domain R] (v : height_one_spectrum R)
+variables (K : Type*) [field K] [algebra R K] [is_fraction_ring R K]
+
+lemma is_discrete : 
+  is_discrete (@adic_valued R _ _ _ K _ _ _ v).v := 
+begin
+  obtain ⟨π, hπ⟩ := valuation_exists_uniformizer K v,
+  apply is_discrete_of_exists_uniformizer,
+  swap,
+  use π,
+  rw [is_uniformizer_iff, ← hπ],
+  refl,
+end
+
+end is_dedekind_domain.height_one_spectrum.adic_valuation

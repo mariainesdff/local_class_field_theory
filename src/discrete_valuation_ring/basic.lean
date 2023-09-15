@@ -42,8 +42,6 @@ structure on the unit ball of a `valued` field whose valuation is discrete.
   discrete.
 * `discrete_valuation.dvr_equiv_unit_ball` The ring isomorphism between a DVR and the unit ball in 
   its field of fractions endowed with the adic valuation of the maximal ideal.
-* `is_dedekind_domain.height_one_spectrum.adic_valuation.is_discrete` Given a Dedekind domain and a
-  height-one prime in it, the associated adic valuation is discrete.
 
 ## Implementation details
 In the section `discrete_valuation` we put a `valued` instance only on `fraction_field A`, where
@@ -507,23 +505,3 @@ instance [hv : valued K ℤₘ₀] [is_discrete hv.v] : nonempty (uniformizer K)
 ⟨⟨(exists_uniformizer_of_discrete hv.v).some, (exists_uniformizer_of_discrete hv.v).some_spec⟩⟩
 
 end discretely_valued
-
-namespace is_dedekind_domain.height_one_spectrum.adic_valuation
-
-open is_dedekind_domain is_dedekind_domain.height_one_spectrum valuation
-
-variables (R : Type*) [comm_ring R] [is_domain R] [is_dedekind_domain R] (v : height_one_spectrum R)
-variables (K : Type*) [field K] [algebra R K] [is_fraction_ring R K]
-
-lemma is_discrete : 
-  is_discrete (@adic_valued R _ _ _ K _ _ _ v).v := 
-begin
-  obtain ⟨π, hπ⟩ := valuation_exists_uniformizer K v,
-  apply is_discrete_of_exists_uniformizer,
-  swap,
-  use π,
-  rw [is_uniformizer_iff, ← hπ],
-  refl,
-end
-
-end is_dedekind_domain.height_one_spectrum.adic_valuation
