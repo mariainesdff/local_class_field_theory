@@ -14,10 +14,10 @@ In this file we define the `class local_field` on a valued field `K`, requiring 
 
 
 ## Main Results
-* For an `eq_char_local_field p K` that is separable over `𝔽_[p]⟮⟮X⟯⟯` we show that `K` is a local
-  field. The separability assumption is required to use some result in mathlib concerning
-  the finiteness of the ring of integers.
-  TODO: remove the separability assumtion.
+* For an `eq_char_local_field p K` that is separable over `FpX_completion p` we show that `K` is a
+local
+field. The separability assumption is required to use some result in mathlib concerning
+the finiteness of the ring of integers.
 * For a `mixed_char_local_field p K`, we show that `K` is a local field.
 -/
 
@@ -39,17 +39,17 @@ open FpX_completion
 variables (p : out_param ℕ) [fact(nat.prime p)] 
 variables (K : Type*) [field K] [eq_char_local_field p K]
 
-/-- An `eq_char_local_field p K` that is separable over `𝔽_[p]⟮⟮X⟯⟯` is a local field.
+/-- An `eq_char_local_field p K` that is separable over `FpX_completion` is a local field.
   The separability assumption is required to use some result in mathlib concerning
   the finiteness of the ring of integers.-/
 @[priority 100]
 noncomputable
-definition local_field [fact (is_separable 𝔽_[p]⟮⟮X⟯⟯ K)] : local_field K := 
+definition local_field [fact (is_separable (FpX_completion p) K)] : local_field K := 
 { complete             := eq_char_local_field.complete_space p K,
   is_discrete          := v.valuation.is_discrete p K,
   finite_residue_field := 
   begin
-    haveI : is_separable 𝔽_[p]⟮⟮X⟯⟯ K := fact.out _,
+    haveI : is_separable (FpX_completion p) K := fact.out _,
     apply finite_residue_field_of_unit_ball,
     apply FpX_int_completion.residue_field_fintype_of_completion,
   end,
