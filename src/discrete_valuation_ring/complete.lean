@@ -1,9 +1,3 @@
-/-
-Copyright (c) 2023 María Inés de Frutos-Fernández, Filippo A. E. Nuccio. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
--/
-
 import discrete_valuation_ring.basic
 import for_mathlib.with_zero
 import ring_theory.dedekind_domain.adic_valuation
@@ -13,39 +7,40 @@ open multiplicative
 
 /-! 
 # Complete DVR's
-In this file we prove that starting with a global field and a place, the extension of
-the valuation to the completion agrees with the adic valuation on the local field induced by the 
-maximal ideal.
+Starting with a Dedekind domain `R` with fraction field `K` and a maximal ideal `v`, 
+the adic completion `K_v` of `K` with respect to `v.valuation` has a valuation that extends 
+`v.valuation`. We prove that since `v.valuation` is discrete, so is its extension and therefore, by
+the results in `discrete_valuation_ring.basic`, the unit ball in `K_v` is a discrete valuation ring.
+In particular, `K_v` can be endowed with the adic valuation associated to the unique maximal ideal
+of its unit ball. In this file we prove that these two valuations on `K_v`, namely the extension of
+`v.valuation` and the adic valuation just discussed, coincide.
+
+## Main definitions
+* `K_v` and `R_v` are, respectively, the adico completion of `K` with respect to `v.valuation` and
+the unit ball inside `K_v`.
+* `max_ideal_of_completion` Is the maximal ideal of `R_v`, that is a discrete valuation ring, as a
+term of the `height_one_spectrum` of `R_v`. The underlying ideal is `height_one_spectrum_def`.
+* `v_adic_of_compl` is the adic valuation on `K_v` attached to `max_ideal_of_completion`
+* `v_compl_of_adic` is the uniform extension of `valuation.v` to the adic (=uniform) completion
+`K_v` of `K`.
 
 
 ## Main results:
 * `is_dedekind_domain.height_one_spectrum.completion.is_discrete` is the instance that the extension
-of the adic valuation to the
-  completion is discrete (i.e. surjective onto `ℤₘ₀`)
-* `adic_valuation_equals_completion` is the claim that the valuations coincide
-
-## Main definitions
-* `max_ideal_of_completion_def`
-* `max_ideal_of_completion` KEEP BOTH?
-*  `v_adic_of_compl` :=
-  (@is_dedekind_domain.height_one_spectrum.valuation R_v _ _ _ K_v _ _ _ (max_ideal_of_completion R v K))
-
-* local notation `v_compl_of_adic` := (valued.v : valuation K_v ℤₘ₀)
+of the adic valuation to the completion is discrete (i.e. surjective onto `ℤₘ₀`). As a consequence,
+the unit ball `R_v` is a discrete valuation ring.
+* `adic_of_compl_eq_compl_of_adic` shows that the two valuations on `K_v`, namely 
+`v_adic_of_compl` and `compl_of_v_adic`, coincide.
 
 ## Implementation details
 * When viewing `K_v` as the completion of `K`, its `valued` instance comes from the completion of 
 the valuation on `K`, and this is of course different from the `valued` instance on the fraction
-field of `R_v`, itself isomorphic (but not **equal**) to `K_v`, that instead comes from the `discrete_valuation_ring`
-instance on `R_v`.
+field of `R_v`, itself isomorphic (but not **equal**) to `K_v`, that instead comes from the
+`discrete_valuation_ring` instance on `R_v`. In particular, no diamond arises because the types
+`fraction_ring R_v` and `K_v` are different, although equivalent as fields.
 * The terms `max_ideal_of_completion_def` and `max_ideal_of_completion` represent the same 
 mathematical object but one is an ideal, the other is a term of the height-one spectrum and it is
 the second that has an adic valuation attached to it.
--/
-
-
-/- TODO list:
--- Replace Kevin's valuation with the adic valuation on any DVR (in mathlib for Dedekind domains)
--- Prove that Kevin's uniformiser coincides with ours
 -/
 
 noncomputable theory
@@ -71,6 +66,7 @@ begin
   convert @valued.extension_extends K _ _ _ (valued.mk' v.valuation) π,
 end
 
+/-- The maximal ideal of `R_v`, that is a discrete valuation ring. -/
 def max_ideal_of_completion_def : ideal R_v :=
 local_ring.maximal_ideal R_v 
 
@@ -123,7 +119,8 @@ begin
       local_ring.mem_maximal_ideal, one_not_mem_nonunits, not_false_iff] }
 end
 
-
+/-- The maximal ideal of `R_v`, as a term of the `height_one_spectrum` of `R_v`.
+The underlying ideal is `height_one_spectrum_def`. -/
 def max_ideal_of_completion : height_one_spectrum R_v :=
 { as_ideal := max_ideal_of_completion_def R v K,
   is_prime := ideal.is_maximal.is_prime (local_ring.maximal_ideal.is_maximal R_v),
@@ -134,7 +131,8 @@ def max_ideal_of_completion : height_one_spectrum R_v :=
 
 
 local notation `v_adic_of_compl` :=
-  (@is_dedekind_domain.height_one_spectrum.valuation R_v _ _ _ K_v _ _ _ (max_ideal_of_completion R v K))
+(@is_dedekind_domain.height_one_spectrum.valuation R_v _ _ _ K_v _ _ _ 
+  (max_ideal_of_completion R v K))
 
 local notation `v_compl_of_adic` := (valued.v : valuation K_v ℤₘ₀)
 
@@ -163,73 +161,46 @@ begin
       rw [← submodule.is_principal.span_singleton_generator (maximal_ideal (w.valuation_subring)),
         ← hr],
       refl },
-    have := @valuation.integers.le_iff_dvd L ℤₘ₀ _ _ w w.valuation_subring _ _ (
-       valuation.integer.integers w) x (r ^ n),
+    have := @valuation.integers.le_iff_dvd L ℤₘ₀ _ _ w w.valuation_subring _ _
+      (valuation.integer.integers w) x (r ^ n),
     erw [← hrn, this],
     rw [← ideal.span_singleton_generator (local_ring.maximal_ideal (w.valuation_subring)), ← hr, 
-      ideal.span_singleton_pow, ideal.dvd_iff_le, ideal.span_singleton_le_iff_mem, ideal.mem_span_singleton',
-      dvd_iff_exists_eq_mul_left],
+      ideal.span_singleton_pow, ideal.dvd_iff_le, ideal.span_singleton_le_iff_mem,
+      ideal.mem_span_singleton', dvd_iff_exists_eq_mul_left],
     tauto, },
 end
 
 
-lemma due (L : Type*) [field L] {w : valuation L ℤₘ₀} (a : w.valuation_subring)
-  (b : non_zero_divisors w.valuation_subring) : 
-  w (is_localization.mk' L a b) = w a / w b :=  
-begin
-  rw [div_eq_mul_inv, ← map_inv₀, ← valuation.map_mul],
-  apply congr_arg,
-  simp only [is_fraction_ring.mk'_eq_div, valuation_subring.algebra_map_apply, _root_.coe_coe, 
-    div_eq_mul_inv],
-end
-
-lemma aux_for_below (a : R_v) : ((max_ideal_of_completion R v K).int_valuation) 
-  a = valued.v (a : K_v) :=
+lemma int_adic_of_compl_eq_int_compl_of_adic (a : R_v) :
+  ((max_ideal_of_completion R v K).int_valuation) a = valued.v (a : K_v) :=
 begin
   by_cases ha : a = 0,
   { simp only [ha, valuation.map_zero, algebra_map.coe_zero] },
   { rw int_valuation_apply,
     apply le_antisymm,
     { obtain ⟨n, hn⟩ : ∃ n : ℕ, v_compl_of_adic a = of_add (-n : ℤ), 
-      { replace ha : v_compl_of_adic a ≠ 0 := by rwa [valuation.ne_zero_iff, ne.def, subring.coe_eq_zero_iff],
+      { replace ha : v_compl_of_adic a ≠ 0 := by rwa [valuation.ne_zero_iff, ne.def,
+        subring.coe_eq_zero_iff],
         have := (mem_integer v_compl_of_adic ↑a).mp a.2,
         obtain ⟨α, hα⟩ := with_zero.ne_zero_iff_exists.mp ha,
-        rw ← hα at this,
-        rw ← with_zero.coe_one at this,
-        rw ← of_add_zero at this,
-        rw with_zero.coe_le_coe at this,
-        rw [← of_add_to_add α] at this,        
-        rw multiplicative.of_add_le at this,
+        rw [← hα, ← with_zero.coe_one, ← of_add_zero, with_zero.coe_le_coe, ← of_add_to_add α, 
+          multiplicative.of_add_le] at this,
         obtain ⟨n, hn⟩ := int.exists_eq_neg_of_nat this,
         use n,
-        rw ← hα,
-        rw with_zero.coe_inj,
-        rw [← of_add_to_add α],
-        rw hn },
-      -- dsimp only [v_compl_of_adic] at hn,
-      rw hn,
-      rw int_valuation_le_pow_iff_dvd,
+        rw [← hα, with_zero.coe_inj, ← of_add_to_add α, hn] },
+      rw [hn, int_valuation_le_pow_iff_dvd],
       apply (val_le_iff_dvd K_v _ n).mp (le_of_eq hn), },
     { obtain ⟨m, hm⟩ : ∃ m : ℕ, v_adic_of_compl a = of_add (-m : ℤ),
       { replace ha : v_adic_of_compl a ≠ 0 := by rwa [valuation.ne_zero_iff, ne.def,
         subring.coe_eq_zero_iff],
-          -- dsimp only [v_adic_of_compl] at ha ⊢,
-          have : (max_ideal_of_completion R v K).valuation (↑a : K_v) ≤ 1 := valuation_le_one _ _,
-          obtain ⟨α, hα⟩ := with_zero.ne_zero_iff_exists.mp ha,
-          rw ← hα at this,
-          rw ← with_zero.coe_one at this,
-          rw ← of_add_zero at this,
-          rw with_zero.coe_le_coe at this,
-          rw [← of_add_to_add α] at this,        
-          rw multiplicative.of_add_le at this,
-          obtain ⟨m, hm⟩ := int.exists_eq_neg_of_nat this,
-          use m,
-          rw ← hα,
-          rw with_zero.coe_inj,
-          rw [← of_add_to_add α],
-          rw hm, },
-      erw valuation_of_algebra_map at hm,
-      rw int_valuation_apply at hm,
+        have : (max_ideal_of_completion R v K).valuation (↑a : K_v) ≤ 1 := valuation_le_one _ _,
+        obtain ⟨α, hα⟩ := with_zero.ne_zero_iff_exists.mp ha,
+        rw [← hα, ← with_zero.coe_one, ← of_add_zero, with_zero.coe_le_coe, 
+          ← of_add_to_add α, multiplicative.of_add_le] at this,
+        obtain ⟨m, hm⟩ := int.exists_eq_neg_of_nat this,
+        use m,
+        rw [← hα, with_zero.coe_inj, ← of_add_to_add α, hm], },
+      erw [valuation_of_algebra_map, int_valuation_apply] at hm,
       rw hm,
       replace hm := le_of_eq hm,
       rw int_valuation_le_pow_iff_dvd at hm,
@@ -239,28 +210,20 @@ begin
       apply_instance, }},
 end
 
-
-
--- lemma due (L : Type*) [field L] {w : valuation L ℤₘ₀} (a : w.valuation_subring)
---   (b : non_zero_divisors w.valuation_subring) : 
---   w (is_localization.mk' L a b) = w a / w b :=  
--- begin
---   rw [div_eq_mul_inv, ← map_inv₀, ← valuation.map_mul],
---   apply congr_arg,
---   simp only [is_fraction_ring.mk'_eq_div, valuation_subring.algebra_map_apply, _root_.coe_coe, 
---     div_eq_mul_inv],
--- end
-
-lemma valuation.adic_of_compl_eq_compl_of_adic (x : K_v) : v_adic_of_compl x = v_compl_of_adic x :=
+lemma adic_of_compl_eq_compl_of_adic (x : K_v) : v_adic_of_compl x = v_compl_of_adic x :=
 begin
-  obtain ⟨a, b, H⟩ := is_localization.mk'_surjective (non_zero_divisors R_v) x, 
-  have h2 := due K_v a b,
-  -- have h3 : valued.v (is_localization.mk' (adic_completion K v) a b) = valued.v ↑a / valued.v ↑b, sorry,
+  obtain ⟨a, b, H⟩ := is_localization.mk'_surjective (non_zero_divisors R_v) x,
   have h1 := @valuation_of_mk' R_v _ _ _ K_v _ _ _ (max_ideal_of_completion R v K) a b,
+  have h2 : valued.v (is_localization.mk' (adic_completion K v) a b) =
+    valued.v (↑a : K_v) / valued.v (↑b : K_v),
+  { rw [div_eq_mul_inv, ← map_inv₀, ← valuation.map_mul],
+    apply congr_arg,
+    simp only [is_fraction_ring.mk'_eq_div, valuation_subring.algebra_map_apply, _root_.coe_coe, 
+      div_eq_mul_inv] },
   rw H at h1 h2,
   rw [h1, h2],
   congr;
-  apply aux_for_below,
+  apply int_adic_of_compl_eq_int_compl_of_adic,
 end
 
 end is_dedekind_domain.height_one_spectrum.completion

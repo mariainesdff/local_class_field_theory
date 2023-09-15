@@ -360,7 +360,7 @@ begin
     obtain ⟨y, hy₁, hy₂⟩ := exists_mem_lt_one_of_lt_one p this,
     rw [← hy₂] at this,
     have this' := this,
-    rw [← completion.valuation.adic_of_compl_eq_compl_of_adic ℤ (p_height_one_ideal p) ℚ (↑y)] at this,
+    rw [← completion.adic_of_compl_eq_compl_of_adic ℤ (p_height_one_ideal p) ℚ (↑y)] at this,
     let M := (completion.max_ideal_of_completion) ℤ (p_height_one_ideal p) ℚ,
     have v_lt_one := @is_dedekind_domain.height_one_spectrum.valuation_lt_one_iff_dvd (Z_p p) _ _ _ (Q_p p)
       _ _ _ (completion.max_ideal_of_completion ℤ (p_height_one_ideal p) ℚ) y,
@@ -391,7 +391,7 @@ begin
       valuation_subring.algebra_map_apply, set_like.coe_mk, x_mem, forall_true_left] at this,
     replace this : valued.v x < (1 : ℤₘ₀),
     { convert this using 1,
-      exact (completion.valuation.adic_of_compl_eq_compl_of_adic ℤ
+      exact (completion.adic_of_compl_eq_compl_of_adic ℤ
         (int.p_height_one_ideal p) ℚ x).symm },
       exact _root_.tendsto_pow_at_top_nhds_0_of_lt_1 (norm_nonneg _)
       ((rank_one_valuation.norm_lt_one_iff_val_lt_one _ ).mpr this), },

@@ -26,7 +26,7 @@ FpX_completion`-algebra for some prime number `p`.
 * For the comparison between the `valued` structures on `FpX_completion` (as adic completion)
   and on `(laurent_series 𝔽_[p])` (coming from its `X`-adic valuation), see `valuation_compare` in 
   `power_series_adic_completion`.
-* We record as an `instance` that `(FpX_completion p)` itself is an equal characteristic local
+* We record as an `instance` that `FpX_completion` itself is an equal characteristic local
   field and that its `ring_of_integers` is isomorphic to `FpX_int_completion` := 
 -/
 
@@ -375,7 +375,7 @@ localized "notation (name := ring_of_integers)
 
 lemma mem_ring_of_integers (x : K) : x ∈ 𝓞 p K ↔ is_integral (FpX_int_completion p) x := iff.rfl
 
-/-- Given an extension of two local fields over (FpX_completion p), we define an algebra structure
+/-- Given an extension of two local fields over `FpX_completion`, we define an algebra structure
 between their two rings of integers. For now, this is not an instance by default as it creates an
 equal-but-not-defeq diamond with `algebra.id` when `K = L`. This is caused by `x = ⟨x, x.prop⟩` not
 being defeq on subtypes. It will be an instance when ported to Lean 4, since the above will not be
