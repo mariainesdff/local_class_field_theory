@@ -53,7 +53,7 @@ begin
   exact le_of_lt (with_zero.of_add_neg_one_lt_one)
 end
 
-/-- The canonical valuation on the `v`-adic completion `K_v` of `K` is discrete. -/
+/-- The valuation on the `v`-adic completion `K_v` of `K` is discrete. -/
 instance : is_discrete (@valued.v K_v _ ℤₘ₀ _ _) := 
 is_discrete_of_exists_uniformizer _
   (valuation_completion_integers_exists_uniformizer R K v).some_spec

@@ -5,7 +5,7 @@ import eq_characteristic.basic
 # The canonical valuation on an equal characteristic local field
 
 In this file we define the canonical valuation on an equal characteristic local field, which is the
-`discrete_valuation.extended_valuation` constructed from the `X`-adic valuation on `𝔽_[p]⟮⟮X⟯⟯`.
+`discrete_valuation.extended_valuation` constructed from the `X`-adic valuation on `FpX_completion`.
 
 ## Main Definitions
 * `eq_char_local_field.with_zero.valued` : the valued instance in an equal characteristic local
@@ -21,13 +21,13 @@ In this file we define the canonical valuation on an equal characteristic local 
   equal characteristic local field is a discrete valuation ring. 
 
 ## Implementation details
-Note that when `K = 𝔽_[p]⟮⟮X⟯⟯`, there are two valued instances on it : the one coming from the fact 
-that `𝔽_[p]⟮⟮X⟯⟯` is defined as the `adic_completion` of `ratfunc 𝔽_[p]` with respect to the ideal 
-`(X)`, and the one obtained by extending this valuation on `𝔽_[p]⟮⟮X⟯⟯` to its trivial field extension
-`𝔽_[p]⟮⟮X⟯⟯`. These instances are mathematically equivalent, but not definitionally equal. However,
-the lemma `discrete_valuation.extension.trivial_extension_eq_valuation` from the file 
-`discrete_valuation_ring.trivial_extension` allow us to easily translate between the two instances
-on `𝔽_[p]⟮⟮X⟯⟯`, whenever this diamond comes up.
+Note that when `K = FpX_completion`, there are two valued instances on it : the one coming from the
+fact that `FpX_completion` is defined as the `adic_completion` of `ratfunc 𝔽_[p]` with respect to
+the ideal `(X)`, and the one obtained by extending this valuation on `FpX_completion` to its trivial
+field extension `FpX_completion`. These instances are mathematically equivalent, but not
+definitionally equal. However `discrete_valuation.extension.trivial_extension_eq_valuation` from the
+file `discrete_valuation_ring.trivial_extension` allow us to easily translate between the two
+instances on `FpX_completion`, whenever this diamond comes up.
 
 -/
 
@@ -46,18 +46,18 @@ variables (K : Type*) [field K] [eq_char_local_field p K]
 
 /-- The valued instance in an equal characteristic local field, induced by the extension of the 
   `X`-adic valuation.-/
-@[priority 100] instance : valued K ℤₘ₀ := extension.valued 𝔽_[p]⟮⟮X⟯⟯ K
+@[priority 100] instance : valued K ℤₘ₀ := extension.valued (FpX_completion p) K
 
 /-- An equal characteristic local field is a complete space. -/
-@[priority 100] instance : complete_space K := extension.complete_space 𝔽_[p]⟮⟮X⟯⟯ K
+@[priority 100] instance : complete_space K := extension.complete_space (FpX_completion p) K
 
 /-- The canonical valuation in an equal characteristic local field is discrete. -/
 instance : valuation.is_discrete (eq_char_local_field.with_zero.valued p K).v := 
-extension.is_discrete_of_finite 𝔽_[p]⟮⟮X⟯⟯ K
+extension.is_discrete_of_finite (FpX_completion p) K
 
 /-- The ring of integers of an equal characteristic local field is a discrete valuation ring. -/
 instance : discrete_valuation_ring (𝓞 p K) := 
-integral_closure.discrete_valuation_ring_of_finite_extension 𝔽_[p]⟮⟮X⟯⟯ K
+integral_closure.discrete_valuation_ring_of_finite_extension (FpX_completion p) K
 
 variables {p}
 
@@ -74,8 +74,8 @@ localized "notation (name := ramification_index)
 
 variables (p)
 
-/-- The local field `𝔽_[p]⟮⟮X⟯⟯` is unramified. -/
-lemma is_unramified_FpX_completion : e 𝔽_[p]⟮⟮X⟯⟯ = 1 := 
+/-- The local field `FpX_completion` is unramified. -/
+lemma is_unramified_FpX_completion : e (FpX_completion p) = 1 := 
 begin
   have hX : (eq_char_local_field.with_zero.valued p (FpX_completion p)).v (FpX_completion.X p) = 
     (of_add (-1 : ℤ)),
@@ -92,23 +92,24 @@ begin
   refl,
 end
 
-/-- A ring equivalence between `𝔽_[p]⟦X⟧ and the valuation subring of `𝔽_[p]⟮⟮X⟯⟯` viewed as an equal
-  characteristic local field. -/
-noncomputable! def FpX_int_completion.equiv_valuation_subring : 
-  𝔽_[p]⟦X⟧ ≃+* ↥(eq_char_local_field.with_zero.valued p 𝔽_[p]⟮⟮X⟯⟯).v.valuation_subring := 
+/-- A ring equivalence between `FpX_int_completion` and the valuation subring of `FpX_completion`
+viewed as an equal characteristic local field. -/
+noncomputable! def FpX_int_completion.equiv_valuation_subring : (FpX_int_completion p) ≃+* 
+  ↥(eq_char_local_field.with_zero.valued p (FpX_completion p)).v.valuation_subring := 
 { to_fun    := λ x,
   begin
     use x.1, 
-    have heq : (eq_char_local_field.with_zero.valued p 𝔽_[p]⟮⟮X⟯⟯).v x.val =
-        extended_valuation 𝔽_[p]⟮⟮X⟯⟯ 𝔽_[p]⟮⟮X⟯⟯ x.val, { refl },
-    rw [valuation.mem_valuation_subring_iff, heq, trivial_extension_eq_valuation 𝔽_[p]⟮⟮X⟯⟯],
+    have heq : (eq_char_local_field.with_zero.valued p (FpX_completion p)).v x.val =
+        extended_valuation (FpX_completion p) (FpX_completion p) x.val, { refl },
+    rw [valuation.mem_valuation_subring_iff, heq, trivial_extension_eq_valuation
+      (FpX_completion p)],
     exact x.2,
   end,
   inv_fun   := λ x,
   begin
     use x.1,
     rw [FpX_int_completion, height_one_spectrum.mem_adic_completion_integers,
-      ← trivial_extension_eq_valuation 𝔽_[p]⟮⟮X⟯⟯],
+      ← trivial_extension_eq_valuation (FpX_completion p)],
     exact x.2
   end,
   left_inv  := λ x, by simp only [subtype.val_eq_coe, set_like.eta],
@@ -119,8 +120,10 @@ noncomputable! def FpX_int_completion.equiv_valuation_subring :
 variable {p}
 
 lemma FpX_int_completion.equiv_valuation_subring_comm :
-  (algebra_map (eq_char_local_field.with_zero.valued p 𝔽_[p]⟮⟮X⟯⟯).v.valuation_subring K).comp 
-    (FpX_int_completion.equiv_valuation_subring p).to_ring_hom = algebra_map 𝔽_[p]⟦X⟧ K :=
+  (algebra_map (eq_char_local_field.with_zero.valued p
+    (FpX_completion p)).v.valuation_subring K).comp
+      (FpX_int_completion.equiv_valuation_subring p).to_ring_hom = 
+  algebra_map (FpX_int_completion p) K :=
 rfl
 
 end eq_char_local_field
