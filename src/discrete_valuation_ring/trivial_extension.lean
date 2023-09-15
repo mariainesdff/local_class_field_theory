@@ -8,8 +8,8 @@ When `K` is a complete, discretely valued field, the trivial extension of the va
 In this file, we provide some rewrite lemmas for dealing with this trivial extension.
 
 ##  Main Theorems
-* `trivial_extension_eq_valuation` : the extension of the valuation on `K` to itself is equal to 
-  the original valuation.
+* `discrete_valuation.extension.trivial_extension_eq_valuation` : the extension of the valuation on 
+  `K` to itself is equal to the original valuation.
 -/
 
 open add_subgroup discrete_valuation polynomial valuation with_zero

@@ -31,7 +31,7 @@ valuation on `K`.
   divides the degree of `L` over `K`. 
 * `discrete_valuation.extension.is_discrete_of_finite` : the extended valuation on `L` is discrete.
 * `discrete_valuation.extension.complete_space` : `L` is a complete space with respect to the 
-  topology induced by `extended-valuation`.
+  topology induced by `extended_valuation`.
 * `discrete_valuation.integral_closure.discrete_valuation_ring_of_finite_extension` : the integral
   closure of the the valuation subring of `K` in `L` is a discrete valuation ring.
 
@@ -480,7 +480,7 @@ begin
   exact spectral_norm_to_normed_field h_alg (norm_is_nonarchimedean K),
 end
 
-/-- The valued field structure on `L` induced `discrete_valuation.extended_valuation`.  -/
+/-- The valued field structure on `L` induced by `discrete_valuation.extended_valuation`.  -/
 @[protected] def valued [finite_dimensional K L] : valued L ℤₘ₀ :=
 begin
   letI : normed_field L := normed_field K L,
