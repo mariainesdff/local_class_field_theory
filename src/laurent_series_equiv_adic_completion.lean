@@ -75,7 +75,12 @@ with the extension of the `polynomial.X`-adic valuation (modulo the isomorphism)
 
 
 ## Implementation details
-* Need to say something about why we do not use here that `power_series are dvr`...
+* To prove `val_le_one_iff_eq_coe` we cannot rely on `alg_map_eq_integers` from
+`discrete_valuation_ring.basic` because there the field `K` needs to be *the* fraction field of the
+DVR instead of a field together with a `[is_fraction_field]` instance (see the Implementation
+details there), and although there is an instance of `discrete_valuation_ring (power_series K)` in
+`for_mathlib.power_series`, the types `laurent_series K` and `fraction_field (power_series K))` do
+not coincide
 -/
 
 noncomputable theory
