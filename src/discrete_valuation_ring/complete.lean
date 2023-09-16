@@ -1,5 +1,4 @@
 import discrete_valuation_ring.basic
-import for_mathlib.with_zero
 import ring_theory.dedekind_domain.adic_valuation
 
 open_locale discrete_valuation
