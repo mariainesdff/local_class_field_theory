@@ -117,6 +117,7 @@ begin
   exact and_iff_right x.2,
 end
 
+
 end integer
 
 /-- We insist that `v` takes values in ℤₘ₀ in order to define uniformizers as the elements in `K`
@@ -352,6 +353,38 @@ begin
   obtain ⟨n, u, hu⟩ := pow_uniformizer v hr₀ ⟨π, hπ⟩,
   rw [uniformizer_is_generator v ⟨π, hπ⟩, span_singleton_eq_span_singleton] at hr,
   exact uniformizer_of_associated v hπ hr,
+end
+
+
+lemma val_le_iff_dvd (L : Type*) [field L] {w : valuation L ℤₘ₀} [is_discrete w]
+  [discrete_valuation_ring w.valuation_subring]
+  (x : w.valuation_subring) (n : ℕ) :  w x ≤ of_add (-(n : ℤ)) ↔
+    (local_ring.maximal_ideal (w.valuation_subring)) ^ n ∣ ideal.span {x} :=
+begin
+  by_cases hx : x = 0,
+  { simp_rw [ideal.span_singleton_eq_bot.mpr hx, hx, algebra_map.coe_zero,
+    valuation.map_zero, with_zero.zero_le, true_iff, ← ideal.zero_eq_bot, dvd_zero] },
+  { set r := submodule.is_principal.generator (local_ring.maximal_ideal (w.valuation_subring))
+      with hr,
+    have hrn : w (r ^ n) = of_add (-(n : ℤ)),
+    { simp only [valuation.map_pow, of_add_neg, with_zero.coe_inv, inv_pow, inv_inj, 
+        ← with_zero.coe_pow, ← of_add_nsmul, nat.smul_one_eq_coe], 
+      rw [with_zero.of_add_zpow, ← zpow_neg, ← nat.cast_one,
+        ← with_zero.of_add_neg_one_pow_comm (-n) 1, neg_neg, ← zpow_coe_nat, ← zpow_coe_nat, 
+        with_zero.of_add_pow_pow_comm, nat.cast_one, zpow_one],
+      congr,
+      rw ← is_uniformizer_iff,
+      apply discrete_valuation.is_uniformizer_of_generator,
+      rw [← submodule.is_principal.span_singleton_generator (maximal_ideal (w.valuation_subring)),
+        ← hr],
+      refl },
+    have := @valuation.integers.le_iff_dvd L ℤₘ₀ _ _ w w.valuation_subring _ _
+      (valuation.integer.integers w) x (r ^ n),
+    erw [← hrn, this],
+    rw [← ideal.span_singleton_generator (local_ring.maximal_ideal (w.valuation_subring)), ← hr, 
+      ideal.span_singleton_pow, ideal.dvd_iff_le, ideal.span_singleton_le_iff_mem,
+      ideal.mem_span_singleton', dvd_iff_exists_eq_mul_left],
+    tauto, },
 end
 
 section rank_one
