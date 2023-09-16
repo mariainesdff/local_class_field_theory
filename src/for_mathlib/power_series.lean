@@ -265,7 +265,7 @@ namespace polynomial
 open ratfunc power_series
 
 lemma coe_coe (P : polynomial K) : (P : laurent_series K) = (↑P : ratfunc K) :=
-  by { erw [ratfunc.coe_def, ratfunc.coe_alg_hom, lift_alg_hom_apply, ratfunc.num_algebra_map,
+by { erw [ratfunc.coe_def, ratfunc.coe_alg_hom, lift_alg_hom_apply, ratfunc.num_algebra_map,
     ratfunc.denom_algebra_map P, map_one, div_one], refl}
 
 lemma coe_ne_zero {f : polynomial K} : f ≠ 0 → (↑f : (power_series K)) ≠ 0 :=

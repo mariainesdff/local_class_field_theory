@@ -1,6 +1,6 @@
 import algebra.char_p.subring
 import discrete_valuation_ring.complete
-import power_series_adic_completion
+import laurent_series_equiv_adic_completion
 import for_mathlib.ring_theory.valuation.algebra_instances
 import ring_theory.dedekind_domain.adic_valuation
 
@@ -256,7 +256,7 @@ begin
   exact ratfunc.X_ne_zero,
 end
 
-open completion_laurent_series
+open completion_laurent_series laurent_series
 
 lemma dvd_of_norm_lt_one {F : (FpX_int_completion p)} :
   valued.v (F : (FpX_completion p)) < (1 : ℤₘ₀) → ((FpX_int_completion.X p) ∣ F) :=
