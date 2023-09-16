@@ -34,15 +34,11 @@ noncomputable theory
 
 open_locale discrete_valuation
 open polynomial multiplicative ratfunc is_dedekind_domain is_dedekind_domain.height_one_spectrum
-  rank_one_valuation valuation_subring power_series
+  rank_one_valuation valuation_subring /- power_series -/
 variables (p : ℕ) [fact(nat.prime p)] 
 
 notation (name := prime_galois_field)
   `𝔽_[` p `]` := galois_field p 1
-
-instance : fintype (local_ring.residue_field (power_series 𝔽_[p])) :=
-fintype.of_equiv _ (residue_field_of_power_series (𝔽_[p])).to_equiv.symm
-
 
 /-- `FpX_completion` is the adic completion of the rational functions `𝔽_p(X)`. -/
 @[reducible] def FpX_completion := (ideal_X 𝔽_[p]).adic_completion (ratfunc 𝔽_[p])
@@ -52,8 +48,10 @@ fintype.of_equiv _ (residue_field_of_power_series (𝔽_[p])).to_equiv.symm
 @[reducible]
 definition FpX_int_completion := (ideal_X 𝔽_[p]).adic_completion_integers (ratfunc 𝔽_[p])
 
--- notation (name := FpX_int_completion)
---   `𝔽_[` p `]⟦` X `⟧` := FpX_int_completion p
+open power_series
+
+instance : fintype (local_ring.residue_field (power_series 𝔽_[p])) :=
+fintype.of_equiv _ (residue_field_of_power_series (𝔽_[p])).to_equiv.symm
 
 instance ratfunc.char_p : char_p (ratfunc 𝔽_[p]) p := 
 char_p_of_injective_algebra_map ((algebra_map 𝔽_[p] (ratfunc 𝔽_[p])).injective) p
@@ -169,8 +167,8 @@ variable {p}
 instance : discrete_valuation_ring (FpX_int_completion p) := discrete_valuation.dvr_of_is_discrete _
 
 instance : algebra (FpX_int_completion p) (FpX_completion p) :=
-(by apply_instance : algebra ((ideal_X 𝔽_[p]).adic_completion_integers (ratfunc 𝔽_[p]))
-  ((ideal_X 𝔽_[p]).adic_completion (ratfunc 𝔽_[p])))
+(by apply_instance : algebra ((polynomial.ideal_X 𝔽_[p]).adic_completion_integers (ratfunc 𝔽_[p]))
+  ((polynomial.ideal_X 𝔽_[p]).adic_completion (ratfunc 𝔽_[p])))
 
 instance : has_coe (FpX_int_completion p) (FpX_completion p) := ⟨algebra_map _ _⟩
 
@@ -178,8 +176,8 @@ lemma algebra_map_eq_coe (x : (FpX_int_completion p)) : algebra_map (FpX_int_com
   (FpX_completion p) x = x := rfl
 
 instance is_fraction_ring : is_fraction_ring (FpX_int_completion p) (FpX_completion p) :=
-(by apply_instance : is_fraction_ring ((ideal_X 𝔽_[p]).adic_completion_integers (ratfunc 𝔽_[p]))
-  ((ideal_X 𝔽_[p]).adic_completion (ratfunc 𝔽_[p])))
+(by apply_instance : is_fraction_ring ((polynomial.ideal_X 𝔽_[p]).adic_completion_integers
+  (ratfunc 𝔽_[p])) ((polynomial.ideal_X 𝔽_[p]).adic_completion (ratfunc 𝔽_[p])))
 
 variable (p)
 
@@ -269,9 +267,11 @@ begin
   { rw [h_fg, ring_equiv.symm_apply_apply] },
   erw [← h_gf, valuation_compare 𝔽_[p] g, ← with_zero.coe_one, ← of_add_zero, ← neg_zero],
   intro h,
-  obtain ⟨G, h_Gg⟩ := (val_le_of_add_neg_zero_iff_eq_coe 𝔽_[p] g).mp (le_of_lt h),
-  rw [neg_zero, ← neg_add_self (1 : ℤ), with_zero.lt_succ_iff_le] at h,
-  rw [← h_Gg, ← int.coe_nat_one, int_valuation_le_iff_coeff_zero_of_lt] at h,
+  obtain ⟨G, h_Gg⟩ : ∃ (G : power_series 𝔽_[p]), ↑G = g,
+  { replace h := le_of_lt h,
+    rwa [neg_zero, of_add_zero, with_zero.coe_one, val_le_one_iff_eq_coe] at h},
+  rw [neg_zero, ← neg_add_self (1 : ℤ), with_zero.lt_succ_iff_le, ← h_Gg, ← int.coe_nat_one,
+    laurent_series.int_valuation_le_iff_coeff_zero_of_lt] at h,
   specialize h 0 zero_lt_one,
   rw [power_series.coeff_zero_eq_constant_coeff, ← power_series.X_dvd_iff] at h,
   obtain ⟨C, rfl⟩ := dvd_iff_exists_eq_mul_left.mp h,
@@ -295,7 +295,7 @@ begin
   simp only,
   erw [← h_fG, valuation_compare 𝔽_[p], ← with_zero.coe_one, ← of_add_zero, ← neg_zero, 
     neg_zero, ← neg_add_self (1 : ℤ), with_zero.lt_succ_iff_le, ← int.coe_nat_one,
-    int_valuation_le_iff_coeff_zero_of_lt],
+    laurent_series.int_valuation_le_iff_coeff_zero_of_lt],
   intros n hn,
   replace hn : n = 0 := nat.lt_one_iff.mp hn,
   rw hn,
