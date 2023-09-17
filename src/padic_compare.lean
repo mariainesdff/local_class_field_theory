@@ -153,9 +153,9 @@ begin
     apply congr_arg,
     rw [← heq, padic_val_rat.of_int_multiplicity (nat.prime.ne_one _inst_1.1) hx,
       to_add_of_add, neg_inj, nat.cast_inj, ← part_enat.coe_inj, part_enat.coe_get,
-      unique_factorization_monoid.multiplicity_eq_count_normalized_factors hp.irreducible hx, int.normalize_coe_nat,
-      part_enat.coe_inj, count_normalized_factors_eq_count_normalized_factors_span hx 
-        (ne_zero.ne p) rfl hp, 
+      unique_factorization_monoid.multiplicity_eq_count_normalized_factors hp.irreducible hx,
+      int.normalize_coe_nat, part_enat.coe_inj, 
+      count_normalized_factors_eq_count_normalized_factors_span hx (ne_zero.ne p) rfl hp, 
       normalization_monoid.count_normalized_factors_eq_associates_count _ _ _ hx' hp' hpne],
     refl },
 end
@@ -347,8 +347,7 @@ begin
   exact ((valuation.is_equiv_iff_val_lt_one _ _).mp hv).mp hx,
 end
 
--- TODO: slow
-/-- TODO: possible diamond here (the proof for ℤ_[p] does not translate) -/
+
 instance : char_zero (Z_p p) := 
  { cast_injective := λ m n h, 
   begin
@@ -539,8 +538,6 @@ begin
       apply continuous.tendsto (compare p).symm.3.continuous 0}},
 end
 
-
---TODO: Golf proof!
 lemma padic_int_ring_equiv_range :
   (Z_p p).map (padic_equiv p).to_ring_hom = padic_int.subring p :=
 begin
@@ -579,5 +576,3 @@ definition residue_field : local_ring.residue_field (Z_p p) ≃+* (zmod p) :=
 end Z_p
 
 end padic_comparison
-
-#lint
