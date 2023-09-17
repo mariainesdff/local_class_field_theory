@@ -11,8 +11,7 @@ variables (p : out_param ℕ) [fact (p.prime)]
 namespace padic_int
 
 
-/-- The isomorphism of the residue field of the `p`-adic integers with the finite field with `p`
-elements -/
+/-- The equivalence between the residue field of the `p`-adic integers and `ℤ/pℤ` -/
 noncomputable
 definition residue_field : local_ring.residue_field ℤ_[p] ≃+* (zmod p) := 
 begin
