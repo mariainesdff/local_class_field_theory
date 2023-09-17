@@ -51,9 +51,7 @@ import from_mathlib.specific_limits
 * To create the abstract completion `padic_pkg` we regard `ℚ_[p]` we need a coercion from `ℚ` to
   its completion `ℚ_[p]` that is not definitionally equal to the coercion from `ℚ` to any field of
   characteristic zero. In particular, we need to manually upgrade this coercion to a ring map in the
-  `definition coe_ring_hom : ℚ →+* ℚ_[p]`.
-  
--/
+  `definition coe_ring_hom : ℚ →+* ℚ_[p]`.-/
 
 noncomputable theory
 
