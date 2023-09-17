@@ -4,38 +4,87 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: María Inés de Frutos-Fernández, Filippo A. E. Nuccio
 -/
 
-import analysis.specific_limits.basic
+
 import discrete_valuation_ring.complete
 import number_theory.padics.padic_integers
-import number_theory.padics.ring_homs
 import ring_theory.dedekind_domain.adic_valuation
+import for_mathlib.number_theory.padics.padic_integers
 import for_mathlib.ring_theory.dedekind_domain.ideal
+import from_mathlib.specific_limits
 
+/-!
+
+## Main definitions
+* `Q_p` is the adic completion of ℚ defined as the uniform completion of the valued field
+  `ℚ` endowed with its `p`-adic valued structure.
+* `padic_pkg'` is the abstract completion whose underlying space is `Q_p`. 
+* `padic_pkg` is the abstract completion of `ℚ` (endowed with its `p`-adic valued structure) whose
+  underlying space is "usual" `ℚ_[p]` defined in terms of the `p`-adic metric. In particular, terms
+  of `padic_pkg'.space` are limits of abstract Cauchy filters as in the file 
+  `topology.uniform_space.completion` while terms of `padic_pkg.space = ℚ_[p]` are limits of Cauchy
+  sequences.
+
+## Implementation details
+* In order to put a valued instance on `ℚ` coming from the `p`-adic valuation on `ℤ` we have to
+  locally remove several instances on it, notably the metric one, the normed one, the densely
+  normed field one, the division ring one, the normed additive commutative group one. With these in
+  force, there would be clashes between different uniform structures.
+
+-/
 
 noncomputable theory
 
-open is_dedekind_domain is_dedekind_domain.height_one_spectrum nnreal polynomial valuation 
-  normalization_monoid multiplicative
-open_locale nnreal discrete_valuation
+variables (p : out_param ℕ) [fact (p.prime)]
 
-def int.p_height_one_ideal (p : out_param ℕ) [hp : fact (p.prime)] : 
-  height_one_spectrum ℤ :=
+open is_dedekind_domain is_dedekind_domain.height_one_spectrum 
+
+def int.p_height_one_ideal /- (p : out_param ℕ) -/ [hp : fact (p.prime)] : height_one_spectrum ℤ :=
 { as_ideal := ideal.span{(p : ℤ)},
-  is_prime := by { rw ideal.span_singleton_prime, 
+  is_prime := by { rw ideal.span_singleton_prime,
     exacts [nat.prime_iff_prime_int.mp hp.1, nat.cast_ne_zero.mpr hp.1.ne_zero] },
   ne_bot   := by {simp only [ne.def, ideal.span_singleton_eq_bot, nat.cast_eq_zero],
     exact hp.1.ne_zero, }}
-open int
 
-open unique_factorization_monoid
 
-open_locale classical
+namespace padic'
+
+open valuation int
+open_locale discrete_valuation
+
+local attribute [-instance] rat.metric_space rat.normed_field rat.densely_normed_field
+  /- rat.normed_linear_ordered_field -/  rat.division_ring rat.normed_add_comm_group
+
+instance : separated_space ℚ_[p] := metric_space.to_separated
+
+def padic_valued : valued ℚ ℤₘ₀ := (p_height_one_ideal p).adic_valued
+
+local attribute [instance] padic_valued
+
+@[reducible]
+def Q_p : Type* := adic_completion ℚ (p_height_one_ideal p)
+
+instance : is_discrete (@valued.v (Q_p p) _ ℤₘ₀ _ _) := 
+completion.is_discrete _ _ _
+
+instance : normed_field (Q_p p) := rank_one_valuation.valued_field.to_normed_field (Q_p p) ℤₘ₀
+
+def padic'_pkg : abstract_completion ℚ :=
+{ space            := Q_p p,
+  coe              := coe,
+/-This `coe` is not the coercion from `ℚ` to every field of characteristic zero, but rather the
+coercion from a space to its uniform completion-/
+  uniform_struct   := infer_instance,
+  complete         := infer_instance,
+  separation       := infer_instance,
+  uniform_inducing := (uniform_space.completion.uniform_embedding_coe ℚ).1,
+  dense            := uniform_space.completion.dense_range_coe }
+
+end padic'
 
 namespace padic_comparison
 
-open padic
-
-variables (p : out_param ℕ) [fact (p.prime)]
+open nnreal polynomial int normalization_monoid multiplicative padic valuation
+open_locale classical nnreal discrete_valuation
   
 local attribute [-instance] rat.metric_space rat.normed_field rat.densely_normed_field
   /- rat.normed_linear_ordered_field -/  rat.division_ring rat.normed_add_comm_group
@@ -45,6 +94,8 @@ instance : separated_space ℚ_[p] := metric_space.to_separated
 def padic_valued : valued ℚ ℤₘ₀ := (p_height_one_ideal p).adic_valued
 
 local attribute [instance] padic_valued
+
+section valuation
 
 lemma padic_norm_of_int_eq_val_norm (x : ℤ) : ((padic_norm p x) : ℝ) =
   with_zero_mult_int_to_nnreal (ne_zero.ne p) (valued.v (x : ℚ)) := 
@@ -74,7 +125,7 @@ begin
     apply congr_arg,
     rw [← heq, padic_val_rat.of_int_multiplicity (nat.prime.ne_one _inst_1.1) hx,
       to_add_of_add, neg_inj, nat.cast_inj, ← part_enat.coe_inj, part_enat.coe_get,
-      multiplicity_eq_count_normalized_factors hp.irreducible hx, int.normalize_coe_nat,
+      unique_factorization_monoid.multiplicity_eq_count_normalized_factors hp.irreducible hx, int.normalize_coe_nat,
       part_enat.coe_inj, count_normalized_factors_eq_count_normalized_factors_span hx 
         (ne_zero.ne p) rfl hp, 
       normalization_monoid.count_normalized_factors_eq_associates_count _ _ _ hx' hp' hpne],
@@ -94,6 +145,10 @@ begin
     apply congr_arg2;
     { convert padic_norm_of_int_eq_val_norm p _, erw valuation_of_algebra_map }},
 end
+
+end valuation
+
+section abstract_completion
 
 lemma uniform_inducing_coe : uniform_inducing (coe : ℚ → ℚ_[p]) :=
 begin
@@ -146,33 +201,11 @@ def coe_ring_hom : ℚ →+* ℚ_[p] :=
   map_zero' := rat.cast_zero,
   map_add'  := rat.cast_add }
 
-namespace padic'
-
---`toDO`  do we really need to remove it?
--- local attribute [- instance] rat.cast_coe
-
-@[reducible]
-def Q_p : Type* := adic_completion ℚ (p_height_one_ideal p)
-
-instance : is_discrete (@valued.v (Q_p p) _ ℤₘ₀ _ _) := 
-completion.is_discrete _ _ _
-
-instance : normed_field (Q_p p) := rank_one_valuation.valued_field.to_normed_field (Q_p p) ℤₘ₀
-
-def padic'_pkg : abstract_completion ℚ :=
-{ space            := Q_p p,
-  coe              := coe,
-/-This `coe` is not the coercion from `ℚ` to every field of characteristic zero, but rather the
-coercion from a space to its uniform completion-/
-  uniform_struct   := infer_instance,
-  complete         := infer_instance,
-  separation       := infer_instance,
-  uniform_inducing := (uniform_space.completion.uniform_embedding_coe ℚ).1,
-  dense            := uniform_space.completion.dense_range_coe }
-
-end padic'
+end abstract_completion
 
 open padic'
+
+section comparison
 
 def compare : Q_p p ≃ᵤ ℚ_[p] :=
 abstract_completion.compare_equiv (padic'_pkg p) (padic_pkg p)
@@ -209,6 +242,54 @@ definition padic_equiv : (Q_p p) ≃+* ℚ_[p] :=
   ..(compare p) }
 
 instance : char_zero (Q_p p) := (padic_equiv p).to_ring_hom.char_zero
+
+instance : algebra ℚ_[p] (Q_p p) := ring_hom.to_algebra (padic_comparison.padic_equiv p).symm
+
+instance : is_scalar_tower ℚ ℚ_[p] (Q_p p) := 
+{ smul_assoc := λ r x y, begin
+    simp only [algebra.smul_def, eq_rat_cast, _root_.map_mul, map_rat_cast, mul_assoc],
+    refl,
+  end  }
+
+lemma padic_valued_valuation_p : 
+  @valued.v ℚ _ ℤₘ₀ _ (padic_valued p) (p : ℚ) = (of_add (-1 : ℤ)) := 
+begin
+  have hp : (p : ℚ) = algebra_map ℤ ℚ (p : ℤ) := rfl,
+  rw [adic_valued_apply, hp, valuation_of_algebra_map, int_valuation_apply, 
+    int_valuation_def_if_neg (p_height_one_ideal p) 
+      (nat.cast_ne_zero.mpr (nat.prime.ne_zero _inst_1.1))],
+  congr,
+  apply associates.count_self,
+  rw associates.irreducible_mk,
+  apply prime.irreducible,
+  exact ideal.prime_of_is_prime ( ideal.span_singleton_eq_bot.mp.mt (nat.cast_ne_zero.mpr 
+    (nat.prime.ne_zero _inst_1.1))) (ideal.is_maximal.is_prime' (p_height_one_ideal p).as_ideal)
+end
+
+lemma padic'.coe_eq (x : ℚ) : (x : Q_p p) = (((padic'_pkg p).coe x) : (padic'_pkg p).space) :=
+begin
+  have hp : (x : Q_p p) = (padic_pkg p).compare (padic'_pkg p) (x : ℚ_[p]),
+  { have h: (padic_pkg p).compare (padic'_pkg p) (x : ℚ_[p]) = algebra_map ℚ_[p] (Q_p p) x := rfl,
+    rw [h, map_rat_cast] },
+  rw [← abstract_completion.compare_coe (padic_pkg p) (padic'_pkg p), hp],
+  refl,
+end
+
+lemma padic'.valuation_p : 
+   valued.v (p : Q_p p) = (of_add (-1 : ℤ)) := 
+begin
+   letI : valued ℚ ℤₘ₀ := padic_valued p,
+   have hp : (p : Q_p p) = (((coe : ℚ → (Q_p p)) p) : Q_p p),
+   { have : ∀ x : ℚ, (coe : ℚ → (Q_p p)) x = (x : Q_p p),
+     { intro x, rw padic'.coe_eq, refl, },
+     rw this, simp only [rat.cast_coe_nat], },
+   rw [hp, valued.valued_completion_apply (p : ℚ), padic_valued_valuation_p p],
+ end
+
+
+end comparison
+
+section Z_p
 
 @[reducible]
 def Z_p := (@valued.v (Q_p p) _ ℤₘ₀ _ _).valuation_subring
@@ -290,39 +371,11 @@ open_locale filter topology
 def comap_Zp : valuation_subring ℚ_[p] :=
 valuation_subring.comap (Z_p p) (padic_equiv p).symm.to_ring_hom
 
--- TODO: Ask on Zulip if it exists and move it to another file/folder
--- **FAE** This is in lean4 already
-lemma nnreal.lt_one_of_tendsto_pow_0 (a : ℝ≥0) (h : tendsto (λ n : ℕ, a^n) at_top (𝓝 0)) :
-  a < 1 :=
-begin
-  by_cases ha₀ : a = 0,
-  {rw ha₀, exact zero_lt_one,},
-  { by_contradiction ha_le,
-    rw not_lt at ha_le,
-    by_cases ha : a = 1,
-    { simp only [ha, one_pow] at h,
-      exact zero_ne_one (tendsto_nhds_unique h tendsto_const_nhds) },
-    { replace h : tendsto (λ n : ℕ, (a : ennreal) ^n) at_top (𝓝 0),
-      { rw ← ennreal.coe_zero,
-        simp_rw [← ennreal.coe_pow, ennreal.tendsto_coe],
-        exact h, },
-      set b : ennreal := ↑(a⁻¹) with hb,
-      replace h : tendsto (λ n : ℕ, b ^ n) at_top (𝓝 ⊤),
-      { rw [hb, ennreal.coe_inv ha₀],
-        convert (@ennreal.tendsto_inv_iff ℕ at_top (λ n, (↑a) ^ n) 0).mpr h,
-        { funext n, exact ennreal.inv_pow.symm, },
-        { simp only [ennreal.inv_zero] }},
-      have hb₁ : b < 1,
-      { rw [hb, ← ennreal.coe_one, ennreal.coe_lt_coe],
-        exact inv_lt_one (lt_of_le_of_ne ha_le (ne.symm ha)) },
-      exact ennreal.zero_ne_top (tendsto_nhds_unique
-        (ennreal.tendsto_pow_at_top_nhds_0_of_lt_1 hb₁) h)}},
-  end
 
-
-/-The two lemmas below have basically the same proof, except from the fact that in one we
- use that `x : ℚ_[p]` satisfies ‖ x ‖ < 1 iff `p ∣ x` and in the other that `x : (Q_p p)` has
- ‖ x ‖ < 1 iff it belongs to the maximal ideal...-/
+/-- The two lemmas `padic_int.nonunit_mem_iff_top_nilpotent` and 
+`unit_ball.nonunit_mem_iff_top_nilpotent` have basically the same proof, except that in the first we
+ use that `x : ℚ_[p]` satisfies ‖ x ‖ < 1 iff `p ∣ x` and in the other that `x : (Q_p p)` satisfies
+ `‖ x ‖ < 1` iff it belongs to the maximal ideal. -/
 lemma padic_int.nonunit_mem_iff_top_nilpotent (x : ℚ_[p]) :
   x ∈ (padic_int.valuation_subring p).nonunits ↔ filter.tendsto (λ n : ℕ, x ^ n) at_top (𝓝 0) :=
 begin
@@ -343,35 +396,31 @@ begin
       (padic_int.mem_nonunits.mpr this)⟩ },
 end
 
-
---The lemma below could probably be incorporated in the proof of 
--- `unit_ball.nonunit_mem_iff_top_nilpotent` if the whole things does not become too long
-lemma go_faster {x : (Q_p p)} (h_go : ‖ x ‖ < 1) (H : tendsto (λ (n : ℕ), ‖x‖ ^ n) at_top (𝓝 0)) :
-  x ∈ (Z_p p).nonunits :=
+lemma mem_unit_ball_of_tendsto_zero {x : (Q_p p)} (H : tendsto (λ (n : ℕ), ‖x‖ ^ n) at_top (𝓝 0))
+   (h_go : ‖ x ‖ < 1)  : x ∈ (Z_p p).nonunits :=
 begin
   apply valuation_subring.mem_nonunits_iff_exists_mem_maximal_ideal.mpr,
   have : ‖ x ‖ < 1,
-    { suffices : (⟨‖ x ‖, norm_nonneg _⟩ : ℝ≥0) < 1,
-      { rwa [← nnreal.coe_lt_coe, nnreal.coe_one, ← subtype.val_eq_coe] at this },
-      apply nnreal.lt_one_of_tendsto_pow_0,
-      rwa [← nnreal.tendsto_coe, nnreal.coe_zero] },
-    replace this : valued.v x < (1 : ℤₘ₀),
-    { apply (rank_one_valuation.norm_lt_one_iff_val_lt_one x).mp this },
-    obtain ⟨y, hy₁, hy₂⟩ := exists_mem_lt_one_of_lt_one p this,
-    rw [← hy₂] at this,
-    have this' := this,
-    rw [← completion.adic_of_compl_eq_compl_of_adic ℤ (p_height_one_ideal p) ℚ (↑y)] at this,
-    let M := (completion.max_ideal_of_completion) ℤ (p_height_one_ideal p) ℚ,
-    have v_lt_one := @is_dedekind_domain.height_one_spectrum.valuation_lt_one_iff_dvd (Z_p p) _ _ _ (Q_p p)
-      _ _ _ (completion.max_ideal_of_completion ℤ (p_height_one_ideal p) ℚ) y,
-    have eq_y : (algebra_map ↥(Z_p p) (Q_p p)) y = (↑y : (Q_p p)) := rfl,
-    rw eq_y at v_lt_one,
-    rw [v_lt_one] at this,
-    simp only [ideal.dvd_span_singleton, mem_nonunits_iff, valuation_subring.algebra_map_apply,
-      set_like.coe_mk, forall_true_left] at this,--squeeze_simp has a bizarre *unwanted* effect
-    rw [← hy₁],
-    simp only [mem_valuation_subring_iff, set_like.eta, exists_prop],
-    exact ⟨le_of_lt this', this⟩,--this final `exact` probably shows that having both `this'` and `this` is perfectly useless
+  { suffices : (⟨‖ x ‖, norm_nonneg _⟩ : ℝ≥0) < 1,
+    { rwa [← nnreal.coe_lt_coe, nnreal.coe_one, ← subtype.val_eq_coe] at this },
+    apply nnreal.lt_one_of_tendsto_pow_0,
+    rwa [← nnreal.tendsto_coe, nnreal.coe_zero] },
+  replace this : valued.v x < (1 : ℤₘ₀),
+  { apply (rank_one_valuation.norm_lt_one_iff_val_lt_one x).mp this },
+  obtain ⟨y, hy₁, hy₂⟩ := exists_mem_lt_one_of_lt_one p this,
+  rw [← hy₂] at this,
+  rw [← hy₁],
+  simp only [mem_valuation_subring_iff, set_like.eta, exists_prop],
+  refine ⟨le_of_lt this, _⟩,
+  rw [← completion.adic_of_compl_eq_compl_of_adic ℤ (p_height_one_ideal p) ℚ (↑y)] at this,
+  let M := (completion.max_ideal_of_completion) ℤ (p_height_one_ideal p) ℚ,
+  have v_lt_one := @is_dedekind_domain.height_one_spectrum.valuation_lt_one_iff_dvd (Z_p p) _ _
+    _ (Q_p p) _ _ _ (completion.max_ideal_of_completion ℤ (p_height_one_ideal p) ℚ) y,
+  have eq_y : (algebra_map ↥(Z_p p) (Q_p p)) y = (↑y : (Q_p p)) := rfl,
+  rw eq_y at v_lt_one,
+  simp only [v_lt_one, ideal.dvd_span_singleton, mem_nonunits_iff,
+    valuation_subring.algebra_map_apply, set_like.coe_mk, forall_true_left] at this,
+  exact this,
 end
 
 lemma unit_ball.nonunit_mem_iff_top_nilpotent (x : (Q_p p)) :
@@ -400,7 +449,7 @@ begin
       { rwa [← nnreal.coe_lt_coe, nnreal.coe_one, ← subtype.val_eq_coe] at this },
       apply nnreal.lt_one_of_tendsto_pow_0,
       rwa [← nnreal.tendsto_coe, nnreal.coe_zero] },
-      apply go_faster p this H }
+    apply mem_unit_ball_of_tendsto_zero p H this}
 end
 
 
@@ -453,50 +502,6 @@ begin
       apply continuous.tendsto (compare p).symm.3.continuous 0}},
 end
 
-instance : algebra ℚ_[p] (Q_p p) := 
-ring_hom.to_algebra (padic_comparison.padic_equiv p).symm
-
-instance : is_scalar_tower ℚ ℚ_[p] (Q_p p) := 
-{ smul_assoc := λ r x y, begin
-    simp only [algebra.smul_def, eq_rat_cast, _root_.map_mul, map_rat_cast, mul_assoc],
-    refl,
-  end  }
-
-lemma padic_valued_valuation_p : 
-  @valued.v ℚ _ ℤₘ₀ _ (padic_valued p) (p : ℚ) = (of_add (-1 : ℤ)) := 
-begin
-  have hp : (p : ℚ) = algebra_map ℤ ℚ (p : ℤ) := rfl,
-  rw [adic_valued_apply, hp, valuation_of_algebra_map, int_valuation_apply, 
-    int_valuation_def_if_neg (p_height_one_ideal p) 
-      (nat.cast_ne_zero.mpr (nat.prime.ne_zero _inst_1.1))],
-  congr,
-  apply associates.count_self,
-  rw associates.irreducible_mk,
-  apply prime.irreducible,
-  exact ideal.prime_of_is_prime ( ideal.span_singleton_eq_bot.mp.mt (nat.cast_ne_zero.mpr 
-    (nat.prime.ne_zero _inst_1.1))) (ideal.is_maximal.is_prime' (p_height_one_ideal p).as_ideal)
-end
-
-lemma padic'.coe_eq (x : ℚ) : (x : Q_p p) = (((padic'_pkg p).coe x) : (padic'_pkg p).space) :=
-begin
-  have hp : (x : Q_p p) = (padic_pkg p).compare (padic'_pkg p) (x : ℚ_[p]),
-  { have h: (padic_pkg p).compare (padic'_pkg p) (x : ℚ_[p]) = algebra_map ℚ_[p] (Q_p p) x := rfl,
-    rw [h, map_rat_cast] },
-  rw [← abstract_completion.compare_coe (padic_pkg p) (padic'_pkg p), hp],
-  refl,
-end
-
-lemma padic'.valuation_p : 
-   valued.v (p : Q_p p) = (of_add (-1 : ℤ)) := 
-begin
-   letI : valued ℚ ℤₘ₀ := padic_valued p,
-   have hp : (p : Q_p p) = (((coe : ℚ → (Q_p p)) p) : Q_p p),
-   { have : ∀ x : ℚ, (coe : ℚ → (Q_p p)) x = (x : Q_p p),
-     { intro x, rw padic'.coe_eq, refl, },
-     rw this, simp only [rat.cast_coe_nat], },
-   rw [hp, valued.valued_completion_apply (p : ℚ), padic_valued_valuation_p p],
- end
-
 lemma padic'_int.height_one_ideal_def : 
   (padic'_int.height_one_ideal p).as_ideal = ideal.span {(p : Z_p p)} := 
 discrete_valuation.is_uniformizer_is_generator _ (padic'.valuation_p p)
@@ -509,10 +514,7 @@ begin
   rw ← valuation_subrings_eq,
   convert this,
   ext x,
-  -- rw comap_Zp,
-  -- rw ← subring.mem_carrier,
-  -- rw ← subring.mem_carrier,
-  simp only [subring.mem_carrier, subring.mem_map, --valuation_subring.mem_to_subring, 
+  simp only [subring.mem_carrier, subring.mem_map,
   mem_valuation_subring_iff, 
   exists_prop, valuation_subring.mem_comap],
   split,
@@ -535,20 +537,10 @@ noncomputable!
 definition padic_int_ring_equiv :  (Z_p p) ≃+* ℤ_[p] :=
 (ring_equiv.subring_map _).trans (ring_equiv.subring_congr (padic_int_ring_equiv_range p))
 
-namespace padic_int
-
-definition residue_field : local_ring.residue_field ℤ_[p] ≃+* (zmod p) := 
-begin
-  let α := ring_hom.quotient_ker_equiv_of_surjective
-    (zmod.ring_hom_surjective (@padic_int.to_zmod p _)),
-  rw padic_int.ker_to_zmod at α,
-  use α, 
-end
-
-end padic_int
 
 definition residue_field : local_ring.residue_field (Z_p p) ≃+* (zmod p) := 
 (local_ring.residue_field.map_equiv (padic_int_ring_equiv p)).trans (padic_int.residue_field p)
 
+end Z_p
 
 end padic_comparison
