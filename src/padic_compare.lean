@@ -57,18 +57,18 @@ import from_mathlib.specific_limits
 
 noncomputable theory
 
-variables (p : out_param ℕ) [fact (p.prime)]
-
 open is_dedekind_domain is_dedekind_domain.height_one_spectrum 
 
 /-- The ideal `pℤ` as term of the height_one_spectrum of `ℤ`.-/
-definition int.p_height_one_ideal [hp : fact (p.prime)] : height_one_spectrum ℤ :=
+definition int.p_height_one_ideal (p : out_param ℕ) [hp : fact (p.prime)] : 
+  height_one_spectrum ℤ :=
 { as_ideal := ideal.span{(p : ℤ)},
   is_prime := by { rw ideal.span_singleton_prime,
     exacts [nat.prime_iff_prime_int.mp hp.1, nat.cast_ne_zero.mpr hp.1.ne_zero] },
   ne_bot   := by {simp only [ne.def, ideal.span_singleton_eq_bot, nat.cast_eq_zero],
     exact hp.1.ne_zero, }}
 
+variables (p : out_param ℕ) [fact (p.prime)]
 
 namespace padic'
 
@@ -350,14 +350,14 @@ end
 -- TODO: slow
 /-- TODO: possible diamond here (the proof for ℤ_[p] does not translate) -/
 instance : char_zero (Z_p p) := 
-{ cast_injective := λ m n h, 
+ { cast_injective := λ m n h, 
   begin
     simp only [subtype.ext_iff, subring.coe_nat_cast, nat.cast_inj] at h,
     exact h
-  end }
+  end } 
 
 /-- The maximal ideal of `Z_p p` as an element of the height-one spectrum -/
-definition padic'_int.height_one_ideal /- (p : out_param ℕ)  -/[hp : fact (p.prime)] : 
+definition padic'_int.height_one_ideal : 
   height_one_spectrum (Z_p p) :=
 { as_ideal := local_ring.maximal_ideal (Z_p p),
   is_prime := ideal.is_maximal.is_prime (local_ring.maximal_ideal.is_maximal _),
@@ -431,6 +431,7 @@ begin
       (padic_int.mem_nonunits.mpr this)⟩ },
 end
 
+@[nolint unused_arguments]
 lemma mem_unit_ball_of_tendsto_zero {x : (Q_p p)} (H : tendsto (λ (n : ℕ), ‖x‖ ^ n) at_top (𝓝 0))
    (h_go : ‖ x ‖ < 1)  : x ∈ (Z_p p).nonunits :=
 begin
@@ -439,7 +440,8 @@ begin
   { suffices : (⟨‖ x ‖, norm_nonneg _⟩ : ℝ≥0) < 1,
     { rwa [← nnreal.coe_lt_coe, nnreal.coe_one, ← subtype.val_eq_coe] at this },
     apply nnreal.lt_one_of_tendsto_pow_0,
-    rwa [← nnreal.tendsto_coe, nnreal.coe_zero]},
+    rw [← nnreal.tendsto_coe, nnreal.coe_zero],
+    exact H },
   replace this : valued.v x < (1 : ℤₘ₀),
   { apply (rank_one_valuation.norm_lt_one_iff_val_lt_one x).mp this },
   obtain ⟨y, hy₁, hy₂⟩ := exists_mem_lt_one_of_lt_one p this,
