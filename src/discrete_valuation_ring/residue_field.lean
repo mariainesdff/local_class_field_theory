@@ -37,8 +37,8 @@ consequence, when the residue field of `K₀` is finite, so is the residue field
 
 ## Implementation details
 * The file compiles slowly, in particular the declaration `finite_dimensional_pow` seems extremely
-  expensive.
-* something about quotients?
+  expensive. **FAE: APPROPRIATE?**
+* **FAE: something about quotients?**
 * `algebra_mod_power_e` is an `instance` while `algebra_mod_extended` is only a `definition`, turned
   into a `local instance`. This is because the type-class inference mechanism seems unable to find
   the second instance automatically even if it is marked as such, so it has sometimes to be called
