@@ -34,7 +34,7 @@ on `Q_p p`, whenever the diamond comes up.
 noncomputable theory
 
 open discrete_valuation discrete_valuation.extension is_dedekind_domain multiplicative nnreal 
-  padic_comparison padic_comparison.padic' polynomial multiplicative 
+  padic_comparison padic' polynomial multiplicative 
   is_dedekind_domain.height_one_spectrum
 
 open_locale mixed_char_local_field nnreal discrete_valuation
