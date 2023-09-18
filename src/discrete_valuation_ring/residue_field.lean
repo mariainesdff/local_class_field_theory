@@ -290,7 +290,8 @@ begin
   { use λ x, f x,
     { apply f.map_add },
     { rintros ⟨a⟩ v,
-      simp only [submodule.quotient.quot_mk_eq_mk, quotient.mk_eq_mk, embedding_like.apply_eq_iff_eq],
+      simp only [submodule.quotient.quot_mk_eq_mk, quotient.mk_eq_mk,
+        embedding_like.apply_eq_iff_eq],
       have algebra_map_eq_quot_mk : algebra_map K₀ (residue_field K₀) a = (ideal.quotient.mk
         (local_ring.maximal_ideal K₀)) a,
       { refl },
