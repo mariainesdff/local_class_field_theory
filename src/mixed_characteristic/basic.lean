@@ -26,7 +26,7 @@ mixed characteristic local field is finite.
 
 noncomputable theory
 
-open padic padic_comparison padic_comparison.padic' discrete_valuation valuation
+open padic padic_comparison discrete_valuation valuation padic'
 open_locale discrete_valuation
 
 variables (p : ℕ) [fact(nat.prime p)] 
@@ -41,7 +41,7 @@ namespace mixed_char_local_field
 
 @[priority 100, nolint dangerous_instance]
 instance to_char_zero (p : out_param(ℕ)) [fact(nat.prime p)]
-  (K : Type*) [field K] [mixed_char_local_field p K] : char_zero K := --infer_instance
+  (K : Type*) [field K] [mixed_char_local_field p K] : char_zero K :=
 ⟨λ n m h, by rwa [← map_nat_cast (algebra_map (Q_p p) K), ← map_nat_cast (algebra_map (Q_p p) K),
   (algebra_map (Q_p p) K).injective.eq_iff, nat.cast_inj] at h⟩
 
