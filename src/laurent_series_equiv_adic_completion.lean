@@ -33,54 +33,62 @@ Laurent series that have valuation bounded by `(1 : ℤₘ₀)`.
 * `power_series.ideal_X` is the prime ideal `(X)` of of `power_series K`, as a term of the
 `height_one_spectrum`.
 * `cauchy.mk_laurent_series` To any Cauchy filter ℱ of `laurent_series K`, we can attach a Laurent
-series that is the limit of the filter. Its `d`-th coefficient is defined as the limit of
-`ℱ.coeff d`, which is again Cauchy but valued in the discrete space `K`, so basically constant.
-That sufficiently negative coefficients vanish follows from `cauchy.coeff_support_bdd`
+  series that is the limit of the filter. Its `d`-th coefficient is defined as the limit of
+  `ℱ.coeff d`, which is again Cauchy but valued in the discrete space `K`, so basically constant.
+  That sufficiently negative coefficients vanish follows from `cauchy.coeff_support_bdd`
 * `ratfunc_adic_compl_pkg` is the abstract completion of `ratfunc K` whose underlying space 
-`ratfunc_adic_compl_pkg.1` is (definitionally) equal to `adic_completion (ratfunc K) (ideal_X K)`.
+  `ratfunc_adic_compl_pkg.1` is (definitionally) equal to `adic_completion (ratfunc K) (ideal_X K)`.
 * `laurent_series_pkg` : once we prove that the Laurent series are complete and contain `ratfunc K`
-densely, they are a completion and therefore give rise to the term
-`laurent_series_pkg K : abstract_completion (ratfunc K)`
+  densely, they are a completion and therefore give rise to the term
+  `laurent_series_pkg K : abstract_completion (ratfunc K)`
 * `laurent_series_ring_equiv` This is the main result of the file, and is the ring equivalence
-`(ratfunc_adic_compl K) ≃+* (laurent_series K)`
+ `(laurent_series K)  ≃+* (ratfunc_adic_compl K)`
+* `ratfunc_adic_compl_ring_equiv` This is the inverse of `laurent_series_ring_equiv`, and is the
+  ring equivalence `(ratfunc_adic_compl K) ≃+* (laurent_series K)`.
 * `power_series_ring_equiv` This is the ring equivalence at integral level, namely
-`(power_series K) ≃+* ((ideal_X K).adic_completion_integers (ratfunc K))` Beware that It goes in
-the *opposite* direction as `laurent_series_ring_equiv`.
+  `(power_series K) ≃+* ((ideal_X K).adic_completion_integers (ratfunc K))` .
 
 
 ## Main results
 * `pol_int_valuation_eq_power_series` This is the first of a series of related results comparing the
-`X`-adic valuation on `polynomial K` (*resp* on `ratfunc K`) with the `X`-adic valuation on
-`power_series K` (*resp.* `laurent_series K`).
-* `valuation_le_iff_coeff_zero_of_lt` This is the first of a series of related results comparing the
-vanishing behaviour of coefficients of polynomials, rational functions, power series and Laurent
-series with their `X`-adic valuation.
+` X`-adic valuation on `polynomial K` (*resp* on `ratfunc K`) with the `X`-adic valuation on
+  `power_series K` (*resp.* `laurent_series K`).
+* `valuation_le_iff_coeff_zero_of_lt` This is the first of a series of related results comparing
+  the vanishing behaviour of coefficients of polynomials, rational functions, power series and
+  Laurent series with their `X`-adic valuation.
 * `val_le_one_iff_eq_coe` A Laurent series is the coercion of a power series if and only if its
-valuation is less or equal than 1.
+  valuation is less or equal than 1.
 * `uniform_continuous_coeff` This is the main technical result needed to prove that the ring
-`laurent_series K` is complete: it states that for every `d : ℤ`, the coefficient
-`coeff.d : laurent_series K → K` is uniformly continuous. As a consequence, it maps Cauchy filters
-to Cauchy filters.
+  `laurent_series K` is complete: it states that for every `d : ℤ`, the coefficient
+  `coeff.d : laurent_series K → K` is uniformly continuous. As a consequence, it maps Cauchy
+  filters to Cauchy filters.
 * `coeff_support_bdd` In order to define a Laurent series we also need to check that for
-sufficiently negative `d : ℤ`, the coefficient vanishes. This provides the proof of the fact.
+  sufficiently negative `d : ℤ`, the coefficient vanishes. This provides the proof of the fact.
 * `complete_space (laurent_series K)` As a consequence of the above results we can define (see the
-previous section) the function `cauchy.mk_laurent_series` and by proving that the Cauchy filter we
-started with actually converges to the principal filter `𝓟 (cauchy.mk_laurent_series)` we
-accomplish the proof that `laurent_series K` is complete.
+  previous section) the function `cauchy.mk_laurent_series` and by proving that the Cauchy filter
+  we started with actually converges to the principal filter `𝓟 (cauchy.mk_laurent_series)` we
+  accomplish the proof that `laurent_series K` is complete.
 * `exists_ratfunc_val_lt` This is the key result to prove that `ratfunc K` is dense inside
-`laurent_series K`: it shows that given arbitrary `f : laurent_series K` and `γ : ℤₘ₀ˣ` there is a
-`Q : ratfunc K` such that `v (f - ↑Q) < γ`.
+  `laurent_series K`: it shows that given arbitrary `f : laurent_series K` and `γ : ℤₘ₀ˣ` there is
+  a `Q : ratfunc K` such that `v (f - ↑Q) < γ`.
 * `valuation_compare` Starting with a Laurent series, its `power_series.X`-adic valuation coincides
-with the extension of the `polynomial.X`-adic valuation (modulo the isomorphism).
+  with the extension of the `polynomial.X`-adic valuation (modulo the isomorphism).
 
 
 ## Implementation details
 * To prove `val_le_one_iff_eq_coe` we cannot rely on `alg_map_eq_integers` from
-`discrete_valuation_ring.basic` because there the field `K` needs to be *the* fraction field of the
-DVR instead of a field together with a `[is_fraction_field]` instance (see the Implementation
-details there), and although there is an instance of `discrete_valuation_ring (power_series K)` in
-`for_mathlib.power_series`, the types `laurent_series K` and `fraction_field (power_series K))` do
-not coincide
+  `discrete_valuation_ring.basic` because there the field `K` needs to be *the* fraction field of the
+  DVR instead of a field together with a `[is_fraction_field]` instance (see the Implementation
+  details there), and although there is an instance of `discrete_valuation_ring (power_series K)` in
+  `for_mathlib.power_series`, the types `laurent_series K` and `fraction_field (power_series K))` do
+  not coincide
+* The definition of the main isomorphism `laurent_series_ring_equiv` is as the *inverse* of the map
+  `ratfunc_adic_compl_ring_equiv K :  (ratfunc_adic_compl K) ≃+* (laurent_series K)`. The reason
+  is that the construction is done by first establishing the existence of an equivalence of the two
+  uniform spaces `(ratfunc_adic_compl K)` and `(laurent_series K)` (and this is symmetric in the
+  two variables), and then showing that the underlying map is actually a ring homomorphism. To prove
+  this part, we use that the extension of `coe : ratfunc K →+* laurent_series K` is again a ring
+  homomorphism, and this would be more cumbersome in the other direction.
 -/
 
 noncomputable theory
@@ -783,6 +791,10 @@ def laurent_series_pkg : abstract_completion (ratfunc K) :=
   uniform_inducing := coe_is_inducing K,
   dense := coe_range_dense K}
 
+instance : topological_space (laurent_series_pkg K).space :=
+(laurent_series_pkg K).uniform_struct.to_topological_space
+
+
 @[simp]
 lemma laurent_series_coe (x : ratfunc K) : (laurent_series_pkg K).coe x =
   (↑x : laurent_series K) := rfl
@@ -794,6 +806,7 @@ ring homomorphism -/
 noncomputable!
 def extension_as_ring_hom := uniform_space.completion.extension_hom (coe_alg_hom K).to_ring_hom
 
+
 /-- An abbreviation for the `X`-adic completion of `ratfunc K` -/
 @[reducible]
 definition ratfunc_adic_compl := adic_completion (ratfunc K) (ideal_X K)
@@ -803,10 +816,11 @@ definition ratfunc_adic_compl := adic_completion (ratfunc K) (ideal_X K)
 definition compare_pkg : (ratfunc_adic_compl K) ≃ᵤ laurent_series K :=
   compare_equiv (ratfunc_adic_compl_pkg K) (laurent_series_pkg K)
 
-/-- The uniform space isomorphism between two abstract completions of `ratfunc K` as a ring
-equivalence-/
+
+/-- The uniform space equivalence between two abstract completions of `ratfunc K` as a ring
+equivalence: this will be the *inverse* of the fundamental one.-/
 @[reducible]
-definition laurent_series_ring_equiv : 
+definition ratfunc_adic_compl_ring_equiv : 
   (ratfunc_adic_compl K) ≃+* (laurent_series K) :=
 { map_mul' := (extension_as_ring_hom K
     ((uniform_inducing_iff'.1 (coe_is_inducing K)).1).continuous).map_mul',
@@ -814,21 +828,31 @@ definition laurent_series_ring_equiv :
     ((uniform_inducing_iff'.1 (coe_is_inducing K)).1).continuous).map_add',
   .. compare_pkg K }
 
-lemma laurent_series_ring_equiv_apply (x : (ratfunc_adic_compl K)) : laurent_series_ring_equiv K x =
-  (ratfunc_adic_compl_pkg K).compare (laurent_series_pkg K) x := rfl
 
-lemma laurent_series_ring_equiv_symm_apply (x : (laurent_series K)) :
-  (laurent_series_ring_equiv K).symm x = compare_equiv
+-- **NEW**
+/-- The uniform space equivalence between two abstract completions of `ratfunc K` as a ring
+equivalence: it goes from `laurent_series K` to `ratfunc_adic_compl K` -/
+@[reducible]
+definition laurent_series_ring_equiv : 
+  (laurent_series K) ≃+* (ratfunc_adic_compl K) := (ratfunc_adic_compl_ring_equiv K).symm
+
+
+lemma laurent_series_ring_equiv_apply (x : (laurent_series K)) :
+  (laurent_series_ring_equiv K) x = compare_equiv
     (laurent_series_pkg K) (ratfunc_adic_compl_pkg K) x :=
 by simpa only [ring_equiv.apply_symm_apply]
 
-lemma coe_X_compare : (laurent_series_ring_equiv K) (↑(@ratfunc.X K _ _) : (ratfunc_adic_compl K)) =
-  (↑(@power_series.X K _) : (laurent_series K)) :=
+
+lemma ratfunc_adic_compl_ring_equiv_apply (x : (ratfunc_adic_compl K)) :
+  ratfunc_adic_compl_ring_equiv K x = (ratfunc_adic_compl_pkg K).compare (laurent_series_pkg K) x :=
+rfl
+
+
+lemma coe_X_compare : (ratfunc_adic_compl_ring_equiv K)
+  (↑(@ratfunc.X K _ _) : (ratfunc_adic_compl K)) = (↑(@power_series.X K _) : (laurent_series K)) :=
 by {rw [power_series.coe_X, ← ratfunc.coe_X, ← laurent_series_coe,
   ← abstract_completion.compare_coe], refl}
 
-instance : topological_space (laurent_series_pkg K).space :=
-(laurent_series_pkg K).uniform_struct.to_topological_space
 
 open filter abstract_completion
 open_locale with_zero_topology topology
@@ -880,8 +904,7 @@ begin
 end
 
 lemma valuation_compare (f : laurent_series K) : (@valued.v (ratfunc_adic_compl K) _ ℤₘ₀ _ _) 
-  ((laurent_series_pkg K).compare (ratfunc_adic_compl_pkg K) f) = 
-  (valued.v f) :=
+  ((laurent_series_pkg K).compare (ratfunc_adic_compl_pkg K) f) =  (valued.v f) :=
 by simpa only [← valuation_laurent_series_equal_extension, ← extend_compare_extend
     (ratfunc_adic_compl_pkg K) (laurent_series_pkg K) (@valued.v (ratfunc K) _ ℤₘ₀ _ _)
       (valued.continuous_valuation) (tendsto_valuation K)] using rfl
@@ -905,25 +928,24 @@ begin
     (hahn_series.of_power_series ℤ K) (hahn_series.of_power_series_injective))
 end
 
-lemma mem_integers_of_power_series (F : (power_series K)) : (laurent_series_ring_equiv K).symm F ∈ 
+lemma mem_integers_of_power_series (F : (power_series K)) : (laurent_series_ring_equiv K) F ∈ 
   (ideal_X K).adic_completion_integers (ratfunc K) :=
 begin
-  have : ((laurent_series_ring_equiv K).symm) F =
+  have : ((laurent_series_ring_equiv K)) F =
     (laurent_series_pkg K).compare (ratfunc_adic_compl_pkg K) (F : (laurent_series K)):= rfl,
   simp only [subring.mem_map, exists_prop, valuation_subring.mem_to_subring, 
     mem_adic_completion_integers, this, valuation_compare K F, val_le_one_iff_eq_coe],
   refine ⟨F, rfl⟩,
 end
 
-
 lemma exists_power_series_of_mem_integers {x : (ratfunc_adic_compl K)}
   (hx : x ∈ (ideal_X K).adic_completion_integers (ratfunc K)) : 
-  ∃ F : (power_series K), (laurent_series_ring_equiv K).symm F = x := 
+  ∃ F : (power_series K), (laurent_series_ring_equiv K) F = x := 
 begin
-  set f := (laurent_series_ring_equiv K) x with hf,
+  set f := (ratfunc_adic_compl_ring_equiv K) x with hf,
   have := valuation_compare K f,
   have H_x : (laurent_series_pkg K).compare (ratfunc_adic_compl_pkg K)
-    ((laurent_series_ring_equiv K) x) = x := congr_fun (inverse_compare (laurent_series_pkg K)
+    ((ratfunc_adic_compl_ring_equiv K) x) = x := congr_fun (inverse_compare (laurent_series_pkg K)
     (ratfunc_adic_compl_pkg K)) x,
   simp only [subring.mem_map, exists_prop, valuation_subring.mem_to_subring, 
     mem_adic_completion_integers, this] at hx, 
@@ -934,7 +956,8 @@ begin
   rw [h_fF, hf, ring_equiv.symm_apply_apply],
 end
 
-lemma power_series_ext_subring : (subring.map (laurent_series_ring_equiv K).symm.to_ring_hom
+
+lemma power_series_ext_subring : (subring.map (laurent_series_ring_equiv K).to_ring_hom
     (power_series_as_subring K)) = ((ideal_X K).adic_completion_integers (ratfunc K)).to_subring :=
 begin
   ext x,
@@ -950,12 +973,12 @@ begin
 end
 
 /-- The ring isomorphism between `(power_series K)` and the unit ball inside the `X`-adic
-completion of `ratfunc`. It goes in the *opposite* direction as `laurent_series_ring_equiv`. -/
+completion of `ratfunc`. -/
 @[reducible]
 definition power_series_ring_equiv : (power_series K) ≃+* 
   ((ideal_X K).adic_completion_integers (ratfunc K)) :=
 ((power_series_equiv_subring K).trans (@ring_equiv.subring_map _ _ _ _ (power_series_as_subring K)
-  (laurent_series_ring_equiv K).symm)).trans (ring_equiv.subring_congr (power_series_ext_subring K))
+  (laurent_series_ring_equiv K))).trans (ring_equiv.subring_congr (power_series_ext_subring K))
 
 end power_series
 

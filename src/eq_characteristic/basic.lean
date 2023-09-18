@@ -14,9 +14,8 @@ extension of `FpX_completion`.
 ## Main Definitions
 * `FpX_completion` is the adic completion of the rational functions `𝔽_p(X)`.
 * `FpX_int_completion` is the unit ball in the adic completion of the rational functions `𝔽_p(X)`.
-* `isom_laurent` is the ring isomorphism `FpX_completion ≃+* (laurent_series 𝔽_[p])`
+* `isom_laurent` is the ring isomorphism `(laurent_series 𝔽_[p]) ≃+* FpX_completion`
 * `integers_equiv_power_series` is the isomorphism `(power_series 𝔽_[p]) ≃+* FpX_int_completion`.
-It goes in the *opposite* direction as `isom_laurent`.
 * `eq_char_local_field` defines an equal characteristic local field as a finite dimensional
 FpX_completion`-algebra for some prime number `p`. 
 
@@ -34,7 +33,7 @@ noncomputable theory
 
 open_locale discrete_valuation
 open polynomial multiplicative ratfunc is_dedekind_domain is_dedekind_domain.height_one_spectrum
-  rank_one_valuation valuation_subring /- power_series -/
+  rank_one_valuation valuation_subring
 variables (p : ℕ) [fact(nat.prime p)] 
 
 notation (name := prime_galois_field)
@@ -105,7 +104,7 @@ by erw [FpX_completion.mem_FpX_int_completion, norm_le_one_iff_val_le_one]
 variable (p)
 
 /-- `isom_laurent` is the ring isomorphism `FpX_completion ≃+* (laurent_series 𝔽_[p])`. -/
-def isom_laurent : (FpX_completion p)  ≃+* (laurent_series 𝔽_[p]) := 
+def isom_laurent : (laurent_series 𝔽_[p]) ≃+* (FpX_completion p):= 
 completion_laurent_series.laurent_series_ring_equiv 𝔽_[p]
 
 end FpX_completion
@@ -113,7 +112,7 @@ end FpX_completion
 namespace FpX_int_completion
 
 /-- `integers_equiv_power_series` is the ring isomorphism `(power_series 𝔽_[p])` ≃+*
-  `FpX_int_completion`. Beware that it goes in the *opposite* direction as `isom_laurent`. -/
+  `FpX_int_completion`. -/
 noncomputable!
 definition integers_equiv_power_series : (power_series 𝔽_[p]) ≃+* (FpX_int_completion p) :=
 completion_laurent_series.power_series_ring_equiv 𝔽_[p]
@@ -262,8 +261,8 @@ lemma dvd_of_norm_lt_one {F : (FpX_int_completion p)} :
   valued.v (F : (FpX_completion p)) < (1 : ℤₘ₀) → ((FpX_int_completion.X p) ∣ F) :=
 begin
   set f : (FpX_completion p) := ↑F with h_Ff,
-  set g := (laurent_series_ring_equiv 𝔽_[p]) f with h_fg,
-  have h_gf : (laurent_series_ring_equiv 𝔽_[p]).symm g = f,
+  set g := (ratfunc_adic_compl_ring_equiv 𝔽_[p]) f with h_fg,
+  have h_gf : (laurent_series_ring_equiv 𝔽_[p]) g = f,
   { rw [h_fg, ring_equiv.symm_apply_apply] },
   erw [← h_gf, valuation_compare 𝔽_[p] g, ← with_zero.coe_one, ← of_add_zero, ← neg_zero],
   intro h,
@@ -275,11 +274,11 @@ begin
   specialize h 0 zero_lt_one,
   rw [power_series.coeff_zero_eq_constant_coeff, ← power_series.X_dvd_iff] at h,
   obtain ⟨C, rfl⟩ := dvd_iff_exists_eq_mul_left.mp h,
-  refine dvd_of_mul_left_eq ⟨(laurent_series_ring_equiv 𝔽_[p]).symm C, _⟩ _,
+  refine dvd_of_mul_left_eq ⟨(laurent_series_ring_equiv 𝔽_[p]) C, _⟩ _,
   { erw [FpX_completion.mem_FpX_int_completion, valuation_compare, val_le_one_iff_eq_coe],
     use ⟨C, refl _⟩ },
   apply_fun (algebra_map (FpX_int_completion p) (FpX_completion p)) using subtype.val_injective,
-  apply_fun (laurent_series_ring_equiv 𝔽_[p]),
+  apply_fun (ratfunc_adic_compl_ring_equiv 𝔽_[p]),
   erw [algebra_map_eq_coe, algebra_map_eq_coe, ← h_Ff, ← h_fg, ← h_Gg, map_mul,
     power_series.coe_mul, ring_equiv.apply_symm_apply, ← (coe_X_compare 𝔽_[p])],
   refl,
@@ -308,7 +307,7 @@ begin
   obtain ⟨Z, hZ⟩ := exists_power_series_of_mem_integers 𝔽_[p] y_mem,
   refine dvd_of_mul_left_eq Z _,
   apply_fun (hahn_series.of_power_series ℤ 𝔽_[p]) using hahn_series.of_power_series_injective,
-  apply_fun (laurent_series_ring_equiv 𝔽_[p]).symm,
+  apply_fun (laurent_series_ring_equiv 𝔽_[p]),
   simp only [← laurent_series.coe_power_series],
   erw [power_series.coe_mul, map_mul, hZ, h_fG, ← coe_X_compare 𝔽_[p], h_fy,
     ring_equiv.symm_apply_apply],
