@@ -3,39 +3,50 @@ import number_theory.ramification_inertia
 import ring_theory.dedekind_domain.integral_closure
 
 /-! # The residue field of a DVR
+In this file we consider a finite extension `L/K` of a discretely valued field `K`. By the results
+in `discrete_valuation_ring.basic`, the unit ball `K₀` is a DVR and the main result we prove is that
+(under the assumption that `L/K` is separable, currently needed to ensure that the integral closure
+of `K₀` in `L` is finite over `K₀`, but that should potentially be removed), the residue field of
+the integral closure of `K₀` in `L` is finite dimensional over the residue field of `K₀`. As a
+consequence, when the residue field of `K₀` is finite, so is the residue field of `L₀`
 
 ## Main definitions
-* def extended_max_ideal : ideal (integral_closure K₀ L) :=
-* instance: is_dedekind_domain (integral_closure K₀ L) :=
-* def algebra_mod_power_e : algebra (residue_field K₀) *NOT SURE*
-* def algebra_mod_extended : algebra (residue_field K₀) *NOT SURE*
-
-* quotient_linear_iso
-* def finite_residue_field_of_integral_closure [is_separable K L] *JUST ONE?*
-* def finite_residue_field_of_unit_ball [is_separable K L]
+* `extended_max_ideal` The ideal in `L` extending the maximal ideal of `K₀.
+* `quotient_linear_iso` The equivalence as vector spaces over the residue field of the base of
+  * the quotient of the integral closure of `K₀` modulo the extension of the maximal ideal below;
+    and
+  * the quotient of the integral closure of `K₀` modulo the `e`-th power of the maximal idal above;
+  induced by the equality of the two ideals proved in `extended_eq_pow_ramification_index`
+* `finite_residue_field_of_integral_closure` and `finite_residue_field_of_unit_ball` are the proofs
+  that whenever `L/K` is separable, and the residue field of `K₀` is finite, so is also the residue
+  field both of the integral closure of `K₀` in `L` and of the unit ball `L₀`.
 
 ## Main results
-* lemma ramification_idx_maximal_ne_zero : ne_zero (ramification_idx
-  (algebra_map K₀ (integral_closure K₀ L)) (local_ring.maximal_ideal K₀)
-  (local_ring.maximal_ideal (integral_closure K₀ L))) :=
-* lemma ramification_idx_extended_ne_zero : 
-  ne_zero (ramification_idx (algebra_map K₀ (integral_closure K₀ L))
-    (local_ring.maximal_ideal K₀) (extended_max_ideal K L)) :=
-* lemma extended_eq_pow_ramification_index : (extended_max_ideal K L)
-* lemma finite_dimensional_residue_field_of_integral_closure [is_separable K L] : 
-
+* `ramification_idx_maximal_ne_zero` The ramification index of the maximal ideal in the integral
+  closure of `K₀` in `L` over the maximal ideal of `K₀` is non zero.
+* `ramification_idx_extended_ne_zero` The ramification index of the extension of the maximal ideal
+  of `K₀` to the ring of integers of `L`, over the maximal ideal of `K₀` is non zero.
+* `extended_eq_pow_ramification_index` The equality between the the extension of the maximal ideal
+  of `K₀` to the ring of integers of `L` and the `e`-th power of the maximal ideal in this integral
+  closure, where `e ≠ 0` is the ramification index.
+* `finite_dimensional_residue_field_of_integral_closure` When `L/K` is (finite and) separable, the
+  residue field of the integral closure of `K₀` in `L` (or, equivalently, of `L₀` in view of the
+  declaration `integral_closure_eq_integer`  proven in `discrete_valuation_ring.extensions`) is
+  finite dimensional over the residue field of `K₀`.
 
 
 ## Implementation details
 * The file compiles slowly, in particular the declaration `finite_dimensional_pow` seems extremely
-expensive.
-* @[priority 10000]
-instance: is_dedekind_domain (integral_closure K₀ L) :=
+  expensive.
 * something about quotients?
 * `algebra_mod_power_e` is an `instance` while `algebra_mod_extended` is only a `definition`, turned
-into a `local instance` but that sometimes need to be called.
-
-
+  into a `local instance`. This is because the type-class inference mechanism seems unable to find
+  the second instance automatically even if it is marked as such, so it has sometimes to be called
+  explicitely.
+* To prove that the residue field of `L₀` is finite (under suitable assumptions) we first prove that
+  the residue field of the integral closure of `K₀` in `L` is finite, and then we use
+  `integral_closure_eq_integer` proven in `discrete_valuation_ring.extensions` to transfer this
+  finiteness to `L₀`.
 -/
 
 
@@ -137,7 +148,7 @@ end
 
 /-- The residue field of `L` is an algebra over the residue field of `K`-/
 noncomputable!
-definition algebra_residue_fields : algebra (residue_field K₀)
+def algebra_residue_fields : algebra (residue_field K₀)
   (residue_field (integral_closure K₀ L)) := 
 begin
   apply quotient.algebra_quotient_of_ramification_idx_ne_zero 
@@ -368,7 +379,6 @@ begin
 end
 
 
-noncomputable!
 lemma finite_dimensional_residue_field_of_integral_closure [is_separable K L] : 
   finite_dimensional (residue_field K₀) (residue_field (integral_closure K₀ L)) :=
 begin
