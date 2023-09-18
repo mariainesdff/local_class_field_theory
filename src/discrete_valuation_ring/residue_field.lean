@@ -36,9 +36,6 @@ consequence, when the residue field of `K₀` is finite, so is the residue field
 
 
 ## Implementation details
-* The file compiles slowly, in particular the declaration `finite_dimensional_pow` seems extremely
-  expensive. **FAE: APPROPRIATE?**
-* **FAE: something about quotients?**
 * `algebra_mod_power_e` is an `instance` while `algebra_mod_extended` is only a `definition`, turned
   into a `local instance`. This is because the type-class inference mechanism seems unable to find
   the second instance automatically even if it is marked as such, so it has sometimes to be called
@@ -106,15 +103,7 @@ variables [finite_dimensional K L]
 instance [is_separable K L] : is_noetherian K₀ (integral_closure K₀ L) :=
 is_integral_closure.is_noetherian K₀ K L (integral_closure K₀ L)
 
-variables [complete_space K] 
-
-
--- @[priority 10000]
--- lemma dd : is_dedekind_domain (integral_closure K₀ L) :=
--- @is_principal_ideal_ring.is_dedekind_domain _ _ _
---   (@discrete_valuation_ring.to_is_principal_ideal_ring _ _ _
---   (integral_closure.discrete_valuation_ring_of_finite_extension K L))
-
+variables [complete_space K]
 
 lemma ramification_idx_maximal_ne_zero : ne_zero (ramification_idx
   (algebra_map K₀ (integral_closure K₀ L)) (local_ring.maximal_ideal K₀)
@@ -320,7 +309,8 @@ end
 local attribute [instance] algebra_residue_fields
 
 
-lemma finite_dimensional_pow [is_separable K L] :  finite_dimensional (residue_field K₀)
+lemma finite_dimensional_pow [is_separable K L] :  
+  finite_dimensional (residue_field K₀)
     ((map
             (ideal.quotient.mk
                (local_ring.maximal_ideal (integral_closure K₀ L) ^
@@ -417,7 +407,7 @@ DVR is finite if the residue field of the base is finite-/
 noncomputable!
 def finite_residue_field_of_unit_ball [is_separable K L] 
   (hres : fintype (local_ring.residue_field K₀)) :
- fintype (residue_field (extended_valuation K L).valuation_subring) :=
+  fintype (residue_field (extended_valuation K L).valuation_subring) :=
 @fintype.of_equiv _ _ (finite_residue_field_of_integral_closure K L hres) 
   (local_ring.residue_field.map_equiv
   (ring_equiv.subring_congr 
