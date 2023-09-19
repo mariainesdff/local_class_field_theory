@@ -1,0 +1,455 @@
+%% Commands for TeXCount
+%TC:macro \cite [option:text,text]
+%TC:macro \citep [option:text,text]
+%TC:macro \citet [option:text,text]
+%TC:envir table 0 1
+%TC:envir table* 0 1
+%TC:envir tabular [ignore] word
+%TC:envir displaymath 0 word
+%TC:envir math 0 word
+%TC:envir comment 0 0
+%%
+%%
+%% For submission and review of your manuscript please change the
+%% command to \documentclass[manuscript, screen, review]{acmart}.
+%%
+%% When submitting camera ready or to TAPS, please change the command
+%% to \documentclass[sigconf]{acmart} or whichever template is required
+%% for your publication.
+%%
+%%
+%\documentclass[sigplan,screen]{acmart}
+%\documentclass[sigplan,10pt,anonymous,screen]{acmart}
+\documentclass[sigplan,10pt,anonymous,review]{acmart}
+\settopmatter{printfolios=true,printccs=false,printacmref=false}
+
+\input{CPP_preamble.tex}
+
+%end of preamble
+
+%%
+%% \BibTeX command to typeset BibTeX logo in the docs
+\AtBeginDocument{%
+  \providecommand\BibTeX{{%
+    Bib\TeX}}}
+
+%% Rights management information.  This information is sent to you
+%% when you complete the rights form.  These commands have SAMPLE
+%% values in them; it is your responsibility as an author to replace
+%% the commands and values with those provided to you when you
+%% complete the rights form.
+\setcopyright{acmcopyright}
+\copyrightyear{2023}
+\acmYear{2024}
+\acmDOI{XXXXXXX.XXXXXXX}
+
+%% These commands are for a PROCEEDINGS abstract or paper.
+\acmConference[CPP 2024]{Certified Programs and Proofs 2024}{January 15--16,
+  2024}{London, UK}
+%%
+%%  Uncomment \acmBooktitle if the title of the proceedings is different
+%%  from ``Proceedings of ...''!
+%%
+%%\acmBooktitle{Woodstock '18: ACM Symposium on Neural Gaze Detection,
+%%  June 03--05, 2018, Woodstock, NY}
+%\acmPrice{15.00}
+%\acmISBN{978-1-4503-XXXX-X/18/06}
+
+
+%%
+%% Submission ID.
+%% Use this when submitting an article to a sponsored event. You'll
+%% receive a unique submission ID from the organizers
+%% of the event, and this ID should be used as the parameter to this command.
+%%\acmSubmissionID{123-A56-BU3}
+
+%%
+%% For managing citations, it is recommended to use bibliography
+%% files in BibTeX format.
+%%
+%% You can then either use BibTeX with the ACM-Reference-Format style,
+%% or BibLaTeX with the acmnumeric or acmauthoryear sytles, that include
+%% support for advanced citation of software artefact from the
+%% biblatex-software package, also separately available on CTAN.
+%%
+%% Look at the sample-*-biblatex.tex files for templates showcasing
+%% the biblatex styles.
+%%
+
+%%
+%% The majority of ACM publications use numbered citations and
+%% references.  The command \citestyle{authoryear} switches to the
+%% "author year" style.
+%%
+%% If you are preparing content for an event
+%% sponsored by ACM SIGGRAPH, you must use the "author year" style of
+%% citations and references.
+%% Uncommenting
+%% the next command will enable that style.
+%%\citestyle{acmauthoryear}
+
+
+%%
+%% end of the preamble, start of the body of the document source.
+\begin{document}
+
+%% The "title" command has an optional parameter,
+%% allowing the author to define a "short title" to be used in page headers.
+\title[A Formalization of Complete DVRs and Local Fields]{A Formalization of Complete Discrete Valuation Rings and Local Fields -- OLD ONE, FORGET THIS FILE}
+
+%%%
+%%% The "author" command and its associated commands are used to define
+%%% the authors and their affiliations.
+%%% Of note is the shared affiliation of the first two authors, and the
+%%% "authornote" and "authornotemark" commands
+%%% used to denote shared contribution to the research.
+%\iffalse
+%\author{Ben Trovato}
+%\authornote{Both authors contributed equally to this research.}
+%\email{trovato@corporation.com}
+%\orcid{1234-5678-9012}
+%\author{G.K.M. Tobin}
+%\authornotemark[1]
+%\email{webmaster@marysville-ohio.com}
+%\affiliation{%
+%  \institution{Institute for Clarity in Documentation}
+%  \streetaddress{P.O. Box 1212}
+%  \city{Dublin}
+%  \state{Ohio}
+%  \country{USA}
+%  \postcode{43017-6221}
+%}\fi
+
+% \author[M.~I.~de Frutos Fernández]{María Inés de Frutos Fernández}
+\author{María Inés de Frutos Fernández}
+\authornote{Both authors contributed equally to this research.}
+\authornotemark[1]
+\email{maria.defrutos@uam.es}
+\orcid{0000-0002-5085-7446}
+\affiliation{%
+  \institution{Universidad Aut\'onoma de Madrid}
+  \streetaddress{Ciudad Universitaria de Cantoblanco}
+   \postcode{28049}
+  \city{Madrid}
+  \country{Spain}
+}
+
+%\author[F.~A.~E.~Nuccio]{Filippo Alberto Edoardo Nuccio Mortarino Majno di Capriglio}
+\author{Filippo Alberto Edoardo Nuccio Mortarino Majno di Capriglio}
+\authornote{Both authors contributed equally to this research.}
+\authornotemark[2]
+\email{filippo.nuccio@univ-st-etienne.fr}
+\orcid{0000-0002-5318-9869}
+\affiliation{%
+	\institution{Université Jean Monnet Saint-Etienne}%%Add ICJ?
+	\streetaddress{23, rue du docteur Paul Michelon}
+   \postcode{42023}
+	\city{Saint-Étienne}
+	\country{France}
+}
+
+
+%%
+%% By default, the full list of authors will be used in the page
+%% headers. Often, this list is too long, and will overlap
+%% other information printed in the page headers. This command allows
+%% the author to define a more concise list
+%% of authors' names for this purpose.
+\renewcommand{\shortauthors}{M.~I.~de Frutos Fernández and F.~A.~E.~Nuccio}
+
+%%
+%% The abstract is a short summary of the work to be presented in the
+%% article.
+\begin{abstract}
+  Local fields, and fields complete with respect to a discrete valuation, are essential objects in commutative algebra, with applications to number theory and algebraic geometry. We formalize in Lean the basic theory of discretely valued fields. In particular, we prove that the unit ball with respect to a discrete valuation on a field is a discrete valuation ring and, conversely, that the adic
+  valuation on the field of fractions of a discrete valuation ring is discrete. We define finite extensions of valuations and of discrete valuation
+  rings, and prove some global-to-local results. 
+  
+  Building on this general theory, we formalize the abstract definition and some fundamental properties of local fields. As an application, we show that finite extensions of the field $\QQ_p$ of $p$-adic numbers and of the field $\laurentseries$ of Laurent series over $\FF$ are local fields. 
+  
+\end{abstract}
+
+%%
+%% The code below is generated by the tool at http://dl.acm.org/ccs.cfm.
+%% Please copy and paste the code instead of the example below. (DONE)
+%%
+\begin{CCSXML}
+	<ccs2012>
+	<concept>
+	<concept_id>10003752.10003790.10002990</concept_id>
+	<concept_desc>Theory of computation~Logic and verification</concept_desc>
+	<concept_significance>500</concept_significance>
+	</concept>
+	<concept>
+	<concept_id>10003752.10003790.10003792</concept_id>
+	<concept_desc>Theory of computation~Proof theory</concept_desc>
+	<concept_significance>500</concept_significance>
+	</concept>
+	</ccs2012>
+\end{CCSXML}
+
+\ccsdesc[500]{Theory of computation~Logic and verification}
+\ccsdesc[500]{Theory of computation~Proof theory}
+
+
+%%
+%% Keywords. The author(s) should pick words that accurately describe
+%% the work being presented. Separate the keywords with commas.
+\keywords{formal mathematics, Lean, mathlib, algebraic number theory, local fields, discrete valuation rings.}
+
+
+%\received{}
+%\received[revised]{}
+%\received[accepted]{}
+
+%%
+%% This command processes the author and affiliation and title
+%% information and builds the first part of the formatted document.
+\maketitle
+
+\section{Introduction}
+\begin{itemize}
+\item Say all rings are commutative and unitary.
+\item Say something, or give a reference, to the role played by ``type classes'', ``instances'' and class-type inference in \lean and/or \mathlib.
+\item Remember to create the graph
+\item Acknowledge de Frutos-Fernández and Yaël Dillies for allowing us to use their work.
+\item Update link to repository \href{https://github.com/mariainesdff/local_class_field_theory}{\extlink}.
+\item Mention dot notation when discussing Lean and mathlib.
+
+% \mi{Links are rendered in black with the "review" option, which means they will probably be missed. In the sphere eversion paper they have a symbol next to each link; do you know how to achieve this? Otherwise we could ask them.}\fil{I added this and you can use the \code{extlink} command (see what I did for the \code{valuation} structure). Yet, in that case (see my comment there) I would also add the corresponding lean code, no? Now that it is available, do we want to systematically add this external link to \mathlib, though, even when we are simply mentioning the library, as in \mathlib\href{https://leanprover-community.github.io/mathlib_docs/}{\extlink}?}
+\end{itemize}
+\section {Discrete Valuation Rings}\label{section:dvr}
+
+\subsection{Valuations}\label{subsection:valuations}
+Let $R$ be a ring and let $\Gamma_0$ be a linearly ordered commutative monoid with zero\fil{: by definition, this means that $\Gamma_0$ is the union $\Gamma\cup\{0\}$ where $\Gamma$ is a multiplicative monoid in which every two elements are comparable, and $0\notin \Gamma$ is an added element. We endow $\Gamma_0$ with a total order by declaring that $0< x$ for all $x\in\Gamma$, and we extend the multiplication from $\Gamma$ to $\Gamma_0$ by declaring that $x\cdot 0=0\cdot x = 0$ for all $x\in\Gamma_0$.} A \fil{$\Gamma_0$-valued }valuation $v$ on $R$ is a map $v \colon R \to \Gamma_0$ such that
+\begin{listDef}\label{def:valuation}
+	\item $v (0) = 0$,\label{def_valuation:zero}
+	\item $v (1) = 1$,\label{def_valuation:one}
+	\item $v (x \cdot y) = v (x) \cdot v (y)$ for all $x, y \in R$, and\label{def_valuation:mul}
+	\item $v (x + y) \le \max {v (x), v (y)}$ for all $x, y \in R$.\label{def_valuation:add}
+\end{listDef}
+
+\fil{I believe that the next paragraph needs to be expanded. We might not want to take for granted that readers are familiar with Dedekind domains or Krull dimensions, and that they can easily see $\ZZ\cup\{\infty\}=\wzmZZ$. One good example would be simply using polynomial over a field, perhaps?}For instance, when $R$ is a Dedekind domain of Krull dimension 1 with fraction field $K$ and $\m$ is a maximal ideal of $R$, we can define a function $c_\m \colon R \to \ZZ \cup \{ \infty\}$ \fil{we need to say that ``monoid with $0$`` or ``monoid with infinity`` are the same thing...} by sending zero to $\infty$ and any nonzero $r \in R$ to the number of times that $\m$ appears in the factorization of the principal ideal $(r)$. Note that this number is well defined because ideals in a Dedekind domain admit a unique factorization into maximal ideals, up to reordering. We can extend the function $c_\m$ to $K$ by setting $c_\m (r/s) := c_\m (r) - c_\m (s)$ for any $r, s \in R$ with $s \ne 0$.
+
+Then, for any real number $n_\m > 1$, it is easy to check that the function
+$ v_{\m}\colon K \to n_\m^{\mathbb{Z} \cup \{-\infty\}} = n_\m^\mathbb{Z} \cup \{0\}$ \fil{This notation deserves a bit of explanation} sending $x$ to $n_\m^{-c_\m(x)}$ is a valuation on $K$, which we call the \textit{$\m$-adic valuation}. For example, when $R = \ZZ$, $K = \QQ$ and $\m = (p)$ is the ideal generated by a prime number $p$, $v_p$ is the $p$-adic (multiplicative) valuation on $\QQ$, also known as the $p$-adic absolute value.
+
+Note that the choice of number $n_\m > 1$ in the definition of $v_\m$ is not relevant, in the sense that any two such choices will give rise to equivalent valuations. In our formalization, we abstract the codomain $n_\m^\mathbb{Z} \cup \{0\}$ using the type
+\texttt{with\_zero (multiplicative $\mathbb{Z}$)}, denoted $\wzmZZ$,
+which carries the multiplicative structure corresponding to the additive structure on $\ZZ$, as well as an added zero element. \fil{Similarly, we denote by $\wzmNN$ the monoid with zero \code{multiplicative} $\mcode{\NN}\cup \mcode{0}$}. \fil{Isn't this the place to insert and define the maps \code{to_add} and \code{of_add}?}.
+
+For example, the rational numbers $20$ and $25$ have $5$-adic valuation $(-1 : \wzmZZ)$ and $(-2 : \wzmZZ)$, respectively, so $25$ is smaller than $20$ in the $p$-adic topology. \mi{Do you want to add anything else about this?}\fil{Probably, in the previous paragraph, I would add some of the main properties of $\wzmZZ$: something like $2+3=6$, that there are three elements $0:\wzmZZ,1:\wzmZZ=$\code{to_add}$0:\ZZ$ and \code{to_add}$1:\ZZ$ that are different, and some formulae with inequalities. Observe that. for our definition of uniformizer, the term \code{to_add}$-1:\ZZ$ is essential. We should also explain to the reader used to think that the valuation of a uniformizer is $1$ what is going on here.}
+
+We represent valuations in Lean using the \code{valuation} structure \href{https://leanprover-community.github.io/mathlib_docs/ring_theory/valuation/basic.html#valuation}{\extlink}
+ available in \mathlib, which encodes our above definition. A valuation on a ring $R$ induces a topology \fil{Say which one, or at least provide a reference?} on $R$ for which the ring operations are continuous, hence turning $R$ into a topological ring.
+\mathlib also provides the class \href{https://leanprover-community.github.io/mathlib_docs/topology/algebra/valuation.html#valued}{valued}\fil{why not inserting the}
+\begin{lstlisting}
+class (R : Type*) [ring R] valued : extends...
+\end{lstlisting}
+\fil{?}
+, which bundles together a ring with a
+uniform space structure and a distinguished valuation that induces it. This class is designed for rings in which there is a canonical valuation. \fil{I would also add the example of $\laurentseries[K]$ versus $K(X)$}For example, on the field $\QQ_p$ of $p$-adic numbers, there is a unique nontrivial valuation, which we register as an instance of the valued class. By contrast, on the rational numbers there are infinitely many valuations $v_p$, \fil{one for each prime number $p$ and} none of them is preferred over the others: \fil{therefore we do not want to activate the type-inference mechanism when we look at $\QQ$ endowed with some particular valuation, and we avoid declaring a global \code{valued} instance on $\QQ$. As a result, the multiplicativity property of \emph{a} valuation $v\colon \QQ\to \Gamma_0$ would be formalized as in}
+%\begin{lstlisting}
+%lemma val_mul (v : valuation $\QQ$ $\Gamma_0$) (x y : $\QQ$) : v (x * y) = v (x) * v(y) := /-proof omitted-/
+%\end{lstlisting}
+%whereas the same property of \emph{the} $p$-adic valuation $v_p\colon\QQ_p\to\wzmZZ$ would be
+%\begin{lstlisting}
+%lemma val_mul (x y : $\QQ_p$) : valued.v (x * y) = valued.v (x) * valued.v (y)/- the statement of the lemma -/ := /-proof omitted-/
+%\end{lstlisting}
+where \code{valued.v} is the field corresponding to the valuation of the structure \code{valued} $\QQ_p$.
+
+
+Given any ring $R$ with a valuation $v$, we can define the \textit{unit ball} of $R$ as the subring $\ball{R}$ of elements with valuation less than or equal to one\fil{does this make sense only for $\ZZ$-valued valuations? In our context of $\wzmZZ$-valued ones, how does this translate? Also, I will need later that the unit ball is unchanged if we rescale (or take suitable powers, in the multiplicative sense): can you detail this here?}. In \mathlib, this subring is called \code{valuation.integer v} \href{https://leanprover-community.github.io/mathlib_docs/ring_theory/valuation/integers.html#valuation.integer}{\extlink}. \mi{Moreover, when $K$ is a field, then its subring $\ball{K}$ has the property that for every element $\alpha$ of $K$, either $\alpha \in \ball{K}$ or $\alpha^{-1} \in \ball{K}$. Such a subring is called a \emph{valuation subring}. Note that the definition of valuation subring involves taking inverses, and hence is only available for fields. Therefore, when working with a general ring $R$, we will formalize $\ball{R}$ as \code{v.integer}, but when working with a field $K$ we will use the stronger definition \code{v.valuation_subring}, which gives us access to extra results about valuation fields available in~\mathlib} \href{https://leanprover-community.github.io/mathlib_docs/ring_theory/valuation/valuation_subring.html#valuation_subring}{\extlink}.
+
+
+\mi{TODO} This should not be confused with \mathlib's \code{valuation\_ring} \href{https://leanprover-community.github.io/mathlib_docs/ring_theory/valuation/valuation_ring.html#valuation_ring}{\extlink} class \fil{should we explain the difference and the relation with this latter class with the \code{valuation_subring} one?}
+ 
+\mi{
+\begin{itemize}
+%	\item Properties of valuations valued in $\wzmZZ$, together with the \code{multiplicative} and \texttt{with\_zero} classes, and clashes with "usual" intuition. Keep in mind that \emph{with\_zero multiplicative} $\ZZ$ is ``the same'' as $q^{-\ZZ}\cup \{0\}$.
+%	\item Difference between \texttt{valued} (which is a class, and carries a topology/uniformity) and \texttt{valuation} that is just a function.
+%	\item We put \texttt{valued} instances on fields but "never" on rings that are not fields.
+%	\item There is something called \texttt{valuation\_ring} that has (almost) nothing to do; but \texttt{valuation\_subring} has.
+	\item Comment about the choice of \texttt{.integers} instead of \texttt{.valuation\_subring}
+	\item Add that there is a lot of API for valuations taking valued in \code{valuation.group}$=K^\times/R^\times$ but we want to land in $\wzmZZ$. \fil{This is needed later to compare with Bourbaki's definition of ``discrete''.  that we call the quotient $K^\times/R^\times\cup\{\infty\}$ the \emph{value group}, translating (this bit in a footnote?) the term {groupe des valeurs} from~\cite[Chapitre~VI, \S3, n$^\circ$~2]{Bou85}}
+\end{itemize} 
+}
+\subsection{Definition of Discrete Valuation Rings}\label{subsection:def_dvr}
+Our general references for the theory of discrete valuation rings are~\cite{Ser62} and~\cite[Chapitre~VI]{Bou85}. One notable difference is that in \cite[Chapitre~VI]{Bou85} valuations take value in an \emph{additive} commutative monoid, enriched with one element $\infty$, whereas we stick to the multiplicative convention introduced in \S\ref{subsection:valuations}, which is the approcah chosen in \mathlib. We refer to~\cite{Bou07}, in particular to \cite[Chapitre~IV]{Bou07}, for the main results about ring theory and commutative algebra that we will need.
+
+Let $R$ be a ring, \fil{as above assumed} commutative and unitary. We begin by recalling the following equivalence
+\begin{theorem}[{\cite[Chapitre~VI, \S3, n$^\circ$~6, Proposition~8]{Bou85} and~\cite[Chapitre I, \S2, Propositions~2 and~3]{Ser62}}]\label{thm:dvr_tfae}
+The following properties are equivalent:
+\begin{listResults}
+\item $R$ is a Noetherian local ring whose maximal ideal $\maxid$ is generated by a non-nilpotent element;
+\item $R$ is a Noetherian local integral domain that is integrally closed and is not a field;
+\item $R$ is a local principal ideal domain \textup{(}PID\textup{)} that is not a field;
+\item \fil{$R$ is an integral domain that coincides with the unit ball of~$\Frac(R)$ with respect to a valuation $v\colon \Frac{R}\to\wzmZZ$.}\label{dvr_tfae:pts_val}
+\end{listResults}
+\end{theorem}
+\begin{remark}
+In~\cite[Chapitre~VI, \S3, n$^\circ$~6, Proposition~8]{Bou85} other equivalences are proved, but we will not need them.
+\end{remark}
+A ring satisfying the equivalent properties of Theorem~\ref{thm:dvr_tfae} is called a discrete valuation ring (often shortened as DVR). The nomenclature is motivated by point~\ref{dvr_tfae:pts_val}~\ibid: given a DVR $R$, it is possible to find a valuation
+\[
+v\colon \Frac(R)\longrightarrow \wzmZZ
+\]
+such that $R=\ball{\Frac R}$: \fil{as observed above, this valuation will not be unique, because\dots}. For each of these valuations, the image $\image(v)\subseteq\wzmZZ$ is the free monoid generated by $v(r)$ (together with $0$), where $r$ is any generator of the maximal ideal $\maxid$ of $R$. Upon replacing $v$ by $v/v(r)$, for some generator $r$ of $\maxid$, we can assume that this free monoid coincides with $\wzmNN$: in this case the valuation is said to be \emph{normalised}, and the elements of valuation equal \fil{to $(-1)$ }are called uniformizers. One basic result is that, for a normalised valuation, the uniformisers are exactly the set of generators of $\maxid$, because properties \label{def_valuation:one} and \label{def_valuation:one} of Definition~\label{def:valuation} show that an element $u\in R$ is a unit if and only if $v(u)=1=$ \code{to_add}$\mcode{0}$\fil{true}?. Moreover, there exists a unique normalised valuation on a DVR, since the same argument shows that every valuation is uniquely determined by its value on one, or any, generator of $\maxid$. %We denote this normalised valuation by ${\normalised}_{,R}$ --- or simply by $\normalised$ when the DVR $R$ can be understood.
+
+This points of view taken in~\cite[Chapitre~I]{Ser62} and in~\cite[Chapitre~VI, \S3, n$^\circ$ 6]{Bou85}, are not identical: in the former, the valuations occurring in point~\ref{dvr_tfae:pts_val} of Theorem~\ref{thm:dvr_tfae} take values in $\ZZ\cup\{\infty\}$ (or $\wzmZZ$, up to our translation), whereas in the latter they are valued in the value group $\Frac(R)\times/R^\times \cup\{\infty\}$ but under the assumption that there is an isomorphism $\Frac(R)\times/R^\times\cong \ZZ$. In both cases they are called ``discrete''; they are said to be normalized, as above, when they are surjective. Often results are stated assuming that the valuation is normalised, relying on the possibility of achieving this normalisation without harm, .
+
+In the setting of a formalisation work, we need to put more care on the choice of normalising the valuation: on the one hand, regarding ``the'' valuation as part of the data would \fil{rigidify the situation too much NOT NICE}, as in \fil{give a REF to some discussion in our DD paper about fraction fields} and, on the other, there might be different constructions of a valuation on a ring that would turn out to be propositionally equal albeit not definitionally equal. The corresponding pairs $(R,v)$, for the several possible constructions of $v$, would all be mathematically intercheangable yet represented by different, although equivalent, types; this would lead to unnecessary verbosity while keeping track of the equivalences. Moreover, there might be different normalisation procedures and proofs must be provided to show that these yield definitionally equal valuations. In \fil{\S\dots and in \S\dots we will see explicit examples of this phenomenon, supporting our decision of avoiding the choice of a preferred valuation on $R$}. In light of the above discussion, we decided to call a valuation ``discrete'' when it is \emph{also} normalised, and we encode this notion in the following class:
+\begin{lstlisting}
+class is_discrete (v : valuation A $\wzmZZ$) : Prop := (surj : function.surjective v)
+\end{lstlisting}
+This \fil{differs} from the usual definition (see, for instance~\cite[Proposition~I.1]{Ser62}), where one declares a valuation to be discrete when its image is isomorphic to a subgroup of $\ZZ$ (enriched with an element $\infty$), and observes that such a valuation can always be normalized to become surjective. \fil{say that we rigidify things by forcing the map $v$ to be $\wzmZZ$-valued}. In particular, with our definition, a valuation is discrete if and only if there exists a uniformizer, which we prove in the following form:
+\begin{lstlisting}
+lemma is_discrete_of_exists_uniformizer {K : Type*} [field K] (v : valuation K $\wzmZZ$) {$\pi$ : K} (h$\pi$ : is_uniformizer v $\pi$) : is_discrete v := sorry
+\end{lstlisting}
+The lemma \code{exists_uniformizer_of_discrete} provides the reverse implication . Similarly, the aforementioned correspondance between uniformizers for a normalised valuation and generators of $\maxid$ takes the form
+\begin{lstlisting}
+lemma uniformizer_is_generator ($\pi$ : uniformizer v) : maximal_ideal v.valuation_subring = ideal.span {$\pi.1$} := sorry
+\end{lstlisting}
+where the fact that the valuation is normalised becomes \emph{a consequence}, rather than an assumption as in the classical approach. For the same reason, in the declaration formalising the opposite implication, namely
+\begin{lstlisting}
+lemma is_uniformizer_of_generator {r : K$_0$} [v.is_discrete]
+  (hr : maximal_ideal v.valuation_subring = ideal.span {r}) : is_uniformizer v r :=
+\end{lstlisting}
+the assumption that \code{v} is discrete --- implemented as the \code{class} assumption \code{[v.is_discrete]} --- becomes necessary.
+
+Given a DVR, that we implement in \lean using the \mathlib class \code{discrete_valuation_ring}\href{https://leanprover-community.github.io/mathlib_docs/ring_theory/discrete_valuation_ring/basic.html#discrete_valuation_ring}{extlink} --- this \fil{corresponds to property...??? in the above theorem} --- we can consider the adic valuation $\normalised$ attached to its maximal ideal, \fil{as discussed above}. We produce an \fil{check A vs R}
+\begin{lstlisting}
+instance discrete_valuation.is_discrete : (@valued.v (fraction_ring A) _ $\wzmZZ$ _ _) := sorry
+\end{lstlisting}
+showing that $\normalised$ is discrete according to our definition. Anticipating subsequent applications to algebraic number \fil{theory and to a global-to-local approach that\dots}, we also prove the 
+\begin{lstlisting}
+lemma (R : Type*) [comm_ring R] [is_domain R] [is_dedekind_domain R] (K : Type*) [field K] [algebra R K] [is_fraction_ring R K] ($\maxid$ : height_one_spectrum R) is_dedekind_domain.height_one_spectrum.adic_valuation.is_discrete : is_discrete (adic_valued $\maxid$).v := 
+\end{lstlisting}
+It shows that starting with a Dedekind domain $R$ \fil{GIVE REF}, a maximal ideal $\maxid$ in it, the associated $\maxid$-adic valuation is discrete with respect to our definition and therefore defines a \code{valued} structure on the field $K=\Frac(R)$. {As an application, in this setting, both the localization $R_{\maxid}$ and the completion $\widehat{R_{\maxid}}$ get a structure of a DVR}.
+
+Since a DVR is an integral domain, it is possible to extend the valuation to its field of fractions $K=\Frac(R)$ by setting $v(a/b)=v(b)-v(a)$ \fil{or...}. If the valuation $v$ on $R$ is normalised, we obtain a \emph{surjective} valuation
+\[
+K\longtwoheadrightarrow \ZZ\cup\{+\infty\}\text{\fil{or\dots}}
+\]
+whose kernel coincides with $\unit{R}$. \fil{With the definitions introduced in} \S\ref{subsection:valuations}, this turns $K$ into a discretely valued field. 
+
+\mi{When implementing valuations on a discrete valuation ring $R$ with field of fractions $K$, we made the design choice to put an instance of the valued class on $K$, but not on the ring $R$ itself. The reason is that, if needed, we can recover the
+topological structure on $R$ from the one on $K$, so we prefer not to duplicate this information. This choice is consistent with \mathlib's file \url{ring_theory.dedekind_domain.adic_valuation}, in which valued instances are only put on fields.}
+
+Both DVRs and valuations had already been defined in \fil{\mathlib SAY WHAT THIS IS SOMEWERE} before our project, but nothing beyong their basic properties was available. In particular, no definition of uniformisers or the relation between generators of $\maxid$ and the valuation on a DVR was available. 
+
+More crucially, two fundamental constructions were not formalised in \mathlib nor, \fil{to the best of our knowledge, in any other proof assistant CHECK}: extensions and completions of DVR. The next section is devoted to a description of our formalisation of these \fil{notions? constructions?}.
+
+We close this section by mentioning the result
+\begin{lstlisting}
+instance dvr_of_is_discrete {K : Type*} [field K] (v: valuation K $\wzmZZ$)
+[hv : v.is_discrete] : discrete_valuation_ring $\ball{K}$ := sorry
+\end{lstlisting}
+Thanks to the above \fil{lemma/def/instance?},if $K$ is a field endowed with a discrete valuation $v$, its \fil{unit ball} $\ball{K}$ as defined in \S\ref{subsection:valuations} is itself a DVR. \fil{Should we say something about the proof?}. We then prove \fil{in the declaration\dots}
+\begin{lstlisting}
+bla bla
+\end{lstlisting}
+that the field of fractions $\Frac(\ball{K})$ has the structure of a \code{fraction_ring}$\mcode{\ball{K}}$ \href{https://leanprover-community.github.io/mathlib_docs/ring_theory/localization/fraction_ring.html#fraction_ring}{\extlink} (we refer to~\cite[\S4.5]{BaaDahNarNuc22} for a discussion on how \mathlib treats fraction rings and, in particular, for an explanation of our choice of writing ``a fraction ring'' rather than ``the fraction ring/field''). Finally, we prove in
+\begin{lstlisting}
+\end{lstlisting}
+\fil{that the unique normalised valuation on the DVR $\ball{K}$, once extended to its field of fractions $K$ as explained above, gives rise to a valuation that, up to rescaling, coincides with $v$ DONE?!?}
+%\begin{itemize}
+%	\item True Math definition and the \texttt{mathlib\_tfae} (in particular, local and PID)
+%	\item \texttt{is\_discrete} : observe that if the value group were $2\ZZ$ this would still be mathematically "discrete", but we make the choice of surjectivity in coherence with Serre/so that the notion of equivalence collapses to equality: there is a unique normalized one.
+%	\item \texttt{uniformizer}'s and equivalence of their existence with discreteness
+%	\fil{\item The unit ball of a field with a discrete valuation (be it valued or not) is a DVR; and the adic valuation (ref to María Inés' paper) on the field of fractions of a DVR \texttt{is\_discrete}}.
+%\end{itemize}
+\subsection{Complete Discrete Valuation Rings and their Extensions}\label{subsec:complete_DVR}
+Suppose now that $R$ is a DVR. \fil{As discussed in \S\ref{subsection:def_dvr}, $R$ is a local ring of Krull} dimension $1$ that is a principal ideal domain (shortened as PID). Its unique maximal ideal $\maxid$ is a height-one prime, and one can consider the adic valuation associated to this prime, \fil{as defined, for instance, in\dots}. In fact, it turns out that since $R$ is a PID, it is in particular (\fil{see\dots}) a Dedekind domain: now, Baanen~\emph{et al.}~have formalised in~\cite{BaaDahNarNuc21} and~\cite{BaaDahNarNuc22} the general theory of Dedekind domains in \lean, and de~Frutos-Fernández \fil{is this the right paper?} has formalised in \lean the main properties of adic valuations on Dedekind domains and on their extensions. The main result connecting the two theories is that the $\maxid$-adic valuation $v_{\maxid}$ associated to the prime ideal $\maxid$ coincides with the normalised valuation $\normalised$ on $R$. Although this is mathematically trivial, and the two functions
+\[
+\normalised,v_{\maxid}\colon R\longrightarrow \ZZ\cup\{+\infty\}
+\]
+are considered identical in pen-and-paper mathematics, they actually belong to different types and hence are different terms. \fil{Indeed\dots WAIT FOR A THROUGHOUT DISCUSSION OF ADIC VAL'S} 
+
+\fil{add the valued structure on the field of fractions of a dvr, see dvr.basics line 431}
+
+\vspace{3cm}
+
+A pivotal construction in this context --- upon which the main application of the theory of DVRs and of local fields to algebraic number theory relies --- is that of the \emph{completion} of a DVR, or of its field of fractions, with respect to an adic valuation.
+
+ and we can regard therefore $\maxid$ is its unique non-zero prime ideal. Hencee can regard it as 
+\begin{itemize}
+	\item The completion of a discretely valued field is again discretely valued (and so its ring of integers is a DVR by the above)
+	\fil{\item The equality of the two valuations (the adic one coming from the max'l ideal, since DVR implies local) and the uniform completion of the valuation we begun with
+	\item When viewing $K_v$ as the completion of $K$, its \texttt{valued} instance comes from the completion of the valuation on $K$, and this is of course different from the \texttt{valued} instance on the fraction field of $R_v$, itself isomorphic to $K_v$, that instead comes from the \code{discrete_valuation_ring} instance on $R_v$.
+	\item Still, the isomorphism is known and one can compare the two valuations on $K_v$ which is \emph{a fraction field}; this is done in \code{v_1=v_2}.}
+	\mi{\item Recall (María Inés' paper): there is a norm associated to a valuation; and if the field below is complete and the extension is finite, then this norm is unique (extending the one below).
+	\item Speak about the work to define the normalized \texttt{discrete} valuation "above"
+	\item [MAYBE] Mention the lemma \texttt{w\_le\_one\_iff\_disc\_norm\_extension\_le\_one}
+	\item The proof (from previous project) and instance that a finite extension of a complete field is again complete
+	\item The lemma \code{integral_closure_eq_integer} and the theorem \code{dvr_of_finite_extension}
+	\item The extension of the valuation is not a valued instance because this would create a diamond for every valued field K. But we do get a DVR instance on the integral closure of the integers.}
+\end{itemize}
+\section{Local Fields}
+Give our definition and the claims that finite extensions of $\laurentseries$ and of $\QQ_p$ are local fields.\\
+The valued instance on a mixed/equal characteristic local field causes a diamond on $\QQ_p$ or
+$\laurentseries$.
+\subsection{Equal characteristic}
+\begin{itemize}
+	\fil{\item Unlike the $p$-adic, the completion of the ring of rational functions had not yet been defined in mathlib.
+	\item Put both a valuation and a norm on $\laurentseries$
+	\item iso between Laurent series and the completion}
+	\mi{\item Definition of Eq char local field
+	\item Our definition of ring of integers is the integral closure of $\powerseries$ in $K$, mainly to adapt to what has been done for number fields.
+	\item The definition \code{ring_of_integers_algebra}
+	\item $\laurentseries$ is an eq. char. local ring [(and also $\laurentseries[{\FF[q]}]$?)}
+	
+\end{itemize}
+\subsection{Mixed characteristic}
+\begin{itemize}
+	\mi{\item Definition of Mixed char local field
+	\item Our definition of ring of integers is the integral closure of $\ZZ_p$ in $K$, mainly to adapt to what has been done for number fields.
+	\item The definition \code{ring_of_integers_algebra}, "equal" to the one for eq. char. local fields}
+	\fil{\item Discussion about the two $\QQ_p$'s from a mathematical point of view.
+	\item The proof that $\QQ_p$ is a mixed char local field.
+	\item Say that most of the techniques used for the iso about Laurent series adapted to \code{padic_ring_equiv} IF TRUE}
+	\item A proof that the ring of integers is a DVR (once $\ZZ_p$ becomes the right $\ZZ_p$ --- so, not only a DVR, which it is, but the \code{valuation_subring} of $\QQ_p$ --- this will follow from the general results about DVR's).
+\end{itemize}
+
+
+\section{Discussion}
+\begin{itemize}
+	\item Localizations of number fields are local fields
+	\item Future work (not too much, but towards LCFT)
+	\item Related works
+\end{itemize}
+\subsection{Implementation Details}
+\begin{itemize}
+	\item \mi{bundled vs unbundled \texttt{uniformizer}'s and the choice of having them in K or in R or in R.int\dots}
+	\item \fil{insert here the "double" $Q_p$ in particular the fact we found a \code{metric} instance on $\QQ$}.
+	\item \mi{the loop forcing the instance \texttt{discretely\_normed\_field} to be only a local one
+	\item [MAY BE] Discuss working in $\wzmZZ$ vs in $\RR$ for the DVR\_extension
+	\item The instance of \code{valued} at the end of basic is defined on THE fraction ring and not on A fraction field because otherwise this would get into a diamond. Look at the examples in \code{extension}. Observe that \code{height_one_spectrum.valued_adic_completion K v} takes as argument $K$ (that is A fraction ring of $R$), whereas \code{discrete_valuation.with_zero.valued} takes as argument a DVR (in this case, $R_v$). Since the completion at $v$ of the fraction ring $frac R$ is not equal to $K_v$, this leads to no problem.}
+\end{itemize}
+
+%%
+%% The acknowledgments section is defined using the "acks" environment
+%% (and NOT an unnumbered section). This ensures the proper
+%% identification of the section in the article metadata, and the
+%% consistent spelling of the heading.
+%TODO We should add the funding ack. here (this is commented out by the `anonymous` option).
+\begin{acks}
+\mi{}
+\end{acks}
+
+%%
+%% The next two lines define the bibliography style to be used, and
+%% the bibliography file.
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{CPP_biblio}
+
+
+%%
+%% If your work has an appendix, this is the place to put it.
+%\appendix
+
+
+\end{document}
+\endinput
+%%
+%% End of file `sample-sigplan.tex'.
