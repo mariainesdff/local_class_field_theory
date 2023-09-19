@@ -41,5 +41,3 @@ begin
 end
 
 end abstract_completion
-
-#lint
