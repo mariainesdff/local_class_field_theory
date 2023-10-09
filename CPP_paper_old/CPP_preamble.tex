@@ -4,10 +4,6 @@
 \usepackage{enumitem}
 \usepackage{amsfonts, amsthm, amsmath}
 \usepackage{soul}
-\usepackage[english]{babel}
-\hyphenation{non-archi-me-de-an}
-% \usepackage{dutchcal}
-\usepackage{mathrsfs}
 \usepackage{fontawesome} % external link icon
 \usepackage{xpunctuate}
 \usepackage{hyperref}
@@ -20,11 +16,10 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Typography
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \newcommand{\fil}[1]{{\color{blue} #1}}
-% \newcommand{\mi}[1]{{\color{purple} #1}}
+\newcommand{\fil}[1]{{\color{blue} #1}}
+\newcommand{\mi}[1]{{\color{purple} #1}}
 %\DeclareRobustCommand{\extlink}[1]{\href{{#1}}{\ensuremath{{}^\text{\faExternalLink}}}}
-\newcommand{\extlink}{~\ensuremath{{}^\text{\faExternalLink}}}
-\newcommand*{\ibid}{\emph{ibid}\xperiod}
+\newcommand{\extlink}{\ensuremath{{}^\text{\faExternalLink}}}
 %%%%%%%%%%%%%%%%%%%%%%%%%
 %%Lean-related typography
 %%%%%%%%%%%%%%%%%%%%%%
@@ -34,13 +29,13 @@
 %\definecolor{keywordcolor}{rgb}{0.7, 0.1, 0.1}   % red
 %\definecolor{commentcolor}{rgb}{0.4, 0.4, 0.4}   % grey
 %\definecolor{symbolcolor}{rgb}{0.4, 0.4, 0.4}    % grey
-\renewcommand{\lstlistingname}{Code excerpt}
+\renewcommand{\lstlistingname}{Code Sample}
 \newcommand{\LClistingname}{\MakeLowercase{\lstlistingname}}
 \newcommand{\code}[1]{\lstinline{#1}}
 \newcommand{\mcode}[1]{\mathtt{\ #1\ }}
-\newcommand*{\lean}[1][3]{Lean~{#1}\xspace}
+\newcommand*{\lean}[1][3]{\texttt{lean-{#1}}\xspace}
 \newcommand*{\mathlib}{\texttt{mathlib}\xspace}
-% \newcommand{\pfomit}{$ - - QED$}
+\newcommand*{\ibid}{\emph{ibid}\xperiod}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%Theorems
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -76,18 +71,11 @@
 \newcommand*{\wzmNN}{\NN_{\mathtt{m}0}} %% With-zero multiplicative version of \NN
 \newcommand*{\RR}{\mathbb{R}}
 \newcommand*{\QQ}{\mathbb{Q}}
-\newcommand*{\CC}{\mathbb{C}}
 \newcommand*{\FF}[1][p]{\mathbb{F}_{#1}}
 \newcommand*{\m}{\mathfrak{m}}
-\newcommand*{\av}[1][\empty]{a_{#1}}
 \DeclareMathOperator{\Frac}{Frac} %the fraction field
 %%Algebraic
 \newcommand*{\laurentseries}[1][{\FF}]{\ensuremath{#1(\!(X)\!)}} %Laurent series
-\newcommand*{\compl}[2][\empty]{\ensuremath{\widehat{#2}_{#1}}} %General completion
-\newcommand*{\FpXCompl}[1][{\FF}]{\compl{#1(X)}}  %Adic completion of Rational functions
-\newcommand*{\FpXComplInt}[1][\FF]{\ball{\bigl(\FpXCompl[#1]\bigr)}}  %Adic completion of polynomials
-\newcommand*{\padicCompl}{\compl[(p)]{\QQ}}  %Adic completion of Rational numbers
-\newcommand*{\padicComplInt}{\ball{\bigl(\padicCompl\bigr)}}  %Adic completion of the integers
 \newcommand*{\powerseries}[1][{\FF}]{#1{[\![X]\!]}} %Power series
 \newcommand*{\maxid}[1][R]{\mathfrak{m}_{#1}} %Maximal ideal (of R)
 \newcommand{\unit}[1]{{#1}^\times} % units
@@ -97,8 +85,5 @@
 \newcommand*{\normalised}[1][v]{{#1}_{0}} %The normalised valuation attached to v
 \newcommand*{\ball}[1]{{#1}^\circ} % ring of integers
 %%General set-theoretic
-\newcommand*{\filter}{\mathscr{F}}
-\newcommand*{\princfilter}{\boldsymbol{\mathcal{P}}}
-\newcommand*{\nhds}{\boldsymbol{\mathcal{N}}}
 \DeclareMathOperator{\image}{Im} %image of a map
 \newcommand*{\longtwoheadrightarrow}{\joinrel\relbar\joinrel\twoheadrightarrow}%Long surjective arrow

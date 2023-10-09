@@ -197,34 +197,10 @@
 
 %Entries
 
-@Book{Bou07,
- Author = {Bourbaki, Nicolas},
- Title = {{\'E}l{\'e}ments de math{\'e}matique. {Alg{\`e}bre}. {Chapitres} 4 {\`a} 7},
- ISBN = {3-540-34398-9},
- Year = {2007},
-	Address = {Berlin},
- Publisher = {Springer},
- DOI = {10.1007/978-3-540-34499-5},
- Keywords = {12-02,13-02,00A05,01A72,12Fxx,13F10,13C10,12E05,06F15,05E05},
- zbMATH = {5069336},
- Zbl = {1139.12001}
-}
 
-@book {Bou85,
-    AUTHOR = {Bourbaki, Nicolas},
-     TITLE = {\'{E}l\'{e}ments de math\'{e}matique},
-      NOTE = {Alg\`ebre commutative. Chapitres 5 \`a 7. Reprint},
- PUBLISHER = {Masson}, 
-	address= {Paris},
-      YEAR = {1985},
-     PAGES = {351},
-      ISBN = {2-225-80269-6},
-   MRCLASS = {13-02},
-  MRNUMBER = {782297},
-}
 
 @book{Ser62,
- Author = {Serre, J.-P.},
+ Author = {Serre, Jean-Pierre},
  Title = {{Corps locaux}},
  Publisher = {{Hermann}},
  Year = {1962},
@@ -235,13 +211,23 @@
 }
 
 @InProceedings{BaaDahNarNuc21,
-    AUTHOR = {Baanen, Anne and Dahmen, Sander R. and Narayanan, Ashvni and
+  AUTHOR = {Baanen, Anne and Dahmen, Sander R. and Narayanan, Ashvni and
 				N{uccio Mortarino Majno di Capriglio}, Filippo A.~E.},
-  title =	{{A Formalization of {D}edekind {D}omains and {C}lass {G}roups of {G}lobal {F}ields}},
-  booktitle =	{12th International Conference on Interactive Theorem Proving 2021},
+  title =	{{A Formalization of Dedekind Domains and Class Groups of Global Fields}},
+  booktitle =	{12th International Conference on Interactive Theorem Proving (ITP 2021)},
   pages =	{5:1--5:19},
+  series =	{Leibniz International Proceedings in Informatics (LIPIcs)},
+  ISBN =	{978-3-95977-188-7},
+  ISSN =	{1868-8969},
   year =	{2021},
   volume =	{193},
+  editor =	{Cohen, Liron and Kaliszyk, Cezary},
+  publisher =	{Schloss Dagstuhl -- Leibniz-Zentrum f{\"u}r Informatik},
+  address =	{Dagstuhl, Germany},
+  URL =		{https://drops.dagstuhl.de/opus/volltexte/2021/13900},
+  URN =		{urn:nbn:de:0030-drops-139004},
+  doi =		{10.4230/LIPIcs.ITP.2021.5},
+  annote =	{Keywords: formal math, algebraic number theory, commutative algebra, Lean, mathlib}
 }
 
 @article{BaaDahNarNuc22,
@@ -262,6 +248,57 @@
        URL = {https://doi-org.docelec.univ-lyon1.fr/10.1007/s10817-022-09644-0},
 }
 
+@book{Bou71,
+	Address = {Paris},
+	Author = {Bourbaki, Nicolas},
+	Mrclass = {54-XX},
+	Mrnumber = {0358652 (50 \#11111)},
+	Pages = {357},
+	Publisher = {Hermann},
+	Title = {\'{E}l\'ements de math\'ematique. {T}opologie g\'en\'erale. {C}hapitres 1 \`a 4},
+	Year = {1971}}
+
+
+@book {Bou85,
+    AUTHOR = {Bourbaki, Nicolas},
+     TITLE = {\'{E}l\'{e}ments de math\'{e}matique. Alg\`ebre commutative. Chapitres 5 \`a 7},
+ PUBLISHER = {Masson}, 
+	address= {Paris},
+      YEAR = {1985},
+     PAGES = {351},
+      ISBN = {2-225-80269-6},
+   MRCLASS = {13-02},
+  MRNUMBER = {782297},
+}
+
+@Book{Bou07,
+ Author = {Bourbaki, Nicolas},
+ Title = {{\'E}l{\'e}ments de math{\'e}matique. {Alg{\`e}bre}. {Chapitres} 4 {\`a} 7},
+ ISBN = {3-540-34398-9},
+ Year = {2007},
+PAGES = {422},
+	Address = {Berlin},
+ Publisher = {Springer},
+ Keywords = {12-02,13-02,00A05,01A72,12Fxx,13F10,13C10,12E05,06F15,05E05},
+ zbMATH = {5069336},
+ Zbl = {1139.12001}
+}
+
+@inproceedings{BuzComMas20,
+	doi = {10.1145/3372885.3373830},
+	url = {https://doi.org/10.1145%2F3372885.3373830},
+	year = 2020,
+	month = {jan},
+	publisher = {{ACM}
+},
+address = {New York, N.~Y., United States},
+	author = {Kevin Buzzard and Johan Commelin and Patrick Massot},
+	title = {Formalising perfectoid spaces},
+	booktitle = {Proceedings of the 9th {ACM} {SIGPLAN} International Conference on Certified Programs and Proofs},
+pages = {299--312},
+}
+
+
 @InProceedings{deF22,
   author =	{{de~Frutos-Fern\'{a}ndez}, Mar{\'\i}a In\'{e}s},
   title =	{{Formalizing the Ring of Ad\`{e}les of a Global Field}},
@@ -279,5 +316,334 @@
   URN =		{urn:nbn:de:0030-drops-167232},
   doi =		{10.4230/LIPIcs.ITP.2022.14},
   annote =	{Keywords: formal math, algebraic number theory, class field theory, Lean, mathlib}
+}
+
+@article{BuzHugLauLivFerMor22,
+author = {Kevin Buzzard and Chris Hughes and Kenny Lau and Amelia Livingston and Ramon Fernández Mir and Scott Morrison},
+title = {Schemes in Lean},
+journal = {Experimental Mathematics},
+volume = {31},
+number = {2},
+pages = {355-363},
+year  = {2022},
+publisher = {Taylor & Francis},
+doi = {10.1080/10586458.2021.1983489},
+URL = {https://doi.org/10.1080/10586458.2021.1983489},
+eprint = {https://doi.org/10.1080/10586458.2021.1983489}}
+
+@InProceedings{deF23,
+  author =	{de Frutos-Fern\'{a}ndez, Mar{\'\i}a In\'{e}s},
+  title =	{{Formalizing Norm Extensions and Applications to Number Theory}},
+  booktitle =	{14th International Conference on Interactive Theorem Proving (ITP 2023)},
+  pages =	{13:1--13:18},
+  series =	{Leibniz International Proceedings in Informatics (LIPIcs)},
+  ISBN =	{978-3-95977-284-6},
+  ISSN =	{1868-8969},
+  year =	{2023},
+  volume =	{268},
+  editor =	{Naumowicz, Adam and Thiemann, Ren\'{e}},
+  publisher =	{Schloss Dagstuhl -- Leibniz-Zentrum f{\"u}r Informatik},
+  address =	{Dagstuhl, Germany},
+  URL =		{https://drops.dagstuhl.de/opus/volltexte/2023/18388},
+  URN =		{urn:nbn:de:0030-drops-183880},
+  doi =		{10.4230/LIPIcs.ITP.2023.13},
+  annote =	{Keywords: formal mathematics, Lean, mathlib, algebraic number theory, p-adic analysis, Galois representations, p-adic Hodge theory}
+}
+
+@article{Fre09,
+     author = {Frey, Gerhard},
+     title = {The {Way} to the {Proof} of {Fermat{\textquoteright}s} {Last} {Theorem}},
+     journal = {Annales de la Facult\'e des sciences de Toulouse : Math\'ematiques},
+     pages = {5--23},
+     publisher = {Universit\'e Paul Sabatier, Institut de math\'ematiques},
+     address = {Toulouse},
+     volume = {Ser. 6, 18},
+     number = {S2},
+     year = {2009},
+     doi = {10.5802/afst.1227},
+     mrnumber = {2561373},
+     zbl = {1201.11001},
+     language = {en},
+     url = {http://www.numdam.org/articles/10.5802/afst.1227/}
+}
+
+@InProceedings{Baa22,
+  author =	{Baanen, Anne},
+  title =	{{Use and Abuse of Instance Parameters in the Lean Mathematical Library}},
+  booktitle =	{13th International Conference on Interactive Theorem Proving (ITP 2022)},
+  pages =	{4:1--4:20},
+  series =	{Leibniz International Proceedings in Informatics (LIPIcs)},
+  ISBN =	{978-3-95977-252-5},
+  ISSN =	{1868-8969},
+  year =	{2022},
+  volume =	{237},
+  editor =	{Andronick, June and de Moura, Leonardo},
+  publisher =	{Schloss Dagstuhl -- Leibniz-Zentrum f{\"u}r Informatik},
+  address =	{Dagstuhl, Germany},
+  URN =		{urn:nbn:de:0030-drops-167131},
+  doi =		{10.4230/LIPIcs.ITP.2022.4},
+  annote =	{Keywords: formalization of mathematics, dependent type theory, typeclasses, algebraic hierarchy, Lean prover}
+}
+
+@inproceedings{mathlib,
+  author    = {The mathlib Community},
+  title     = {{The Lean Mathematical Library}}, 
+  editor    = {Jasmin Blanchette and Cătălin Hriţcu},
+  year      = {2020},
+  isbn      = {9781450370974},
+  publisher = {Association for Computing Machinery},
+  address   = {New York, NY, USA},
+  doi       = {10.1145/3372885.3373824},
+  booktitle = {Proceedings of the 9th ACM SIGPLAN International Conference on Certified Programs and Proofs},
+  pages     = {367–381},
+  numpages  = {15},
+  keywords  = {formal library, Lean, mathlib, formal proof},
+  location  = {New Orleans, LA, USA},
+  series    = {CPP 2020},
+  timestamp = {Thu, 23 Jan 2020 16:12:31 +0100},
+  biburl    = {https://dblp.org/rec/conf/cpp/X20},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{Lean3,
+  author    = {de Moura, Leonardo and Kong, Soonho and Avigad, Jeremy and van Doorn, Floris and von Raumer, Jakob},
+  editor    = {Felty, Amy P. and Middeldorp, Aart},
+  title     = {{The Lean Theorem Prover (System Description)}},
+  year      = {2015},
+  isbn      = {978-3-319-21401-6},
+  publisher = {Springer International Publishing},
+  address   = {Cham},
+  doi       = {10.1007/978-3-319-21401-6_26},
+  booktitle = {Automated Deduction - CADE-25},
+  pages     = {378--388},
+  numpages  = {11},
+  series    = {Lecture Notes in Computer Science},
+  volume    = {9195},
+  timestamp = {Tue, 14 May 2019 10:00:39 +0200},
+  biburl    = {https://dblp.org/rec/conf/cade/MouraKADR15},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+}
+
+@inproceedings{LenSte97,
+author="Lenstra, Hendrik W.
+and Stevenhagen, Peter",
+editor="Cornell, Gary
+and Silverman, Joseph H.
+and Stevens, Glenn",
+title="Class Field Theory and the First Case of Fermat's Last Theorem",
+bookTitle="Modular Forms and Fermat's Last Theorem",
+year="1997",
+publisher="Springer New York",
+address="New York, NY",
+pages="499--503",
+abstract="For a prime number p, the first case of Fermat's last theorem for exponent p asserts that for any three integers x, y, z with xp+yp+zp=O at least one of x, y, z is divisible by p. In the present chapter we use class field theory to prove several classical results concerning the first case. Our treatment is based on Hasse's exposition [6, Section 22], but whereas Hasse applied explicit reciprocity laws, our proofs depend only on general properties of power and norm residue symbols.",
+isbn="978-1-4612-1974-3",
+doi="10.1007/978-1-4612-1974-3_18",
+url="https://doi.org/10.1007/978-1-4612-1974-3_18"
+}
+
+@InProceedings{Liv23,
+  author =	{Livingston, Amelia},
+  title =	{{Group Cohomology in the Lean Community Library}},
+  booktitle =	{14th International Conference on Interactive Theorem Proving (ITP 2023)},
+  pages =	{22:1--22:17},
+  series =	{Leibniz International Proceedings in Informatics (LIPIcs)},
+  ISBN =	{978-3-95977-284-6},
+  ISSN =	{1868-8969},
+  year =	{2023},
+  volume =	{268},
+  editor =	{Naumowicz, Adam and Thiemann, Ren\'{e}},
+  publisher =	{Schloss Dagstuhl -- Leibniz-Zentrum f{\"u}r Informatik},
+  address =	{Dagstuhl, Germany},
+  URL =		{https://drops.dagstuhl.de/opus/volltexte/2023/18397},
+  URN =		{urn:nbn:de:0030-drops-183974},
+  doi =		{10.4230/LIPIcs.ITP.2023.22},
+  annote =	{Keywords: formal math, Lean, mathlib, group cohomology, homological algebra}
+}
+
+@inproceedings {Tat67,
+    AUTHOR = {Tate, John T.},
+     TITLE = {Global class field theory},
+ BOOKTITLE = {Algebraic {N}umber {T}heory ({P}roc. {I}nstructional {C}onf.,
+              {B}righton, 1965)},
+     PAGES = {162--203},
+ PUBLISHER = {Thompson},
+ADDRESS = {Washington, D.C.},
+      YEAR = {1967},
+   MRCLASS = {10.65},
+  MRNUMBER = {0220697},
+MRREVIEWER = {G. Whaples},
+}
+
+@book{TPIL,
+  author    = {Jeremy Avigad and Leonardo de Moura and Soonho Kong.},
+  title     = {{Theorem Proving in Lean}},
+  publisher = {Carnegie Mellon University},
+  year      = {2021. {R}elease 3.23.0},
+  note      = {\url{https://leanprover.github.io/theorem_proving_in_lean/}},
+}
+
+@misc{TypeTheory,
+  author    = {Mario Carneiro},
+  title     = {The {T}ype {T}heory of {L}ean},
+  year      = {2019},
+  note      = {{M}aster thesis. \url{https://github.com/digama0/lean-type-theory/releases/download/v1.0/main.pdf}},
+}
+
+@book{BGR,
+  author    = {Bosch, Siegfried and Güntzer, Ulrich  and Remmert, Reinhold},
+  title     = {Non-archimedean analysis : a systematic approach to rigid analytic geometry},
+  isbn      = {0387125469},
+  publisher = {Springer-Verlag Berlin Heidelberg},
+  address   = {Berlin},
+  year      = {1984},
+}
+
+% RELATED WORKS
+
+@InProceedings{functionalCoq,
+  author    = {Affeldt, Reynald and Cohen, Cyril and Kerjean, Marie and Mahboubi, Assia and Rouhling, Damien and Sakaguchi, Kazuhiko},
+  editor    = "Peltier, Nicolas and Sofronie-Stokkermans, Viorica",
+  title     = {{Competing Inheritance Paths in Dependent Type Theory: A Case Study in Functional Analysis}},
+  booktitle = "Automated Reasoning",
+  year      = "2020",
+  publisher = "Springer International Publishing",
+  address   = "Cham",
+  pages     = "3--20",
+  isbn      = "978-3-030-51054-1"
+}
+
+@misc{mathcompCoq,
+  author = {Mahboub, Assia and Tassi, Enrico},
+  title  = {{The Mathematical Components Libraries}},
+  note   = {\url{https://math-comp.github.io/mcb/}},
+  year   = {2017},
+}
+
+@InProceedings{oddorderCoq,
+author    = "Gonthier, Georges and Asperti, Andrea and Avigad, Jeremy and Bertot, Yves and Cohen, Cyril and Garillot, Fran{\c{c}}ois
+  and Le Roux, St{\'e}phane and Mahboubi, Assia and O'Connor, Russell
+  and Ould Biha, Sidi and Pasca, Ioana and Rideau, Laurence and Solovyev, Alexey and Tassi, Enrico and Th{\'e}ry, Laurent",
+editor    = "Blazy, Sandrine and Paulin-Mohring, Christine and Pichardie, David",
+title     = {{A Machine-Checked Proof of the Odd Order Theorem}},
+booktitle = "Interactive Theorem Proving",
+year      = "2013",
+publisher = "Springer Berlin Heidelberg",
+address   = "Berlin, Heidelberg",
+pages     = "163--179",
+isbn      = "978-3-642-39634-2"
+}
+
+@article{padicsCoq,
+  title     = {{A univalent formalization of the p-adic numbers}},
+  volume    = {25},
+  DOI       = {10.1017/S0960129514000541},
+  number    = {5},
+  journal   = {Mathematical Structures in Computer Science},
+  publisher = {Cambridge University Press},
+  author    = {Pelayo, Álvaro and Voevodsky, Vladimir and Warren, Michael A.}, 
+  year      = {2015},
+  pages     = {1147–1171},
+  timestamp = {Wed, 01 Apr 2020 08:48:44 +0200},
+  biburl    = {https://dblp.org/rec/journals/mscs/PelayoVW15},
+  bibsource = {dblp computer science bibliography, https://dblp.org}
+ }
+ 
+@InProceedings{algclosureIsa,
+  author    = "de Vilhena, Paulo Em{\'i}lio and Paulson, Lawrence C.",
+  editor    = "Peltier, Nicolas and Sofronie-Stokkermans, Viorica",
+  title     = {{Algebraically Closed Fields in Isabelle/HOL}},
+  booktitle = "Automated Reasoning",
+  year      = "2020",
+  publisher = "Springer International Publishing",
+  address   = "Cham",
+  pages     = "204--220",
+  isbn      = "978-3-030-51054-1"
+}
+
+@article{complexnormedIsa,
+  author  = {José Manuel Rodríguez Caballero and Dominique Unruh},
+  title   = {Complex Bounded Operators},
+  journal = {Archive of Formal Proofs},
+  month   = {September},
+  year    = {2021},
+  note    = {Formal proof development. \url{https://isa-afp.org/entries/Complex_Bounded_Operators.html}},
+  ISSN    = {2150-914x},
+}
+
+ 
+@misc{padicIsa,
+  author  = {Aaron Crighton},
+  title   = {$p$-adic Fields and $p$-adic Semialgebraic Sets},
+  journal = {Archive of Formal Proofs},
+  month   = {September},
+  year    = {2022},
+  note    = {Formal proof development. \url{https://isa-afp.org/entries/Padic_Field.html}},
+  ISSN    = {2150-914x},
+}
+
+@misc{PuiseuxSeriesIsa,
+  author  = {Manuel Eberl},
+  title   = {Formal Puiseux Series},
+  journal = {Archive of Formal Proofs},
+  month   = {February},
+  year    = {2021},
+  note    = {\url{https://isa-afp.org/entries/Formal_Puiseux_Series.html},
+            Formal proof development},
+  ISSN    = {2150-914x},
+}
+ 
+@article{algclosureMizar,
+  author  = {Christoph Schwarzweller},
+  doi     = {10.2478/forma-2022-0022},
+  title   = {{Existence and Uniqueness of Algebraic Closures}},
+  journal = {Formalized Mathematics},
+  number  = {4},
+  volume  = {30},
+  year    = {2022},
+  pages   = {281--294}
+}
+
+@article{algextMizar,
+  author  = {Christoph Schwarzweller and Agnieszka Rowińska-Schwarzweller},
+  doi     = {10.2478/forma-2021-0004},
+  title   = {{Algebraic Extensions}},
+  journal = {Formalized Mathematics},
+  number  = {1},
+  volume  = {29},
+  year    = {2021},
+  pages   = {39--47}
+}
+
+@article{complexnormedMizar,
+  author  = {Noboru Endou},
+  title   = {{Complex Linear Space and Complex Normed Space}},
+  journal = {Formalized Mathematics},
+  number  = {2},
+  volume  = {12},
+  year    = {2004},
+  pages   = {93--102}
+}
+
+@article{minpolyMizar,
+  author  = {Christoph Schwarzweller},
+  doi     = {10.2478/forma-2020-0022},
+  title   = {{Ring and Field Adjunctions, Algebraic Elements and Minimal Polynomials}},
+  journal = {Formalized Mathematics},
+  number  = {3},
+  volume  = {28},
+  year    = {2020},
+  pages   = {251--261}
+}
+
+@article{realnormedMizar,
+  author  = {Kazuhisa Nakasho and Yuichi Futa and Yasunari Shidama},
+  doi     = {10.2478/forma-2014-0024},
+  title   = {{Topological Properties of Real Normed Space}},
+  journal = {Formalized Mathematics},
+  number  = {3},
+  volume  = {22},
+  year    = {2014},
+  pages   = {209--223}
 }
 
