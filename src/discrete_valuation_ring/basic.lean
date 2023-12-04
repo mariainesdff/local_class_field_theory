@@ -356,6 +356,11 @@ begin
 end
 
 
+example (C : Type) [comm_ring C] [discrete_valuation_ring C] : dedekind_domain C :=
+begin
+  show_term{apply_instance}
+end
+
 lemma val_le_iff_dvd (L : Type*) [field L] {w : valuation L ℤₘ₀} [is_discrete w]
   [discrete_valuation_ring w.valuation_subring]
   (x : w.valuation_subring) (n : ℕ) :  w x ≤ of_add (-(n : ℤ)) ↔

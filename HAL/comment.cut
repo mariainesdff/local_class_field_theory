@@ -1,0 +1,7 @@
+We would like to thank Riccardo Brasca, Mario Carneiro, Antoine Chambert-Loir and Rob Lewis for interesting discussions about possible formalizations of the $p$-adic numbers, Heather Macbeth for helpful conversations about the formalization of Laurent series, and Yaël Dillies for providing access to some results about well-founded relations. We also thank the \mathlib community as a whole for their support during the completion of this project.
+
+The first author acknowledges support from the Grant CA1/RSUE/2021-00623 funded by the Spanish Ministry of Universities, the Recovery, Transformation and Resilience Plan, and Universidad Autónoma de Madrid. She is also grateful for the one-month invitation from Université Jean Monnet Saint-Étienne, as part of the
+program "Appel à Projets Recherche UJM 2023".
+
+
+This work was supported by the LABEX MILYON (ANR-10-LABX-0070) of Université de Lyon, within the program ``France 2030'' (ANR-11-IDEX-0007) operated by the French National Research Agency (ANR).
