@@ -18,12 +18,15 @@
 %% for your publication.
 %%
 %%
-%\documentclass[sigplan,screen]{acmart}
+\documentclass[sigplan,screen]{acmart}
+\pdfpagewidth=8.5in
+\pdfpageheight=11in 
 %\documentclass[sigplan,10pt,anonymous,screen]{acmart}
-\documentclass[sigplan,10pt, nonacm, review]{acmart}
-\settopmatter{printfolios=true,printccs=true,printacmref=false}
-
+%\documentclass[sigplan,10pt, nonacm]{acmart}
+%\settopmatter{printfolios=true,printccs=true,printacmref=false}
+\settopmatter{printccs=true,printacmref=true}
 \input{CPP_preamble.tex}
+
 
 %end of preamble
 
@@ -805,7 +808,9 @@ We make an exception to this rule when implementing mixed and equal characterist
 If $K$ is a discretely valued field, then $\ball{K}$ is a DVR, so we put a \code{[valued (fraction_ring K}$_0$) $\wzmZZ$\code{]} instance on $\Frac(\ball{K})$\href{https://github.com/LCFT-Lean/local_fields/blob/76ad487d09babdb0018f394a5634526637ee014a/src/discrete_valuation_ring/basic.lean#L452}{\extlink}. Note that, while $K$ and $\Frac(\ball{K})$ are isomorphic, they are represented by different types in \mathlib, so the above \code{valued} instance has a different type from the original \code{[valued K} $\wzmZZ$\code{]} instance and no diamond occurs. However, it would if we had instead decided to put this \code{valued} instance on any field $L$ satisfying the condition \code{[is_fraction_ring K}$_0\; $\code{L]}, since this holds for $K$.
 
 \paragraph{The \code{normed_field} and the \code{valued} instances}
-Recall from~\S\ref{subsec:extensions} that to each discrete valuation $v$ on a field $K$ we can associate a nonarchimedean multiplicative norm $\lvert\cdot\rvert_K$. If $v$ is the \fil{unique} discrete valuation on $K$, we often register it as a \code{valued} instance:
+Recall from~\S\ref{subsec:extensions} that to each discrete valuation $v$ on a field $K$ we can associate a nonarchimedean multiplicative norm $\lvert\cdot\rvert_K$.
+
+If $v$ is the \fil{unique} discrete valuation on $K$, we often register it as a \code{valued} instance:
 \begin{lstlisting}
     {K : Type*} [field K] [hv : valued K $\wzmZZ$] 
 \end{lstlisting}
@@ -852,6 +857,7 @@ The formalism of uniform completions suffices to establish that $\compl{\mcode{c
 \paragraph{The field of $p$-adic numbers as adic completion}
 Although the formalization of the isomorphism $\padicCompl\cong\QQ_p$ follows in many respects the one for Laurent series, one notable difference is that the type $\QQ$, unlike $K(X)$, already bore an instance of \code{metric_space}, induced from the euclidean distance, and this induced a uniform structure on $\QQ$. In order to define the term $\padicCompl$ we needed to access the API concerning completions of adic spaces, and to do so a \code{valued} instance needed to be defined on $\QQ$. The corresponding uniform space structure would conflict with the euclidean one, and therefore we needed to locally disable the \code{metric_space} instance on $\QQ$ already just to \emph{define} the type $\padicCompl$.
 
+\balance
 
 \begin{acks}
 We would like to thank Riccardo Brasca, Mario Carneiro, Antoine Chambert-Loir and Rob Lewis for interesting discussions about possible formalizations of the $p$-adic numbers, Heather Macbeth for helpful conversations about the formalization of Laurent series, Yaël Dillies for providing access to some results about well-founded relations and Cyril Cohen for answering some questions about $p$-adic numbers in Coq. We also thank the \mathlib community as a whole for their support during the completion of this project.
