@@ -387,8 +387,8 @@ One basic result is that, for a normalized valuation on a DVR, the uniformizers 
 
 Assume now that $R$ is any integral domain (not necessarily a DVR) and that $K$ is a field of fractions for $R$. The points of view taken in~\cite[Chapitre~I]{Ser62} and in~\cite[Chapitre~VI, \S3, n$^\circ$6]{Bou85} concerning valuations on $K$ are not identical: in the former, the valuations occurring in point~\ref{dvr_tfae:pts_val} of Theorem~\ref{thm:dvr_tfae} take values in $\ZZ\cup\{\infty\}$ (or $\wzmZZ$, up to our translation), whereas in the latter they are valued in the value group $K^\times/R^\times \cup\{\infty\}$ but under the assumption that there is an isomorphism $K^\times/R^\times\cong \ZZ$. In both cases they are called ``discrete''; they are said to be normalized, as above, when they are surjective. Often results are stated assuming that the valuation is normalized, relying on the possibility of achieving this normalization simply by rescaling, so that the theory of discrete valuations is essentially the theory of \emph{normalized} discrete valuations.
 
-In the setting of a formalization work \fil{allowing for this level of flexibility concerning the group (with zero) $\Gamma_0$ where the valuation takes its values, and about different normalizations, becomes more delicate. It is in principle possible to let $\Gamma_0$ vary, including it as a (perhaps implicit) variable: yet one must stipulate the existence of an isomorphism $\Gamma_0\cong\wzmZZ$, adding one more variable, so that we rather find it more convenient to consider only valuations that are $\wzmZZ$-valued, in line with the choice made when defining the adic valuation\href{https://leanprover-community.github.io/mathlib_docs/ring_theory/dedekind_domain/adic_valuation.html}{\extlink} attached to a height-one prime of a Dedekind domain. Even with this choice, the above discussion about different possible normalizations of a $\wzmZZ$-valued valuations, all leading to the same mathematical object, suggests that the focus should be put on \emph{normalized} valuations, rather than general ones. With this in mind,\st{, we need to put more care on how to normalize the valuation: on the one hand, regarding ``the'' valuation as part of the data would rigidify the situation too much (see, for instance, the discussion in~[???,\S4.5], where requiring that ``the'' field of fractions of an integral domain refers to a specific definition would create problems); on the other, there might be different constructions of a valuation that would turn out to be propositionally, but not definitionally, equal. The corresponding pairs $(R,v)$, for the several possible constructions of $v$, would be mathematically interchangeable yet represented by different types; this would lead to unnecessary verbosity while keeping track of the equivalences. Moreover, there might be different normalization procedures and proofs must be provided to show that these yield equal valuations. In light of the above discussion,}} 
-we call a valuation ``discrete'' when it is \fil{$\wzmZZ$-valued and} \emph{also} normalized, \fil{\st{and we }}encod\fil{ing\st{e}} this notion in the following class\href{https://github.com/LCFT-Lean/local_fields/blob/76ad487d09babdb0018f394a5634526637ee014a/src/discrete_valuation_ring/basic.lean#L125}{\extlink}:
+In the setting of a formalization work \fil{allowing for this level of flexibility concerning the group (with zero) $\Gamma_0$ where the valuation takes its values, and about different normalizations, becomes more delicate.} It is in principle possible to let $\Gamma_0$ vary, including it as a (perhaps implicit) variable: yet one must stipulate the existence of an isomorphism $\Gamma_0\cong\wzmZZ$, adding one more variable, so that we rather find it more convenient to consider only valuations that are $\wzmZZ$-valued, in line with the choice made when defining the adic valuation\href{https://leanprover-community.github.io/mathlib_docs/ring_theory/dedekind_domain/adic_valuation.html}{\extlink} attached to a height-one prime of a Dedekind domain. Even with this choice, the above discussion about different possible normalizations of a $\wzmZZ$-valued valuations, all leading to the same mathematical object, suggests that the focus should be put on \emph{normalized} valuations, rather than general ones. With this in mind, 
+we call a valuation ``discrete'' when it is $\wzmZZ$-valued and \emph{also} normalized, encoding this notion in the following class\href{https://github.com/LCFT-Lean/local_fields/blob/76ad487d09babdb0018f394a5634526637ee014a/src/discrete_valuation_ring/basic.lean#L125}{\extlink}:
 \begin{lstlisting}[caption={Definition of discrete valuation.}, label={code:def_discrete}]
 class is_discrete (v : valuation R $\wzmZZ$) := 
 (surj : function.surjective v)
@@ -767,7 +767,7 @@ Our next project is to prove that every local field is either a mixed characteri
 \subsection{Related works}\label{subsec:related_work}
 We formalize our work on top of the \lean library \mathlib and the \lean project \cite{deF23} formalizing extensions of norms. The basic theory of DVR's was available in \mathlib at the start of our project. The library includes a formalization of the additive valuation on a DVR but we discuss in~\S\ref{subsec:implementation} our choice of working with $\wzmZZ$-valued valuations instead.
 
-As far as other systems are concerned, the first formalization of the $p$-adic numbers appeared in the Coq UniMath library in~\cite{padicsCoq}. They were later formalized in Isabelle/HOL in~\cite{padicIsa}, where we also find a formalization of formal Puiseux series \cite{PuiseuxSeriesIsa}, which are a generalization of Laurent series. To the best of our knowledge, in none of these formalizations the algebraic structure of those rings as DVR's, nor the comparison between the adic and the metric topology, is discussed. %\fil{\st{The Mizar Mathematical library provides several constructions from field theory, including algebraic extensions in}~\cite{algextMizar}\st{ and minimal polynomials in}~\cite{minpolyMizar}. }
+As far as other systems are concerned, the first formalization of the $p$-adic numbers appeared in the Coq UniMath library in~\cite{padicsCoq}. They were later formalized in Isabelle/HOL in~\cite{padicIsa}, where we also find a formalization of formal Puiseux series \cite{PuiseuxSeriesIsa}, which are a generalization of Laurent series. To the best of our knowledge, in none of these formalizations the algebraic structure of those rings as DVR's, nor the comparison between the adic and the metric topology, is discussed. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%Subsection : Implementation details
@@ -788,13 +788,26 @@ def is_uniformizer ($\pi$ : R) : Prop :=
 vR $\pi$ = (of_add (- 1 : $\ZZ$) : $\wzmZZ$)
 \end{lstlisting}
 
-We also provide a bundled version of this definition, called \code{uniformizer}\href{https://github.com/LCFT-Lean/local_fields/blob/76ad487d09babdb0018f394a5634526637ee014a/src/discrete_valuation_ring/basic.lean#L144}{\extlink}. \mi{By ``bundled'' we mean that, in this version, the element $\pi$ is recorded as a field of the structure} \code{uniformizer}, \mi{instead of being a parameter as in the previous definition} \code{is_uniformizer}. 
-
-Since any uniformizer is necessarily a member of the unit ball, we decided to make the field $\pi$ in the definition below a term of type \code{vR.integer} (as opposed to type \code{R}). The bundled definition is more convenient to prove results that involve fixing a uniformizer.
+We also provide a bundled version of this definition, called \code{uniformizer}\href{https://github.com/LCFT-Lean/local_fields/blob/76ad487d09babdb0018f394a5634526637ee014a/src/discrete_valuation_ring/basic.lean#L144}{\extlink}. \mi{That is, we provide a structure} \code{uniformizer} \mi{whose terms consists of two fields: an element $\pi$ of the ring $R$, together with the proof that $\pi$ is a uniformizer for a given valuation.}
+%\mi{By ``bundled'' we mean that, in this version, the element $\pi$ is recorded as a field of the structure} \code{uniformizer}, \mi{instead of being a parameter as in the previous definition} \code{is_uniformizer}. 
+Since any uniformizer is necessarily a member of the unit ball, we decided to make the field $\pi$ in \mi{\st{the} this} definition \mi{\st{below}} a term of type \code{vR.integer} (as opposed to type \code{R}). \mi{\st{The bundled definition is more convenient to prove results that involve fixing a uniformizer.}}
 \begin{lstlisting}
 structure uniformizer :=
 ($\pi$ : vR.integer)
 (valuation_eq_neg_one : is_uniformizer vR $\pi$)
+\end{lstlisting}
+
+\mi{We use the proposition} \code{is_uniformizer} \mi{when proving lemmas that apply to any uniformizer element, such as the lemma stating that any uniformizer is nonzero:}
+\begin{lstlisting}
+lemma uniformizer_ne_zero {$\pi$ : R}
+  (h$\pi$ : is_uniformizer vR $\pi$) : $\pi \ne 0$ := 
+\end{lstlisting}
+
+\mi{By contrast, the bundled definition is more convenient to prove results that involve fixing a uniformizer. For example, we use it when proving that every nonzero $r : \ball{K}$ can be factor as the product of a unit by a power of a fixed uniformizer:}
+\begin{lstlisting}
+lemma pow_uniformizer {r : $K_0$} (hr : r $\ne$ 0)
+  ($\pi$ : uniformizer v) :
+  $\exists$ n : $\mathbb{N}$, $\exists$ u : $K_0^\times$, r = $\pi$.1^n * u :=
 \end{lstlisting}
 
 For an in-depth discussion of bundled versus unbundled representations in Lean and in Coq, we refer the reader to \cite{Baa22} or \cite{typeclassesCoq}.
@@ -808,18 +821,18 @@ We make an exception to this rule when implementing mixed and equal characterist
 If $K$ is a discretely valued field, then $\ball{K}$ is a DVR, so we put a \code{[valued (fraction_ring K}$_0$) $\wzmZZ$\code{]} instance on $\Frac(\ball{K})$\href{https://github.com/LCFT-Lean/local_fields/blob/76ad487d09babdb0018f394a5634526637ee014a/src/discrete_valuation_ring/basic.lean#L452}{\extlink}. Note that, while $K$ and $\Frac(\ball{K})$ are isomorphic, they are represented by different types in \mathlib, so the above \code{valued} instance has a different type from the original \code{[valued K} $\wzmZZ$\code{]} instance and no diamond occurs. However, it would if we had instead decided to put this \code{valued} instance on any field $L$ satisfying the condition \code{[is_fraction_ring K}$_0\; $\code{L]}, since this holds for $K$.
 
 \paragraph{The \code{normed_field} and the \code{valued} instances}
-Recall from~\S\ref{subsec:extensions} that to each discrete valuation $v$ on a field $K$ we can associate a nonarchimedean multiplicative norm $\lvert\cdot\rvert_K$.
+Recall from ~\S\ref{subsec:extensions} that to each discrete valuation $v$ on a field $K$ we can associate a nonarchimedean multiplicative norm $\lvert\cdot\rvert_K$.
 
-If $v$ is the \fil{unique} discrete valuation on $K$, we often register it as a \code{valued} instance:
+If $v$ is the \mi{\st{unique} preferred} discrete valuation on $K$, we often register it as a \code{valued} instance:
 \begin{lstlisting}
     {K : Type*} [field K] [hv : valued K $\wzmZZ$] 
 \end{lstlisting}
-In this situation, $\lvert\cdot\rvert_K$ would be the \fil{unique} nontrivial norm on $K$, up to rescaling, and we would like to record a corresponding \code{normed_field} instance on $K$:
+In this situation, \mi{the norm} $\lvert\cdot\rvert_K$ \mi{associated to $v$} would be the \mi{\st{unique} preferred} nontrivial norm on $K$ , up to rescaling, and we would like to record a corresponding \code{normed_field} instance on $K$:
 \begin{lstlisting}
     {K : Type*} [normed_field K $\wzmZZ$] 
 \end{lstlisting}
-Note that the datum of a field is embedded into the definition of the \code{normed_field} class, while the class \code{valued} takes the field structure as an argument. \fil{\st{Therefore,}It follows that} declaring a \code{normed_field} instance on every field that carries a \code{valued} one leads to a loop in the typeclass inference system\footnote{\lean[4] can detect these kinds of simple loops, so this should not be an issue once our project has been ported \fil{to \lean[4]}.}, \fil{as can be seen in the following example:\st{We give a concrete example to illustrate this problem, for which we studied
-a trace of the instance search using the option} \code{trace.class_instances} \st{to track the typeclass inference process.}}
+Note that the datum of a field is embedded into the definition of the \code{normed_field} class, while the class \code{valued} takes the field structure as an argument. It follows that declaring a \code{normed_field} instance on every field that carries a \code{valued} one leads to a loop in the typeclass inference system\footnote{\lean[4] can detect these kinds of simple loops, so this should not be an issue once our project has been ported to \lean[4].} \mi{\st{,as can be seen in the following example:} We give a concrete example to illustrate this problem, for which we studied
+a trace of the instance search using the option} \code{trace.class_instances} \mi{to track the typeclass inference process.}
 
 Suppose that we had declared \code{discretely_normed_field} as an instance instead of as a definition, so that every discretely valued field
 \begin{lstlisting}
@@ -827,18 +840,18 @@ Suppose that we had declared \code{discretely_normed_field} as an instance inste
   [is_discrete hv.v]
 \end{lstlisting}
 \mi{would inherit a} \code{normed_field} \mi{instance.
-Under this hypothesis, the typeclass inference system would get into an infinite loop while trying to find an instance of
+Under this assumption, the typeclass inference system gets into an infinite loop when searching for an instance of
 }
 \code{
-valuation_ring hv.v.valuation_subring.to_subring.}
-
-\mi{The reason is that one of the first results that Lean will try to apply is}  \code{valuation_ring.of_field}, \mi{which would reduce the problem to finding an instance of}
+valuation_ring hv.v.valuation_subring.to_subring,}
+\mi{because one of the first results that Lean tries to apply is}  \code{valuation_ring.of_field}, \mi{which reduces the problem to finding an instance of}
 \code{field hv.v.valuation_subring.to_subring.}
-
-\mi{This leads to a dead end (since the valuation subring is not a field); however, while trying to find this instance, the inference system will find} \code{normed_field.to_field}, \mi{and hence will try to find an instance of}
+\mi{This leads to a dead end (since the valuation subring is not a field); however, while trying to find this instance, the inference system finds} \code{normed_field.to_field}, \mi{and hence it starts to search for an instance of}
 \code{normed_field hv.v.valuation_subring.to_subring}, \mi{for which it will try to apply the definition} \code{discretely_normed_field}, \mi{which as input requires a} \code{field} \mi{instance on the valuation subring. Hence, the system gets stuck in an infinite loop.}
 
-However, \fil{\st{we remark that}observe that} no problem arises when putting both a \code{valued} and a \code{normed_field} instance on a specific field, like $\QQ_p$\fil{, because\dots}
+
+
+However, observe that no problem arises when putting both a \code{valued} and a \code{normed_field} instance on a specific field, like $\QQ_p$\mi{, because the typeclass inference system is able to find these instances on the specific field, and it will not try to apply them to find instances in other types.}
 
 
 \paragraph{Laurent series}
@@ -864,7 +877,6 @@ We would like to thank Riccardo Brasca, Mario Carneiro, Antoine Chambert-Loir an
 
 The first author acknowledges support from the Grant CA1/RSUE/2021-00623 funded by the Spanish Ministry of Universities, the Recovery, Transformation and Resilience Plan, and Universidad Autónoma de Madrid. She is also grateful for the one-month invitation from Université Jean Monnet Saint-Étienne, as part of the
 program "Appel à Projets Recherche UJM 2023".
-
 
 This work was supported by the LABEX MILYON (ANR-10-LABX-0070) of Université de Lyon, within the program ``France 2030'' (ANR-11-IDEX-0007) operated by the French National Research Agency (ANR).
 \end{acks}
