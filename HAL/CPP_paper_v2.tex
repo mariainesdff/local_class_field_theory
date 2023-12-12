@@ -599,7 +599,7 @@ The \emph{ring of integers} of an equal characteristic local field $K$, denoted 
 def ring_of_integers := 
 integral_closure (FpX_int_completion p) K
 \end{lstlisting}
-The lemma \code{integral_closure_eq_integer} implies that $\rint{K} = \ball{K}$, that is, an element of $K$ is integral over $\FpXComplInt$ if and only if its valuation is less than or equal to $1$. This equality \mi{therefore} implies that $\rint{K}$ is a discrete valuation ring\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/eq_characteristic/valuation.lean#L64}{\extlink}.
+The lemma \code{integral_closure_eq_integer} implies that $\rint{K} = \ball{K}$, that is, an element of $K$ is integral over $\FpXComplInt$ if and only if its valuation is less than or equal to $1$. \fil{A pivotal consequence of this equality is } that $\rint{K}$ is a discrete valuation ring\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/eq_characteristic/valuation.lean#L64}{\extlink}:
 
 \begin{lstlisting}
 instance : discrete_valuation_ring ($\rint{}$ p K) := 
@@ -718,7 +718,7 @@ The work~\cite{PuiseuxSeriesIsa} presents the formalization of the ring $\puiseu
 \[
 \puiseuxseries=\bigcup_{d\geq 1}R(\!(X^{1/d})\!).
 \]
-The main focus of the paper is the formalization of the Newton--Puiseux' theorem stating that whenever $C$ is an algebraically closed field of characteristic $0$, the same holds for $\puiseuxseries[C]$; as a consequence, \mi{\st{little} few?} algebraic properties both of $\laurentseries[\FF]$ and of $\puiseuxseries[\FF]$ can be found. In particular, no formalization of the DVR structure of $\powerseries[\FF]$ or of field extensions of $\laurentseries[\FF]$ can be found \ibid.
+The main focus of the paper is the formalization of the Newton--Puiseux' theorem stating that whenever $C$ is an algebraically closed field of characteristic $0$, the same holds for $\puiseuxseries[C]$; as a consequence, few algebraic properties both of $\laurentseries[\FF]$ and of $\puiseuxseries[\FF]$ can be found. In particular, no formalization of the DVR structure of $\powerseries[\FF]$ or of field extensions of $\laurentseries[\FF]$ can be found \ibid.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
