@@ -738,7 +738,16 @@ We formalize our work on top of the \lean library \mathlib and the \lean project
 
 As far as other systems are concerned, the first formalization of the $p$-adic numbers appeared in the Coq UniMath library in~\cite{padicsCoq}. Beyond the choice of the theorem prover, the two major differences with our work come from different axiomatization settings: the authors of~\cite{padicsCoq} assume the univalence axiom and work in a constructive setting, replacing the notion of being non-zero with a property of being ``apart from zero''. As a consequence, their construction of the $p$-adic integers $\ZZ_p$ follows a completely different path and \fil{involves a carrying operator} on the ring $\powerseries[\ZZ]$ and an equivalence relation based on univalent ``paths'' rather than equality. The field $\QQ_p$ is then defined as the Heyting field of fractions of $\ZZ_p$, a construction mimicking the usual field of fractions of an integral domain but in the setting of apartness domains. No treatment of the $p$-adic valuation, of the $p$-adic metric and more generally of topological properties is presented \ibid. From the algebraic point of view, neither the properties of being a DVR, a Dedekind domain, or a local ring, nor algebraic extensions of $\QQ_p$, are approached.
 
-The field of $p$-adic numbers was later formalized in Isabelle/HOL in~\cite{padicIsa}, where we also find a formalization of formal Puiseux series \cite{PuiseuxSeriesIsa}, which are a generalization of Laurent series. To the best of our knowledge, in none of these formalizations the algebraic structure of those rings as DVR's, nor the comparison between the adic and the metric topology, is discussed. 
+\fil{
+The $p$-adic numbers were later formalized in Isabelle/HOL, whose main library also contains a formalization of formal Puiseux series. The formalization of $\ZZ_p$ in~\cite{padicIntIsa} follows the classical path and is quite complete: both the definition as inverse limit and as completion of $\ZZ$ with respect to the $p$-adic valuation are formalized, together with a proof of their equivalence and of Hensel's lemma. The basic results of the topological properties of $\ZZ_p$ can also be found \ibid, and the paper~\cite{padicIsa} contains deeper results: the field $\QQ_p$ is defined as the fraction field of the ring $\ZZ_p$ formalized in the previous work, and it is endowed with both a valuation and a norm extending the previous ones on $\ZZ_p$. Again, the main topological properties both of $\QQ_p$ and of $\QQ_p^n$ are studied. Nevertheless, neither the structure of $\ZZ_p$ as a DVR, or as a Dedekind domain, are studied; also, there is no treatment of finite extensions of $\QQ_p$ or of localization results.
+
+The work~\cite{PuiseuxSeriesIsa} presents the formalization of the ring $\puiseuxseries$ of Puiseux series (over any commutative ring $R$), that are a generalization of Laurent series. Both $\powerseries[R]$ and $\laurentseries[R]$ are defined and studied \ibid, and are endowed with a valuation and a norm, whose basic properties are formalized and extended to
+\[
+\puiseuxseries=\bigcup_{d\geq 1}R(\!(X^{1/d})\!).
+\]
+The main focus of the paper is the formalization of the Newton--Puiseux' theorem stating that whenever $C$ is an algebraically closed field of characteristic $0$, the same holds for $\puiseuxseries[C]$; as a consequence, little algebraic properties both of $\laurentseries[\FF]$ and of $\puiseuxseries[\FF]$ can be found. In particular, no formalization of the DVR structure of $\powerseries[\FF]$ or of field extensions of $\laurentseries[\FF]$ can be found \ibid.
+
+\st{To the best of our knowledge, in none of these formalizations the algebraic structure of those rings as DVR's, nor the comparison between the adic and the metric topology, is discussed.}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%Subsection : Implementation details
@@ -789,7 +798,7 @@ We make an exception to this rule when implementing mixed and equal characterist
 If $K$ is a discretely valued field, then $\ball{K}$ is a DVR, so we put a \code{[valued (fraction_ring K}$_0$) $\wzmZZ$\code{]} instance on $\Frac(\ball{K})$\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/discrete_valuation_ring/basic.lean#L452}{\extlink}. Note that, while $K$ and $\Frac(\ball{K})$ are isomorphic, they are represented by different types in \mathlib, so the above \code{valued} instance has a different type from the original \code{[valued K} $\wzmZZ$\code{]} instance and no diamond occurs. However, it would if we had instead decided to put this \code{valued} instance on any field $L$ satisfying the condition \code{[is_fraction_ring K}$_0\; $\code{L]}, since this holds for $K$.
 
 \paragraph{The \code{normed_field} and the \code{valued} instances}
-\mi{Recall from~\S\ref{subsec:extensions}} that to each discrete valuation $v$ on a field $K$ we can associate a nonarchimedean multiplicative norm $\lvert\cdot\rvert_K$.
+Recall from~\S\ref{subsec:extensions} that to each discrete valuation $v$ on a field $K$ we can associate a nonarchimedean multiplicative norm $\lvert\cdot\rvert_K$.
 
 \fil{When there exists a \st{If $v$ is the }}preferred discrete valuation \fil{$v$} on $K$, we often register it as a \code{valued} instance:
 \begin{lstlisting}
@@ -799,7 +808,7 @@ In this situation, the norm $\lvert\cdot\rvert_K$ associated to $v$ would be the
 \begin{lstlisting}
     {K : Type*} [normed_field K $\wzmZZ$] 
 \end{lstlisting}
-Note that the datum of a field is embedded into the definition of the \code{normed_field} class, while the class \code{valued} takes the field structure as an argument. It follows that declaring a \code{normed_field} instance on every field that carries a \code{valued} one leads to a loop in the typeclass inference system\footnote{\lean[4] can detect these kinds of simple loops, so this should not be an issue once our project has been ported to \lean[4].}. We \mi{\st{propose} discuss below} a concrete example to illustrate this problem, for which we studied
+Note that the datum of a field is embedded into the definition of the \code{normed_field} class, while the class \code{valued} takes the field structure as an argument. It follows that declaring a \code{normed_field} instance on every field that carries a \code{valued} one leads to a loop in the typeclass inference system\footnote{\lean[4] can detect these kinds of simple loops, so this should not be an issue once our project has been ported to \lean[4].}. We discuss below a concrete example to illustrate this problem, for which we studied
 a trace of the instance search using the option \code{trace.class_instances} to track the typeclass inference process.
 
 Suppose that we had declared \code{discretely_normed_field} as an instance instead of as a definition, so that every discretely valued field
@@ -813,7 +822,7 @@ Under this assumption, the typeclass inference system would get into an infinite
 \code{valuation_ring hv.v.valuation_subring.to_subring,}\relax 
 because one of the first results that Lean tries to apply is \code{valuation_ring.of_field}, that automatically infers a valuation ring structure on every field. In turn, this reduces the problem at hand to finding an instance of \code{field hv.v.valuation_subring.to_subring.}
 This leads to a dead end (since the valuation subring is not a field); however, while trying to find this instance, the inference system finds \code{normed_field.to_field}\relax, and hence it starts to search for an instance of
-\code{normed_field hv.v.valuation_subring.to_subring}, for which it will try to apply the definition \code{discretely_normed_field}, \mi{\st{which} that} as input requires a \code{field}\relax instance on the valuation subring which recreates the problem discussed above, resulting in the system getting stuck in an infinite loop.
+\code{normed_field hv.v.valuation_subring.to_subring}, for which it will try to apply the definition \code{discretely_normed_field}, that as input requires a \code{field} instance on the valuation subring which recreates the problem discussed above, resulting in the system getting stuck in an infinite loop.
 
 However, observe that no problem arises when putting both a \code{valued} and a \code{normed_field} instance on a specific field, like $\QQ_p$, because the typeclass inference system is able to find these instances on the specific field, and it will not try to \fil{deduce\st{apply}} them \fil{\st{to find}from other} instances on other types.
 
