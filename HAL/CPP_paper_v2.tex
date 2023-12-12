@@ -58,7 +58,11 @@
 
 %% The "title" command has an optional parameter,
 %% allowing the author to define a "short title" to be used in page headers.
-\title[A Formalization of Complete DVRs and Local Fields]{A Formalization of Complete Discrete Valuation Rings and Local Fields}
+%\title[A Formalization of Complete DVRs and Local Fields]{A Formalization of Complete Discrete Valuation Rings and Local Fields}
+
+\title{A Formalization of Complete Discrete Valuation Rings and Local Fields}
+
+
 
 %%%
 %%% The "author" command and its associated commands are used to define
@@ -66,50 +70,55 @@
 %%% Of note is the shared affiliation of the first two authors, and the
 %%% "authornote" and "authornotemark" commands
 %%% used to denote shared contribution to the research.
-%\iffalse
-%\author{Ben Trovato}
-%\authornote{Both authors contributed equally to this research.}
-%\email{trovato@corporation.com}
-%\orcid{1234-5678-9012}
-%\author{G.K.M. Tobin}
-%\authornotemark[1]
-%\email{webmaster@marysville-ohio.com}
-%\affiliation{%
-%  \institution{Institute for Clarity in Documentation}
-%  \streetaddress{P.O. Box 1212}
-%  \city{Dublin}
-%  \state{Ohio}
-%  \country{USA}
-%  \postcode{43017-6221}
-%}\fi
 
 % \author[M.~I.~de Frutos Fernández]{María Inés de Frutos Fernández}
-\author{María Inés de Frutos Fernández}
-\authornote{Both authors contributed equally to this research.}
+%\author{María Inés de Frutos Fernández}
+%\authornote{Both authors contributed equally to this research.}
 %\authornotemark[1]
-\email{maria.defrutos@uam.es}
-\orcid{0000-0002-5085-7446}
-\affiliation{%
-  \institution{Universidad Aut\'onoma de Madrid}
-  \streetaddress{Ciudad Universitaria de Cantoblanco}
-   \postcode{28049}
-  \city{Madrid}
-  \country{Spain}
-}
+%\email{maria.defrutos@uam.es}
+%\orcid{0000-0002-5085-7446}
+%\affiliation{%
+%  \institution{Universidad Aut\'onoma de Madrid}
+%  \streetaddress{Ciudad Universitaria de Cantoblanco}
+%   \postcode{28049}
+%  \city{Madrid}
+%  \country{Spain}
+%}
 
 %\author[F.~A.~E.~Nuccio]{Filippo Alberto Edoardo Nuccio Mortarino Majno di Capriglio}
-\author{Filippo Alberto Edoardo Nuccio Mortarino Majno di Capriglio}
+%\author{Filippo Alberto Edoardo Nuccio Mortarino Majno di Capriglio}
 %\authornote{Both authors contributed equally to this research.}
-\authornotemark[1]
-\email{filippo.nuccio@univ-st-etienne.fr}
-\orcid{0000-0002-5318-9869}
+%\authornotemark[1]
+%\email{filippo.nuccio@univ-st-etienne.fr}
+%\orcid{0000-0002-5318-9869}
+%\affiliation{%
+%	\institution{Université Jean Monnet Saint-Étienne, CNRS, Institut Camille Jordan UMR 5208}
+%	\streetaddress{23, rue du docteur Paul Michelon}
+%  \postcode{F-42023}
+%	\city{Saint-Étienne}
+%	\country{France}
+%}
+
+
+\author{María Inés de Frutos-Fernández}
+\orcid{0000-0002-5085-7446}
+\authornote{Both authors contributed equally to this research.}
 \affiliation{%
-	\institution{Université Jean Monnet Saint-Étienne, CNRS, Institut Camille Jordan UMR 5208}
-	\streetaddress{23, rue du docteur Paul Michelon}
-   \postcode{F-42023}
+	\institution{Universidad Aut\'onoma de Madrid}
+	\city{Madrid}
+	\country{Spain}
+}
+\email{maria.defrutos@uam.es}
+
+\author{Filippo Alberto Edoardo Nuccio Mortarino Majno di Capriglio}
+\orcid{0000-0002-5318-9869}
+\authornotemark[1]
+\affiliation{%
+	\institution{Université Jean Monnet Saint-Étienne}
 	\city{Saint-Étienne}
 	\country{France}
 }
+\email{filippo.nuccio@univ-st-etienne.fr}
 
 
 %%
@@ -118,7 +127,7 @@
 %% other information printed in the page headers. This command allows
 %% the author to define a more concise list
 %% of authors' names for this purpose.
-\renewcommand{\shortauthors}{M.~I.~de Frutos Fernández and F.~A.~E.~Nuccio}
+\renewcommand{\shortauthors}{M.~I.~de Frutos-Fernández and F.~A.~E.~Nuccio Mortarino Majno di Capriglio}
 
 %%
 %% The abstract is a short summary of the work to be presented in the
@@ -347,7 +356,7 @@ One basic result is that, for a normalized valuation on a DVR, the uniformizers 
 
 Assume now that $R$ is any integral domain (not necessarily a DVR) and that $K$ is a field of fractions for $R$. The points of view taken in~\cite[Chapitre~I]{Ser62} and in~\cite[Chapitre~VI, \S3, n$^\circ$6]{Bou85} concerning valuations on $K$ are not identical: in the former, the valuations occurring in point~\ref{dvr_tfae:pts_val} of Theorem~\ref{thm:dvr_tfae} take values in $\ZZ\cup\{\infty\}$ (or $\wzmZZ$, up to our translation), whereas in the latter they are valued in the value group $K^\times/R^\times \cup\{\infty\}$ but under the assumption that there is an isomorphism $K^\times/R^\times\cong \ZZ$. In both cases they are called ``discrete''; they are said to be normalized, as above, when they are surjective. Often results are stated assuming that the valuation is normalized, relying on the possibility of achieving this normalization simply by rescaling, so that the theory of discrete valuations is essentially the theory of \emph{normalized} discrete valuations.
 
-In the setting of a formalization work, \fil{the ambiguities described above concerning the group (with zero) $\Gamma_0$ and the normalization of the valuation call for more attention than in pen-and-paper mathematics\st{allowing for this level of flexibility concerning the group (with zero) $\Gamma_0$ where the valuation takes its values, and about different normalizations, becomes more delicate}}. It is in principle possible to let $\Gamma_0$ vary, including it as a (perhaps implicit) variable: yet one must stipulate the existence of an isomorphism $\Gamma_0\cong\wzmZZ$, adding one more variable, so that we rather find it more convenient to consider only valuations that are $\wzmZZ$-valued, in line with the choice made when defining the adic valuation\href{https://leanprover-community.github.io/mathlib_docs/ring_theory/dedekind_domain/adic_valuation.html}{\extlink} attached to a height-one prime of a Dedekind domain. Even with this choice, the above discussion about different possible normalizations of a $\wzmZZ$-valued valuations, all leading to the same mathematical object, suggests that the focus should be put on \emph{normalized} valuations, rather than general ones. With this in mind, 
+In the setting of a formalization work, the ambiguities described above concerning the group (with zero) $\Gamma_0$ and the normalization of the valuation call for more attention than in pen-and-paper mathematics. It is in principle possible to let $\Gamma_0$ vary, including it as a (perhaps implicit) variable: yet one must stipulate the existence of an isomorphism $\Gamma_0\cong\wzmZZ$, adding one more variable, so that we rather find it more convenient to consider only valuations that are $\wzmZZ$-valued, in line with the choice made when defining the adic valuation\href{https://leanprover-community.github.io/mathlib_docs/ring_theory/dedekind_domain/adic_valuation.html}{\extlink} attached to a height-one prime of a Dedekind domain. Even with this choice, the above discussion about different possible normalizations of a $\wzmZZ$-valued valuations, all leading to the same mathematical object, suggests that the focus should be put on \emph{normalized} valuations, rather than general ones. With this in mind, 
 we call a valuation ``discrete'' when it is $\wzmZZ$-valued and \emph{also} normalized, encoding this notion in the following class\href{https://github.com/LCFT-Lean/local_fields/blob/76ad487d09babdb0018f394a5634526637ee014a/src/discrete_valuation_ring/basic.lean#L125}{\extlink}:
 \begin{lstlisting}[caption={Definition of discrete valuation.}, label={code:def_discrete}]
 class is_discrete (v : valuation R $\wzmZZ$) := 
@@ -727,7 +736,7 @@ Our next project is to prove that every local field is either a mixed characteri
 \subsection{Related works}\label{subsec:related_work}
 We formalize our work on top of the \lean library \mathlib and the \lean project \cite{deF23} formalizing extensions of norms. The basic theory of DVR's was available in \mathlib at the start of our project. The library includes a formalization of the additive valuation on a DVR but we discuss in~\S\ref{subsec:implementation} our choice of working with $\wzmZZ$-valued valuations instead.
 
-As far as other systems are concerned, the first formalization of the $p$-adic numbers appeared in the Coq UniMath library in~\cite{padicsCoq}. \fil{Beyond the choice of the theorem prover, the two major differences with our work come from different axiomatization settings: the authors of~\cite{padicsCoq} assume the univalence axiom and work in a constructive setting, replacing the notion of being non-zero with a property of being ``apart from zero''. As a consequence, their construction of the $p$-adic integers $\ZZ_p$ follows a completely different path and involves a carrying operator on the ring $\powerseries[\ZZ]$ and an equivalence relation based on univalent ``paths'' rather than equality. The field $\QQ_p$ is then defined as the Heyting field of fractions of $\ZZ_p$, a construction mimicking the usual field of fractions of an integral domain but in the setting of apartness domains. No treatment of the $p$-adic valuation, of the $p$-adic metric and more generally of topological properties is presented \ibid. From the algebraic point of view, neither the properties of being a DVR, a Dedekind domain, or a local ring, nor algebraic extensions of $\QQ_p$, are approached.}
+As far as other systems are concerned, the first formalization of the $p$-adic numbers appeared in the Coq UniMath library in~\cite{padicsCoq}. Beyond the choice of the theorem prover, the two major differences with our work come from different axiomatization settings: the authors of~\cite{padicsCoq} assume the univalence axiom and work in a constructive setting, replacing the notion of being non-zero with a property of being ``apart from zero''. As a consequence, their construction of the $p$-adic integers $\ZZ_p$ follows a completely different path and \fil{involves a carrying operator} on the ring $\powerseries[\ZZ]$ and an equivalence relation based on univalent ``paths'' rather than equality. The field $\QQ_p$ is then defined as the Heyting field of fractions of $\ZZ_p$, a construction mimicking the usual field of fractions of an integral domain but in the setting of apartness domains. No treatment of the $p$-adic valuation, of the $p$-adic metric and more generally of topological properties is presented \ibid. From the algebraic point of view, neither the properties of being a DVR, a Dedekind domain, or a local ring, nor algebraic extensions of $\QQ_p$, are approached.
 
 The field of $p$-adic numbers was later formalized in Isabelle/HOL in~\cite{padicIsa}, where we also find a formalization of formal Puiseux series \cite{PuiseuxSeriesIsa}, which are a generalization of Laurent series. To the best of our knowledge, in none of these formalizations the algebraic structure of those rings as DVR's, nor the comparison between the adic and the metric topology, is discussed. 
 
@@ -756,12 +765,13 @@ structure uniformizer :=
 ($\pi$ : vR.integer)
 (valuation_eq_neg_one : is_uniformizer vR $\pi$)
 \end{lstlisting}
-\fil{\st{We use t}T}he proposition \code{is_uniformizer} \fil{is useful} when proving lemmas that apply to any uniformizer element, such as the lemma stating that every uniformizer is nonzero:
+
+The proposition \code{is_uniformizer} is useful when proving lemmas that apply to any uniformizer element, such as the lemma stating that every uniformizer is nonzero:
 \begin{lstlisting}
 lemma uniformizer_ne_zero {$\pi$ : R}
   (h$\pi$ : is_uniformizer vR $\pi$) : $\pi \ne 0$ := 
 \end{lstlisting}
-By contrast, the bundled definition is more convenient to prove results that involve fixing a uniformizer. For example, we use it when proving that every nonzero $r : \ball{K}$ can be factor\fil{ed} as the product of a unit by a power of a fixed uniformizer:
+By contrast, the bundled definition is more convenient to prove results that involve fixing a uniformizer. For example, we use it when proving that every nonzero $r : \ball{K}$ can be factored as the product of a unit by a power of a fixed uniformizer:
 \begin{lstlisting}
 lemma pow_uniformizer {r : $K_0$} (hr : r $\ne$ 0)
   ($\pi$ : uniformizer v) :
@@ -773,13 +783,13 @@ For an in-depth discussion of bundled versus unbundled representations in Lean a
 \paragraph{Extensions and \code{valued} instances}
 In \S\ref{subsec:extensions} we construct, for each field $K$ complete with respect to a discrete valuation~$v$ and every finite extension $L/K$, a unique valuation $v_L$ on $L$, recorded as \code{(v_L : valuation L}$\;\wzmZZ)$. However, at this level of generality we do not put a global \code{valued} instance on $L$: doing so would create infinitely many ``diamonds'', by which we mean the existence of two different procedures to endow an object with a certain mathematical structure (represented by two terms of the given structure that are propositionally, but not definitionally, equal). This leads to problems when exploiting the full force of the type-class inference mechanism: indeed, suppose that in a given context $\Gamma$, a term $t:T$ is well-typed assuming the existence of a term \code{s:S} for a certain structure \code{S}. Given two terms \code{s}$_1$,\code{s}$_2$\code{:S} that are propositionally equal, the corresponding terms \code{t}$_1$,\code{t}$_2$\code{:T} are different, yet carry the same mathematical information. Now, if the type-class inference mechanism can produce both terms \code{s}$_1$ and \code{s}$_2$ --- say, inside a proof --- the user would face the problem of having two different terms that look indistinguishable, which clearly leads to unexpected problems. In our setting, for every field $K$ that is complete with respect to a discrete valuation $v$, the original valuation is propositionally but not definitionally equal to its trivial extension $v_K$, resulting in two terms of the structure of a \code{valued} field on $K$: to avoid any diamond, we need to exclude the second from the inference search, and therefore we need to avoid declaring a structure of \code{valued} field on the trivial extension $K$ of $K$: this forces us to avoid declaring such a structure on \emph{every} extension $L/K$. Nevertheless, we provide a lemma \code{trivial_extension_eq_valuation}\href{https://github.com/LCFT-Lean/local_fields/blob/76ad487d09babdb0018f394a5634526637ee014a/src/discrete_valuation_ring/trivial_extension.lean#L58}{\extlink} proving the equality $v=v_K$.
 
-We make an exception to this rule when implementing mixed and equal characteristic local fields, since we do declare \code{valued} instances for them. This creates a mild diamond for $\padicCompl$ and $\FpXCompl$ but this does not cause trouble in our formalization, thanks to the comparison lemma \code{trivial_extension_eq_valuation}\href{https://github.com/LCFT-Lean/local_fields/blob/76ad487d09babdb0018f394a5634526637ee014a/src/discrete_valuation_ring/trivial_extension.lean#L58}{\extlink} mentioned above. Indeed, in all cases where a the inference system would create problems, the lemma allows us to disambiguate the situation: \fil{for an example, the reader can inspect the proof of} \code{FpX_int_completion.equiv_valuation_subring}\href{https://github.com/LCFT-Lean/local_fields/blob/76ad487d09babdb0018f394a5634526637ee014a/src/eq_characteristic/valuation.lean#L97}{\extlink}, \fil{proving that the unit ball $\FpXComplInt$ is isomorphic to the subring of $\FpXCompl$ whose elements have $(X)$-adic valuation less than or equal to (\code{1:} $\wzmZZ$).}
+We make an exception to this rule when implementing mixed and equal characteristic local fields, since we do declare \code{valued} instances for them. This creates a mild diamond for $\padicCompl$ and $\FpXCompl$ but this does not cause trouble in our formalization, thanks to the comparison lemma \code{trivial_extension_eq_valuation}\href{https://github.com/LCFT-Lean/local_fields/blob/76ad487d09babdb0018f394a5634526637ee014a/src/discrete_valuation_ring/trivial_extension.lean#L58}{\extlink} mentioned above. Indeed, in all cases where a the inference system would create problems, the lemma allows us to disambiguate the situation: for an example, the reader can inspect the proof of \code{FpX_int_completion.equiv_valuation_subring}\href{https://github.com/LCFT-Lean/local_fields/blob/76ad487d09babdb0018f394a5634526637ee014a/src/eq_characteristic/valuation.lean#L97}{\extlink}, proving that the unit ball $\FpXComplInt$ is isomorphic to the subring of $\FpXCompl$ whose elements have $(X)$-adic valuation less than or equal to (\code{1:} $\wzmZZ$).
 
 \paragraph{Fraction fields.}
 If $K$ is a discretely valued field, then $\ball{K}$ is a DVR, so we put a \code{[valued (fraction_ring K}$_0$) $\wzmZZ$\code{]} instance on $\Frac(\ball{K})$\href{https://github.com/LCFT-Lean/local_fields/blob/76ad487d09babdb0018f394a5634526637ee014a/src/discrete_valuation_ring/basic.lean#L452}{\extlink}. Note that, while $K$ and $\Frac(\ball{K})$ are isomorphic, they are represented by different types in \mathlib, so the above \code{valued} instance has a different type from the original \code{[valued K} $\wzmZZ$\code{]} instance and no diamond occurs. However, it would if we had instead decided to put this \code{valued} instance on any field $L$ satisfying the condition \code{[is_fraction_ring K}$_0\; $\code{L]}, since this holds for $K$.
 
 \paragraph{The \code{normed_field} and the \code{valued} instances}
-Recall from~\S\ref{subsec:extensions} that to each discrete valuation $v$ on a field $K$ we can associate a nonarchimedean multiplicative norm $\lvert\cdot\rvert_K$.
+\mi{Recall from~\S\ref{subsec:extensions}} that to each discrete valuation $v$ on a field $K$ we can associate a nonarchimedean multiplicative norm $\lvert\cdot\rvert_K$.
 
 \fil{When there exists a \st{If $v$ is the }}preferred discrete valuation \fil{$v$} on $K$, we often register it as a \code{valued} instance:
 \begin{lstlisting}
@@ -789,7 +799,7 @@ In this situation, the norm $\lvert\cdot\rvert_K$ associated to $v$ would be the
 \begin{lstlisting}
     {K : Type*} [normed_field K $\wzmZZ$] 
 \end{lstlisting}
-Note that the datum of a field is embedded into the definition of the \code{normed_field} class, while the class \code{valued} takes the field structure as an argument. It follows that declaring a \code{normed_field} instance on every field that carries a \code{valued} one leads to a loop in the typeclass inference system\footnote{\lean[4] can detect these kinds of simple loops, so this should not be an issue once our project has been ported to \lean[4].}. We \fil{propose below\st{give}} a concrete example to illustrate this problem, for which we studied
+Note that the datum of a field is embedded into the definition of the \code{normed_field} class, while the class \code{valued} takes the field structure as an argument. It follows that declaring a \code{normed_field} instance on every field that carries a \code{valued} one leads to a loop in the typeclass inference system\footnote{\lean[4] can detect these kinds of simple loops, so this should not be an issue once our project has been ported to \lean[4].}. We \mi{\st{propose} discuss below} a concrete example to illustrate this problem, for which we studied
 a trace of the instance search using the option \code{trace.class_instances} to track the typeclass inference process.
 
 Suppose that we had declared \code{discretely_normed_field} as an instance instead of as a definition, so that every discretely valued field
@@ -797,15 +807,15 @@ Suppose that we had declared \code{discretely_normed_field} as an instance inste
 (K : Type*) [field K] [hv : valued K $\wzmZZ$]
   [is_discrete hv.v]
 \end{lstlisting}
-would \fil{automatically} inherit a \code{normed_field} instance.
-Under this assumption, the typeclass inference system \fil{would} get into an infinite loop when searching for an instance of
+would automatically inherit a \code{normed_field} instance.
+Under this assumption, the typeclass inference system would get into an infinite loop when searching for an instance of
 %}
 \code{valuation_ring hv.v.valuation_subring.to_subring,}\relax 
-because one of the first results that Lean tries to apply is \code{valuation_ring.of_field}, \fil{that automatically infers a valuation ring structure on every field. In turn,} this reduces the problem \fil{at hand} to finding an instance of \code{field hv.v.valuation_subring.to_subring.}
+because one of the first results that Lean tries to apply is \code{valuation_ring.of_field}, that automatically infers a valuation ring structure on every field. In turn, this reduces the problem at hand to finding an instance of \code{field hv.v.valuation_subring.to_subring.}
 This leads to a dead end (since the valuation subring is not a field); however, while trying to find this instance, the inference system finds \code{normed_field.to_field}\relax, and hence it starts to search for an instance of
-\code{normed_field hv.v.valuation_subring.to_subring}, for which it will try to apply the definition \code{discretely_normed_field}, which as input requires a \code{field}\relax instance on the valuation subring \fil{which recreates the problem discussed above, risulting in \st{. Hence, }}the system get\fil{\st{s}ting} stuck in an infinite loop.
+\code{normed_field hv.v.valuation_subring.to_subring}, for which it will try to apply the definition \code{discretely_normed_field}, \mi{\st{which} that} as input requires a \code{field}\relax instance on the valuation subring which recreates the problem discussed above, resulting in the system getting stuck in an infinite loop.
 
-However, observe that no problem arises when putting both a \code{valued} and a \code{normed_field} instance on a specific field, like $\QQ_p$, because the typeclass inference system is able to find these instances on the specific field, and it will not try to \fil{deduce\st{apply}} them \fil{\st{to find}from other} instances \fil{\st{in}on} other types.
+However, observe that no problem arises when putting both a \code{valued} and a \code{normed_field} instance on a specific field, like $\QQ_p$, because the typeclass inference system is able to find these instances on the specific field, and it will not try to \fil{deduce\st{apply}} them \fil{\st{to find}from other} instances on other types.
 
 
 \paragraph{Laurent series}
