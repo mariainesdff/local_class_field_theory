@@ -71,34 +71,6 @@
 %%% "authornote" and "authornotemark" commands
 %%% used to denote shared contribution to the research.
 
-% \author[M.~I.~de Frutos Fernández]{María Inés de Frutos Fernández}
-%\author{María Inés de Frutos Fernández}
-%\authornote{Both authors contributed equally to this research.}
-%\authornotemark[1]
-%\email{maria.defrutos@uam.es}
-%\orcid{0000-0002-5085-7446}
-%\affiliation{%
-%  \institution{Universidad Aut\'onoma de Madrid}
-%  \streetaddress{Ciudad Universitaria de Cantoblanco}
-%   \postcode{28049}
-%  \city{Madrid}
-%  \country{Spain}
-%}
-
-%\author[F.~A.~E.~Nuccio]{Filippo Alberto Edoardo Nuccio Mortarino Majno di Capriglio}
-%\author{Filippo Alberto Edoardo Nuccio Mortarino Majno di Capriglio}
-%\authornote{Both authors contributed equally to this research.}
-%\authornotemark[1]
-%\email{filippo.nuccio@univ-st-etienne.fr}
-%\orcid{0000-0002-5318-9869}
-%\affiliation{%
-%	\institution{Université Jean Monnet Saint-Étienne, CNRS, Institut Camille Jordan UMR 5208}
-%	\streetaddress{23, rue du docteur Paul Michelon}
-%  \postcode{F-42023}
-%	\city{Saint-Étienne}
-%	\country{France}
-%}
-
 
 \author{María Inés de Frutos-Fernández}
 \orcid{0000-0002-5085-7446}
@@ -359,7 +331,7 @@ One basic result is that, for a normalized valuation on a DVR, the uniformizers 
 Assume now that $R$ is any integral domain (not necessarily a DVR) and that $K$ is a field of fractions for $R$. The points of view taken in~\cite[Chapitre~I]{Ser62} and in~\cite[Chapitre~VI, \S3, n$^\circ$6]{Bou85} concerning valuations on $K$ are not identical: in the former, the valuations occurring in point~\ref{dvr_tfae:pts_val} of Theorem~\ref{thm:dvr_tfae} take values in $\ZZ\cup\{\infty\}$ (or $\wzmZZ$, up to our translation), whereas in the latter they are valued in the value group $K^\times/R^\times \cup\{\infty\}$ but under the assumption that there is an isomorphism $K^\times/R^\times\cong \ZZ$. In both cases they are called ``discrete''; they are said to be normalized, as above, when they are surjective. Often results are stated assuming that the valuation is normalized, relying on the possibility of achieving this normalization simply by rescaling, so that the theory of discrete valuations is essentially the theory of \emph{normalized} discrete valuations.
 
 In the setting of a formalization work, the ambiguities described above concerning the group (with zero) $\Gamma_0$ and the normalization of the valuation call for more attention than in pen-and-paper mathematics. It is in principle possible to let $\Gamma_0$ vary, including it as a (perhaps implicit) variable: yet one must stipulate the existence of an isomorphism $\Gamma_0\cong\wzmZZ$, adding one more variable, so that we rather find it more convenient to consider only valuations that are $\wzmZZ$-valued, in line with the choice made when defining the adic valuation\href{https://leanprover-community.github.io/mathlib_docs/ring_theory/dedekind_domain/adic_valuation.html}{\extlink} attached to a height-one prime of a Dedekind domain. Even with this choice, the above discussion about different possible normalizations of a $\wzmZZ$-valued valuations, all leading to the same mathematical object, suggests that the focus should be put on \emph{normalized} valuations, rather than general ones. With this in mind, 
-we call a valuation ``discrete'' when it is $\wzmZZ$-valued and \emph{also} normalized, encoding this notion in the following class\href{https://github.com/mariainesdff/local_fields_journal/blob/7ac213eb804fe7945468023527a0fe26ab23b3c8/src/discrete_valuation_ring/basic.lean#L129C1-L129C1}{\extlink}:
+we call a valuation ``discrete'' when it is $\wzmZZ$-valued and \emph{also} normalized, encoding this notion in the following class\href{https://github.com/mariainesdff/local_fields_journal/blob/7ac213eb804fe7945468023527a0fe26ab23b3c8/src/discrete_valuation_ring/basic.lean#L129}{\extlink}:
 \begin{lstlisting}[caption={Definition of discrete valuation.}, label={code:def_discrete}]
 class is_discrete (v : valuation R $\wzmZZ$) := 
 (surj : function.surjective v)
@@ -370,7 +342,7 @@ Observe that when the domain $R$ is endowed with a discrete valuation in the abo
     K$_0$ = hv.v.valuation_subring
 \end{lstlisting}
 
-Now, with our definition, a valuation is discrete only if it takes values in the type $\wzmZZ$ and if there exists a uniformizer, and this we prove in the following form\href{https://github.com/mariainesdff/local_fields_journal/blob/7ac213eb804fe7945468023527a0fe26ab23b3c8/src/discrete_valuation_ring/basic.lean#L164C1-L164C1}{\extlink}:
+Now, with our definition, a valuation is discrete only if it takes values in the type $\wzmZZ$ and if there exists a uniformizer, and this we prove in the following form\href{https://github.com/mariainesdff/local_fields_journal/blob/7ac213eb804fe7945468023527a0fe26ab23b3c8/src/discrete_valuation_ring/basic.lean#L164}{\extlink}:
 \begin{lstlisting}
 lemma is_discrete_of_exists_uniformizer {$\pi$ : K} 
   (h$\pi$ : is_uniformizer v $\pi$) : is_discrete v
@@ -381,9 +353,9 @@ lemma uniformizer_is_generator
   ($\pi$ : uniformizer v) :
   maximal_ideal K$_0$ = ideal.span {$\pi.1$}
 \end{lstlisting}
-and the declaration \code{is_uniformizer_of_generator}\href{https://github.com/mariainesdff/local_fields_journal/blob/7ac213eb804fe7945468023527a0fe26ab23b3c8/src/discrete_valuation_ring/basic.lean#L348C7-L348C27}{\extlink} represents the reverse implication. From now on, we call a valued field whose valuation is discrete a \emph{discretely valued field}.
+and the declaration \code{is_uniformizer_of_generator}\href{https://github.com/mariainesdff/local_fields_journal/blob/7ac213eb804fe7945468023527a0fe26ab23b3c8/src/discrete_valuation_ring/basic.lean#L348}{\extlink} represents the reverse implication. From now on, we call a valued field whose valuation is discrete a \emph{discretely valued field}.
 
-The next result that we want to discuss is the formalization of~\cite[Chapitre~I, \S1, Proposition~1]{Ser62}, stating that the unit ball of a discretely valued field is a DVR. The notion of DVR was already in \mathlib at the time of our project, implemented through the class \code{discrete_valuation_ring}\href{https://leanprover-community.github.io/mathlib_docs/ring_theory/discrete_valuation_ring/basic.html#discrete_valuation_ring}{\extlink} --- this corresponds to property~\ref{dvr_tfae:PID} in Theorem~\ref{thm:dvr_tfae}. Our result takes the following form\href{https://github.com/mariainesdff/local_fields_journal/blob/7ac213eb804fe7945468023527a0fe26ab23b3c8/src/discrete_valuation_ring/basic.lean#L438C10-L438C28}{\extlink}:
+The next result that we want to discuss is the formalization of~\cite[Chapitre~I, \S1, Proposition~1]{Ser62}, stating that the unit ball of a discretely valued field is a DVR. The notion of DVR was already in \mathlib at the time of our project, implemented through the class \code{discrete_valuation_ring}\href{https://leanprover-community.github.io/mathlib_docs/ring_theory/discrete_valuation_ring/basic.html#discrete_valuation_ring}{\extlink} --- this corresponds to property~\ref{dvr_tfae:PID} in Theorem~\ref{thm:dvr_tfae}. Our result takes the following form\href{https://github.com/mariainesdff/local_fields_journal/blob/7ac213eb804fe7945468023527a0fe26ab23b3c8/src/discrete_valuation_ring/basic.lean#L438}{\extlink}:
 \begin{lstlisting}[caption={The unit ball is a DVR if the valuation is discrete.}, label={code:serre_prop_1}]
 instance dvr_of_is_discrete [is_discrete v] :
   discrete_valuation_ring K$_0$
@@ -395,12 +367,12 @@ With these works at our disposal, our starting point is that the $\maxid$-adic v
 % \[
 % \normalised,v_{\maxid}\colon K\rightarrow \wzmZZ
 % \]
-are considered identical in pen-and-paper mathematics, they actually belong to different types and hence are different terms: in the \mathlib formalization, the valuation $\normalised$ takes values\href{https://leanprover-community.github.io/mathlib_docs/ring_theory/valuation/valuation_subring.html#valuation_subring.valuation}{\extlink} in the value group $K/R^\times$ (see Remark~\ref{rmk:value_group}), while $v_{\maxid}$ is $\wzmZZ$-valued\href{https://leanprover-community.github.io/mathlib_docs/ring_theory/dedekind_domain/adic_valuation.html#is_dedekind_domain.height_one_spectrum.valuation}{\extlink}. Our approach to compare them is to show that the unit balls with respect to both coincide. To do so, it is enough to show that $R$ is the unit ball of $K$ when endowed with the valuation $v_{\maxid}$, because this is tautologically true with respect to the valuation $\normalised$. To prove the isomorphism $R\cong \ball{K}$ we first provide the following\href{https://github.com/mariainesdff/local_fields_journal/blob/7ac213eb804fe7945468023527a0fe26ab23b3c8/src/discrete_valuation_ring/basic.lean#L456C1-L456C1}{\extlink}
+are considered identical in pen-and-paper mathematics, they actually belong to different types and hence are different terms: in the \mathlib formalization, the valuation $\normalised$ takes values\href{https://leanprover-community.github.io/mathlib_docs/ring_theory/valuation/valuation_subring.html#valuation_subring.valuation}{\extlink} in the value group $K/R^\times$ (see Remark~\ref{rmk:value_group}), while $v_{\maxid}$ is $\wzmZZ$-valued\href{https://leanprover-community.github.io/mathlib_docs/ring_theory/dedekind_domain/adic_valuation.html#is_dedekind_domain.height_one_spectrum.valuation}{\extlink}. Our approach to compare them is to show that the unit balls with respect to both coincide. To do so, it is enough to show that $R$ is the unit ball of $K$ when endowed with the valuation $v_{\maxid}$, because this is tautologically true with respect to the valuation $\normalised$. To prove the isomorphism $R\cong \ball{K}$ we first provide the following\href{https://github.com/mariainesdff/local_fields_journal/blob/7ac213eb804fe7945468023527a0fe26ab23b3c8/src/discrete_valuation_ring/basic.lean#L456}{\extlink}
 \begin{lstlisting}[caption={The \code{valued} instance on the field of frations of a DVR.}, label={code:valued_DVR}]
 instance : valued K :=
 (maximal_ideal R).adic_valued
 \end{lstlisting}
-giving a \code{valued} structure on $K$ by using the $\maxid$-adic valuation~$v_{\maxid}$. With this definition, the whole library concerning adic valuations is at our disposal. We then show that the valuation $v_{\maxid}$ is actually discrete (in our sense)  by providing the\href{https://github.com/mariainesdff/local_fields_journal/blob/7ac213eb804fe7945468023527a0fe26ab23b3c8/src/discrete_valuation_ring/basic.lean#L458C1-L458C1}{\extlink}
+giving a \code{valued} structure on $K$ by using the $\maxid$-adic valuation~$v_{\maxid}$. With this definition, the whole library concerning adic valuations is at our disposal. We then show that the valuation $v_{\maxid}$ is actually discrete (in our sense)  by providing the\href{https://github.com/mariainesdff/local_fields_journal/blob/7ac213eb804fe7945468023527a0fe26ab23b3c8/src/discrete_valuation_ring/basic.lean#L458}{\extlink}
 \begin{lstlisting}[caption={The valuation on a DVR is discrete.}, label={code:discrete_on_DVR}]
 instance : is_discrete (valued.v K $\wzmZZ$)
 \end{lstlisting}
@@ -487,7 +459,7 @@ A valuation $v \colon R \to \Gamma_0$ valued in a group with zero $\Gamma_0$ has
 The conditions in Definitions~\ref{def:valuation} and~\ref{def:nonarchimedean_norm} are analogous --- apart from the codomain of the function --- and the terms ``multiplicative valuation'' and ``nonarchimedean multiplicative norm'' are often used interchangeably in the mathematical literature. While \mathlib does not yet provide a way to relate these two notions, a dictionary between them has been formalized in \cite{deF23}. Namely, if $K$ is a field with a nonarchimedean norm, the definition \code{valuation_from_norm}\href{https://github.com/mariainesdff/norm_extensions_journal_submission/blob/d396130660935464fbc683f9aaf37fff8a890baa/src/normed_valued.lean#L37}{\extlink} yields the corresponding valuation $v \colon K \rightarrow \RR_{\ge 0}$. Conversely, if $L$ is a field with a rank one valuation, then \code{norm_def}\href{https://github.com/mariainesdff/norm_extensions_journal_submission/blob/d396130660935464fbc683f9aaf37fff8a890baa/src/normed_valued.lean#L110}{\extlink} is the corresponding norm function on $L$.
 To  make use of this dictionary in our project, we need to provide an injective morphism $\wzmZZ \to \RR_{\ge 0}$ of linearly ordered groups with zero. We can define this morphism by picking any real $n > 1$ and identifying $\wzmZZ$ with the subset $n^\ZZ \cup \{0\}$ of $\RR_{\ge 0}$, via the map sending $0$ to $0$ and \code{of_add(x)} to $n^x$, for $x \in \ZZ$.
 
-We construct this morphism as\href{https://github.com/mariainesdff/local_fields_journal/blob/7ac213eb804fe7945468023527a0fe26ab23b3c8/src/for_mathlib/with_zero.lean#L157C1-L157C12}{\extlink} 
+We construct this morphism as\href{https://github.com/mariainesdff/local_fields_journal/blob/7ac213eb804fe7945468023527a0fe26ab23b3c8/src/for_mathlib/with_zero.lean#L157}{\extlink} 
 \begin{lstlisting}
 def with_zero_mult_int_to_nnreal {n : $\RR_{\ge 0}$}
   (he : n $\ne 0$)  : $\wzmZZ \to_{*0} \; \RR_{\ge 0}$ := 
@@ -556,7 +528,7 @@ Before giving the definition, we make a preliminary observation. Theorem~\ref{th
 \begin{definition}\label{def:local_field}
 A \emph{local field} is a field complete with respect to a discrete valuation and with finite residue field.
 \end{definition}
-The definition is implemented as follows:\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/local_field.lean#L30}{\extlink}
+The definition is implemented as follows:\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/local_field.lean#L35}{\extlink}
 \begin{lstlisting}
 class local_field (K : Type*) [field K] 
   [hv : valued K $\wzmZZ$] :=
@@ -579,7 +551,7 @@ Recall that we denote by $\FpXCompl$ the completion of $\FF(X)$ with respect to 
 \begin{definition}\label{def:eq_char_local_field}
 An \emph{equal characteristic local field} is a finite dimensional field extension of \FpXCompl, for some prime number $p$.
 \end{definition}
-This definition is formalized as\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/eq_characteristic/basic.lean#L354}{\extlink}:
+This definition is formalized as\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/eq_characteristic/basic.lean#L359}{\extlink}:
 \begin{lstlisting}
 class eq_char_local_field (p : $\NN$) [nat.prime p]
   (K : Type*) [field K] 
@@ -588,7 +560,7 @@ class eq_char_local_field (p : $\NN$) [nat.prime p]
   (FpX_completion p) K]
 \end{lstlisting}
 
-The first example of equal characteristic local field is $\FpXCompl$ itself, and we record our proof of this in the instance \code{FpX_completion.eq_char_local_field}\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/eq_characteristic/basic.lean#L435}{\extlink}. Being a finite extension of the complete discretely valued field $\FpXCompl$, any equal characteristic  local field $K$ is endowed with a unique nontrivial valuation, which is again discrete, and $K$ is complete with respect to it.
+The first example of equal characteristic local field is $\FpXCompl$ itself, and we record our proof of this in the instance \code{FpX_completion.eq_char_local_field}\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/eq_characteristic/basic.lean#L440}{\extlink}. Being a finite extension of the complete discretely valued field $\FpXCompl$, any equal characteristic  local field $K$ is endowed with a unique nontrivial valuation, which is again discrete, and $K$ is complete with respect to it.
 \begin{lstlisting}
 instance : valued K $\wzmZZ$ := 
 extension.valued (FpX_completion p) K
@@ -615,19 +587,19 @@ It is customary to define an equal characteristic local field as a finite extens
 
 Our next task is to show that an equal characteristic local field $K$ is a local field, in the sense of Definition~\ref{def:local_field}. We have formalized this proof under the hypothesis that the extension $K/\FpXCompl$ is separable, as this is required to apply the \mathlib lemma \code{is_integral_closure.is_noetherian}\href{https://leanprover-community.github.io/mathlib_docs/ring_theory/dedekind_domain/integral_closure.html#is_integral_closure.is_noetherian}{\extlink} which we are using in our proof of the finiteness of the residue field. However, we point out that the separability assumption can be removed at the expense of a more involved proof, which we plan to formalize at a later date.
 
-Since $\FpXCompl$ is a field complete with respect to a discrete valuation and $K$ is a finite extension of $\FpXCompl$, by the discussion following~\eqref{eq:pow_eq_pow_root}, the $X$-adic valuation on $\FpXCompl$ induces a complete\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/eq_characteristic/valuation.lean#L52}{\extlink} discretely\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/eq_characteristic/valuation.lean#L55}{\extlink} \code{valued} structure on $K$, registered in the instance \code{eq_char_local_field.valued p K}\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/eq_characteristic/valuation.lean#L49}{\extlink}. Hence it only remains to prove that the residue field of $K$ is finite. To prove the finiteness statement, we first show that if $E$ is a field complete with respect to a discrete valuation and $L/E$ is a finite separable field extension, then the residue field of $L$ is finite dimensional over the residue field of $E$\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/discrete_valuation_ring/residue_field.lean#L373}{\extlink}:
+Since $\FpXCompl$ is a field complete with respect to a discrete valuation and $K$ is a finite extension of $\FpXCompl$, by the discussion following~\eqref{eq:pow_eq_pow_root}, the $X$-adic valuation on $\FpXCompl$ induces a complete\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/eq_characteristic/valuation.lean#L57}{\extlink} discretely\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/eq_characteristic/valuation.lean#L60}{\extlink} \code{valued} structure on $K$, registered in the instance \code{eq_char_local_field.valued p K}\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/eq_characteristic/valuation.lean#L54}{\extlink}. Hence it only remains to prove that the residue field of $K$ is finite. To prove the finiteness statement, we first show that if $E$ is a field complete with respect to a discrete valuation and $L/E$ is a finite separable field extension, then the residue field of $L$ is finite dimensional over the residue field of $E$\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/discrete_valuation_ring/residue_field.lean#L379}{\extlink}:
 \begin{lstlisting}
   finite_dimensional (residue_field E$_0$) 
     (residue_field (integral_closure E$_0$ L))
 \end{lstlisting}
 This implies that if the residue field of $E$ is finite, then so is the residue field of $L$. Now, it follows from the isomorphism $\laurentseries\cong\FpXCompl$ discussed in~\S\ref{subsubsection:isom_laurent} that $E=\FpXCompl$ has residue field $\FF$, so every equal characteristic local field has finite residue field, and is therefore a local field.
 
-The \emph{ring of integers} of an equal characteristic local field $K$, denoted $\rint{K}$, is the integral closure of $\FpXComplInt$ in $K$\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/eq_characteristic/basic.lean#L370}{\extlink}:
+The \emph{ring of integers} of an equal characteristic local field $K$, denoted $\rint{K}$, is the integral closure of $\FpXComplInt$ in $K$\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/eq_characteristic/basic.lean#L375}{\extlink}:
 \begin{lstlisting}
 def ring_of_integers := 
 integral_closure (FpX_int_completion p) K
 \end{lstlisting}
-The lemma \code{integral_closure_eq_integer} implies that $\rint{K} = \ball{K}$, that is, an element of $K$ is integral over $\FpXComplInt$ if and only if its valuation is less than or equal to $1$. This equality implies that $\rint{K}$ is a discrete valuation ring\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/eq_characteristic/valuation.lean#L59}{\extlink}.
+The lemma \code{integral_closure_eq_integer} implies that $\rint{K} = \ball{K}$, that is, an element of $K$ is integral over $\FpXComplInt$ if and only if its valuation is less than or equal to $1$. This equality \mi{therefore} implies that $\rint{K}$ is a discrete valuation ring\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/eq_characteristic/valuation.lean#L64}{\extlink}.
 
 \begin{lstlisting}
 instance : discrete_valuation_ring ($\rint{}$ p K) := 
@@ -644,19 +616,19 @@ Due to the relatively recent appearance of the theory of adic valuations in \mat
 \item \code{pkg.complete}, which is a proof that \code{pkg.space} is complete;
 \item \code{pkg.dense_coe}, which is a proof that \code{coe} is injective with dense image.
 \end{listDef}
-In particular, there is a term \code{ratfunc_adic_compl_pkg}\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/laurent_series_equiv_adic_completion.lean#L780}{\extlink} whose \code{space} field represents the completion $\FpXCompl$. Now, given two terms \code{(pkg, pkg': abstract_completion T)}, the declaration \code{compare pkg pkg'}\href{https://leanprover-community.github.io/mathlib_docs/topology/uniform_space/abstract_completion.html#abstract_completion.compare}{\extlink} provides an equivalence of uniform spaces between them, which expresses the mathematical statement that ``the completion of a uniform space is unique up to a unique isomorphism''. The uniqueness of the extension~\eqref{eq:univ_compl} makes it easy to upgrade the equivalence to an equivalence of fields whenever both \code{pkg.space} and \code{pkg'.space} are fields. It follows that once we prove that $\laurentseries[K]$ is also an abstract completion of $K(X)$, it will correspond to a term \code{laurent_series_pkg}\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/laurent_series_equiv_adic_completion.lean#L785}{\extlink} and the previous discussion produces the required isomorphism, in the form\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/laurent_series_equiv_adic_completion.lean#L836}{\extlink}
+In particular, there is a term \code{ratfunc_adic_compl_pkg}\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/laurent_series_equiv_adic_completion.lean#L785}{\extlink} whose \code{space} field represents the completion $\FpXCompl$. Now, given two terms \code{(pkg, pkg': abstract_completion T)}, the declaration \code{compare pkg pkg'}\href{https://leanprover-community.github.io/mathlib_docs/topology/uniform_space/abstract_completion.html#abstract_completion.compare}{\extlink} provides an equivalence of uniform spaces between them, which expresses the mathematical statement that ``the completion of a uniform space is unique up to a unique isomorphism''. The uniqueness of the extension~\eqref{eq:univ_compl} makes it easy to upgrade the equivalence to an equivalence of fields whenever both \code{pkg.space} and \code{pkg'.space} are fields. It follows that once we prove that $\laurentseries[K]$ is also an abstract completion of $K(X)$, it will correspond to a term \code{laurent_series_pkg}\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/laurent_series_equiv_adic_completion.lean#L790}{\extlink} and the previous discussion produces the required isomorphism, in the form\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/laurent_series_equiv_adic_completion.lean#L841}{\extlink}
 \begin{lstlisting}[caption={The isomorphim between the Laurent series and the completion of rational functions.}, label={code:isom_ls}]
 def laurent_series_ring_equiv :
    (laurent_series K) $\simeq ^{+*}$ (ratfunc_adic_compl K)
 \end{lstlisting}
 
-To prove that $\laurentseries[K]$ is a completion of $K(X)$, we need to show that $\laurentseries[K]$ is complete and that the image of the coercion $K(X)\hookrightarrow \laurentseries[K]$ is dense. Ultimately, both results rely on a careful study of the interaction between the $X$-adic valuation on $K(X)$, the $X$-adic valuation on $\laurentseries[K]$\footnote{Despite having the same name, these valuations are associated to different ideals: one is $(X)\subseteq K[X]$ and the other is $(X)\subseteq \powerseries[K]$.}, and the coefficients of the corresponding series. For example, we show in the lemma\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/laurent_series_equiv_adic_completion.lean#L367}{\extlink}
+To prove that $\laurentseries[K]$ is a completion of $K(X)$, we need to show that $\laurentseries[K]$ is complete and that the image of the coercion $K(X)\hookrightarrow \laurentseries[K]$ is dense. Ultimately, both results rely on a careful study of the interaction between the $X$-adic valuation on $K(X)$, the $X$-adic valuation on $\laurentseries[K]$\footnote{Despite having the same name, these valuations are associated to different ideals: one is $(X)\subseteq K[X]$ and the other is $(X)\subseteq \powerseries[K]$.}, and the coefficients of the corresponding series. For example, we show in the lemma\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/laurent_series_equiv_adic_completion.lean#L372}{\extlink}
 \begin{lstlisting}
 lemma valuation_le_iff_coeff_zero_of_lt {D : $\ZZ$}
   {f : laurent_series K} : v f $\le$ (of_add (-D))
   $\leftrightarrow$ ($\forall$ n : $\ZZ$, n < D $\to$ f.coeff n = 0)
 \end{lstlisting}
-that a Laurent series has valuation bounded by \code{of_add (-D)} if and only if its $n$-th coefficient vanishes for each $n<D$. Once we can relate the valuation and the vanishing of the coefficients, the proof that $K(X)$ has dense image in $\laurentseries[K]$ is very smooth. The proof of completeness heavily relies on the formalism of filters, as explained in~\cite[\S4]{BuzComMas20}. The main ingredient is the\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/laurent_series_equiv_adic_completion.lean#L485}{\extlink}
+that a Laurent series has valuation bounded by \code{of_add (-D)} if and only if its $n$-th coefficient vanishes for each $n<D$. Once we can relate the valuation and the vanishing of the coefficients, the proof that $K(X)$ has dense image in $\laurentseries[K]$ is very smooth. The proof of completeness heavily relies on the formalism of filters, as explained in~\cite[\S4]{BuzComMas20}. The main ingredient is the\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/laurent_series_equiv_adic_completion.lean#L490}{\extlink}
 \begin{lstlisting}
 lemma uniform_continuous_coeff (d : $\ZZ$)
   (h : uniformity K = $\princfilter$ id_rel) :
@@ -667,8 +639,8 @@ It shows that if $K$ is endowed with the \emph{discrete} uniformity (\cite[Chapi
 f(\filter)=\sum_{d\in\ZZ} c_dX^d\in\laurentseries[K].
 \]
 % is a well-defined element of $\laurentseries[K]$. 
-In the lemma \code{cauchy.eventually_mem_nhds}\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/laurent_series_equiv_adic_completion.lean#L625}{\extlink} we then show that $\filter$ converges to the principal filter $\princfilter(f(\filter))$, proving that $\laurentseries[K]$ is complete. Finally, we can specialize to $\powerseries[K]$ the equivalence \code{laurent_series_ring_equiv}
-to get its integral version:\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/laurent_series_equiv_adic_completion.lean#L978}{\extlink}
+In the lemma \code{cauchy.eventually_mem_nhds}\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/laurent_series_equiv_adic_completion.lean#L630}{\extlink} we then show that $\filter$ converges to the principal filter $\princfilter(f(\filter))$, proving that $\laurentseries[K]$ is complete. Finally, we can specialize to $\powerseries[K]$ the equivalence \code{laurent_series_ring_equiv}
+to get its integral version:\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/laurent_series_equiv_adic_completion.lean#L983}{\extlink}
 \begin{lstlisting}[caption={The isomorphism between power series and the unit ball in the completion of rational functions.}, label={code:iso_ps}]
 def power_series_ring_equiv : (power_series K) 
   $\simeq ^{+*}$ ((ideal_X K).adic_completion_integers 
@@ -679,13 +651,13 @@ In particular, we see that the residue field of $\FpXCompl[K]$ is isomorphic to 
 %%%%%%%%Subsection : Mixed char local fields
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Mixed characteristic}\label{subsec:mixed_char}
-The main formalization challenge we face when formalizing the definition of mixed characteristic local fields is analogous to the issue discussed in Remark~\ref{rmk:laurent_vs_adic}. The basic API for the $p$-adic numbers $\QQ_p$ was already available in \mathlib, but it predated the formalization of adic valuations. Since we want to take advantage of this more general theory, our approach is to define a new type $\padicCompl$\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/padic_compare.lean#L89}{\extlink}
+The main formalization challenge we face when formalizing the definition of mixed characteristic local fields is analogous to the issue discussed in Remark~\ref{rmk:laurent_vs_adic}. The basic API for the $p$-adic numbers $\QQ_p$ was already available in \mathlib, but it predated the formalization of adic valuations. Since we want to take advantage of this more general theory, our approach is to define a new type $\padicCompl$\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/padic_compare.lean#L95}{\extlink}
 \begin{lstlisting}
 def Q_p : Type* := 
 adic_completion $\QQ$ (p_height_one_ideal p)
 \end{lstlisting}
-and to prove that it is isomorphic, as a valued field, to the field $\QQ_p$. This isomorphism is established in the definition \code{padic_equiv}\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/padic_compare.lean#L268}{\extlink} and its construction follows the main strategy explained in~\S\ref{subsubsection:isom_laurent}. Namely, we provide two abstract completions \code{padic_pkg} and \code{padic_pkg'} of $\QQ$ and we upgrade the equivalence as uniform spaces to an isomorphism of valued fields. As a consequence, the unit ball $\padicComplInt$, called\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/padic_compare.lean#L326}{\extlink} \code{(Z_p p)} in our code,
-is proved to be isomorphic to the $p$-adic integers $\ZZ_p$ in the declaration\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/padic_compare.lean#L567}{\extlink}
+and to prove that it is isomorphic, as a valued field, to the field $\QQ_p$. This isomorphism is established in the definition \code{padic_equiv}\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/padic_compare.lean#L274}{\extlink} and its construction follows the main strategy explained in~\S\ref{subsubsection:isom_laurent}. Namely, we provide two abstract completions \code{padic_pkg} and \code{padic_pkg'} of $\QQ$ and we upgrade the equivalence as uniform spaces to an isomorphism of valued fields. As a consequence, the unit ball $\padicComplInt$, called\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/padic_compare.lean#L332}{\extlink} \code{(Z_p p)} in our code,
+is proved to be isomorphic to the $p$-adic integers $\ZZ_p$ in the declaration\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/padic_compare.lean#L573}{\extlink}
 \begin{lstlisting}[caption={The isomorphism between $\padicComplInt$ and $\ZZ_p$.}, label={code:iso_Zp}]
 def padic_int_ring_equiv : (Z_p p) $\simeq $+* $\ZZ$_[p]
 \end{lstlisting}
@@ -694,7 +666,7 @@ We are now ready to give the following definition:
 \begin{definition}\label{def:mixed_char_local_field}
 A \emph{mixed characteristic local field} is a finite dimensional field extension of the field $\padicCompl$, for some $p$.
 \end{definition}
-This is implemented as\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/mixed_characteristic/basic.lean#L36}{\extlink}
+This is implemented as\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/mixed_characteristic/basic.lean#L41}{\extlink}
 \begin{lstlisting}
 class mixed_char_local_field (p : $\NN$)
   [nat.prime p] (K : Type*) [field K]
@@ -702,9 +674,9 @@ class mixed_char_local_field (p : $\NN$)
 [to_finite_dimensional : finite_dimensional
   (Q_p p) K]    
 \end{lstlisting}
-In particular, $\padicCompl$ is a mixed characteristic local field\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/mixed_characteristic/basic.lean#L123}{\extlink}.
+In particular, $\padicCompl$ is a mixed characteristic local field\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/mixed_characteristic/basic.lean#L128}{\extlink}.
 
-We formalize the proof that any mixed characteristic local field $K$ is a local field as in Definition~\ref{def:local_field}. The proof is analogous to the one in the equal characteristic case: the only  difference is that every mixed characteristic local field $K$ is automatically separable over $\padicCompl$, since this holds for every algebraic extension of a field of characteristic $0$. Hence, we do not need to assume separability. Finally, the ring isomorphism in the \LClistingname~\ref{code:iso_Zp} implies that the residue field of $\padicComplInt$ is isomorphic to $\FF$, since this is the case for $\ZZ_p$. As above, this ensures that every mixed characteristic local field is indeed a local field according to Definition~\ref{def:local_field}:\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/local_field.lean#L69}{\extlink}
+We formalize the proof that any mixed characteristic local field $K$ is a local field as in Definition~\ref{def:local_field}. The proof is analogous to the one in the equal characteristic case: the only  difference is that every mixed characteristic local field $K$ is automatically separable over $\padicCompl$, since this holds for every algebraic extension of a field of characteristic $0$. Hence, we do not need to assume separability. Finally, the ring isomorphism in the \LClistingname~\ref{code:iso_Zp} implies that the residue field of $\padicComplInt$ is isomorphic to $\FF$, since this is the case for $\ZZ_p$. As above, this ensures that every mixed characteristic local field is indeed a local field according to Definition~\ref{def:local_field}:\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/local_field.lean#L74}{\extlink}
 \begin{lstlisting}
 def mixed_char_local_field.local_field : local_field K := 
 { complete := mixed_char_local_field.complete_space p K,
@@ -713,15 +685,15 @@ def mixed_char_local_field.local_field : local_field K :=
   ..(mixed_char_local_field.valued p K) }
 \end{lstlisting} 
 
-The extension of the $p$-adic valuation to $K$\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/mixed_characteristic/valuation.lean#L62}{\extlink} is the unique nontrivial discrete\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/mixed_characteristic/valuation.lean#L68}{\extlink} valuation on $K$, and the field $K$ is complete with respect to the induced topology\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/mixed_characteristic/valuation.lean#L65}{\extlink}.
+The extension of the $p$-adic valuation to $K$\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/mixed_characteristic/valuation.lean#L67}{\extlink} is the unique nontrivial discrete\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/mixed_characteristic/valuation.lean#L73}{\extlink} valuation on $K$, and the field $K$ is complete with respect to the induced topology\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/mixed_characteristic/valuation.lean#L70}{\extlink}.
 
-The \emph{ring of integers} $\rint{K}$ of a mixed characteristic local field $K$ is the integral closure of $\ball{(\padicCompl)}$ in $K$\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/mixed_characteristic/basic.lean#L57}{\extlink}. 
+The \emph{ring of integers} $\rint{K}$ of a mixed characteristic local field $K$ is the integral closure of $\ball{(\padicCompl)}$ in $K$\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/mixed_characteristic/basic.lean#L62}{\extlink}. 
 \begin{lstlisting}
 def ring_of_integers :=
 integral_closure (Z_p p) K
 \end{lstlisting}
 
-As in the equal characteristic case, we have that $\rint{K} = \ball{K}$, so in particular $\rint{K}$ is a discrete valuation ring\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/mixed_characteristic/valuation.lean#L72}{\extlink}.
+As in the equal characteristic case, we have that $\rint{K} = \ball{K}$, so in particular $\rint{K}$ is a discrete valuation ring\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/mixed_characteristic/valuation.lean#L77}{\extlink}.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -740,16 +712,14 @@ We formalize our work on top of the \lean library \mathlib and the \lean project
 
 As far as other systems are concerned, the first formalization of the $p$-adic numbers appeared in the Coq UniMath library in~\cite{padicsCoq}. Beyond the choice of the theorem prover, the two major differences with our work come from different axiomatization settings: the authors of~\cite{padicsCoq} assume the univalence axiom and work in a constructive setting, replacing the notion of being non-zero with a property of being ``apart from zero''. As a consequence, their construction of the $p$-adic integers $\ZZ_p$ follows a completely different path and involves a ``carrying'' operator on the ring $\powerseries[\ZZ]$ and an equivalence relation based on univalent ``paths'' rather than equality. The field $\QQ_p$ is then defined as the Heyting field of fractions of $\ZZ_p$, a construction mimicking the usual field of fractions of an integral domain but in the setting of apartness domains. No treatment of the $p$-adic valuation, of the $p$-adic metric and more generally of topological properties is presented \ibid. From the algebraic point of view, neither the properties of being a DVR, a Dedekind domain, or a local ring, nor algebraic extensions of $\QQ_p$, are approached.
 
-\fil{
 The $p$-adic numbers were later formalized in Isabelle/HOL, whose main library also contains a formalization of formal Puiseux series. The formalization of $\ZZ_p$ in~\cite{padicIntIsa} follows the classical path and is quite complete: both the definition as inverse limit and as completion of $\ZZ$ with respect to the $p$-adic valuation are formalized, together with a proof of their equivalence and of Hensel's lemma. The basic results of the topological properties of $\ZZ_p$ can also be found \ibid, and the paper~\cite{padicIsa} contains deeper results: the field $\QQ_p$ is defined as the fraction field of the ring $\ZZ_p$ formalized in the previous work, and it is endowed with both a valuation and a norm extending the previous ones on $\ZZ_p$. Again, the main topological properties both of $\QQ_p$ and of $\QQ_p^n$ are studied. Nevertheless, neither the structure of $\ZZ_p$ as a DVR, or as a Dedekind domain, are studied; also, there is no treatment of finite extensions of $\QQ_p$ or of localization results.
 
 The work~\cite{PuiseuxSeriesIsa} presents the formalization of the ring $\puiseuxseries$ of Puiseux series (over any commutative ring $R$), that are a generalization of Laurent series. Both $\powerseries[R]$ and $\laurentseries[R]$ are defined and studied \ibid, and are endowed with a valuation and a norm, whose basic properties are formalized and extended to
 \[
 \puiseuxseries=\bigcup_{d\geq 1}R(\!(X^{1/d})\!).
 \]
-The main focus of the paper is the formalization of the Newton--Puiseux' theorem stating that whenever $C$ is an algebraically closed field of characteristic $0$, the same holds for $\puiseuxseries[C]$; as a consequence, little algebraic properties both of $\laurentseries[\FF]$ and of $\puiseuxseries[\FF]$ can be found. In particular, no formalization of the DVR structure of $\powerseries[\FF]$ or of field extensions of $\laurentseries[\FF]$ can be found \ibid.
+The main focus of the paper is the formalization of the Newton--Puiseux' theorem stating that whenever $C$ is an algebraically closed field of characteristic $0$, the same holds for $\puiseuxseries[C]$; as a consequence, \mi{\st{little} few?} algebraic properties both of $\laurentseries[\FF]$ and of $\puiseuxseries[\FF]$ can be found. In particular, no formalization of the DVR structure of $\powerseries[\FF]$ or of field extensions of $\laurentseries[\FF]$ can be found \ibid.
 
-\st{To the best of our knowledge, in none of these formalizations the algebraic structure of those rings as DVR's, nor the comparison between the adic and the metric topology, is discussed.}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%Subsection : Implementation details
@@ -764,25 +734,25 @@ For consistency with the rest of the library, we propose to replace \code{add_va
 
 
 \paragraph{Uniformizers}
-To indicate that a term \code{(}$\pi$\code{ : R)} in a ring $R$ is a uniformizer for a valuation $v_R$, we provide a predicate \code{is_uniformizer}:\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/discrete_valuation_ring/basic.lean#L133}{\extlink}
+To indicate that a term \code{(}$\pi$\code{ : R)} in a ring $R$ is a uniformizer for a valuation $v_R$, we provide a predicate \code{is_uniformizer}\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/discrete_valuation_ring/basic.lean#L137}{\extlink}:
 \begin{lstlisting}
 def is_uniformizer ($\pi$ : R) : Prop := 
 vR $\pi$ = (of_add (- 1 : $\ZZ$) : $\wzmZZ$)
 \end{lstlisting}
 
-We also provide a bundled version of this definition, called \code{uniformizer}\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/discrete_valuation_ring/basic.lean#L144}{\extlink}. That is, we provide a structure \code{uniformizer}\relax whose terms consists of two fields: an element $\pi$ of the ring~$R$, together with the proof that $\pi$ is a uniformizer for a given valuation. Since any uniformizer is necessarily a member of the unit ball, we decided to make the field $\pi$ in this definition a term of type \code{vR.integer} (as opposed to type \code{R}).
+We also provide a bundled version of this definition, called \code{uniformizer}\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/discrete_valuation_ring/basic.lean#L148}{\extlink}. That is, we provide a structure \code{uniformizer}\relax whose terms consists of two fields: an element $\pi$ of the ring~$R$, together with the proof that $\pi$ is a uniformizer for a given valuation. Since any uniformizer is necessarily a member of the unit ball, we decided to make the field $\pi$ in this definition a term of type \code{vR.integer} (as opposed to type \code{R}).
 \begin{lstlisting}
 structure uniformizer :=
 ($\pi$ : vR.integer)
 (valuation_eq_neg_one : is_uniformizer vR $\pi$)
 \end{lstlisting}
 
-The proposition \code{is_uniformizer} is useful when proving lemmas that apply to any uniformizer element, such as the lemma stating that every uniformizer is nonzero:
+The proposition \code{is_uniformizer} is useful when proving lemmas that apply to any uniformizer element, such as the lemma stating that every uniformizer is nonzero\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/discrete_valuation_ring/basic.lean#L178}{\extlink}:
 \begin{lstlisting}
 lemma uniformizer_ne_zero {$\pi$ : R}
   (h$\pi$ : is_uniformizer vR $\pi$) : $\pi \ne 0$ := 
 \end{lstlisting}
-By contrast, the bundled definition is more convenient to prove results that involve fixing a uniformizer. For example, we use it when proving that every nonzero $r : \ball{K}$ can be factored as the product of a unit by a power of a fixed uniformizer:
+By contrast, the bundled definition is more convenient to prove results that involve fixing a uniformizer. For example, we use it when proving that every nonzero $r : \ball{K}$ can be factored as the product of a unit by a power of a fixed uniformizer\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/discrete_valuation_ring/basic.lean#L259}{\extlink}:
 \begin{lstlisting}
 lemma pow_uniformizer {r : $K_0$} (hr : r $\ne$ 0)
   ($\pi$ : uniformizer v) :
@@ -792,12 +762,12 @@ lemma pow_uniformizer {r : $K_0$} (hr : r $\ne$ 0)
 For an in-depth discussion of bundled versus unbundled representations in Lean and in Coq, we refer the reader to \cite{Baa22} or \cite{typeclassesCoq}.
 
 \paragraph{Extensions and \code{valued} instances}
-In \S\ref{subsec:extensions} we construct, for each field $K$ complete with respect to a discrete valuation~$v$ and every finite extension $L/K$, a unique valuation $v_L$ on $L$, recorded as \code{(v_L : valuation L}$\;\wzmZZ)$. However, at this level of generality we do not put a global \code{valued} instance on $L$: doing so would create infinitely many ``diamonds'', by which we mean the existence of two different procedures to endow an object with a certain mathematical structure (represented by two terms of the given structure that are propositionally, but not definitionally, equal). This leads to problems when exploiting the full force of the type-class inference mechanism: indeed, suppose that in a given context $\Gamma$, a term $t:T$ is well-typed assuming the existence of a term \code{s:S} for a certain structure \code{S}. Given two terms \code{s}$_1$,\code{s}$_2$\code{:S} that are propositionally equal, the corresponding terms \code{t}$_1$,\code{t}$_2$\code{:T} are different, yet carry the same mathematical information. Now, if the type-class inference mechanism can produce both terms \code{s}$_1$ and \code{s}$_2$ --- say, inside a proof --- the user would face the problem of having two different terms that look indistinguishable, which clearly leads to unexpected problems. In our setting, for every field $K$ that is complete with respect to a discrete valuation $v$, the original valuation is propositionally but not definitionally equal to its trivial extension $v_K$, resulting in two terms of the structure of a \code{valued} field on $K$: to avoid any diamond, we need to exclude the second from the inference search, and therefore we need to avoid declaring a structure of \code{valued} field on the trivial extension $K$ of $K$: this forces us to avoid declaring such a structure on \emph{every} extension $L/K$. Nevertheless, we provide a lemma \code{trivial_extension_eq_valuation}\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/discrete_valuation_ring/trivial_extension.lean#L58}{\extlink} proving the equality $v=v_K$.
+In \S\ref{subsec:extensions} we construct, for each field $K$ complete with respect to a discrete valuation~$v$ and every finite extension $L/K$, a unique valuation $v_L$ on $L$, recorded as \code{(v_L : valuation L}$\;\wzmZZ)$. However, at this level of generality we do not put a global \code{valued} instance on $L$: doing so would create infinitely many ``diamonds'', by which we mean the existence of two different procedures to endow an object with a certain mathematical structure (represented by two terms of the given structure that are propositionally, but not definitionally, equal). This leads to problems when exploiting the full force of the type-class inference mechanism: indeed, suppose that in a given context $\Gamma$, a term $t:T$ is well-typed assuming the existence of a term \code{s:S} for a certain structure \code{S}. Given two terms \code{s}$_1$,\code{s}$_2$\code{:S} that are propositionally equal, the corresponding terms \code{t}$_1$,\code{t}$_2$\code{:T} are different, yet carry the same mathematical information. Now, if the type-class inference mechanism can produce both terms \code{s}$_1$ and \code{s}$_2$ --- say, inside a proof --- the user would face the problem of having two different terms that look indistinguishable, which clearly leads to unexpected problems. In our setting, for every field $K$ that is complete with respect to a discrete valuation $v$, the original valuation is propositionally but not definitionally equal to its trivial extension $v_K$, resulting in two terms of the structure of a \code{valued} field on $K$: to avoid any diamond, we need to exclude the second from the inference search, and therefore we need to avoid declaring a structure of \code{valued} field on the trivial extension $K$ of $K$: this forces us to avoid declaring such a structure on \emph{every} extension $L/K$. Nevertheless, we provide a lemma \code{trivial_extension_eq_valuation}\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/discrete_valuation_ring/trivial_extension.lean#L63}{\extlink} proving the equality $v=v_K$.
 
-We make an exception to this rule when implementing mixed and equal characteristic local fields, since we do declare \code{valued} instances for them. This creates a mild diamond for $\padicCompl$ and $\FpXCompl$ but this does not cause trouble in our formalization, thanks to the comparison lemma \code{trivial_extension_eq_valuation}\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/discrete_valuation_ring/trivial_extension.lean#L58}{\extlink} mentioned above. Indeed, in all cases where a the inference system would create problems, the lemma allows us to disambiguate the situation: for an example, the reader can inspect the proof of \code{FpX_int_completion.equiv_valuation_subring}\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/eq_characteristic/valuation.lean#L97}{\extlink}, proving that the unit ball $\FpXComplInt$ is isomorphic to the subring of $\FpXCompl$ whose elements have $(X)$-adic valuation less than or equal to (\code{1:} $\wzmZZ$).
+We make an exception to this rule when implementing mixed and equal characteristic local fields, since we do declare \code{valued} instances for them. This creates a mild diamond for $\padicCompl$ and $\FpXCompl$ but this does not cause trouble in our formalization, thanks to the comparison lemma \code{trivial_extension_eq_valuation}\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/discrete_valuation_ring/trivial_extension.lean#L63}{\extlink} mentioned above. Indeed, in all cases where a the inference system would create problems, the lemma allows us to disambiguate the situation: for an example, the reader can inspect the proof of \code{FpX_int_completion.equiv_valuation_subring}\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/eq_characteristic/valuation.lean#L102}{\extlink}, proving that the unit ball $\FpXComplInt$ is isomorphic to the subring of $\FpXCompl$ whose elements have $(X)$-adic valuation less than or equal to (\code{1:} $\wzmZZ$).
 
 \paragraph{Fraction fields.}
-If $K$ is a discretely valued field, then $\ball{K}$ is a DVR, so we put a \code{[valued (fraction_ring K}$_0$) $\wzmZZ$\code{]} instance on $\Frac(\ball{K})$\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/discrete_valuation_ring/basic.lean#L452}{\extlink}. Note that, while $K$ and $\Frac(\ball{K})$ are isomorphic, they are represented by different types in \mathlib, so the above \code{valued} instance has a different type from the original \code{[valued K} $\wzmZZ$\code{]} instance and no diamond occurs. However, it would if we had instead decided to put this \code{valued} instance on any field $L$ satisfying the condition \code{[is_fraction_ring K}$_0\; $\code{L]}, since this holds for $K$.
+If $K$ is a discretely valued field, then $\ball{K}$ is a DVR, so we put a \code{[valued (fraction_ring K}$_0$) $\wzmZZ$\code{]} instance on $\Frac(\ball{K})$\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/discrete_valuation_ring/basic.lean#L458}{\extlink}. Note that, while $K$ and $\Frac(\ball{K})$ are isomorphic, they are represented by different types in \mathlib, so the above \code{valued} instance has a different type from the original \code{[valued K} $\wzmZZ$\code{]} instance and no diamond occurs. However, it would if we had instead decided to put this \code{valued} instance on any field $L$ satisfying the condition \code{[is_fraction_ring K}$_0\; $\code{L]}, since this holds for $K$.
 
 \paragraph{The \code{normed_field} and the \code{valued} instances}
 Recall from~\S\ref{subsec:extensions} that to each discrete valuation $v$ on a field $K$ we can associate a nonarchimedean multiplicative norm $\lvert\cdot\rvert_K$.
@@ -831,7 +801,7 @@ However, observe that no problem arises when putting both a \code{valued} and a 
 \paragraph{Laurent series}
 As for general DVR's, an additive valuation was already available in \mathlib for power series, with the name \code{hahn_series.add_val}\href{https://leanprover-community.github.io/mathlib_docs/ring_theory/hahn_series.html#hahn_series.add_val}{\extlink}. It is \code{part_enat}-valued and it is defined as the greatest $n$ such that $X^n$ divides the power series. Although some basic API was available, the same reasons that led us to systematically work with multiplicative valuations rather than additive ones pushed us to rely on the general theory of $\wzmZZ$-valued adic valuations rather than with this \emph{ad hoc} definition.
 
-The main isomorphism \code{laurent_series_ring_equiv} exhibited in the \LClistingname~\ref{code:isom_ls} is defined as \emph{the inverse} of an isomorphism\href{https://github.com/mariainesdff/local_fields_journal/blob/76ad487d09babdb0018f394a5634526637ee014a/src/laurent_series_equiv_adic_completion.lean#L823}{\extlink}
+The main isomorphism \code{laurent_series_ring_equiv} exhibited in the \LClistingname~\ref{code:isom_ls} is defined as \emph{the inverse} of an isomorphism\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/laurent_series_equiv_adic_completion.lean#L828}{\extlink}
 \begin{lstlisting}
 ratfunc_adic_compl_ring_equiv : $ \FpXCompl[K]\simeq ^{ +*}\laurentseries[K]$.
 \end{lstlisting}
@@ -844,7 +814,7 @@ The formalism of uniform completions suffices to establish that $\compl{\mcode{c
 \paragraph{The field of $p$-adic numbers as adic completion}
 Although the formalization of the isomorphism $\padicCompl\cong\QQ_p$ follows in many respects the one for Laurent series, one notable difference is that the type $\QQ$, unlike $K(X)$, already bore an instance of \code{metric_space}, induced from the euclidean distance, and this induced a uniform structure on $\QQ$. In order to define the term $\padicCompl$ we needed to access the API concerning completions of adic spaces, and to do so a \code{valued} instance needed to be defined on $\QQ$. The corresponding uniform space structure would conflict with the euclidean one, and therefore we needed to locally disable the \code{metric_space} instance on $\QQ$ already just to \emph{define} the type $\padicCompl$.
 
-\balance
+
 
 \begin{acks}
 We would like to thank Riccardo Brasca, Mario Carneiro, Antoine Chambert-Loir and Rob Lewis for interesting discussions about possible formalizations of the $p$-adic numbers, Heather Macbeth for helpful conversations about the formalization of Laurent series, Yaël Dillies for providing access to some results about well-founded relations and Cyril Cohen for answering some questions about $p$-adic numbers in Coq. We also thank the \mathlib community as a whole for their support during the completion of this project.
@@ -854,6 +824,7 @@ program "Appel à Projets Recherche UJM 2023".
 
 This work was supported by the LABEX MILYON (ANR-10-LABX-0070) of Université de Lyon, within the program ``France 2030'' (ANR-11-IDEX-0007) operated by the French National Research Agency (ANR).
 \end{acks}
+\balance
 
 %%
 %% The next two lines define the bibliography style to be used, and
