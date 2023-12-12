@@ -36,60 +36,20 @@
   \providecommand\BibTeX{{%
     Bib\TeX}}}
 
-%% Rights management information.  This information is sent to you
-%% when you complete the rights form.  These commands have SAMPLE
-%% values in them; it is your responsibility as an author to replace
-%% the commands and values with those provided to you when you
-%% complete the rights form.
-%\setcopyright{acmcopyright}
-\setcopyright{none} %% FOR ARXIV VERSION
-%\copyrightyear{2023}
-%\acmYear{2024}
-%\acmDOI{XXXXXXX.XXXXXXX}
-
-%% These commands are for a PROCEEDINGS abstract or paper.
-%\acmConference[CPP 2024]{Certified Programs and Proofs 2024}{January 15--16, 2024}{London, UK}
-%%
-%%  Uncomment \acmBooktitle if the title of the proceedings is different
-%%  from ``Proceedings of ...''!
-%%
-%%\acmBooktitle{Woodstock '18: ACM Symposium on Neural Gaze Detection,
-%%  June 03--05, 2018, Woodstock, NY}
-%\acmPrice{15.00}
-%\acmISBN{978-1-4503-XXXX-X/18/06}
-
-
-%%
-%% Submission ID.
-%% Use this when submitting an article to a sponsored event. You'll
-%% receive a unique submission ID from the organizers
-%% of the event, and this ID should be used as the parameter to this command.
-%%\acmSubmissionID{123-A56-BU3}
-
-%%
-%% For managing citations, it is recommended to use bibliography
-%% files in BibTeX format.
-%%
-%% You can then either use BibTeX with the ACM-Reference-Format style,
-%% or BibLaTeX with the acmnumeric or acmauthoryear sytles, that include
-%% support for advanced citation of software artefact from the
-%% biblatex-software package, also separately available on CTAN.
-%%
-%% Look at the sample-*-biblatex.tex files for templates showcasing
-%% the biblatex styles.
-%%
-
-%%
-%% The majority of ACM publications use numbered citations and
-%% references.  The command \citestyle{authoryear} switches to the
-%% "author year" style.
-%%
-%% If you are preparing content for an event
-%% sponsored by ACM SIGGRAPH, you must use the "author year" style of
-%% citations and references.
-%% Uncommenting
-%% the next command will enable that style.
-%%\citestyle{acmauthoryear}
+%%% The following is specific to CPP '24 and the paper
+%%% 'A Formalization of Complete Discrete Valuation Rings and Local Fields'
+%%% by María Inés de Frutos-Fernández and Filippo Alberto Edoardo Nuccio Mortarino Majno di Capriglio.
+%%%
+\setcopyright{acmlicensed}
+\acmDOI{10.1145/3636501.3636942}
+\acmYear{2024}
+\copyrightyear{2024}
+\acmSubmissionID{poplws24cppmain-p13-p}
+\acmISBN{979-8-4007-0488-8/24/01}
+\acmConference[CPP '24]{Proceedings of the 13th ACM SIGPLAN International Conference on Certified Programs and Proofs}{January 15--16, 2024}{London, UK}
+\acmBooktitle{Proceedings of the 13th ACM SIGPLAN International Conference on Certified Programs and Proofs (CPP '24), January 15--16, 2024, London, UK}
+\received{2023-09-19}
+\received[accepted]{2023-11-25}
 
 
 %%
@@ -811,7 +771,7 @@ For an in-depth discussion of bundled versus unbundled representations in Lean a
 \paragraph{Extensions and \code{valued} instances}
 In \S\ref{subsec:extensions} we construct, for each field $K$ complete with respect to a discrete valuation~$v$ and every finite extension $L/K$, a unique valuation $v_L$ on $L$, recorded as \code{(v_L : valuation L}$\;\wzmZZ)$. However, at this level of generality we do not put a global \code{valued} instance on $L$: doing so would create infinitely many ``diamonds'', by which we mean the existence of two different procedures to endow an object with a certain mathematical structure (represented by two terms of the given structure that are propositionally, but not definitionally, equal). This leads to problems when exploiting the full force of the type-class inference mechanism: indeed, suppose that in a given context $\Gamma$, a term $t:T$ is well-typed assuming the existence of a term \code{s:S} for a certain structure \code{S}. Given two terms \code{s}$_1$,\code{s}$_2$\code{:S} that are propositionally equal, the corresponding terms \code{t}$_1$,\code{t}$_2$\code{:T} are different, yet carry the same mathematical information. Now, if the type-class inference mechanism can produce both terms \code{s}$_1$ and \code{s}$_2$ --- say, inside a proof --- the user would face the problem of having two different terms that look indistinguishable, which clearly leads to unexpected problems. In our setting, for every field $K$ that is complete with respect to a discrete valuation $v$, the original valuation is propositionally but not definitionally equal to its trivial extension $v_K$, resulting in two terms of the structure of a \code{valued} field on $K$: to avoid any diamond, we need to exclude the second from the inference search, and therefore we need to avoid declaring a structure of \code{valued} field on the trivial extension $K$ of $K$: this forces us to avoid declaring such a structure on \emph{every} extension $L/K$. Nevertheless, we provide a lemma \code{trivial_extension_eq_valuation}\href{https://github.com/LCFT-Lean/local_fields/blob/76ad487d09babdb0018f394a5634526637ee014a/src/discrete_valuation_ring/trivial_extension.lean#L58}{\extlink} proving the equality $v=v_K$.
 
-We make an exception to this rule when implementing mixed and equal characteristic local fields, since we do declare \code{valued} instances for them. This creates a mild diamond for $\padicCompl$ and $\FpXCompl$ but this does not cause trouble in our formalization, thanks to the comparison lemma \code{trivial_extension_eq_valuation}\href{https://github.com/LCFT-Lean/local_fields/blob/76ad487d09babdb0018f394a5634526637ee014a/src/discrete_valuation_ring/trivial_extension.lean#L58}{\extlink} mentioned above. Indeed, in all cases where a the inference system would create problems, the lemma allows us to disambiguate the situation: \fil{for an example, we urge the reader to inspect the proof of lemma} \code{FpX_int_completion.equiv_valuation_subring}\href{https://github.com/LCFT-Lean/local_fields/blob/76ad487d09babdb0018f394a5634526637ee014a/src/eq_characteristic/valuation.lean#L97}{\extlink}, \fil{proving that the unit ball inside $\FpXCompl$ as...}.
+We make an exception to this rule when implementing mixed and equal characteristic local fields, since we do declare \code{valued} instances for them. This creates a mild diamond for $\padicCompl$ and $\FpXCompl$ but this does not cause trouble in our formalization, thanks to the comparison lemma \code{trivial_extension_eq_valuation}\href{https://github.com/LCFT-Lean/local_fields/blob/76ad487d09babdb0018f394a5634526637ee014a/src/discrete_valuation_ring/trivial_extension.lean#L58}{\extlink} mentioned above. Indeed, in all cases where a the inference system would create problems, the lemma allows us to disambiguate the situation: \fil{for an example, the reader can inspect the proof of} \code{FpX_int_completion.equiv_valuation_subring}\href{https://github.com/LCFT-Lean/local_fields/blob/76ad487d09babdb0018f394a5634526637ee014a/src/eq_characteristic/valuation.lean#L97}{\extlink}, \fil{proving that the unit ball inside the normed field $\FpXCompl$ is isormorphic to the ring whose elements have $(X)$-adic valuation less than or equal to (\code{1:} $\wzmZZ$).}
 
 \paragraph{Fraction fields.}
 If $K$ is a discretely valued field, then $\ball{K}$ is a DVR, so we put a \code{[valued (fraction_ring K}$_0$) $\wzmZZ$\code{]} instance on $\Frac(\ball{K})$\href{https://github.com/LCFT-Lean/local_fields/blob/76ad487d09babdb0018f394a5634526637ee014a/src/discrete_valuation_ring/basic.lean#L452}{\extlink}. Note that, while $K$ and $\Frac(\ball{K})$ are isomorphic, they are represented by different types in \mathlib, so the above \code{valued} instance has a different type from the original \code{[valued K} $\wzmZZ$\code{]} instance and no diamond occurs. However, it would if we had instead decided to put this \code{valued} instance on any field $L$ satisfying the condition \code{[is_fraction_ring K}$_0\; $\code{L]}, since this holds for $K$.
@@ -835,19 +795,15 @@ Suppose that we had declared \code{discretely_normed_field} as an instance inste
 (K : Type*) [field K] [hv : valued K $\wzmZZ$]
   [is_discrete hv.v]
 \end{lstlisting}
-\mi{would inherit a} \code{normed_field} \mi{instance.
-Under this assumption, the typeclass inference system gets into an infinite loop when searching for an instance of
-}
-\code{
-valuation_ring hv.v.valuation_subring.to_subring,}
-\mi{because one of the first results that Lean tries to apply is}  \code{valuation_ring.of_field}, \mi{which reduces the problem to finding an instance of}
-\code{field hv.v.valuation_subring.to_subring.}
-\mi{This leads to a dead end (since the valuation subring is not a field); however, while trying to find this instance, the inference system finds} \code{normed_field.to_field}, \mi{and hence it starts to search for an instance of}
-\code{normed_field hv.v.valuation_subring.to_subring}, \mi{for which it will try to apply the definition} \code{discretely_normed_field}, \mi{which as input requires a} \code{field} \mi{instance on the valuation subring. Hence, the system gets stuck in an infinite loop.}
+would \fil{automatically} inherit a \code{normed_field} instance.
+Under this assumption, the typeclass inference system \fil{would} get into an infinite loop when searching for an instance of
+%}
+\code{valuation_ring hv.v.valuation_subring.to_subring,}\relax 
+because one of the first results that Lean tries to apply is \code{valuation_ring.of_field}, \fil{that automatically infers a valuation ring structure on every field. In turn,} this reduces the problem \fil{at hand} to finding an instance of \code{field hv.v.valuation_subring.to_subring.}
+This leads to a dead end (since the valuation subring is not a field); however, while trying to find this instance, the inference system finds \code{normed_field.to_field}\relax, and hence it starts to search for an instance of
+\code{normed_field hv.v.valuation_subring.to_subring}, for which it will try to apply the definition \code{discretely_normed_field}, which as input requires a \code{field} instance on the valuation subring \fil{which recreates the problem discussed above, risulting in \st{. Hence, }}the system get\fil{\st{s}ting} stuck in an infinite loop.
 
-
-
-However, observe that no problem arises when putting both a \code{valued} and a \code{normed_field} instance on a specific field, like $\QQ_p$\mi{, because the typeclass inference system is able to find these instances on the specific field, and it will not try to apply them to find instances in other types.}
+However, observe that no problem arises when putting both a \code{valued} and a \code{normed_field} instance on a specific field, like $\QQ_p$, because the typeclass inference system is able to find these instances on the specific field, and it will not try to \fil{deduce\st{apply}} them \fil{\st{to find}from other} instances \fil{\st{in}on} other types.
 
 
 \paragraph{Laurent series}
