@@ -104,6 +104,7 @@
 \orcid{0000-0002-5085-7446}
 \authornote{Both authors contributed equally to this research.}
 \affiliation{%
+	\department{Departamento de Matem\'aticas}
 	\institution{Universidad Aut\'onoma de Madrid}
 	\city{Madrid}
 	\country{Spain}
@@ -114,6 +115,7 @@
 \orcid{0000-0002-5318-9869}
 \authornotemark[1]
 \affiliation{%
+	\department{Institut Camille Jordan UMR 5208}
 	\institution{Université Jean Monnet Saint-Étienne}
 	\city{Saint-Étienne}
 	\country{France}
@@ -201,7 +203,7 @@ The \mathlib library provides
 a very complete theory of general valuations, as well as the basic theory of discrete valuation rings, but the connection between these two notions is largely missing. We formalize the definition of discrete valuation and greatly expand the available theory for discrete valuation rings, their fields of fractions, and their associated discrete valuations, including theorems about completions, extensions of valuations and localizations.
 To the authors' best knowledge, this work constitutes the first formalization of local fields and of extensions of discrete valuations in any proof assistant.
 
-The \lean[\empty] code for our formalization is available at a public \mi{\st{anonymized}} GitHub repository\href{https://github.com/mariainesdff/local_fields_journal}{\extlink}. Inside the folder \code{from_mathlib}\href{https://github.com/mariainesdff/local_fields_journal/tree/master/src/from_mathlib}{\extlink} we gather files that are previous work of the authors, as well as a file due to Yaël Dillies \href{https://github.com/mariainesdff/local_fields_journal/blob/master/src/from_mathlib/PR18604_well_founded.lean}{\extlink}, used in this project after securing permission from them. Everything else is new, original work of the authors of this paper, totaling about 8,000 lines of code. Some of the \LClistingname s below have been edited for clarity, but we also provide links to the corresponding results in our repository. In some \LClistingname s the so-called \emph{dot notation} is exhibited: for example, the call \code{(ideal.is_prime I)} can be shortened to \code{I.is_prime}.
+The \lean[\empty] code for our formalization is available at a public GitHub repository\href{https://github.com/mariainesdff/local_fields_journal}{\extlink}. Inside the folder \code{from_mathlib}\href{https://github.com/mariainesdff/local_fields_journal/tree/master/src/from_mathlib}{\extlink} we gather files that are previous work of the authors, as well as a file due to Yaël Dillies \href{https://github.com/mariainesdff/local_fields_journal/blob/master/src/from_mathlib/PR18604_well_founded.lean}{\extlink}, used in this project after securing permission from them. Everything else is new, original work of the authors of this paper, totaling about 8,000 lines of code. Some of the \LClistingname s below have been edited for clarity, but we also provide links to the corresponding results in our repository. In some \LClistingname s the so-called \emph{dot notation} is exhibited: for example, the call \code{(ideal.is_prime I)} can be shortened to \code{I.is_prime}.
 
 Throughout this paper, all rings are assumed to be commutative and unitary.
 
@@ -736,7 +738,7 @@ Our next project is to prove that every local field is either a mixed characteri
 \subsection{Related works}\label{subsec:related_work}
 We formalize our work on top of the \lean library \mathlib and the \lean project \cite{deF23} formalizing extensions of norms. The basic theory of DVR's was available in \mathlib at the start of our project. The library includes a formalization of the additive valuation on a DVR but we discuss in~\S\ref{subsec:implementation} our choice of working with $\wzmZZ$-valued valuations instead.
 
-As far as other systems are concerned, the first formalization of the $p$-adic numbers appeared in the Coq UniMath library in~\cite{padicsCoq}. Beyond the choice of the theorem prover, the two major differences with our work come from different axiomatization settings: the authors of~\cite{padicsCoq} assume the univalence axiom and work in a constructive setting, replacing the notion of being non-zero with a property of being ``apart from zero''. As a consequence, their construction of the $p$-adic integers $\ZZ_p$ follows a completely different path and \fil{involves a carrying operator} on the ring $\powerseries[\ZZ]$ and an equivalence relation based on univalent ``paths'' rather than equality. The field $\QQ_p$ is then defined as the Heyting field of fractions of $\ZZ_p$, a construction mimicking the usual field of fractions of an integral domain but in the setting of apartness domains. No treatment of the $p$-adic valuation, of the $p$-adic metric and more generally of topological properties is presented \ibid. From the algebraic point of view, neither the properties of being a DVR, a Dedekind domain, or a local ring, nor algebraic extensions of $\QQ_p$, are approached.
+As far as other systems are concerned, the first formalization of the $p$-adic numbers appeared in the Coq UniMath library in~\cite{padicsCoq}. Beyond the choice of the theorem prover, the two major differences with our work come from different axiomatization settings: the authors of~\cite{padicsCoq} assume the univalence axiom and work in a constructive setting, replacing the notion of being non-zero with a property of being ``apart from zero''. As a consequence, their construction of the $p$-adic integers $\ZZ_p$ follows a completely different path and involves a ``carrying'' operator on the ring $\powerseries[\ZZ]$ and an equivalence relation based on univalent ``paths'' rather than equality. The field $\QQ_p$ is then defined as the Heyting field of fractions of $\ZZ_p$, a construction mimicking the usual field of fractions of an integral domain but in the setting of apartness domains. No treatment of the $p$-adic valuation, of the $p$-adic metric and more generally of topological properties is presented \ibid. From the algebraic point of view, neither the properties of being a DVR, a Dedekind domain, or a local ring, nor algebraic extensions of $\QQ_p$, are approached.
 
 \fil{
 The $p$-adic numbers were later formalized in Isabelle/HOL, whose main library also contains a formalization of formal Puiseux series. The formalization of $\ZZ_p$ in~\cite{padicIntIsa} follows the classical path and is quite complete: both the definition as inverse limit and as completion of $\ZZ$ with respect to the $p$-adic valuation are formalized, together with a proof of their equivalence and of Hensel's lemma. The basic results of the topological properties of $\ZZ_p$ can also be found \ibid, and the paper~\cite{padicIsa} contains deeper results: the field $\QQ_p$ is defined as the fraction field of the ring $\ZZ_p$ formalized in the previous work, and it is endowed with both a valuation and a norm extending the previous ones on $\ZZ_p$. Again, the main topological properties both of $\QQ_p$ and of $\QQ_p^n$ are studied. Nevertheless, neither the structure of $\ZZ_p$ as a DVR, or as a Dedekind domain, are studied; also, there is no treatment of finite extensions of $\QQ_p$ or of localization results.
@@ -800,7 +802,7 @@ If $K$ is a discretely valued field, then $\ball{K}$ is a DVR, so we put a \code
 \paragraph{The \code{normed_field} and the \code{valued} instances}
 Recall from~\S\ref{subsec:extensions} that to each discrete valuation $v$ on a field $K$ we can associate a nonarchimedean multiplicative norm $\lvert\cdot\rvert_K$.
 
-\fil{When there exists a \st{If $v$ is the }}preferred discrete valuation \fil{$v$} on $K$, we often register it as a \code{valued} instance:
+When there exists a preferred discrete valuation $v$ on $K$, we often register it as a \code{valued} instance:
 \begin{lstlisting}
     {K : Type*} [field K] [hv : valued K $\wzmZZ$] 
 \end{lstlisting}
@@ -824,8 +826,7 @@ because one of the first results that Lean tries to apply is \code{valuation_rin
 This leads to a dead end (since the valuation subring is not a field); however, while trying to find this instance, the inference system finds \code{normed_field.to_field}\relax, and hence it starts to search for an instance of
 \code{normed_field hv.v.valuation_subring.to_subring}, for which it will try to apply the definition \code{discretely_normed_field}, that as input requires a \code{field} instance on the valuation subring which recreates the problem discussed above, resulting in the system getting stuck in an infinite loop.
 
-However, observe that no problem arises when putting both a \code{valued} and a \code{normed_field} instance on a specific field, like $\QQ_p$, because the typeclass inference system is able to find these instances on the specific field, and it will not try to \fil{deduce\st{apply}} them \fil{\st{to find}from other} instances on other types.
-
+However, observe that no problem arises when putting both a \code{valued} and a \code{normed_field} instance on, for instance, $\QQ_p$, because the typeclass inference system is able to find these instances only on $\QQ_p$.
 
 \paragraph{Laurent series}
 As for general DVR's, an additive valuation was already available in \mathlib for power series, with the name \code{hahn_series.add_val}\href{https://leanprover-community.github.io/mathlib_docs/ring_theory/hahn_series.html#hahn_series.add_val}{\extlink}. It is \code{part_enat}-valued and it is defined as the greatest $n$ such that $X^n$ divides the power series. Although some basic API was available, the same reasons that led us to systematically work with multiplicative valuations rather than additive ones pushed us to rely on the general theory of $\wzmZZ$-valued adic valuations rather than with this \emph{ad hoc} definition.
