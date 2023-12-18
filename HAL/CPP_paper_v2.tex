@@ -188,7 +188,7 @@ We build our work on top of the mathematical library \mathlib of \lean{\empty}, 
 The formalization is in \lean because at the time when we began it, almost none of its prerequisites were available in \lean[4]. Now that the complete \mathlib has been translated to \lean[4], we plan to port our work and start to integrate it in this library. All our future work related to this project will be directly implemented in \lean[4].
 
 %%%%%%%%%%%%Subsection : paper outline
-\subsection{Paper outline}
+\subsection{Paper Outline}
 In \S\ref{section:dvr}, we treat the general theory of discrete valuations and discrete valuation rings: after presenting some background material in \S\ref{subsection:wzmZZ}--\S\ref{subsection:def_dvr}, we describe our main results in \S\ref{subsec:complete_DVR}, concerning completions, and \S\ref{subsec:extensions}, concerning extensions of valuations. In \S\ref{def:local_field} we present our formalization of local fields, describing the equal and mixed characteristic cases in \S\ref{subsec:eq_char} and \S\ref{subsec:mixed_char}, respectively. We conclude in \S\ref{sec:conclusion} with a description of future and related work and a discussion of some of our key design choices.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -198,7 +198,7 @@ In \S\ref{section:dvr}, we treat the general theory of discrete valuations and d
 
 In this section we present our formalization of the theory of discretely valued fields and discrete valuation rings, including results about completions and extensions of valuations. As a technical prerequisite, we discuss in \S~\ref{subsection:wzmZZ} the definition and main properties of the \mathlib type $\wzmZZ$, where most of the valuations that we considered take their values.
 
-\subsection{\texorpdfstring{The type $\wzmZZ$}{The type with\_zero multiplicative Z}}\label{subsection:wzmZZ}
+\subsection{\texorpdfstring{The Type $\wzmZZ$}{The Type with\_zero multiplicative Z}}\label{subsection:wzmZZ}
 There are several situations in mathematics in which additive structures get translated into multiplicative structures. For example, associated to each real number $n \ne 0$, there is an exponential map $\exp_n : \RR \to \RR$ sending $x$ to $n^x$. This map has the property that
 $\exp_n(x + y) = \exp_n(x) \cdot \exp_n(y)$ and, whenever $n > 1$, it preserves the order on $\RR$.
 
@@ -546,7 +546,7 @@ A local field $K$ can be of two kinds: of \emph{equal characteristic}, if both $
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%Subsection : equal characteristic
 %%%%%%%%%%%%%%%%%%
-\subsection{Equal characteristic}\label{subsec:eq_char}
+\subsection{Equal Characteristic}\label{subsec:eq_char}
 Recall that we denote by $\FpXCompl$ the completion of $\FF(X)$ with respect to the maximal ideal $\maxid[\empty]=(X)$.
 \begin{definition}\label{def:eq_char_local_field}
 An \emph{equal characteristic local field} is a finite dimensional field extension of \FpXCompl, for some prime number $p$.
@@ -608,7 +608,7 @@ integral_closure.dvr_of_finite_extension
 \end{lstlisting}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Subsubsection : Isomorphism of Laurent series
-\subsubsection{Formalizing the isomorphism $\laurentseries[K]\cong\FpXCompl[K]$}\label{subsubsection:isom_laurent}
+\subsubsection{Formalizing the Isomorphism $\laurentseries[K]\cong\FpXCompl[K]$}\label{subsubsection:isom_laurent}
 
 Due to the relatively recent appearance of the theory of adic valuations in \mathlib, the isomorphism $\laurentseries[K]\cong\FpXCompl[K]$ was not formalized at the time of our work. Nevertheless the API for working with completions of uniform spaces and uniform fields is quite rich, as described in~\S\ref{subsec:complete_DVR}. The key ingredient for the formalization is the notion of \emph{abstract completion}\href{https://leanprover-community.github.io/mathlib_docs/topology/uniform_space/abstract_completion.html#abstract_completion}{\extlink} of uniform spaces. Given a uniform space~$T$, a term \code{pkg : abstract_completion T} contains seven fields, the three most relevant for us being
 \begin{listDef}
@@ -650,7 +650,7 @@ In particular, we see that the residue field of $\FpXCompl[K]$ is isomorphic to 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%Subsection : Mixed char local fields
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Mixed characteristic}\label{subsec:mixed_char}
+\subsection{Mixed Characteristic}\label{subsec:mixed_char}
 The main formalization challenge we face when formalizing the definition of mixed characteristic local fields is analogous to the issue discussed in Remark~\ref{rmk:laurent_vs_adic}. The basic API for the $p$-adic numbers $\QQ_p$ was already available in \mathlib, but it predated the formalization of adic valuations. Since we want to take advantage of this more general theory, our approach is to define a new type $\padicCompl$\href{https://github.com/mariainesdff/local_fields_journal/blob/0b408ff3af36e18f991f9d4cb87be3603cfc3fc3/src/padic_compare.lean#L95}{\extlink}
 \begin{lstlisting}
 def Q_p : Type* := 
@@ -702,12 +702,12 @@ As in the equal characteristic case, we have that $\rint{K} = \ball{K}$, so in p
 \section{Discussion}\label{sec:conclusion}
 
 %%%%%%%%%%%%%%%Subsection : Future work
-\subsection{Future work}\label{subsec:future_work}
+\subsection{Future Work}\label{subsec:future_work}
 
 Our next project is to prove that every local field is either a mixed characteristic local field or an equal characteristic local field, and that completions of global fields at finite places are local fields. We will then relate unramified extensions of local fields with extensions of their residue fields, showing that they are all (pro-)cyclic. This paper describes one of the first steps in a larger scale project aiming at formalizing local class field theory. We plan to formulate it in cohomological terms, relying on the recent work~\cite{Liv23} by Livingston.
 
 %%%%%%%%%%%%%%%Subsection : Related works
-\subsection{Related works}\label{subsec:related_work}
+\subsection{Related Works}\label{subsec:related_work}
 We formalize our work on top of the \lean library \mathlib and the \lean project \cite{deF23} formalizing extensions of norms. The basic theory of DVR's was available in \mathlib at the start of our project. The library includes a formalization of the additive valuation on a DVR but we discuss in~\S\ref{subsec:implementation} our choice of working with $\wzmZZ$-valued valuations instead.
 
 As far as other systems are concerned, the first formalization of the $p$-adic numbers appeared in the Coq UniMath library in~\cite{padicsCoq}. Beyond the choice of the theorem prover, the two major differences with our work come from different axiomatization settings: the authors of~\cite{padicsCoq} assume the univalence axiom and work in a constructive setting, replacing the notion of being non-zero with a property of being ``apart from zero''. As a consequence, their construction of the $p$-adic integers $\ZZ_p$ follows a completely different path and involves a ``carrying'' operator on the ring $\powerseries[\ZZ]$ and an equivalence relation based on univalent ``paths'' rather than equality. The field $\QQ_p$ is then defined as the Heyting field of fractions of $\ZZ_p$, a construction mimicking the usual field of fractions of an integral domain but in the setting of apartness domains. No treatment of the $p$-adic valuation, of the $p$-adic metric and more generally of topological properties is presented \ibid. From the algebraic point of view, neither the properties of being a DVR, a Dedekind domain, or a local ring, nor algebraic extensions of $\QQ_p$, are approached.
